@@ -1,0 +1,19 @@
+<svg id="ic_popup_rejection" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="122" height="115" viewBox="0 0 122 115">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="사각형_6926" data-name="사각형 6926" width="122" height="115" transform="translate(-8901 -11630)" fill="red" opacity="0.48"/>
+    </clipPath>
+  </defs>
+  <g id="마스크_그룹_423" data-name="마스크 그룹 423" transform="translate(8901 11630)" clip-path="url(#clip-path)">
+    <g id="그룹_21389" data-name="그룹 21389">
+      <path id="패스_2197" data-name="패스 2197" d="M38.182,63.068C46.234,70.457,55.162,76.9,57.3,77.5s3.2.8,4.94-1.86,7.325-10.468,7.325-10.468,2.1-2.279,5.663-.317,17.291,9.8,17.291,9.8,6.6,4.3,2.462,14.038a22.437,22.437,0,0,1-18.1,13.794c-5.663.7-33.18-4.81-52.2-27.107S.7,38.056.038,25.764,9.188,4.582,11.119,2.486C15.232-1.975,20.3-.093,22.488,5.5s8.721,19.87,8.721,19.87,3.083,6.371.283,9.216-6.658,7.021-6.658,7.021-2.522,1.617-.121,4.99C28.851,52.4,38.182,63.068,38.182,63.068Z" transform="translate(-8889.849 -11627.962) rotate(8)" fill="#396aff"/>
+      <g id="그룹_1087" data-name="그룹 1087" transform="translate(-8837 -11628)">
+        <circle id="타원_147" data-name="타원 147" cx="27.5" cy="27.5" r="27.5" fill="#f16548"/>
+        <g id="그룹_1054" data-name="그룹 1054" transform="translate(12.088 12.81)">
+          <rect id="사각형_991" data-name="사각형 991" width="6.67" height="35.925" rx="3" transform="translate(30.823 24.501) rotate(133)" fill="#fff"/>
+          <rect id="사각형_992" data-name="사각형 992" width="6.67" height="35.925" rx="3" transform="translate(26.274 0) rotate(47)" fill="#fff"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

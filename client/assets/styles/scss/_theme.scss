@@ -1,0 +1,56 @@
+// assets/styles/_themes.scss
+
+$theme-colors: (
+    "primary-color": (
+        light: #396aff,
+        dark: #4d4d4d,
+    ),
+    "bg-color": (
+        light: #f5f6f8,
+        dark: #262627,
+    ),
+    "bg-text-color": (
+        light: #3d5695,
+        dark: #fff,
+    ),
+    "border-color": (
+        light: #efefef,
+        dark: #3b3b3b,
+    ),
+    "text-color": (
+        light: #323232,
+        dark: #fff,
+    ),
+    "disable-text-color": (
+        light: rgb(161, 183, 255),
+        dar: #d3d3d3,
+    ),
+    "link-color": (
+        light: #3d5695,
+        dark: #9d9d9d,
+    ),
+    "select-color": (
+        light: #f4f4f4,
+        dark: #4d4d4d,
+    ),
+    "component-bg-color": (
+        light: #fff,
+        dark: #212121,
+    ),
+    "input-bg-color": (
+        light: #e8edfd,
+        dark: #343434,
+    ),
+    "placeholder-color": (
+        light: #a1b7ff,
+        dark: #d3d3d3,
+    ),
+    "input-color": (
+        light: #000,
+        dark: #fff,
+    ),
+    "point-color": (
+        light: #396aff,
+        dark: #EE324A,
+    ),
+);

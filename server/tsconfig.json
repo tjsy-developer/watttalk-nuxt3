@@ -1,0 +1,11 @@
+{
+  "include": [
+    "nuxt.config.ts",
+    "server/**/*",
+    "composables/**/*",
+    "components/**/*",
+    "pages/**/*",
+    "layouts/**/*",
+    "app.vue"
+  ]
+}

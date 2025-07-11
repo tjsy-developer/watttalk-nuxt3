@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./client/*"
+      ]
+    },
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "ESNext",
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true,
+    "skipLibCheck": true, // ❗ 이 옵션을 켜면 라이브러리 타입 검사 생략
+    "strict": true
+  },
+  "include": [
+    "client", // Nuxt 소스 디렉터리
+    "nuxt.config.ts",
+    "app.vue"
+  ],
+  "exclude": [
+    "client/pages/app.vue",
+  ]
+}

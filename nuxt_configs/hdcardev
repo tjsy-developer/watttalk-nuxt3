@@ -1,0 +1,136 @@
+import { defineNuxtConfig } from 'nuxt/config'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: './.env' })
+
+export default defineNuxtConfig({
+  srcDir: 'client/',
+  app: {
+    head: {
+      title: '스마트글라스 AR 솔루션 - 와트톡',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: process.env.npm_package_description || '' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+      ]
+    }
+  },
+  css: [
+    '@/assets/styles/initialize',
+    '@/assets/styles/font',
+    '@/assets/styles/nuxt',
+    '@/assets/styles/pagination',
+    '@/assets/styles/vueJsModal',
+    '@/assets/styles/quasar'
+  ],
+  modules: [
+    '@nuxtjs/axios',
+    '@nuxtjs/style-resources',
+    'nuxt-vuex-localstorage',
+    ['nuxt-i18n', './assets/scripts/initialize/locales.js'],
+    'nuxt-socket-io',
+    '@nuxtjs/dotenv'
+  ],
+  plugins: [
+    '@/plugins/globalComponents',
+    '@/plugins/vue-js-modal',
+    '@/plugins/commonFunc',
+    '@/plugins/userListFunc',
+    '@/plugins/axiosRequest',
+    '@/plugins/vuex-persistedstate',
+    { src: '@/assets/scripts/mediaServer/js/jquery.min', mode: 'client' },
+    { src: '@/plugins/vcalendar', mode: 'client' },
+    { src: '@/plugins/webpdf-worker', mode: 'client' }
+  ],
+  runtimeConfig: {
+    public: {
+      port: process.env.port,
+      attachment: process.env.attachment,
+      jwt_token_chk_backup: process.env.jwt_token_chk_backup,
+      jwt_token_chk: process.env.jwt_token_chk,
+      loginPageLocal: process.env.loginPageLocal,
+      loginPage: process.env.loginPage,
+      getAppinfoOne: process.env.getAppinfoOne,
+      noticeList: process.env.noticeList,
+      monitoringList: process.env.monitoringList,
+      fileSavePath: process.env.fileSavePath,
+      fileSavePath_powertalktwo: process.env.fileSavePath_powertalktwo,
+      useEnterprise: process.env.useEnterprise,
+      appName: process.env.appName,
+      version: process.env.version,
+      signallingURL: process.env.signallingURL,
+      transferURL: process.env.transferURL,
+      iceServersURL: process.env.iceServersURL,
+      serverIP_local: process.env.serverIP_local,
+      serverIP: process.env.serverIP,
+      username: process.env.username,
+      credential: process.env.credential,
+      renewal: process.env.renewal,
+      forceLogtout24: process.env.forceLogtout24,
+      refreshTokenUrl: process.env.refreshTokenUrl,
+      skey: process.env.skey
+    }
+  },
+  vite: {
+    define: {
+      'process.env.DEBUG': false
+    }
+  },
+  styleResources: {
+    sass: ['@/assets/styles/initialize.sass'],
+    scss: ['@/assets/styles/theme/color.scss']
+  },
+  nitro: {
+    preset: 'node-server',
+    serveStatic: true
+  },
+  devServer: {
+    port: 3000,
+    host: '0.0.0.0'
+  },
+  build: {
+    transpile: ['pdfjs-dist'],
+    extend(config, { isClient }) {
+      config.module.rules.push({
+        test: /\.(ogg|mp3|wav|mpe?g)$/i,
+        loader: 'file-loader',
+        options: { name: '[path][name].[ext]' }
+      })
+      config.module.rules.push({
+        test: /\.pdf$/,
+        loader: 'url-loader'
+      })
+      if (isClient) {
+        config.module.rules.push({
+          test: /pdf\.worker\.min\.js$/,
+          loader: 'worker-loader',
+          options: { publicPath: '/_nuxt/' }
+        })
+        config.module.rules.push({
+          test: /pdfjs-dist\/build\/pdf\.js$/,
+          loader: 'babel-loader',
+          options: { presets: ['@babel/preset-env'] }
+        })
+      }
+      config.resolve.fallback = { fs: false }
+    }
+  },
+  router: {
+    base: '/watttalk'
+  },
+  io: {
+    sockets: [
+      {
+        name: 'signalling',
+        url: process.env.signallingURL
+      },
+      {
+        name: 'transfer',
+        url: process.env.transferURL
+      }
+    ]
+  }
+})

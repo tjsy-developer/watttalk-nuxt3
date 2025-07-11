@@ -1,0 +1,12 @@
+<svg id="ic_badge" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#d33f3f"/>
+      <stop offset="1" stop-color="#801e1e"/>
+    </linearGradient>
+  </defs>
+  <g id="사각형_1476" data-name="사각형 1476" stroke="#8a0303" stroke-width="1" fill="url(#linear-gradient)">
+    <rect width="20" height="20" rx="10" stroke="none"/>
+    <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="none"/>
+  </g>
+</svg>

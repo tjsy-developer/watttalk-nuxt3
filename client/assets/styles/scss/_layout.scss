@@ -1,0 +1,97 @@
+/* 헤더 스타일 */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px; /* 필요에 따라 조정 */
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 14px;
+    color: #333;
+    z-index: 1000;
+    user-select: none;
+}
+
+/* 로고 */
+header .logo {
+    font-weight: bold;
+    font-size: 16px;
+    color: #0052cc; /* 현대 블루 느낌 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 오른쪽 메뉴 (예: 화면 스타일, 언어, 로그아웃) */
+header .menu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+}
+
+/* 왼쪽 사이드바 */
+.leftbar {
+    position: fixed;
+    top: 50px; /* 헤더 높이 만큼 내려오기 */
+    left: 0;
+    width: 64px; /* 사이드바 너비 */
+    height: calc(100vh - 50px);
+    background-color: #2266f6; /* 진한 블루 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    gap: 30px;
+    box-shadow: 2px 0 5px rgb(0 0 0 / 0.1);
+    z-index: 900;
+}
+
+/* 사이드바 아이콘 버튼 스타일 */
+.leftbar .icon-btn {
+    width: 36px;
+    height: 36px;
+    background-color: transparent;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: white;
+    font-size: 20px;
+}
+
+.leftbar .icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 사이드바 하단 알림 아이콘 */
+.leftbar .bell {
+    margin-top: auto;
+    margin-bottom: 20px;
+    width: 36px;
+    height: 36px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 사이드바 텍스트 (옵션) */
+.leftbar .icon-label {
+    font-size: 10px;
+    color: white;
+    margin-top: 4px;
+    user-select: none;
+    text-align: center;
+    width: 48px;
+}

@@ -1,0 +1,16 @@
+<svg id="ic_cctv_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36" height="36" viewBox="0 0 36 36">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="사각형_8025" data-name="사각형 8025" width="21.568" height="19.441" fill="none"/>
+    </clipPath>
+  </defs>
+  <circle id="타원_2448" data-name="타원 2448" cx="18" cy="18" r="18" fill="#757575"/>
+  <g id="그룹_21422" data-name="그룹 21422" transform="translate(6.432 8.044)">
+    <g id="그룹_21421" data-name="그룹 21421" transform="translate(0 0)" clip-path="url(#clip-path)">
+      <path id="패스_23327" data-name="패스 23327" d="M19.351,17.731H10.37a.757.757,0,0,1-.758-.758v-.545c0-.007,0-.014,0-.021V14.644l2.062-.676v1.7h7.674Z" transform="translate(-0.932 -1.354)" fill="#fff"/>
+      <path id="패스_23328" data-name="패스 23328" d="M.888,9.471l-.33.108a.883.883,0,0,0-.495,1.148l1.143,2.88a.882.882,0,0,0,1.147.5L4.2,13.368" transform="translate(0 -0.918)" fill="#fff"/>
+      <path id="패스_23329" data-name="패스 23329" d="M23.125,19.441h-1.4a.5.5,0,0,1-.5-.5V.5a.5.5,0,0,1,.5-.5h1.4a.5.5,0,0,1,.5.5V18.94a.5.5,0,0,1-.5.5" transform="translate(-2.058 0)" fill="#fff"/>
+      <path id="패스_23330" data-name="패스 23330" d="M17.663,7.64l-2.228-5.61a1.491,1.491,0,0,0-1.962-.773L.829,6.277a.535.535,0,0,0-.239.847l5.545,6.258a.564.564,0,0,0,.63.136l10-3.97a1.5,1.5,0,0,0,.9-1.909M4.37,7.935a.694.694,0,1,1,.694-.694.694.694,0,0,1-.694.694" transform="translate(-0.045 -0.11)" fill="#fff"/>
+    </g>
+  </g>
+</svg>

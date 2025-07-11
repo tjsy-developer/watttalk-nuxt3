@@ -1,0 +1,21 @@
+<svg id="bt_file" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="136" height="34" viewBox="0 0 136 34">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="사각형_1359" data-name="사각형 1359" width="136" height="34" transform="translate(806 1016)" fill="#396aff"/>
+    </clipPath>
+    <filter id="합치기_35" x="-4.293" y="-5.263" width="144.825" height="46.763" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feFlood flood-opacity="0.561"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="마스크_그룹_41" data-name="마스크 그룹 41" transform="translate(-806 -1016)" clip-path="url(#clip-path)">
+    <g id="그룹_2588" data-name="그룹 2588">
+      <g transform="matrix(1, 0, 0, 1, 806, 1016)" filter="url(#합치기_35)">
+        <path id="합치기_35-2" data-name="합치기 35" d="M-6157.588,31.763H-6222s13.313-6.758,19.763-13.447S-6192.692.493-6177.207,0h40.239c15.486.493,18.579,11.627,25.03,18.315s19.763,13.447,19.763,13.447Z" transform="translate(6225.21 2.24)" fill="#396aff"/>
+      </g>
+    </g>
+  </g>
+</svg>

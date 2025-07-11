@@ -1,0 +1,16 @@
+@use "sass:map";
+@use "./theme" as *;
+
+@function get-theme-color($key, $mode) {
+    @return map.get(map.get($theme-colors, $key), $mode);
+}
+
+@mixin tc($property, $key) {
+    @at-root .light & {
+        #{$property}: get-theme-color($key, light);
+    }
+
+    @at-root .dark & {
+        #{$property}: get-theme-color($key, dark);
+    }
+}

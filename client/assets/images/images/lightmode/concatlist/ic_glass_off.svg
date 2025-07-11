@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="ic_pc-2" transform="translate(0)">
+    <g id="ic_pc-2-2" data-name="ic_pc-2">
+      <g id="ic_pc-2-3" data-name="ic_pc-2">
+        <g id="그룹_895" data-name="그룹 895" transform="translate(-0.057 -0.057)">
+          <rect id="사각형_849" data-name="사각형 849" width="24" height="24" transform="translate(0.057 0.058)" fill="none" opacity="0.13"/>
+          <g id="그룹_1294" data-name="그룹 1294" transform="translate(-1058.943 -388.942)">
+            <g id="사각형_850" data-name="사각형 850" transform="translate(1059 403)" fill="none" stroke="#b0b0b0" stroke-width="1.25">
+              <rect width="11" height="9" rx="1" stroke="none"/>
+              <rect x="0.625" y="0.625" width="9.75" height="7.75" rx="0.375" fill="none"/>
+            </g>
+            <g id="사각형_851" data-name="사각형 851" transform="translate(1072 403)" fill="none" stroke="#b0b0b0" stroke-width="1.25">
+              <rect width="11" height="9" rx="1" stroke="none"/>
+              <rect x="0.625" y="0.625" width="9.75" height="7.75" rx="0.375" fill="none"/>
+            </g>
+            <path id="패스_11" data-name="패스 11" d="M3981.146,209.738l3.8-4.329h3.49" transform="translate(-2920.736 193.744)" fill="none" stroke="#b0b0b0" stroke-width="1.25"/>
+            <path id="패스_12" data-name="패스 12" d="M3997.972,209.745l-4.01-4.347H3991.2" transform="translate(-2916.377 193.739)" fill="none" stroke="#b0b0b0" stroke-width="1.25"/>
+            <path id="패스_2308" data-name="패스 2308" d="M-1078.428,1642.781h2.753" transform="translate(2148.127 -1237.136)" fill="none" stroke="#b0b0b0" stroke-width="1.2"/>
+            <path id="패스_2309" data-name="패스 2309" d="M-1103.5,1639.38h0" transform="translate(2174.51 -1241.365)" fill="none" stroke="#b0b0b0" stroke-linecap="round" stroke-width="1.2"/>
+            <path id="패스_2310" data-name="패스 2310" d="M-1105.261,1638.314s2.62-2.5,5.137,0" transform="translate(2173.782 -1242.265)" fill="none" stroke="#b0b0b0" stroke-linecap="round" stroke-width="1.2"/>
+            <path id="패스_2311" data-name="패스 2311" d="M-1105.261,1639.367s5.093-4.734,10.48,0" transform="translate(2171.133 -1245.604)" fill="none" stroke="#b0b0b0" stroke-linecap="round" stroke-width="1.2"/>
+            <rect id="사각형_849-2" data-name="사각형 849" width="24" height="24" transform="translate(1059 389)" fill="none" opacity="0.33"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

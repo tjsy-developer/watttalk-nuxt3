@@ -1,0 +1,12 @@
+<svg id="bt_bg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="174" height="182" viewBox="0 0 174 182">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.478" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#3a3939"/>
+      <stop offset="1" stop-color="#2b2b2b"/>
+    </linearGradient>
+  </defs>
+  <g id="사각형_8038" data-name="사각형 8038" stroke="#404040" stroke-width="2" fill="url(#linear-gradient)">
+    <rect width="174" height="182" rx="10" stroke="none"/>
+    <rect x="1" y="1" width="172" height="180" rx="9" fill="none"/>
+  </g>
+</svg>

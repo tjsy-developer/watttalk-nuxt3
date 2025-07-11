@@ -1,0 +1,7 @@
+<svg id="ic_capture" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <g id="그룹_21319" data-name="그룹 21319" transform="translate(13929 13443)">
+    <rect id="사각형_4310" data-name="사각형 4310" width="36" height="36" rx="18" transform="translate(-13929 -13443)" fill="#648aff"/>
+    <rect id="사각형_6885" data-name="사각형 6885" width="36" height="36" transform="translate(-13929 -13443)" fill="none" opacity="0.31"/>
+    <path id="빼기_102" data-name="빼기 102" d="M18,14.851H1a1,1,0,0,1-1-1v-11a1,1,0,0,1,1-1H5.9L6,.98A.979.979,0,0,1,6.976,0h5.051a.981.981,0,0,1,.98.98l.1.871H18a1,1,0,0,1,1,1v11A1,1,0,0,1,18,14.851ZM9.5,4.87A3.5,3.5,0,1,0,13,8.37,3.5,3.5,0,0,0,9.5,4.87ZM16.348,3.7a.882.882,0,1,0,.882.883A.884.884,0,0,0,16.348,3.7Z" transform="translate(-13920.501 -13432.426)" fill="#fff"/>
+  </g>
+</svg>

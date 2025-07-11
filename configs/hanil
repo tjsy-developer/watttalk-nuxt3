@@ -1,0 +1,30 @@
+# port는 직접 nuxtconfig.js에 들어가서 설정해줘야한다
+port="8102"
+attachment=""
+jwt_token_chk_backup=""
+jwt_token_chk="https://safetymanager.hanil.com/wattmanager2-server/homeRest/tokenCheck"
+loginPageLocal=""
+loginPage="https://safetymanager.hanil.com/wattmanager2/"
+getAppinfoOne=""
+noticeList="https://safetymanager.hanil.com/wattmanager2-server/noticeRest/notice_list"
+monitoringList="https://safetymanager.hanil.com/wattmanager2-server/monitoringRest/select_monitoring_TOP1"
+fileSavePath="https://safetymanager.hanil.com/storage/watttalk/hanil/Photos/"
+fileSavePath_powertalktwo="https://safetymanager.hanil.com/storage/watttalk/hanil/Photos/"
+useEnterprise=""
+appName="powertalkweb"
+version="2.1.91"
+signallingURL="https://safetymanager.hanil.com:8201"
+transferURL="https://safetymanager.hanil.com:8202"
+iceServersURL="turn:49.50.173.32"
+serverIP_local="wss://safetymanager.hanil.com:8989"
+serverIP="wss://safetymanager.hanil.com:8989"
+# iceSever 계정 설정
+username="dykim"
+credential="superman123"
+renewal="true"
+#kepco 주소
+forceLogtout24="false"
+
+#hanil 전용
+noticeListCount="https://safetymanager.hanil.com/wattmanager2-server/noticeRest/notice_list_count"
+noticeInfoOne="https://safetymanager.hanil.com/wattmanager2-server/noticeRest/notice_info_one"

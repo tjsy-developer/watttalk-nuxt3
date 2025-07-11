@@ -1,0 +1,31 @@
+# port는 직접 nuxtconfig.js에 들어가서 설정해줘야한다
+port="3000"
+attachment="http://localhost:4000"
+# jwt_token_chk_backup=https://powertalktwo.powertalk.kr:8121/homeRest/tokenCheck
+jwt_token_chk="https://sg.auto-hmg.io:8205/wattmanager-server/homeRest/tokenCheck"
+# loginPageLocal=http://localhost:8205/
+loginPage="https://sg.auto-hmg.io:8205/"
+getAppinfoOne="https://sg.auto-hmg.io:8205/wattmanager-server/appRest/app_powertalkweb_info"
+noticeList="https://sg.auto-hmg.io:8205/wattmanager-server/noticeRest/notice_list"
+monitoringList="https://sg.auto-hmg.io:8205/wattmanager-server/monitoringRest/select_monitoring_TOP1"
+fileSavePath="https://sg.auto-hmg.io:8205/storage/watttalk/photos/"
+fileSavePath_powertalktwo="https://sg.auto-hmg.io:8205/storage/watttalk/photos/"
+useEnterprise="hdcar"
+appName="powertalkweb"
+version="2.1.91"
+signallingURL="https://sg.auto-hmg.io:8201"
+transferURL="https://sg.auto-hmg.io:8202"
+iceServersURL="turn:sg.auto-hmg.io:3478"
+serverIP_local="wss://sg.auto-hmg.io:8989"
+serverIP="wss://sg.auto-hmg.io:8989"
+# iceSever 계정 설정
+username="dykim"
+credential="superman123"
+renewal=""
+#kepco 주소
+kepcoLoginPage="https://sg.auto-hmg.io:8205/"
+forceLogtout24="false"
+# refresh token url
+refreshTokenUrl="https:///sg.auto-hmg.io:8205/wattmanager-server/accountRest/token_refresh"
+# en-decrypt key
+skey="dsdfjsdl54sd5fsadfjdslksfd87513sdfsdfjkfdsjlk"

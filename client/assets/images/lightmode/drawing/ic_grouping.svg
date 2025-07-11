@@ -1,0 +1,23 @@
+<svg id="ic_grouping" xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">
+  <rect id="사각형_1480" data-name="사각형 1480" width="34" height="34" fill="#fff"/>
+  <g id="패스_2702" data-name="패스 2702" transform="translate(13.733 9.709)" fill="none">
+    <path d="M0,0H6.307V6.307H0Z" stroke="none"/>
+    <path d="M 1.000001907348633 1.000001907348633 L 1.000001907348633 5.30726146697998 L 5.30726146697998 5.30726146697998 L 5.30726146697998 1.000001907348633 L 1.000001907348633 1.000001907348633 M 1.9073486328125e-06 1.9073486328125e-06 L 6.30726146697998 1.9073486328125e-06 L 6.30726146697998 6.30726146697998 L 1.9073486328125e-06 6.30726146697998 L 1.9073486328125e-06 1.9073486328125e-06 Z" stroke="none" fill="#3d3d3d"/>
+  </g>
+  <g id="타원_244" data-name="타원 244" transform="translate(9.112 17.017)" fill="none" stroke="#3d3d3d" stroke-width="1">
+    <circle cx="3.637" cy="3.637" r="3.637" stroke="none"/>
+    <circle cx="3.637" cy="3.637" r="3.137" fill="none"/>
+  </g>
+  <g id="패스_2703" data-name="패스 2703" transform="translate(16.888 17.813)" fill="none">
+    <path d="M3.951-.8,8,6H0Z" stroke="none"/>
+    <path d="M 3.961308479309082 1.174408435821533 L 1.737844944000244 4.999998569488525 L 6.240287303924561 4.999998569488525 L 3.961308479309082 1.174408435821533 M 3.950679779052734 -0.7973618507385254 L 8 5.999998092651367 L 0 5.999998092651367 L 3.950679779052734 -0.7973618507385254 Z" stroke="none" fill="#3d3d3d"/>
+  </g>
+  <g id="패스_2704" data-name="패스 2704" transform="translate(7 7)" fill="none">
+    <path d="M0,0H20V20H0Z" stroke="none"/>
+    <path d="M 0.7999992370605469 0.7999992370605469 L 0.7999992370605469 19.20000076293945 L 19.20000076293945 19.20000076293945 L 19.20000076293945 0.7999992370605469 L 0.7999992370605469 0.7999992370605469 M 0 0 L 20 0 L 20 20 L 0 20 L 0 0 Z" stroke="none" fill="#3d3d3d"/>
+  </g>
+  <circle id="타원_245" data-name="타원 245" cx="2" cy="2" r="2" transform="translate(5.5 5.5)" fill="#3d3d3d"/>
+  <circle id="타원_246" data-name="타원 246" cx="2" cy="2" r="2" transform="translate(24.5 24.5)" fill="#3d3d3d"/>
+  <circle id="타원_247" data-name="타원 247" cx="2" cy="2" r="2" transform="translate(24.5 5.5)" fill="#3d3d3d"/>
+  <circle id="타원_248" data-name="타원 248" cx="2" cy="2" r="2" transform="translate(5.5 24.5)" fill="#3d3d3d"/>
+</svg>

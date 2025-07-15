@@ -13,10 +13,14 @@
 			</div>
 			<span>{{ node.name }}</span>
 			<div v-if="!hasChildren">
-				<img v-if="node.status == 1" :src="commonImages.useCall"></img>
-				<img v-if="node.status == 0" :src="commonImages.useNotCall"></img>
-				<img v-if="node.status == 1" :src="commonImages.useChat"></img>
-				<img v-if="node.status == 0" :src="commonImages.useNotChat"></img>
+				<img v-if="node.status == 1" :src="commonImages.useCall" @click="requestCall(node.deviceId!)"></img>
+				<img v-if="node.status == 0" :src="commonImages.useNotCall" @click="requestCall(node.deviceId!)"
+                    @mouseover="handleMouseCallOver"
+                    @mouseleave="handleMouseCallLeave"></img>
+				<img v-if="node.status == 1" :src="commonImages.useChat" @click="requestChat(node.deviceId!)"></img>
+				<img v-if="node.status == 0" :src="commonImages.useNotChat" @click="requestChat(node.deviceId!)"
+                    @mouseover="handleMouseChatOver"
+                    @mouseleave="handleMouseChatLeave"></img>
 			</div>
 			<img v-if="hasChildren" :src="commonImages.dropdown" :class="isOpen ? 'dropdown active': 'dropdown'"/>
         </div>
@@ -36,14 +40,18 @@
 <script setup lang="ts">
 import { common } from "@/assets/images";
 import { iconLogOffUser, iconLogOnUser } from "@/assets/images/index";
+import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useImageAssets } from "@/composables/useImageAssets";
-import { computed, defineProps } from "vue";
+import { computed, defineProps, onMounted, ref } from "vue";
+import { useVfm } from "vue-final-modal";
+import noneOverlayModal from "@/components/modal/mainModal.vue"
 const { commonImages } = useImageAssets();
-
+const { requestUserStatus } = useSocketEmitEvents();
 interface OrgNode {
-	status: number;
-	deviceType: number;
     name: string;
+	status?: number;
+    deviceType?: number;
+    deviceId?: string;
     children?: OrgNode[];
 }
 
@@ -56,12 +64,12 @@ const props = defineProps<{
 const hasChildren = computed(() => !!props.node.children?.length);
 
 const currentPath = [...props.parentPath, props.node.name];
+const parentPath = [...props.parentPath];
 
 function getNodeKey(path: string[]) {
     return path.join(">");
 }
 
-// 열린 상태는 openNodes에 현재 경로가 있으면 true
 const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
 
 function toggle() {
@@ -74,6 +82,52 @@ function toggle() {
         props.openNodes.add(key);
     }
 }
+
+function handleMouseCallOver(event: MouseEvent) {
+    const target = event.target as HTMLImageElement;
+    target.src = commonImages.value.useCall;
+}
+
+function handleMouseCallLeave(event: MouseEvent) {
+    const target = event.target as HTMLImageElement;
+    target.src = commonImages.value.useNotCall;
+}
+
+function handleMouseChatOver(event: MouseEvent) {
+    const target = event.target as HTMLImageElement;
+    target.src = commonImages.value.useChat;
+}
+
+function handleMouseChatLeave(event: MouseEvent) {
+    const target = event.target as HTMLImageElement;
+    target.src = commonImages.value.useNotChat;
+}
+
+function requestCall(remoteDeviceId: string) {
+    requestUserStatus(remoteDeviceId)
+}
+
+function requestChat(remoteDeviceId: string) {
+    const vfm = useVfm()
+
+    // 모달 열기
+    vfm.open({
+        component: noneOverlayModal,  // 보여줄 컴포넌트
+        attrs: {
+            name: "noneOverlayModal",
+            width: innerWidth <= 350 ? 320 : 350,
+            height: 270,
+            clickToClose: false,
+            overlay: false, // 오버레이 없애기
+        },
+        on: {
+            // 'before-close': () => {
+            //  modalsContainerStyle.display = "none";
+            // }
+        }
+    });
+}
+
 </script>
 
 <style lang="scss">

@@ -11,18 +11,20 @@ const { menuImages } = useImageAssets();
 
 <template>
     <div class="leftbar">
-        <div class="icon-btn" title="연락처">
-            <img :src="menuImages.call"></img>
+        <router-link to="/dashboard" class="icon-btn" title="연락처">
+            <img :src="menuImages.call" />
             <label class="icon-label">연락처</label>
-        </div>
-        <div class="icon-btn" title="회의실">
-            <img :src="menuImages.meetingRoom"></img>
-            <label class="icon-label" >회의실</label>
-        </div>
-        <div class="icon-btn" title="클라우드">
-            <img :src="menuImages.cloud"></img>
+        </router-link>
+
+        <router-link to="/meeting" class="icon-btn" title="회의실">
+            <img :src="menuImages.meetingRoom" />
+            <label class="icon-label">회의실</label>
+        </router-link>
+
+        <a :href="'http://localhost:8223/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
+            <img :src="menuImages.cloud" />
             <label class="icon-label">클라우드</label>
-        </div>
+        </a>
         <div class="icon-btn bell" title="알림">
             <img :src="menuImages.notice"></img>
         </div>

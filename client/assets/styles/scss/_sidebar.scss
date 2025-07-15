@@ -30,8 +30,10 @@
     transition: background-color 0.2s ease;
     color: white;
     font-size: 20px;
+    text-decoration: none;
     label {
         font-size: 11px;
+        cursor: inherit;
     }
     img {
         width: 20px;

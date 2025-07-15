@@ -180,8 +180,11 @@ onMounted(() => {
     transform: rotate(90deg);
 }
 
-.dropdown.active {
+.dropdown {
     transform: rotate(180deg);
+}
+.dropdown.active {
+    transform: rotate(360deg);
 }
 
 .dropdown-menu.sub {

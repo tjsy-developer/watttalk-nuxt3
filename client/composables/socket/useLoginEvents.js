@@ -25,6 +25,15 @@ export function useLoginEvents() {
         console.log("*** socket: emit login", payload);
     };
 
+    const requestEnvironment = (deviceId) => {
+        const json = {
+            deviceid: deviceId,
+            appname: "powertalkweb",
+        };
+        $signallingSocket.emit("environment", JSON.stringify(json));
+        console.log("여기 로그찍어줘", json);
+    };
+
     const handleLoginResponse = (response) => {
         const data = JSON.parse(response);
 
@@ -58,6 +67,7 @@ export function useLoginEvents() {
         // 유저 정보 요청
         requestLoginUserInfo(loginStore.m_local_deviceid);
         listenLoginUserInfo();
+        requestEnvironment(loginStore.m_local_deviceid);
     };
     const requestLoginUserInfo = (loginId) => {
         const obj = {
@@ -94,6 +104,38 @@ export function useLoginEvents() {
         $signallingSocket.on("login", handleLoginResponse);
     };
 
+    const listenEviroment = () => {
+        $signallingSocket.on("environment", (response) => {
+            const json = JSON.parse(response);
+
+            if (json.status == 0) {
+                alert("환경설정 정보가 등록되지않았습니다")
+                loginStore.loginType(3);
+                return
+            }
+
+            let appJson = {}
+            for (const key in json) {
+                appJson = JSON.parse(json[key]);
+                break;
+            }
+
+            function toBoolean(value) {
+                return value.toLowerCase() === 'true';
+            }
+            preferenceStore.setEnviroment({
+                useAutoPictureAccept: toBoolean(appJson.autoPictureAccept),
+                useAutoDiscalling: toBoolean(appJson.autoDiscalling),
+                useDirectCall: toBoolean(appJson.directCall),
+                autoCallAcceptTime: appJson.autoCallAcceptTime,
+                onlyVoiceCallId: appJson.onlyVoiceCallID.split(",") || [],
+                videoRecording: appJson.useVideoRecording,
+                roomNumber: appJson.roomNumber,
+            });
+            console.log("environment", json);
+        });
+    }
+
     const listenForceLogoutEvent = (localDeviceId) => {
         $signallingSocket.on("forceLogoutResult", function (response) {
             const json = JSON.parse(response);
@@ -115,6 +157,7 @@ export function useLoginEvents() {
     return {
         loginRequest,
         listenLoginEvent,
+        listenEviroment,
         listenForceLogoutEvent,
     };
 }

@@ -41,7 +41,6 @@ export const useAuthStore = defineStore("login", {
             4: "Duplicate",
         },
     }),
-
     actions: {
         // JWT 토큰 유효한지 체크 (이전 mutation이었으나 Pinia에서 actions로 통합)
         setTokenResult(payload) {
@@ -69,7 +68,7 @@ export const useAuthStore = defineStore("login", {
             }
         },
         setLoginType(payload) {
-            this.loginType = payload
+            this.loginType = payload;
             // console.log(payload);
             // // Renamed from `loginType` mutation for clarity in actions
             // let lang = this.lang;
@@ -143,10 +142,10 @@ export const useAuthStore = defineStore("login", {
         },
         // async checkToken(payload) {
         //   const { axios } = useNuxtApp(); // ✅ 액션 내부에서 선언해야 작동함
-    
+
         //   try {
         //     const result = await nuxtApp.$axios.post("/homeRest/tokenCheck", payload); // ✅ payload로 보낼 데이터 넘김
-    
+
         //     if (result.data === false) {
         //       this.tokenResult = 2;
         //     } else {
@@ -162,5 +161,8 @@ export const useAuthStore = defineStore("login", {
         //     }
         //   }
         // },
+    },
+    persist: {
+        storage: process.client ? sessionStorage : undefined,
     },
 });

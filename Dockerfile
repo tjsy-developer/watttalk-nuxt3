@@ -9,7 +9,18 @@ ARG APP_DIR=/home/node/app
 # 작업 디렉토리 설정
 WORKDIR $APP_DIR
 
-COPY ./ ./
+# 실제 소스 복사
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY nuxt.config.ts ./
+COPY i18n.config.ts ./
+COPY app.vue ./
+COPY client ./client
+COPY server ./server
+COPY configs ./configs
+COPY nuxt_configs ./nuxt_configs
+COPY .env .env
+
 
 # 파일 소유권을 비루트 사용자에게 넘김
 RUN chown -R node:node /home/node/app

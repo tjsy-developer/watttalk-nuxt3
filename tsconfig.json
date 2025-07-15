@@ -21,7 +21,7 @@
     "client", // Nuxt 소스 디렉터리
     "nuxt.config.ts",
     "app.vue"
-  ],
+, "client/components/modal/.vue"  ],
   "exclude": [
     "client/pages/app.vue",
   ]

@@ -3,17 +3,15 @@
         <main class="main-content">
             <!-- 중앙 대시보드 콘텐츠 -->
         </main>
-
         <section class="right-panel">
-            <OrganizationTreeTest></OrganizationTreeTest>
+            <ContactList></ContactList>
         </section>
     </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 // import ContactList from '@/components/pages/dashboard/ContactList.vue'
-import OrganizationTreeTest from "@/components/pages/dashboard/OrganizationTreeTest.vue";
-import RecentCallList from "@/components/pages/dashboard/RecentCallList.vue";
+import ContactList from "@/components/pages/dashboard/ContactList.vue";
 import { ref, onMounted, onUpdated, onBeforeUnmount } from "vue";
 
 const count = ref(0);

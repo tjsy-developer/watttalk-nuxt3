@@ -2,7 +2,7 @@
     <div>
         <ul class="org-tree">
             <TreeNode
-                v-for="(node, index) in data"
+                v-for="(node, index) in filteredData"
                 :key="index"
                 :node="node"
                 :openNodes="openNodes"
@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import TreeNode from "@/components/pages/dashboard/TreeNode.vue";
 
 interface OrgNode {
@@ -43,7 +43,6 @@ watch(() => props.search as any, (newName) => {
         for (const node of nodes) {
             const currentPath = [...path, node.name];
             const isLeaf = !node.children || node.children.length === 0;
-
             if (isLeaf && node.name.includes(newName)) {
                 for (let i = 1; i <= currentPath.length; i++) {
                     openNodes.value.add(getNodeKey(currentPath.slice(0, i)));
@@ -57,6 +56,31 @@ watch(() => props.search as any, (newName) => {
     }
 
     searchAndOpen(props.data);
+});
+
+const filteredData = computed(() => {
+    if (!props.search) return props.data;
+
+    function filterNodes(nodes: OrgNode[]): OrgNode[] {
+        const result: OrgNode[] = [];
+
+        for (const node of nodes) {
+            const matched =
+                node.name.includes(props.search) ||
+                (node.children && filterNodes(node.children).length > 0);
+
+            if (matched) {
+                result.push({
+                    ...node,
+                    children: node.children ? filterNodes(node.children) : [],
+                });
+            }
+        }
+
+        return result;
+    }
+
+    return filterNodes(props.data);
 });
 </script>
 

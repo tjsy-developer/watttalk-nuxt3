@@ -1,11 +1,15 @@
 // plugins/socket.client.ts
-
+import "@/utils/socketManager";
 import { useLoginEvents } from "@/composables/socket/useLoginEvents";
 import { useAuth } from "@/composables/useAuth";
 import { useAuthStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "nuxt/app";
 import { io } from "socket.io-client";
+import { bindSocketEvents } from "@/utils/socketManager";
+
+let signallingSocket = null;
+let transferSocket = null;
 
 export default defineNuxtPlugin(async (nuxtApp) => {
     const router = useRouter();
@@ -47,43 +51,51 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             const tokenDecodeResult = loginStore.tokenDecodeResult;
             // 복호화 실패일 경우
             if (tokenDecodeResult == 1) {
-                alert("파워매니저로 이동");
-            } else {
-                alert("정상 토큰");
+                alert("복호화 실패");
+                window.location.href = "http://localhost:8223";
             }
         } else {
             loginStore.setTokenResult(2);
-            alert("파워매니저로 이동");
+            alert("토큰 체크 에러");
+            window.location.href = "http://localhost:8223";
         }
-        const signallingSocket = io(config.public.NUXT_PUBLIC_SIGNALLING_URL, {
+        signallingSocket = io(config.public.NUXT_PUBLIC_SIGNALLING_URL, {
             transports: ["websocket"], // WebSocket 전송 방식 강제
             reconnection: true,
         });
-        const transferSocket = io(config.public.NUXT_PUBLIC_TRANSFER_URL, {
+        transferSocket = io(config.public.NUXT_PUBLIC_TRANSFER_URL, {
             transports: ["websocket"],
             reconnection: true,
         });
 
+        // ✅ 여기서 이벤트 바인딩 실행
+        bindSocketEvents(signallingSocket);
         nuxtApp.provide("signallingSocket", signallingSocket);
         nuxtApp.provide("transferSocket", transferSocket);
         // 선택 사항: 소켓 연결 상태 로깅 (디버깅용)
         signallingSocket.on("connect", async () => {
-
-            console.log("Signalling Socket Connected!")
-            const { loginRequest, listenLoginEvent, listenForceLogoutEvent } =
-                useLoginEvents();
+            console.log("Signalling Socket Connected!");
+            const {
+                loginRequest,
+                listenLoginEvent,
+                listenForceLogoutEvent,
+                listenEviroment,
+            } = useLoginEvents();
             const result = await verifyToken(tokenStore.accessToken);
-            console.log('verify token', result)
+            console.log("verify token", result);
             if (!result) return false;
-    
+
             if (loginStore.loginType == 1) {
                 loginRequest(loginStore.m_local_deviceid);
                 listenLoginEvent();
                 listenForceLogoutEvent();
+                listenEviroment();
             }
         });
-        signallingSocket.on("disconnect", () =>
-            console.log("Signalling Socket Disconnected!"),1
+        signallingSocket.on(
+            "disconnect",
+            () => console.log("Signalling Socket Disconnected!"),
+            1,
         );
         signallingSocket.on("connect_error", (err) =>
             console.error("Signalling Socket Connect Error:", err.message),

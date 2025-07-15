@@ -89,7 +89,7 @@ export const useCommonStore = defineStore("common", {
         cancelFileTransferFlag: false,
         existNotice: false, // 공지사항 존재하는지 체크
         noticeCheckboxStatus: false, // 공지사항 하루동안 보지 않기 체크박스의 상태
-        accessDeviceCheck: "", // 접근 device 체크 (PC, Mobile)
+        accessDeviceCheck: "PC", // 접근 device 체크 (PC, Mobile)
         accessDeviceOS: "PC", // 접근 device OS (PC, android, iphone)
         connectionPathCheck: "Browser",
         isDrawingEnable: false, // 드로잉 활성화 상태
@@ -157,6 +157,9 @@ export const useCommonStore = defineStore("common", {
             this.isVideo = false;
         },
         alert(payload) {
+            this.alertNum = payload;
+        },
+        setAlert(payload) {
             this.alertNum = payload;
         },
         // `userList`라는 state 속성이 정의되어 있지 않습니다.
@@ -527,7 +530,6 @@ export const useCommonStore = defineStore("common", {
             // // context 인자 제거
             // const jwtToken = sessionStorage.getItem("jwt");
             // const url = process.env.noticeList;
-
             // // axiosRequest 플러그인 사용 (Nuxt 2의 $axios를 직접 사용하는 대신)
             // const params = {
             //     data: {
@@ -538,24 +540,18 @@ export const useCommonStore = defineStore("common", {
             //         jwt: jwtToken, // 직접 headers에 jwt를 포함
             //     },
             // };
-
             // try {
             //     const json = await axiosRequest("post", params); // await 사용
-
             //     // console.log("*** Pinia: axios getNoticeList Success");
-
             //     if (json.status === 200) {
             //         // 0 보다 클 경우 공지사항을 show 한다.
             //         if (json.data.length > 0) {
             //             this.setExistNotice(true); // 직접 액션 호출
             //         }
-
             //         this.setNoticeList("init"); // 먼저 기존 공지사항 목록 초기화
-
             //         for (let i = 0; i < json.data.length; i++) {
             //             const noticeListEntry = {}; // 매번 새로운 객체 생성
             //             const noticeTitle = json.data[i].content; // 원본 주석 처리된 로직 제거
-
             //             // Pinia actions는 직접 상태를 변경합니다.
             //             noticeListEntry.text = noticeTitle;
             //             noticeListEntry.detail = json.data[i].content;
@@ -563,7 +559,6 @@ export const useCommonStore = defineStore("common", {
             //             noticeListEntry.newNotice = newNoticeDateCompare(
             //                 json.data[i].save_time,
             //             );
-
             //             this.setNoticeList(noticeListEntry); // 직접 액션 호출
             //         }
             //     }

@@ -37,17 +37,21 @@ export default defineNuxtConfig({
             ],
         },
     },
-    css: ["@/assets/styles/scss/main.scss"],
+    css: ["@/assets/styles/scss/main.scss", "vue-final-modal/style.css"],
     plugins: [
         "@/plugins/axios.client",
         "@/plugins/socket.client",
         "@/plugins/janus.client",
-        "@/plugins/init-preperence.client.ts",
+        "@/plugins/initPreperence.client",
+        "@/plugins/piniaPersist.client",
         "@/plugins/commonFunc",
+        "@/plugins/vue-final-modal",
+        "@/plugins/i18n",
     ],
     modules: [
         "@nuxt/devtools",
         "@pinia/nuxt",
+        "pinia-plugin-persistedstate/nuxt",
         [
             "@nuxtjs/color-mode",
             {
@@ -55,10 +59,13 @@ export default defineNuxtConfig({
                 classSuffix: "",
             },
         ],
-        ["@nuxtjs/i18n", require("./i18n.config")],
+        // ["@nuxtjs/i18n", require("./i18n.config")],
     ],
     vite: {
         assetsInclude: ["**/*.svg"],
+        optimizeDeps: {
+            include: ["quasar"],
+        },
         css: {
             preprocessorOptions: {
                 scss: {

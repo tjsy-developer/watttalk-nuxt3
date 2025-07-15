@@ -1,10 +1,12 @@
 <template>
   <NuxtLayout>
-    <NuxtPage />
+      <ModalsContainer/>
+      <NuxtPage />
   </NuxtLayout>
 </template>
 
-<script>
-  const { $colorMode } = useNuxtApp()
-  console.log($colorMode.preference)
+<script setup>
+
+import { ModalsContainer } from 'vue-final-modal';
+
 </script>

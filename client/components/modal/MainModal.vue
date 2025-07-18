@@ -68,6 +68,7 @@
 				class="main-container"
 				v-if="commonStore.alertNum == 0"
 			>
+				<div class="status-text">{{ t("수신 중") }}</div>
 				<img
 					src="@/assets/images/calling/ic_call_2.png"
 					class="absoluteCallingImg"
@@ -83,7 +84,7 @@
 					class="button-container"
 				>
 					<button
-						@click="checkMediaDevice('directCall')"
+						@click="checkMediaDevice('acceptMeeting')"
 						class="button accept"
 					>
 						<img src="@/assets/images/ic_popup_ok.png" />
@@ -238,11 +239,15 @@ import { useNuxtApp } from "nuxt/app";
 import { useI18n } from "vue-i18n";
 import { useMeetingStore } from "@/stores/meeting";
 import { useModal, VueFinalModal } from "vue-final-modal";
+import { useLoginStore } from "@/stores/login";
+import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 
 const commonStore = useCommonStore();
 const directCallStore = useDirectCallStore();
 const callStore = useCallStore();
 const meetingStore = useMeetingStore();
+const modalStore = useModalStore();
+const loginStore = useLoginStore();
 
 const directcallTxt = ref("");
 const directcallSeq = ref("");
@@ -252,20 +257,15 @@ const { t } = useI18n();
 
 const { hide } = useModal("modal");
 
+const { requestCreateRoomID, requestJoinMeeting, requestOpenMeetingChecking } = useSocketEmitEvents();
+
 onMounted(() => {
 	if (commonStore.alertNum == 8) {
 		firstEntry()
 	}
 });
 function openModalCheck() {
-    /* 회의실에서 생성,수정팝업과 통화 수락모달이 동시에 열려있는경우
-		수락거절팝업만 닫히게 한다. */
-    const modalsContainer = document.getElementById("modalsContainer");
-    if (route.name == "meetingRoom" && modalsContainer.children.length > 1) {
-        modalsContainer.removeChild(modalsContainer.children[0]);
-    } else {
-        hide();
-    }
+    modalStore.closeModal("call");
 }
 function close() {
     console.log("*** methods: close 1:1 통화 시 상대방이 전화를 거절할 경우 통화종료");
@@ -288,25 +288,7 @@ function close() {
 // 통화 종료 관련 팝업
 function noneOverlayModal(seq) {
     commonStore.setNoneOverlayAlertStatus(seq);
-    const modalsContainerStyle = document.getElementById("modalsContainer").style;
-    modalsContainerStyle.display = "block";
-    modalsContainerStyle.backgroundColor = "rgba(0, 0, 0, 0.4)";
-
-    // this.$modal.show(
-    //     noneOverlayModal,
-    //     {},
-    //     {
-    //         name: "noneOverlayModal",
-    //         width: innerWidth <= 350 ? 320 : 350,
-    //         height: 270,
-    //         clickToClose: false,
-    //     },
-    //     {
-    //         "before-close": () => {
-    //             modalsContainerStyle.display = "none";
-    //         },
-    //     },
-    // );
+    modalStore.openModal("noneOvelay")
 }
 function setCallingResult(callingResult) {
     console.log("*** methods: setCallingResult Result = " + callingResult);
@@ -321,44 +303,22 @@ function setCallingResult(callingResult) {
         close();
     }
 }
+
 function setCancelCalling() {
     callStore.setGroupCallCancelFlag("cancel");
 }
+
 function setInviteCancelCalling() {
     sessionStorage.removeItem("m_inviting");
     callStore.setInviteCancelFlag("cancel");
 }
+
 function directCallResult(type) {
-    const meetingSeq = this.directcallSeq;
-    const self = this;
+    const meetingSeq = directcallSeq.value;
 
     if (type == 1) {
-        const obj = {
-            meeting_seq: meetingSeq,
-        };
-        const json = JSON.stringify(obj);
-        console.log("*** socket.commit:: openMeetingChecking");
-        meetingStore.setOpenMeetingCheck(true);
-        $signallingSocket.emit("openMeetingChecking", json);
-        meetingStore.meetingSeq(meetingSeq);
-        $signallingSocket.on("openMeetingChecking", (response) => {
-            console.log("*** socket.on: openMeetingChecking res = ", response);
-            const json = JSON.parse(response);
-            console.log("*** socket.on: json = ", json);
-            if (json.start_status == 0) {
-                if (json.everyone_start_yn == 1) {
-                    openMeeting(json.unique_roomid);
-                    directCallStore.clearDirectCallInfo();
-                } else {
-                    noneOverlayModal(6);
-                }
-            } else if (json.start_status == 1) {
-                joinMeeting(json.unique_roomid, json.roomid);
-            } else if (json.start_status == 3) {
-                console.log("회의실이 삭제되어있다.");
-                noneOverlayModal(8);
-            }
-        });
+        requestOpenMeetingChecking(meetingSeq);
+        meetingStore.setMeetingSeq(meetingSeq);
         directCallStore.resetDirectCallInfo();
         close();
     } else {
@@ -370,45 +330,7 @@ function directCallResult(type) {
         }
     }
 }
-function openMeeting(uniqueRoomId) {
-    meetingStore.meetingSeq(directcallSeq);
-    callStore.setUniqueRoomid(uniqueRoomId);
-    $signallingSocket = this.$nuxtSocket({
-        name: "signalling",
-        persist: "signalling",
-        reconnection: true,
-        teardown: false,
-    });
-    const sendDurationEnable = callStore.sendDurationEnable;
-    const obj = {
-        deviceid: sessionStorage.getItem("m_local_deviceid"),
-        // 난방공사 영상녹화 저장여부 스위치
-        // recordingYN: this.sendDurationEnable == false ? 0 : 1
-        sendDurationEnable: sendDurationEnable,
-    };
-    const json = JSON.stringify(obj);
-    $signallingSocket.emit("createRoomID", json);
-    meetingStore.openAndJoin(open);
-    meetingStore.setOpenMeetingData(1);
-}
-function joinMeeting(uniqueRoomId, roomId) {
-    callStore.setUniqueRoomid(uniqueRoomId);
-    console.log("*** methods: joinMeeting::");
 
-    // mtRoom.vue 에서 회의실 개설 버튼 클릭 시 담아놓은 meetingSeq 값을 가지고 온다.
-    const meetingSeq = directcallSeq;
-
-    const obj = {
-        meeting_seq: meetingSeq,
-        deviceid: sessionStorage.getItem("m_local_deviceid"),
-        roomid: roomId,
-        unique_roomid: uniqueRoomId,
-    };
-
-    const json = JSON.stringify(obj);
-    $signallingSocket.emit("joinMeeting", json);
-    console.log("*** socket.emit: joinMeeting Request: " + json);
-}
 function firstEntry() {
     const res = directCallStore.directcallList;
     const index = res.length - 1;
@@ -417,8 +339,9 @@ function firstEntry() {
         t("direct call")[0] +
         res[index].subject +
         t("direct call")[1];
-    directcallSeq = res[index].meeting_seq;
+    directcallSeq.value = res[index].meeting_seq;
 }
+
 function checkMediaDevice(type) {
     if (getCookie("closeDeviceModalPermanant") == "true") {
         deviceSettingFin(type);
@@ -426,32 +349,15 @@ function checkMediaDevice(type) {
         openDeviceModal(type);
     }
 }
+
 function openDeviceModal(meetingType) {
     const modalsParameter = {
         type: meetingType,
         func: deviceSettingFin,
     };
-    const modalsContainerStyle = document.getElementById("modalsContainer").style;
-    modalsContainerStyle.display = "block";
-    // this.$modal.show(
-    //     deviceSelectModal,
-    //     {
-    //         propsData: modalsParameter,
-    //     },
-    //     {
-    //         name: "deviceSelectModal",
-    //         width: 430,
-    //         height: 514,
-    //         clickToClose: false,
-    //         adaptive: true,
-    //     },
-    //     {
-    //         "before-close": () => {
-    //             modalsContainerStyle.display = "none";
-    //         },
-    //     },
-    // );
+    modalStore.openModal("device", modalsParameter)
 }
+
 function deviceSettingFin(type) {
     commonStore.setDeviceModifyState(false);
     if (type == "directCall") {

@@ -153,6 +153,7 @@ export const useCallStore = defineStore("call", {
             this.previousWorkingStatus = payload;
         },
         callingPopupInfo(payload) {
+            console.log(payload)
             this.callingPopupInstitution = payload.institution;
             this.callingPopupHeadquarters = payload.headquarters;
             this.callingPopupBranch = payload.branch;

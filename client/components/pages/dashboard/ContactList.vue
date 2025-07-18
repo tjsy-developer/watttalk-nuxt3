@@ -94,9 +94,8 @@ function handleChangeMenu(type) {
 }
 
 onMounted(() => {
-    commonStore.setAlert(1);
-    commonStore.fileSendStatus(1);
-    modalStore.openModal('fileSend');
+    requestLastCallTime()
+    requestUserListAll()
 });
 
 onBeforeUnmount(() => {});

@@ -1,8 +1,11 @@
 import { getWorldTime } from '@/utils/common';
 import { useNuxtApp, useRouter } from "nuxt/app";
-import { useAuthStore } from "@/stores/login";
-import type { Socket } from "socket.io-client";
+import { useLoginStore } from "@/stores/login";
 import { useUserPreferenceStore } from "@/stores/common";
+import { onMounted } from 'vue';
+import { useModalStore } from '@/stores/modal';
+import { useMeetingStore } from '@/stores/meeting';
+import { userDataGetInfo } from '../common';
 
 const statusCode = {
     Unauthorized: 0,
@@ -12,18 +15,15 @@ const statusCode = {
     Duplicate: 4,
 };
 
-declare module "nuxt/app" {
-    interface NuxtApp {
-        $signallingSocket: Socket;
-        // 필요하면 다른 소켓도 추가
-        $transferSocket?: Socket;
-    }
-}
-
-export default function useSocketEmitEvents() {
-    const { $signallingSocket }: { $signallingSocket: Socket } = useNuxtApp();
-    const loginStore = useAuthStore();
+export default function useSocketEmitEvents(signallingSocket) {
+    const { $signallingSocket } = useNuxtApp();
+    const loginStore = useLoginStore();
+    const modalStore = useModalStore();
     const preperenceStore = useUserPreferenceStore();
+    const meetingStore = useMeetingStore();
+
+    console.log($signallingSocket);
+
     const requestCreateFixRoomID = () => {
         const json = {
             deviceid: loginStore.m_local_deviceid,
@@ -62,17 +62,18 @@ export default function useSocketEmitEvents() {
             current_time: getWorldTime(),
             language: preperenceStore.lang,
         };
-        $signallingSocket.emit("userListAll", JSON.stringify(json));
+        $signallingSocket.emit("lastCallTime", JSON.stringify(json));
     };
 
-    const requestUserStatus = (remoteDeviceId: string) => {
+    const requestUserStatus = (remoteDeviceId) => {
         const json = {
             deviceid: remoteDeviceId,
         };
         $signallingSocket.emit("userStatus", JSON.stringify(json));
+        console.log(json);
     };
 
-    const requestCanMakeCall = (remoteDeviceId: string) => {
+    const requestCanMakeCall = (remoteDeviceId) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
@@ -80,7 +81,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("canMakeCall", JSON.stringify(json));
     };
 
-    const requestGroupRoom = (remoteDeviceId: string) => {
+    const requestGroupRoom = (remoteDeviceId) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
@@ -88,12 +89,17 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("groupRoom", JSON.stringify(json));
     };
 
-    const requestCreateRoomID = (remoteDeviceId: string) => {
-        const json = {
-            deviceid: loginStore.m_local_deviceid,
-            sendDurationEnable: preperenceStore.recordingStatus,
-        };
-        $signallingSocket.emit("createRoomID", JSON.stringify(json));
+    const requestCreateRoomID = () => {
+        try {
+            const json = {
+                deviceid: loginStore.m_local_deviceid,
+                sendDurationEnable: preperenceStore.recordingStatus,
+            };
+            $signallingSocket.emit("createRoomID", JSON.stringify(json));
+        } catch(error) {
+
+        }
+
     };
 
     const requestCalling = ({
@@ -102,12 +108,6 @@ export default function useSocketEmitEvents() {
         callType,
         institution,
         nickname,
-    }: {
-        remoteDeviceId: string;
-        roomID: string;
-        callType: string;
-        institution: string;
-        nickname: string;
     }) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
@@ -121,18 +121,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("calling", JSON.stringify(json));
     };
 
-    const requestRefuseCalling = ({
-        remoteDeviceId,
-        roomID,
-        institution,
-        nickname,
-    }: {
-        remoteDeviceId: string;
-        roomID: string;
-        callType: string;
-        institution: string;
-        nickname: string;
-    }) => {
+    const requestRefuseCalling = ({ remoteDeviceId, roomID, institution, nickname }) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
@@ -143,13 +132,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("refuseCalling", JSON.stringify(json));
     };
 
-    const requestCancelCalling = ({
-        remoteDeviceId,
-        roomID,
-    }: {
-        remoteDeviceId: string;
-        roomID: string;
-    }) => {
+    const requestCancelCalling = ({ remoteDeviceId, roomID }) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
@@ -157,16 +140,12 @@ export default function useSocketEmitEvents() {
             institution: loginStore.institution,
             nickname: loginStore.nickname,
         };
-        $signallingSocket.emit("refuseCalling", JSON.stringify(json));
+        $signallingSocket.emit("cancelCalling", JSON.stringify(json));
+        modalStore.closeModal("call");
+        sessionStorage.setItem("m_callWaiting", "false");
     };
 
-    const requestInviteCancelCalling = ({
-        remoteDeviceId,
-        roomID,
-    }: {
-        remoteDeviceId: string;
-        roomID: string;
-    }) => {
+    const requestInviteCancelCalling = ({ remoteDeviceId, roomID }) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
@@ -177,19 +156,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("inviteCancelCalling", JSON.stringify(json));
     };
 
-    const requestDirectMessage = ({
-        sender,
-        receiver,
-        type,
-        message,
-        datetime,
-    }: {
-        sender: string;
-        receiver: string;
-        type: string;
-        message: string;
-        datetime: string;
-    }) => {
+    const requestDirectMessage = ({ sender, receiver, type, message, datetime }) => {
         const json = {
             sender,
             receiver,
@@ -200,15 +167,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("directMessage", JSON.stringify(json));
     };
 
-    const requestDirectMessageReadProcess = ({
-        sender,
-        receiver,
-        datetime,
-    }: {
-        sender: string;
-        receiver: string;
-        datetime: string;
-    }) => {
+    const requestDirectMessageReadProcess = ({ sender, receiver, datetime }) => {
         const json = {
             sender,
             receiver,
@@ -217,15 +176,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("directMessageReadProcess", JSON.stringify(json));
     };
 
-    const requestJoinMeeting = ({
-        meetingSeq,
-        roomID,
-        uniqueRoomID,
-    }: {
-        meetingSeq: number;
-        roomID: number;
-        uniqueRoomID: number;
-    }) => {
+    const requestJoinMeeting = ({ meetingSeq, roomID, uniqueRoomID }) => {
         const json = {
             meeting_seq: meetingSeq,
             deviceid: loginStore.m_local_deviceid,
@@ -236,13 +187,7 @@ export default function useSocketEmitEvents() {
         $signallingSocket.emit("joinMeeting", JSON.stringify(json));
     };
 
-    const requestGetPreviousMessage = ({
-        receiver,
-        prevMessageCount,
-    }: {
-        receiver: string
-        prevMessageCount: number
-    }) => {
+    const requestGetPreviousMessage = ({ receiver, prevMessageCount }) => {
         const json = {
             sender: loginStore.m_local_deviceid,
             receiver: receiver,
@@ -250,6 +195,61 @@ export default function useSocketEmitEvents() {
             count: prevMessageCount, // 이전 메세지 가져올 갯수
         };
         $signallingSocket.emit("getPreviousMessage", JSON.stringify(json));
+    };
+
+    const requestOpenMeetingChecking = (meetingSeq) => {
+        const json = {
+            meeting_seq: meetingSeq
+        };
+        $signallingSocket.emit("openMeetingChecking", JSON.stringify(json));
+    }
+
+    const requestMultiCalling = ({
+        remoteDeviceId,
+        roomID,
+        currentRoomNumberCount,
+        uniqueRoomID
+    }) => {
+        const json = {
+            localdeviceid: loginStore.m_local_deviceid,
+            remotedeviceid: remoteDeviceId,
+            roomid: roomID,
+            roomNumberCount: currentRoomNumberCount,
+            meeting_seq: meetingStore.meetingSeq,
+            unique_roomid: uniqueRoomID,
+        };
+        $signallingSocket.emit("multiCalling", JSON.stringify(json));
+    };
+
+    const requestMultiRefuseCalling = ({
+        remoteDeviceId,
+        roomID,
+    }) => {
+        const remoteInfo = userDataGetInfo(remoteDeviceId);
+        const json = {
+            localdeviceid: loginStore.m_local_deviceid,
+            remotedeviceid: remoteDeviceId,
+            roomid: roomID,
+            institution: remoteInfo.enName,
+            nickname: remoteInfo.nickName
+        };
+        $signallingSocket.emit("multiRefuseCalling", JSON.stringify(json));
+    };
+
+    const requestScreenSharing = () => {
+        const json = {
+            rfid: null,
+            status: 0,
+        };
+        $signallingSocket.emit("screenSharing", JSON.stringify(json));
+    }
+
+    const requestForceLeave = (remoteDeviceId) => {
+        const json = {
+            localdeviceid: loginStore.m_local_deviceid,
+            remotedeviceid: remoteDeviceId,
+        };
+        $signallingSocket.emit("forceLeave", JSON.stringify(json));
     };
 
     return {
@@ -270,5 +270,10 @@ export default function useSocketEmitEvents() {
         requestDirectMessageReadProcess,
         requestJoinMeeting,
         requestGetPreviousMessage,
+        requestOpenMeetingChecking,
+        requestMultiCalling,
+        requestMultiRefuseCalling,
+        requestScreenSharing,
+        requestForceLeave,
     };
 }

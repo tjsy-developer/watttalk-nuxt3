@@ -3,7 +3,7 @@
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
 
-export const useAuthStore = defineStore("login", {
+export const useLoginStore = defineStore("login", {
     state: () => ({
         rfreshToken: "",
         loginType: "",

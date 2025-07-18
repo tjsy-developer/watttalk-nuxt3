@@ -1,5 +1,5 @@
 // composables/useAuth.ts
-import { useAuthStore } from "@/stores/login";
+import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js/core";

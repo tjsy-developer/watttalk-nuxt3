@@ -1,5 +1,5 @@
 import { useNuxtApp, useRouter } from "nuxt/app";
-import { useAuthStore } from "@/stores/login";
+import { useLoginStore } from "@/stores/login";
 
 const statusCode = {
     Unauthorized: 0,
@@ -11,7 +11,7 @@ const statusCode = {
 
 export function useLoginEvents() {
     const { $signallingSocket } = useNuxtApp();
-    const loginStore = useAuthStore();
+    const loginStore = useLoginStore();
     const preferenceStore = useUserPreferenceStore();
     const router = useRouter();
 
@@ -90,6 +90,12 @@ export function useLoginEvents() {
                 branch: userInfo.branch,
                 nickname: userInfo.nickname,
             });
+
+            sessionStorage.setItem("m_institution", userInfo.institution);
+            sessionStorage.setItem("m_headquarters", userInfo.headquarters);
+            sessionStorage.setItem("m_branch", userInfo.branch);
+            sessionStorage.setItem("m_nickname", userInfo.nickname);
+
 
             if (!loginStore.isInvited) {
                 router.push("/dashboard");

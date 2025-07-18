@@ -2,12 +2,12 @@
 import { defineNuxtPlugin } from "#app";
 // import { axiosRequest } from "@/utils/axiosRequest"; // 경로 맞게 수정
 import { useCallStore } from "@/stores/call";
-import { useAuthStore } from "@/stores/login";
+import { useLoginStore } from "@/stores/login";
 import { useChattingStore } from "@/stores/chatting";
 
 export default defineNuxtPlugin((nuxtApp) => {
     const callStore = useCallStore();
-    const loginStore = useAuthStore();
+    const loginStore = useLoginStore();
     const chattingStore = useChattingStore()
     const commonFuncs = {
         decodeToken(jwtToken) {

@@ -1,17 +1,17 @@
 <template>
     <div class="mainWrap">
         <div class="modalHeader">
-            <span>{{ $t("deviceSetTitle") }}</span>
-            <img :src="settingIcon" />
+            <span>{{ $t("카메라/마이크 설정") }}</span>
+            <img src="@/assets/images/darkmode/modal/ic_device_setup.svg" />
         </div>
         <div class="divisionLine"></div>
         <div class="body">
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("audio") }}:</span>
+                    <span>{{ $t("오디오") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedAudio">
-                    <option :value="false">{{ $t("selectDefault") }}</option>
+                    <option :value="false">{{ $t("없음") }}</option>
                     <option
                         v-for="(text, index) in audioList"
                         :key="index"
@@ -23,10 +23,10 @@
             </div>
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("mic") }}:</span>
+                    <span>{{ $t("마이크") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedMic">
-                    <option :value="false">{{ $t("selectDefault") }}</option>
+                    <option :value="false">{{ $t("없음") }}</option>
                     <option
                         v-for="(text, index) in micList"
                         :key="index"
@@ -38,10 +38,10 @@
             </div>
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("camera") }}:</span>
+                    <span>{{ $t("카메라") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedCam" id="camInput">
-                    <option :value="-1">{{ $t("selectDefault") }}</option>
+                    <option :value="-1">{{ $t("없음") }}</option>
                     <option
                         v-for="(text, index) in camList"
                         :key="index"
@@ -58,16 +58,16 @@
                     :value="false"
                     v-model="checked"
                 />
-                <span>{{ $t("dontShowAgain") }}</span>
+                <span>{{ $t("영상통화 시작 시 카메라, 마이크 설정창 표시") }}</span>
             </div>
         </div>
         <div class="footer">
             <div class="buttonWrap">
                 <button class="closeBtn" v-if="showCloseBtn" @click="close">
-                    {{ $t("cancel") }}
+                    {{ $t("취소") }}
                 </button>
                 <button class="applyBtn" @click="apply()">
-                    <span>{{ $t("apply") }}</span>
+                    <span>{{ $t("적용") }}</span>
                 </button>
             </div>
         </div>
@@ -75,69 +75,62 @@
 </template>
 
 <script setup>
+import { useCommonStore } from "@/stores";
+import { useCallStore } from "@/stores/call";
+import { useModalStore } from "@/stores/modal";
+import { deleteCookie, setCookie } from "@/utils/common";
 import { onMounted } from "vue";
 
 const props = defineProps({
-    propsData: {
-        type: Object, // 타입은 그대로 Object
-        default: () => ({}), // propsData가 전달되지 않았을 때의 기본값 (객체는 함수로 반환)
-    },
+    type: String,
+    deviceId: String,
+    requestCall: Function,
 });
 
-const audioList = ref([]);
-const micList = ref([]);
-const camList = ref([]);
-const selectedAudio = ref("");
-const selectedMic = ref("");
-const selectedCam = ref("");
-const checked = ref(false);
-const showCloseBtn = ref(false);
-const savedAudioId = ref(undefined);
-const savedMicId = ref(undefined);
-const savedCamIndex = ref(0);
-const onlyVoiceId = ref(false);
-const loaded = ref(false);
-const selectedAudioIdExist = ref(true);
-const selectedMicIdExist = ref(true);
+let audioList = ref([]);
+let micList = ref([]);
+let camList = ref([]);
+let selectedAudio = ref("");
+let selectedMic = ref("");
+let selectedCam = ref("");
+let checked = ref(false);
+let showCloseBtn = ref(true);
+let savedAudioId = ref(false);
+let savedMicId = ref(false);
+let savedCamIndex = ref(0);
+let onlyVoiceId = ref(false);
+let loaded = ref(false);
+let selectedAudioIdExist = ref(true);
+let selectedMicIdExist = ref(true);
+
+const commonStore = useCommonStore();
+const callStore = useCallStore();
+const modalStore = useModalStore();
 
 onMounted(() => {
     getMediaList();
 });
 function close(type) {
     commonStore.setShowDeviceModal(false);
-    if (checked == false) {
+    if (checked.value == false) {
         console.log("close deviceModal permanant");
         setCookie("closeDeviceModalPermanant", true, 1000);
-    } else if (checked == true) {
+    } else if (checked.value == true) {
         deleteCookie("closeDeviceModalPermanant");
     }
     // type이 있는 경우는 이미 checkParameter 함수를탐
     if (type != 1) {
         checkParameter();
     }
-    $modal.hide("deviceSelectModal");
+    modalStore.closeModal("device");
 }
-function initData() {
-    if (getCookie("closeDeviceModalPermanant") == "true") {
-        checked = false;
-    } else {
-        checked = true;
-    }
-    if (propsData.close == true) {
-        showCloseBtn = true;
-    }
-    if (
-        $store.state.call.onlyVoiceID.includes(sessionStorage.getItem("m_local_deviceid"))
-    ) {
-        disableCamSelect();
-    }
-}
+
 function getMediaList() {
     console.log("*** get media devices");
     let filterAudio;
     let filterMic;
     let filterCam;
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
+    navigator.mediaDevices.enumerateDevices({ audio: true, video: true}).then((devices) => {
         // communications의 경우에는 통화 전용으로 discord의 경우에는 살려두지만, zoom의 경우에는 제거함. 나는 communications의 음질에서 이질감이 느껴져서 제거함
         filterAudio = devices.filter(
             (device) =>
@@ -152,9 +145,11 @@ function getMediaList() {
                 device.kind === "videoinput" && device.deviceId != "communications",
         );
 
-        audioList = removeDuplicated(filterAudio, 1);
-        micList = removeDuplicated(filterMic, 2);
-        camList = removeDuplicated(filterCam, 3);
+        console.log(devices);
+
+        audioList.value = removeDuplicated(filterAudio, 1);
+        micList.value = removeDuplicated(filterMic, 2);
+        camList.value = removeDuplicated(filterCam, 3);
         checkDevices();
     });
 }
@@ -166,14 +161,14 @@ function removeDuplicated(deviceList, type) {
     if (deviceList.length == 0) {
         switch (type) {
             case 1:
-                selectedAudioIdExist = false;
-                selectedAudioID = false;
+                selectedAudioIdExist.value = false;
+                selectedAudioID.value = false;
                 return;
             case 2:
-                selectedMicIdExist = false;
+                selectedMicIdExist.value = false;
                 return;
             case 3:
-                selectedCam = -1;
+                selectedCam.value = -1;
                 return;
         }
         return;
@@ -189,55 +184,64 @@ function removeDuplicated(deviceList, type) {
 
     // 기존에 지정해둔 device가 사라진 경우 체크
     if (type == 1) {
-        if (savedAudioId != false && savedAudioId != "false") {
-            selectedAudioIdExist = seenDeviceId.includes(savedAudioId) ? true : false;
+        if (savedAudioId != false) {
+            selectedAudioIdExist.value = seenDeviceId.includes(savedAudioId)
+                ? true
+                : false;
         } else {
-            selectedAudioIdExist = true;
+            selectedAudioIdExist.value = true;
         }
     } else if (type == 2) {
-        if (savedMicId != false && savedMicId != "false") {
-            selectedMicIdExist = seenDeviceId.includes(savedMicId) ? true : false;
+        if (savedMicId != false) {
+            selectedMicIdExist.value = seenDeviceId.includes(savedMicId) ? true : false;
         } else {
-            selectedMicIdExist = true;
+            selectedMicIdExist.value = true;
         }
     }
     return uniqueGroup;
 }
 function checkDevices() {
-    if (selectedAudio == "") {
+    if (selectedAudio.value == "") {
         let deviceId = undefined;
         // 기존에 선택한 오디오값이 있고, 해당 오디오가 존재하는 경우
-        if (selectedAudioIdExist && savedAudioId) {
-            deviceId = savedAudioId;
+        if (selectedAudioIdExist.value && savedAudioId.value) {
+            deviceId = savedAudioId.value;
         } else {
-            deviceId = audioList && audioList[0] ? audioList[0].deviceId : false;
+            deviceId =
+                audioList.value && audioList.value[0]
+                    ? audioList.value[0].deviceId
+                    : false;
         }
-        selectedAudio = deviceId;
+        selectedAudio.value = deviceId;
     }
-    if (selectedMic == "") {
+    if (selectedMic.value == "") {
         let deviceId = undefined;
         // 기존에 선택한 마이크가 있고, 해당 마이크가 존재하는 경우
-        if (selectedMicIdExist && savedMicId) {
-            deviceId = savedMicId;
+        if (selectedMicIdExist.value && savedMicId.value) {
+            deviceId = savedMicId.value;
         } else {
-            deviceId = micList && micList[0] ? micList[0].deviceId : false;
+            deviceId =
+                micList.value && micList.value[0] ? micList.value[0].deviceId : false;
         }
-        selectedMic = deviceId;
+        selectedMic.value = deviceId;
     }
-    if (selectedCam == "") {
+    if (selectedCam.value == "") {
         let deviceIndex = 0;
-        if (savedCamIndex && savedCamIndex != "undefined") {
+        if (savedCamIndex.value && savedCamIndex.value != "undefined") {
             console.log(savedCamIndex);
-            deviceIndex = savedCamIndex;
+            deviceIndex = savedCamIndex.value;
         }
         // -1은 선택안함임
         if (deviceIndex == -1 || deviceIndex == undefined) {
-            selectedCam = -1;
+            selectedCam.value = -1;
         } else {
-            if (camList[deviceIndex].deviceId) {
-                selectedCam = camList[deviceIndex].deviceId;
+            if (camList.value[deviceIndex].deviceId) {
+                selectedCam.value = camList.value[deviceIndex].deviceId;
             } else {
-                selectedCam = camList && camList[0] ? camList[deviceIndex].deviceId : -1;
+                selectedCam.value =
+                    camList.value && camList.value[0]
+                        ? camList.value[deviceIndex].deviceId
+                        : -1;
             }
         }
     }
@@ -251,14 +255,14 @@ function apply() {
         });
     const modified = compare();
     console.log(`*** modified: ${modified}`);
-    console.log(selectedAudio);
-    console.log(selectedMic);
+    console.log(selectedAudio.value);
+    console.log(selectedMic.value);
     if (!modified) {
         commonStore.setDeviceModifyState(false);
         checkParameter();
         return;
     }
-    if (selectedCam == -1) {
+    if (selectedCam.value == -1) {
         console.log("*** no cam selected set no cam !");
         callStore.setCameraNotAllowed(true);
     } else {
@@ -266,17 +270,17 @@ function apply() {
     }
     const audioPrams = {
         type: 0,
-        id: selectedAudio,
+        id: selectedAudio.value,
     };
     const micParams = {
         type: 1,
-        id: selectedMic,
+        id: selectedMic.value,
     };
 
     let camIndex = -1;
-    if (camList && camList.length > 0) {
-        camIndex = camList.findIndex((item) => {
-            return item.deviceId === selectedCam;
+    if (camList.value && camList.value.length > 0) {
+        camIndex = camList.value.findIndex((item) => {
+            return item.deviceId === selectedCam.value;
         });
     }
     const camParams = {
@@ -293,15 +297,15 @@ function apply() {
 function compare() {
     console.log("*** method: compareing devices");
     let camIndex = -1;
-    if (camList && camList.length > 0) {
-        camIndex = camList.findIndex((item) => {
-            return item.deviceId === selectedCam;
+    if (camList.value && camList.value.length > 0) {
+        camIndex = camList.value.findIndex((item) => {
+            return item.deviceId === selectedCam.value;
         });
     }
     if (
-        selectedAudio === $store.state.selectedAudioID &&
-        selectedMic === $store.state.selectedMicID &&
-        camIndex === $store.state.selectedCamIndex
+        selectedAudio.value === commonStore.selectedAudioID &&
+        selectedMic.value === commonStore.selectedMicID &&
+        camIndex === commonStore.selectedCamIndex
     ) {
         return false;
     } else {
@@ -309,27 +313,23 @@ function compare() {
     }
 }
 function checkParameter() {
-    if (propsData.type == "request") {
+    alert(props.type);
+    console.log(props);
+    if (props.type == "request") {
         // 1:1 통화를 걸 경우
-        propsData.requestCall(propsData.deviceId);
+        props.requestCall();
     } else if (
-        propsData.type == "openOwnMeeting" ||
-        propsData.type == "openMeeting" ||
-        propsData.type == "joinMeeting"
+        props.type == "openOwnMeeting" ||
+        props.type == "openMeeting" ||
+        props.type == "joinMeeting"
     ) {
         // 회의를 시작하거나 참여하는 경우
-        propsData.func(propsData.type, propsData.seq);
-    } else if (propsData.type == "directCall" || propsData.type == "acceptMeeting") {
+        props.func(props.type, props.seq);
+    } else if (props.type == "directCall" || props.type == "acceptMeeting") {
         // 음성통화 참여 요청이 들어온 경우
-        propsData.func(propsData.type);
+        props.func(props.type);
     }
     close(1);
-}
-function disableCamSelect() {
-    onlyVoiceId = true;
-    selectedCam = -1;
-    const element = document.getElementById("camInput");
-    element.disabled = true;
 }
 </script>
 
@@ -341,6 +341,8 @@ function disableCamSelect() {
     align-items: center;
     width: 100%;
     height: 100%;
+    color: #fff;
+    background-color: #262627;
 }
 .modalHeader {
     display: flex;
@@ -364,7 +366,9 @@ function disableCamSelect() {
 }
 .divisionLine {
     width: 376px;
-    height: 0px;
+    height: 1px;
+    margin-top: 8px;
+    border-bottom: 1px solid #4d4d4d;
 }
 .body {
     width: 90%;
@@ -386,6 +390,7 @@ function disableCamSelect() {
         .nameWrap {
             width: 334px;
             text-align: left;
+            margin-bottom: 3px;
         }
 
         .selectBox {
@@ -419,6 +424,7 @@ function disableCamSelect() {
         display: flex;
         justify-content: center;
         align-items: center;
+
         .closeBtn {
             width: 85px;
             height: 32px;
@@ -427,6 +433,8 @@ function disableCamSelect() {
             align-items: center;
             border-radius: 20px;
             margin-right: 10px;
+            background-color: #464646;
+            color: #fff;
         }
 
         .applyBtn {
@@ -436,6 +444,8 @@ function disableCamSelect() {
             justify-content: center;
             align-items: center;
             border-radius: 20px;
+            background-color: #1c8eff;
+            color: #fff;
         }
     }
 }

@@ -212,6 +212,12 @@ export const useCommonStore = defineStore("common", {
             this.userListStatus[payload.col].userListIndex = payload.col;
             this.userListStatus[payload.col].nickname = payload.nickname;
         },
+        setUserOne(payload) {
+            if (payload.index) {
+                // 해당 인덱스가 없으면 초기화 (빈 객체로)
+                this.userListStatus[payload.index] = payload.newObj;
+            }
+        },
         // 파일 송신자 채팅 index 관련 정보저장
         setFileSendInfo(payload) {
             if (payload.fileSendInfo && Object.keys(payload.fileSendInfo).length !== 0) {
@@ -252,7 +258,7 @@ export const useCommonStore = defineStore("common", {
         setFeedsNumberCount(payload) {
             this.feedsLength = payload;
         },
-        makeUserListStatus(payload) {
+        makeUserListStatus() {
             this.userListStatus = [];
             const stateList = {}; // new Object() 대신 {} 사용
             for (let i = 0; i < this.roomNumberCount; i++) {

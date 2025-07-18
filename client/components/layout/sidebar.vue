@@ -28,5 +28,23 @@ const { menuImages } = useImageAssets();
         <div class="icon-btn bell" title="알림">
             <img :src="menuImages.notice"></img>
         </div>
+        <audio id='calling_bell' loop style="display:none;">
+            <source src="@/assets/sounds/Wood.ogg" type='audio/ogg' />
+        </audio>
+        <audio id='normal_message_bell' style="display:none; ">
+            <source src="@/assets/sounds/normal_message.mp3" type='audio/mp3' />
+        </audio>
+        <audio id='emergency_message_bell' style="display:none; ">
+            <source src="@/assets/sounds/emergency_message.mp3" type='audio/mp3' />
+        </audio>
+        <audio id='direct_message_bell' style="display:none; ">
+            <source src="@/assets/sounds/goes-without-saying.ogg" type='audio/ogg' />
+        </audio>
+        <audio id='fileReceive_message_bell' style="display:none; ">
+            <source src="@/assets/sounds/file-receive.wav" type='audio/wav' />
+        </audio>
+        <audio id='emergency_alarm_bell' style="display:none; ">
+            <source src="@/assets/sounds/emergency_alarm.wav" type='audio/wav' />
+        </audio>
     </div>
 </template>

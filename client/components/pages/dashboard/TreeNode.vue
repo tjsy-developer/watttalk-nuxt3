@@ -9,10 +9,10 @@
 			<img v-if="node.deviceType == 3 && node.status == 0" :src="commonImages.logOffDesktop"></img>
 			<div v-if="!hasChildren" class="status">
 				<img :src="iconLogOffUser"></img>
-				<div class="user-status"></div>
+				<div v-if="node.status == 1" class="user-status"></div>
 			</div>
 			<span>{{ node.name }}</span>
-			<div v-if="!hasChildren">
+			<div v-if="!hasChildren" class="button-box">
 				<img v-if="node.status == 1" :src="commonImages.useCall" @click="requestCall(node.deviceId!)"></img>
 				<img v-if="node.status == 0" :src="commonImages.useNotCall" @click="requestCall(node.deviceId!)"
                     @mouseover="handleMouseCallOver"
@@ -42,11 +42,19 @@ import { common } from "@/assets/images";
 import { iconLogOffUser, iconLogOnUser } from "@/assets/images/index";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useImageAssets } from "@/composables/useImageAssets";
-import { computed, defineProps, onMounted, ref } from "vue";
-import { useVfm } from "vue-final-modal";
-import noneOverlayModal from "@/components/modal/mainModal.vue"
+import { useCommonStore } from "@/stores";
+import { useCallStore } from "@/stores/call";
+import { useDirectCallStore } from "@/stores/directCall";
+import { useDirectMessageStore } from "@/stores/directMessage";
+import { useMeetingStore } from "@/stores/meeting";
+import { useModalStore } from "@/stores/modal";
+import { useColorMode } from "@vueuse/core";
+import { storeToRefs } from "pinia";
+import { computed, defineProps, onMounted, reactive, ref, watch } from "vue";
+
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
+
 interface OrgNode {
     name: string;
 	status?: number;
@@ -60,18 +68,24 @@ const props = defineProps<{
     openNodes: Set<string>;
     parentPath: string[];
 }>();
+const commonStore = useCommonStore();
+const modalStore = useModalStore();
+const callStore = useCallStore();
+const directMessageStore = useDirectMessageStore();
+const meettingStore = useMeetingStore();
+
+const {
+  contentsViewType
+} = storeToRefs(commonStore)
 
 const hasChildren = computed(() => !!props.node.children?.length);
-
 const currentPath = [...props.parentPath, props.node.name];
-const parentPath = [...props.parentPath];
+
+const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
 
 function getNodeKey(path: string[]) {
     return path.join(">");
 }
-
-const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
-
 function toggle() {
     if (!hasChildren.value) return;
     const key = getNodeKey(currentPath);
@@ -104,28 +118,30 @@ function handleMouseChatLeave(event: MouseEvent) {
 }
 
 function requestCall(remoteDeviceId: string) {
-    requestUserStatus(remoteDeviceId)
+    try {
+        modalStore.openModal('device', {
+            type: "request",
+            deviceId: remoteDeviceId,
+            requestCall: () => {
+                commonStore.setDeviceModifyState(false)
+                console.log("Call Request Success", contentsViewType.value )
+                if (contentsViewType.value == 2) {
+                    callStore.setInCallingFunctionParams(remoteDeviceId)
+                    callStore.setInCallingFunction("userStatusRequest")
+                } else {
+                    requestUserStatus(remoteDeviceId)
+                    modalStore.closeModal("notice")
+                }
+            }
+        });
+    } catch (error) {
+        console.log(error)
+    }
+
 }
 
 function requestChat(remoteDeviceId: string) {
-    const vfm = useVfm()
 
-    // 모달 열기
-    vfm.open({
-        component: noneOverlayModal,  // 보여줄 컴포넌트
-        attrs: {
-            name: "noneOverlayModal",
-            width: innerWidth <= 350 ? 320 : 350,
-            height: 270,
-            clickToClose: false,
-            overlay: false, // 오버레이 없애기
-        },
-        on: {
-            // 'before-close': () => {
-            //  modalsContainerStyle.display = "none";
-            // }
-        }
-    });
 }
 
 </script>
@@ -136,23 +152,45 @@ function requestChat(remoteDeviceId: string) {
 	li {
 		list-style: none;
 	}
+
+    > .children > .tree-node > .children > .tree-node > .node-label {
+        > :nth-child(1) {
+            flex: 0 0 24px;
+        }
+        > :nth-child(2) {
+            flex: 0 0 70px; /* 고정 너비 150px */
+        }
+        > :nth-child(3) {
+            flex: 0 0 200px;
+        }
+        > :nth-child(3) {
+            flex: 0 0 200px;
+        }
+    }
 }
 
 .node-label {
     cursor: pointer;
     height: 5.0rem;
     display: flex;
-    /* justify-content: space-between; */
     align-items: center;
+    justify-content: space-between;
 	padding-right: 25px;
 	@include tc(color, 'text-color');
 
 	.status {
+        text-align: center;
 		position: relative;
 	}
 	.status img {
 		width: 45px;
 	}
+    
+    .button-box {
+        img + img {
+            margin-left: 10px;
+        }
+    }
 }
 
 .children {
@@ -173,7 +211,7 @@ function requestChat(remoteDeviceId: string) {
     border: 1px solid #000;
     background-color: rgb(0, 171, 37);
     top: left;
-    left: 30px;
+    left: 44px;
     top: 30px;
 }
 </style>

@@ -1,6 +1,6 @@
 // plugins/janus.client.ts
 import { defineNuxtPlugin } from "nuxt/app";
-import Janus from "@/public/js/janus"
+import Janus from "@/assets/js/janus"
 declare global {
     interface Window {
         Janus: any;
@@ -21,9 +21,11 @@ declare module "vue" {
 
 export default defineNuxtPlugin(async (nuxtApp) => {
     if (process.client) {
-        if (!window.Janus) {
-            window.Janus = Janus;
-        }
-        nuxtApp.provide("Janus", window.Janus);
+        nuxtApp.hook("app:mounted", () => {
+            if (!window.Janus) {
+                window.Janus = Janus;
+            }
+            nuxtApp.provide("Janus", window.Janus);
+        })
     }
 });

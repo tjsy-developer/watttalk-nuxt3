@@ -10,7 +10,8 @@ export const useModalStore = defineStore("modal", {
     }),
     actions: {
         // 모달 열기 액션
-        openModal(type, data = null) {
+        openModal(type, data = {}) {
+            console.log(data)
             // 이미 열려 있는 모달인지 확인하여 중복 추가 방지
             if (!this.activeModals.includes(type)) {
                 this.activeModals.push(type); // 배열에 모달 타입 추가
@@ -23,7 +24,7 @@ export const useModalStore = defineStore("modal", {
         },
 
         // 특정 모달 닫기 액션
-        closeModal(type, result = null) {
+        closeModal(type, result = {}) {
             // 배열에서 해당 모달 타입 제거
             this.activeModals = this.activeModals.filter(
                 (modalType) => modalType !== type,

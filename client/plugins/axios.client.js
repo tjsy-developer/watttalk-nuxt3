@@ -8,7 +8,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig();
     const router = useRouter()
 
-    const isLocalhost = process.client && window.location.hostname === "localhost";
+    const isLocalhost =
+        (process.client && (window.location.hostname === "localhost") ||
+        window.location.origin == "https://192.168.20.66:3000");
     const instance = axios.create({
         baseURL: isLocalhost
             ? "https://hdcardev.watttalk.kr/wattmanager-server" // ✅ 로컬일 때 완전한 URL

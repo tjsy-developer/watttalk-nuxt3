@@ -14,7 +14,15 @@ export function getWorldTime() {
 export function buildTree(users) {
     const treeMap = new Map();
     users.forEach((user) => {
-        const { headquarters, branch, nickname, en_nickname, devicetype, status, deviceid } = user;
+        const {
+            headquarters,
+            branch,
+            nickname,
+            en_nickname,
+            devicetype,
+            status,
+            deviceid,
+        } = user;
 
         // 1. Headquarters 노드 만들기
         if (!treeMap.has(headquarters)) {
@@ -64,7 +72,8 @@ export function buildTree(users) {
 
     return result;
 }
-function updateLeafNodeStatus(data, targetIndex, newStatus) {
+
+export function updateLeafNodeStatus(data, targetIndex, newStatus) {
     let flatLeaves = [];
 
     // 재귀적으로 모든 리프 노드를 수집
@@ -85,8 +94,126 @@ function updateLeafNodeStatus(data, targetIndex, newStatus) {
     }
 }
 
+export function setCookie(name, value, expiredays) {
+    const today = new Date();
+    today.setDate(today.getDate() + expiredays);
+    document.cookie = name + "=" + escape(value) + "; expires=" + today.toGMTString();
+}
+
+export function getCookie(cookieName) {
+    let i;
+    let x;
+    let y;
+    const ARRcookies = document.cookie.split(";");
+    for (i = 0; i < ARRcookies.length; i++) {
+        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
+        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
+        x = x.replace(/^\s+|\s+$/g, "");
+
+        if (x === cookieName) {
+            return unescape(y);
+        }
+    }
+}
+
+export function deleteCookie(name, value, expiredays) {
+    const today = new Date();
+    document.cookie = name + "=" + escape(value) + "; expires=" + today.toGMTString();
+}
+
+export function callingBell(type) {
+    const audio = document.getElementById("calling_bell");
+    audio.currentTime = 0;
+    if (type == "play") {
+        console.log("*** script: calling Bell Play");
+        audio.play();
+    } else {
+        console.log("*** script: calling Bell Stop");
+        audio.pause();
+    }
+}
+
+export function leadingZeros(n, digits) {
+    let zero = "";
+    let str = n.toString();
+    if (str.length < digits) {
+        zero = "0".repeat(digits - str.length);
+    }
+    return zero + str;
+}
+
+// 통화 중 채팅창 관련 - 타임존 출력하기 (type string)
+export function getChattingTimeZone(standard) {
+    const now = new Date(Number(standard) * 1000);
+
+    const strDatetime =
+        leadingZeros(now.getHours(), 2) +
+        ":" +
+        leadingZeros(now.getMinutes(), 2) +
+        ":" +
+        leadingZeros(now.getSeconds(), 2);
+    return strDatetime;
+}
+ // 모션 알람 전용 Timezon 생성
+export function getMotionTimeZone(standard, country) {
+    // const tz = standard + country * 3600
+    // const now = new Date(tz * 1000)
+
+    // let x = new Date().getTimezoneOffset() / 60 // UTC - GMT = x (대한민국 기준 x = -9)		주어가 UTC 이기 때문에 -9 라고 나옴
+    // x = x * 60 * 60 * -1 // (시 * 분 * 초)	음수는 양수로, 양수는 음수로
+    const now = new Date(Number(standard) * 1000);
+    // const now = new Date((standard + x) * 1000)
+
+    const strDatetime =
+        leadingZeros(now.getFullYear(), 4) +
+        "/" +
+        leadingZeros(now.getMonth() + 1, 2) +
+        "/" +
+        leadingZeros(now.getDate(), 2) +
+        " " +
+        leadingZeros(now.getHours(), 2) +
+        ":" +
+        leadingZeros(now.getMinutes(), 2) +
+        ":" +
+        leadingZeros(now.getSeconds(), 2);
+    return strDatetime;
+}
+
+export function videoResize() {
+            const videoMainDivWrap =
+                document.getElementsByClassName("videoMainDivWrap")[0];
+            const videoMainDiv = document.getElementById("videoMainDiv");
+            const otherBackground = document.getElementsByClassName("otherBackground")[0];
+
+            if (
+                videoMainDivWrap &&
+                store.state.callingLayoutType !== 1 &&
+                store.state.call.drawingIframe === false
+            ) {
+                videoMainDivWrap.style.width = "100%";
+                const testVal = (videoMainDivWrap.clientWidth / 16) * 9;
+                if (testVal > videoMainDivWrap.clientHeight) {
+                    const calcWidth = (videoMainDivWrap.clientHeight / 9) * 16;
+                    videoMainDiv.style.width = `${calcWidth}px`;
+                    if (otherBackground) otherBackground.style.width = `${calcWidth}px`;
+                } else {
+                    videoMainDiv.style.width = `100%`;
+                    if (otherBackground) otherBackground.style.width = "100%";
+                }
+                return;
+            } else if (videoMainDiv) {
+                videoMainDiv.style.width = `100%`;
+                if (otherBackground) otherBackground.style.width = "100%";
+            }
+        }
+
 export default {
     getWorldTime,
     buildTree,
     updateLeafNodeStatus,
+    setCookie,
+    getCookie,
+    deleteCookie,
+    getChattingTimeZone,
+    videoResize,
 };

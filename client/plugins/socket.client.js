@@ -1,21 +1,22 @@
 // plugins/socket.client.ts
-import "@/utils/socketManager";
+import "@/composables/socket/useSocketListen";
 import { useLoginEvents } from "@/composables/socket/useLoginEvents";
 import { useAuth } from "@/composables/useAuth";
-import { useAuthStore } from "@/stores/login";
+import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "nuxt/app";
 import { io } from "socket.io-client";
-import { bindSocketEvents } from "@/utils/socketManager";
+import { bindSocketEvents } from "@/composables/socket/useSocketListen";
+import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 
 let signallingSocket = null;
 let transferSocket = null;
 
 export default defineNuxtPlugin(async (nuxtApp) => {
     const router = useRouter();
-    const loginStore = useAuthStore();
+    const loginStore = useLoginStore();
     const tokenStore = useTokenStore();
-    const { $transferSocket, $signallingSocket, $axios } = useNuxtApp();
+    const {  $axios } = useNuxtApp();
     const { decodeToken, verifyToken, encryptData } = useAuth();
 
     const route = useRoute();
@@ -67,14 +68,14 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             transports: ["websocket"],
             reconnection: true,
         });
-
-        // ✅ 여기서 이벤트 바인딩 실행
-        bindSocketEvents(signallingSocket);
-        nuxtApp.provide("signallingSocket", signallingSocket);
-        nuxtApp.provide("transferSocket", transferSocket);
         // 선택 사항: 소켓 연결 상태 로깅 (디버깅용)
         signallingSocket.on("connect", async () => {
             console.log("Signalling Socket Connected!");
+            nuxtApp.provide("signallingSocket", signallingSocket);
+            nuxtApp.provide("transferSocket", transferSocket);
+            // ✅ 여기서 이벤트 바인딩 실행
+            bindSocketEvents(signallingSocket);
+            useSocketEmitEvents(signallingSocket);
             const {
                 loginRequest,
                 listenLoginEvent,

@@ -65,9 +65,12 @@ export const useUserListStore = defineStore("userList", {
             }
         },
         setOrganizationList(payload) {
+            this.organizationList = [];
             this.organizationList = [...payload];
         },
         setRecentCallList(payload) {
+            console.log(payload)
+            this.recentCallList = [];
             this.recentCallList = [...payload];
         },
         

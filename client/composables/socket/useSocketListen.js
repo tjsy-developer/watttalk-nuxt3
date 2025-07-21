@@ -42,6 +42,7 @@ export function bindSocketEvents(socket) {
         requestGroupRoom,
         reeuqestCreateFixRoomID,
         requestCreateRoomID,
+        requestJoinMeeting
     } = useSocketEmitEvents();
 
     socket.off("userListAll");
@@ -62,6 +63,7 @@ export function bindSocketEvents(socket) {
     socket.off("lastCallTime");
     socket.on("lastCallTime", (response) => {
         const json = JSON.parse(response);
+        console.log
         userListStore.init();
         callStore.setRecentData([]);
         callStore.setRecentDataAll([]);
@@ -224,11 +226,15 @@ export function bindSocketEvents(socket) {
                 const openMeetingData = {
                     entryNotification: json.unique_roomid,
                 };
+
+                meetingStore.setOpenMeetingData(openMeetingData);
+                callStore.setUniqueRoomid(json.unique_roomid)
+                directCallStore.clearDirectCallInfo();
+
+                requestCreateRoomID()
                 meetingStore.openAndJoin("open");
                 meetingStore.meetingSeq(json.unique_roomid);
                 meetingStore.meetingOpenFlag(true);
-                meetingStore.setOpenMeetingData(openMeetingData);
-                directCallStore.clearDirectCallInfo();
             } else {
                 noneOverlayModal(6);
             }
@@ -238,7 +244,7 @@ export function bindSocketEvents(socket) {
             }
             console.log("*** methods: joinMeeting::");
             console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
-
+            
             meetingStore.openAndJoin("join");
             meetingStore.meetingSeq(json.unique_roomid);
             meetingStore.meetingJoinFlag(true);

@@ -40,11 +40,11 @@ export default defineNuxtConfig({
     css: ["@/assets/styles/scss/main.scss", "vue-final-modal/style.css"],
     plugins: [
         "@/plugins/axios.client",
+        "@/plugins/webrtc-adapter.client",
         "@/plugins/socket.client",
         "@/plugins/janus.client",
         "@/plugins/initPreperence.client",
         "@/plugins/piniaPersist.client",
-        "@/plugins/commonFunc",
         "@/plugins/vue-final-modal",
         "@/plugins/i18n",
     ],
@@ -88,11 +88,11 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_URL: process.env.NUXT_PUBLIC_ICE_SERVER_URL,
         },
     },
-    devServer: {
-        https: {
-            key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
-            cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
-        },
-        host: "0.0.0.0",
-    },
+    // devServer: {
+    //     https: {
+    //         key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
+    //         cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
+    //     },
+    //     host: "0.0.0.0",
+    // },
 });

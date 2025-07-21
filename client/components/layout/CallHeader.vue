@@ -5,9 +5,11 @@ const { commonImages, headerImages } = useImageAssets();
 import { iconKorea, iconSpain, iconUSA } from "@/assets/images/index";
 import { useNuxtApp } from "nuxt/app";
 import { useImageAssets } from "@/composables/useImageAssets";
+import { useCommonStore } from "@/stores";
 import { useLoginStore } from "@/stores/login";
 
-const loginStore = useLoginStore();   
+const commonStore = useCommonStore();
+const loginStore = useLoginStore();    
 
 const isOpen = ref(false);
 const isOpenDisplay = ref(false);

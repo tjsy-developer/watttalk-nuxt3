@@ -1,7 +1,9 @@
 // plugins/axios.client.ts
+import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import axios from "axios";
-import CryptoJS from "crypto-js/core";
+import CryptoJS from "crypto-js";
+import { useNuxtApp } from "nuxt/app";
 import { useRouter } from "vue-router";
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -57,9 +59,13 @@ export default defineNuxtPlugin((nuxtApp) => {
             return response;
         },
         (error) => {
-            if (error.response?.status === 401) {
-                console.warn("인증 실패 - 로그인 다시 해주세요");
-            }
+            console.log(error)
+            alert(error)
+            window.location.href = "http://localhost:8223"
+            // if (error.response?.status === 401) {
+            //     console.warn("인증 실패 - 로그인 다시 해주세요");
+                
+            // }
             return Promise.reject(error);
         },
     );
@@ -82,6 +88,7 @@ function decodeToken(jwt) {
 function decryptData(data) {
     console.log("function decrypt");
     try {
+        console.log(CryptoJS.AES)
         const decryptBytes = CryptoJS.AES.decrypt(
             data,
             "dsdfjsdl54sd5fsadfjdslksfd87513sdfsdfjkfdsjlk",
@@ -109,13 +116,15 @@ function encryptData(data) {
 
     return encryptData;
 }
-async function requestNewToken(currRefereshToken) {
-    console.log(`func request Token`);
 
+export async function requestNewToken(currRefereshToken) {
+    console.log(`func request Token`);
+    const { $axios } = useNuxtApp();
+    const loginStore = useLoginStore();
     const decRToken = await decryptData(currRefereshToken);
 
     if (!decRToken) {
-        loginStore.checkTokenMutation(2);
+        loginStore.setTokenResult(2);
         return false;
     }
 
@@ -131,10 +140,14 @@ async function requestNewToken(currRefereshToken) {
         console.log(`request new jwt err: ${error}`);
         const err = error.response;
         if (err?.status === 401) {
+            alerT(err.data)
             if (err.data === "none" || err.data === "mutated" || err.data === "expired") {
-                store.commit("login/checkTokenMutation", 2);
+                loginStore.setTokenResult(2);
+                throw '만료된 토큰입니다 다시 로그인해주세요'
+            } else {
+                throw error;
             }
         }
-        throw error;
+        
     }
 }

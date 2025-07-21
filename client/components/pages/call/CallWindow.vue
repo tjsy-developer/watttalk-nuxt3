@@ -60,7 +60,7 @@
                     :class="[drawingIframe ? 'screen-draw' : 'screen-video']"
                     id="panel-inner-main"
                 >
-                    <drawing
+                    <Drawing
                         v-if="
                             this.$commonStore.contentsViewType == '2' &&
                             drawingIframe &&
@@ -68,7 +68,7 @@
                         "
                         id="test11"
                         class="callingWidth"
-                    ></drawing>
+                    ></Drawing>
                     <video
                         v-show="!drawingIframe"
                         autoplay
@@ -87,7 +87,7 @@
                     <div
                         v-if="antennaStatus"
                         @click="antennaInfoStatus = !antennaInfoStatus"
-                        :title="$t('antennaInfo')"
+                        :title="t('antennaInfo')"
                         id="antennaStauts"
                         class="cursor-pointer"
                     >
@@ -195,7 +195,7 @@
                                 class="fullScreenIcon"
                             />
                             <span class="fullScreenGuidText"
-                                >&nbsp; {{ $t("fullScreen guidText") }}</span
+                                >&nbsp; {{ t("fullScreen guidText") }}</span
                             >
                         </div>
                     </div>
@@ -204,7 +204,7 @@
                         :style="{ right: antennaStatus ? '50px' : '10px' }"
                         id="pdfProgress"
                     >
-                        <span class="pdfUploadText">{{ $t("Server uploading") }}</span>
+                        <span class="pdfUploadText">{{ t("Server uploading") }}</span>
                         <div style="width: 92px" class="progressBar">
                             <div
                                 :style="{ width: pdfUploadProgrss + '%' }"
@@ -320,7 +320,7 @@
                 class="gpsView row justify-center items-center"
             >
                 <div class="mapTitleBar row justify-between items-center">
-                    <span class="mapTitle">{{ $t("map")[2] }}</span>
+                    <span class="mapTitle">{{ t("map")[2] }}</span>
                     <div class="mapTitleImg">
                         <button
                             v-if="accessDeviceCheck != 'Mobile'"
@@ -353,9 +353,9 @@
             >
                 <img src="@/assets/images/calling/ic_fall_76.png" class="emergencyImg" />
                 <span class="emergencyFont boldText"
-                    >{{ $t("motionAlarm Fall Text1") }}&nbsp;</span
+                    >{{ t("motionAlarm Fall Text1") }}&nbsp;</span
                 >
-                <span class="emergencyFont">{{ $t("motionAlarm Fall Text2") }}</span>
+                <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
                 <div
                     v-for="(fallInfo, fallInfoKey) in motionFallInfo"
                     :key="fallInfoKey"
@@ -382,14 +382,14 @@
                         style="padding-right: 4px"
                         src="@/assets/images/calling/map/ic_position.png"
                     />
-                    <span>{{ $t("map")[1] }}</span>
+                    <span>{{ t("map")[1] }}</span>
                 </button>
                 <button
                     @click="motionFallClose"
                     :style="{ width: $i18n.locale == 'ko' ? '60px' : '100px' }"
                     class="emergencyBtn"
                 >
-                    {{ $t("confirm") }}
+                    {{ t("confirm") }}
                 </button>
             </div>
             <div
@@ -402,9 +402,9 @@
                     class="emergencyImg"
                 />
                 <span class="emergencyFont boldText"
-                    >{{ $t("motionAlarm noMove Text1") }}&nbsp;</span
+                    >{{ t("motionAlarm noMove Text1") }}&nbsp;</span
                 >
-                <span class="emergencyFont">{{ $t("motionAlarm Fall Text2") }}</span>
+                <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
                 <div
                     v-for="(noMoveInfo, noMoveInfoKey) in motionNoMoveInfo"
                     :key="noMoveInfoKey"
@@ -428,7 +428,7 @@
                         style="padding-right: 4px"
                         src="@/assets/images/calling/map/ic_position.png"
                     />
-                    <span>{{ $t("map")[1] }}</span>
+                    <span>{{ t("map")[1] }}</span>
                 </button>
             </div>
             <div
@@ -440,10 +440,10 @@
                     <img src="@/assets/images/calling/ic_video_send_158.png" />
                 </div>
                 <div class="row justify-center items-center unstableText">
-                    {{ $t("call Unstable1") }}
+                    {{ t("call Unstable1") }}
                 </div>
                 <div class="row justify-center items-center unstableText">
-                    {{ $t("call Unstable2") }}
+                    {{ t("call Unstable2") }}
                 </div>
             </div>
             <div
@@ -494,7 +494,7 @@
             >
                 <div class="row justify-center items-center">
                     <img src="@/assets/images/calling/ic_call-send-1.png" />
-                    <span class="sendingSpan">{{ $t("sending") }}</span>
+                    <span class="sendingSpan">{{ t("sending") }}</span>
                 </div>
             </div>
             <div
@@ -502,18 +502,18 @@
                 class="row justify-center items-center sendingBackground sendingLayout3"
             >
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ $t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
             </div>
             <div
                 v-else-if="callingLayoutType == 5"
                 class="row justify-center items-center sendingBackground sendingLayout3"
             >
-                <span class="sendingSpanCallingLayoutType3">{{ $t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
             </div>
             <div v-else class="row justify-center items-center sendingBackground">
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ $t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
             </div>
             <div class="row items-center windowInfoBar">
                 <div
@@ -563,16 +563,16 @@
                         @click="setMultiCalling(1)"
                         class="receiveBtnCallingLayoutType3"
                     >
-                        {{ $t("accept") }}
+                        {{ t("accept") }}
                     </button>
                     <button
                         @click="(setMultiCalling(0), setDeclineStatus())"
                         class="receiveBtnCallingLayoutType4"
                     >
-                        {{ $t("decline") }}
+                        {{ t("decline") }}
                     </button>
                 </div>
-                <span class="receiveSpan">{{ $t("receiving") }}</span>
+                <span class="receiveSpan">{{ t("receiving") }}</span>
             </div>
             <div
                 v-else-if="callingLayoutType == 3 || callingLayoutType == 5"
@@ -587,13 +587,13 @@
                         @click="setMultiCalling(1)"
                         class="receiveBtnCallingLayoutType3"
                     >
-                        {{ $t("accept") }}
+                        {{ t("accept") }}
                     </button>
                     <button
                         @click="setMultiCalling(0)"
                         class="receiveBtnCallingLayoutType4"
                     >
-                        {{ $t("decline") }}
+                        {{ t("decline") }}
                     </button>
                 </div>
                 <div v-if="callingLayoutType == 5" class="justify-center buttonsLayout5">
@@ -602,23 +602,23 @@
                         @click="setMultiCalling(1)"
                         class="receiveBtnCallingLayoutType3"
                     >
-                        {{ $t("accept") }}
+                        {{ t("accept") }}
                     </button>
                     <button
                         @click="setMultiCalling(0)"
                         class="receiveBtnCallingLayoutType4"
                     >
-                        {{ $t("decline") }}
+                        {{ t("decline") }}
                     </button>
                 </div>
             </div>
             <div v-else class="row justify-center items-center receiveBackground">
                 <img src="@/assets/images/calling/ic_receive-4.png" class="big" />
                 <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">
-                    {{ $t("accept") }}
+                    {{ t("accept") }}
                 </button>
                 <button @click="setMultiCalling(0)" class="receiveBtnCallingLayoutType4">
-                    {{ $t("decline") }}
+                    {{ t("decline") }}
                 </button>
             </div>
             <div class="row items-center windowInfoBar">
@@ -661,10 +661,10 @@
                 <img src="@/assets/images/calling/ic_popup_cal-3.png" class="big" />
                 <div style="width: 55%" class="row justify-center items-center">
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("fail1")
+                        t("fail1")
                     }}</span>
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("fail2")
+                        t("fail2")
                     }}</span>
                 </div>
             </div>
@@ -711,10 +711,10 @@
                 <img src="@/assets/images/calling/ic_popup_cal-1.png" class="big" />
                 <div style="width: 50%" class="row justify-center items-center">
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("other1")
+                        t("other1")
                     }}</span>
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("other2")
+                        t("other2")
                     }}</span>
                 </div>
             </div>
@@ -760,10 +760,10 @@
                 <div style="width: 60%" class="row justify-center items-center">
                     <img src="@/assets/images/calling/ic_popup_error-2.png" class="big" />
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("error1")
+                        t("error1")
                     }}</span>
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("error2")
+                        t("error2")
                     }}</span>
                 </div>
             </div>
@@ -773,20 +773,20 @@
             >
                 <img src="@/assets/images/calling/ic_popup_error-3.png" class="big" />
                 <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                    $t("error1")
+                    t("error1")
                 }}</span>
                 <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                    $t("error2")
+                    t("error2")
                 }}</span>
             </div>
             <div v-else class="row justify-center items-center otherBackground">
                 <img src="@/assets/images/calling/ic_popup_error-3.png" class="big" />
                 <div style="width: 60%" class="row justify-center items-center">
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("error1")
+                        t("error1")
                     }}</span>
                     <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        $t("error2")
+                        t("error2")
                     }}</span>
                 </div>
             </div>
@@ -838,7 +838,7 @@
             >
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
-                    $t("call Connecting")
+                    t("call Connecting")
                 }}</span>
             </div>
             <div
@@ -846,7 +846,7 @@
                 class="row justify-center items-center receiveBackground connectLayout5"
             >
                 <span class="sendingSpanCallingLayoutType3">{{
-                    $t("call Connecting")
+                    t("call Connecting")
                 }}</span>
                 <img src="@/assets/images/calling/ic_connect_68.png" />
             </div>
@@ -856,7 +856,7 @@
             >
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
-                    $t("call Connecting")
+                    t("call Connecting")
                 }}</span>
             </div>
             <div class="row items-center windowInfoBar">
@@ -903,11 +903,11 @@
                     <img src="@/assets/images/calling/ic_video_send_100.png" />
                     <span
                         class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                        >{{ $t("call Unstable1") }}</span
+                        >{{ t("call Unstable1") }}</span
                     >
                     <span
                         class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                        >{{ $t("call Unstable2") }}</span
+                        >{{ t("call Unstable2") }}</span
                     >
                 </div>
             </div>
@@ -923,12 +923,12 @@
                 <span
                     style="font-size: 10px"
                     class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                    >{{ $t("call Unstable1") }}</span
+                    >{{ t("call Unstable1") }}</span
                 >
                 <span
                     style="font-size: 10px"
                     class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                    >{{ $t("call Unstable2") }}</span
+                    >{{ t("call Unstable2") }}</span
                 >
             </div>
             <div
@@ -937,10 +937,10 @@
             >
                 <img src="@/assets/images/calling/ic_video_send_68.png" />
                 <span class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText">{{
-                    $t("call Unstable1")
+                    t("call Unstable1")
                 }}</span>
                 <span class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText">{{
-                    $t("call Unstable2")
+                    t("call Unstable2")
                 }}</span>
             </div>
             <div class="row items-center windowInfoBar">
@@ -1034,8 +1034,8 @@
                     <div class="row justify-center content-center">
                         <p style="font-size: 20px" class="requestText">
                             {{ compData.fileReceiveInfo.fileSendNickname }}
-                            {{ $t("fileReceptionRequest1") }}
-                            {{ $t("fileReceptionRequest2") }}
+                            {{ t("fileReceptionRequest1") }}
+                            {{ t("fileReceptionRequest2") }}
                         </p>
                     </div>
                     <div
@@ -1047,14 +1047,14 @@
                             style="background: #1c8eff"
                             class="receiveBtnCallingLayoutType3"
                         >
-                            {{ $t("accept") }}
+                            {{ t("accept") }}
                         </button>
                         <button
                             @click="fileReceiveDecline(compData.text)"
                             style="background: #464646"
                             class="receiveBtnCallingLayoutType4"
                         >
-                            {{ $t("decline") }}
+                            {{ t("decline") }}
                         </button>
                     </div>
                 </div>
@@ -1070,10 +1070,10 @@
                                 class="col-12 requestText"
                             >
                                 {{ compData.fileReceiveInfo.fileSendNickname }}
-                                {{ $t("fileReceptionRequest1") }}
+                                {{ t("fileReceptionRequest1") }}
                             </p>
                             <p style="font-size: 12px; margin: auto" class="requestText">
-                                {{ $t("fileReceptionRequest2") }}
+                                {{ t("fileReceptionRequest2") }}
                             </p>
                         </div>
                     </div>
@@ -1086,14 +1086,14 @@
                             style="background: #1c8eff"
                             class="receiveBtnCallingLayoutType3"
                         >
-                            {{ $t("accept") }}
+                            {{ t("accept") }}
                         </button>
                         <button
                             @click="fileReceiveDecline(compData.text)"
                             style="background: #464646"
                             class="receiveBtnCallingLayoutType4"
                         >
-                            {{ $t("decline") }}
+                            {{ t("decline") }}
                         </button>
                     </div>
                 </div>
@@ -1116,7 +1116,7 @@
                         </div>
                     </div>
                     <div class="row justify-center content-center buttonsLayout1">
-                        <p class="fileReceivingText">{{ $t("receivingFile") }}</p>
+                        <p class="fileReceivingText">{{ t("receivingFile") }}</p>
                     </div>
                 </div>
                 <div
@@ -1126,7 +1126,7 @@
                     <div class="row col-12 justify-center buttonsLayout1">
                         <div style="text-align: center" class="row">
                             <p class="col-12 fileReceivingText">
-                                {{ $t("receivingFile") }}
+                                {{ t("receivingFile") }}
                             </p>
                         </div>
                     </div>
@@ -1157,7 +1157,7 @@
                     </div>
                     <div class="row justify-center content-center">
                         <p class="receptionCompleteText">
-                            {{ $t("fileReceptionComplete") }}
+                            {{ t("fileReceptionComplete") }}
                         </p>
                     </div>
                 </div>
@@ -1176,7 +1176,7 @@
                     <div class="row col-12 justify-center">
                         <div style="text-align: center" class="row">
                             <p class="col-12 receptionCompleteText">
-                                {{ $t("fileReceptionComplete") }}
+                                {{ t("fileReceptionComplete") }}
                             </p>
                         </div>
                     </div>
@@ -1195,8 +1195,8 @@
                     </div>
                     <div class="row justify-center content-center">
                         <p class="receptionCompleteText">
-                            {{ fileSendNickname }} {{ $t("fileCancel text1") }}
-                            {{ $t("fileCancel text2") }}
+                            {{ fileSendNickname }} {{ t("fileCancel text1") }}
+                            {{ t("fileCancel text2") }}
                         </p>
                     </div>
                 </div>
@@ -1215,8 +1215,8 @@
                     <div class="row col-12 justify-center">
                         <div style="text-align: center" class="row">
                             <p class="col-12 receptionCompleteText">
-                                {{ fileSendNickname }} {{ $t("fileCancel text1") }}
-                                {{ $t("fileCancel text2") }}
+                                {{ fileSendNickname }} {{ t("fileCancel text1") }}
+                                {{ t("fileCancel text2") }}
                             </p>
                         </div>
                     </div>
@@ -1241,7 +1241,7 @@
             <div
                 v-if="antennaStatus"
                 @click="antennaInfoStatus = !antennaInfoStatus"
-                :title="$t('antennaInfo')"
+                :title="t('antennaInfo')"
                 id="antennaStauts"
                 class="cursor-pointer"
             >
@@ -1346,16 +1346,15 @@ import {
     watch,
     nextTick,
 } from "vue";
-import { useStore } from "vuex"; // Or usePinia for Pinia, if you've migrated
-
 // --- Component Imports ---
-import Drawing from "@/components/call/drawings/drawing.vue";
+import Drawing from "@/components/drawing/Drawing.vue"
 import GpsMapView from "@/components/call/gpsMapView.vue";
 import { useCommonStore } from "@/stores";
 import { useCached } from "@vueuse/core";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
-
+import { useI18n } from "vue-i18n";
+const { t, locale: $i18nLocale } = useI18n();
 // --- Props Definition ---
 const props = defineProps({
     compData: {

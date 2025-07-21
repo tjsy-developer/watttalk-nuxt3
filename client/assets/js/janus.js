@@ -1,4 +1,4 @@
-import * as adapter from "webrtc-adapter";
+// import * as adapter from "webrtc-adapter";
 /*
 	The MIT License (MIT)
 
@@ -22,6 +22,8 @@ import * as adapter from "webrtc-adapter";
 	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
  */
+
+import { useRuntimeConfig } from "nuxt/app";
 
 console.log("*** script: Media Module import.");
 function getSecureRandomValue() {
@@ -112,7 +114,7 @@ Janus.useDefaultDependencies = function (deps) {
         isArray: function (arr) {
             return Array.isArray(arr);
         },
-        webRTCAdapter: (deps && deps.adapter) || adapter,
+        webRTCAdapter: (deps && deps.adapter) || window.adapter,
         httpAPICall: function (url, options) {
             var fetchOptions = {
                 method: options.verb,
@@ -207,7 +209,7 @@ Janus.useOldDependencies = function (deps) {
             return jq.isArray(arr);
         },
         extension: (deps && deps.extension) || defaultExtension,
-        webRTCAdapter: (deps && deps.adapter) || adapter,
+        webRTCAdapter: (deps && deps.adapter) || window.adapter,
         httpAPICall: function (url, options) {
             var payload =
                 options.body !== undefined
@@ -587,13 +589,15 @@ function Janus(gatewayCallbacks) {
     // var iceServers = gatewayCallbacks.iceServers || [{urls: "turn:115.85.181.167:3478" , username: "dykim" , credential: "superman123"}]; // secl
     // var iceServers = gatewayCallbacks.iceServers || [{urls: "turn:27.96.130.6:3478" , username: "dykim" , credential: "superman123"}]; // ex
     // var iceServers = gatewayCallbacks.iceServers || [{urls: "turn:210.97.43.44:3478" , username: "dykim" , credential: "superman123"}]; // 중부발전
+    const config = useRuntimeConfig();
     var iceServers = gatewayCallbacks.iceServers || [
         {
-            urls: process.env.iceServersURL,
-            username: process.env.username,
-            credential: process.env.credential,
+            urls: "turn:hdcardev.watttalk.kr:3478",
+            username: "dykim",
+            credential: "superman123",
         },
     ];
+    console.log('iceServer 설정값', iceServers)
     var iceTransportPolicy = gatewayCallbacks.iceTransportPolicy;
     var bundlePolicy = gatewayCallbacks.bundlePolicy;
     // Whether IPv6 candidates should be gathered

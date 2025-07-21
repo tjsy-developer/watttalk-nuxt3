@@ -206,7 +206,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { useStore } from "vuex"; // If still using Vuex, otherwise use Pinia
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";

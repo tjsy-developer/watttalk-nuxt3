@@ -62,7 +62,7 @@ import {
     userDataGetInfo,
 } from "@/composables/common";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
-import { getChattingTimeZone, getWorldTime } from "@/utils/common";
+import { escapeFullScreen, getChattingTimeZone, getPersonnelInRoom, getWorldTime } from "@/utils/common";
 import { useI18n } from "vue-i18n";
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
@@ -88,7 +88,7 @@ const drawingStore = useDrawingCanvasStore();
 const directMessageStore = useDirectMessageStore();
 const meetingStore = useMeetingStore();
 const modalStore = useModalStore();
-const prefrenceStore = useUserPreferenceStore();
+const preferenceStore = useUserPreferenceStore();
 
 let server = ref(null);
 let janus = ref(null);
@@ -102,7 +102,7 @@ let mystream = ref(null);
 let mypvtid = ref(null);
 
 // 배열 reactive
-let feeds = reactive([]);
+let feeds = ref([]);
 let bitrateTimer = reactive([]);
 
 let doSimulcast = ref("");
@@ -898,14 +898,16 @@ onMounted(() => {
             if (buttonIndex == 1) {
                 const userIndex = userDataGetIndex(json.deviceid);
 
-                set(callStore.userData[userIndex], "status", json.status);
+                // set(callStore.userData[userIndex], "status", json.status);
+                callStore.userData[userIndex].status = json.status;
 
                 // 조직도 목록 갱신
                 // userListAllRequest(m_local_deviceid, m_en_seq)
             } else {
                 const userIndex = recentDataGetIndex(json.deviceid);
 
-                set(callStore.recentData[userIndex], "status", json.status);
+                callStore.recentData[userIndex].status = json.status
+                // set(callStore.recentData[userIndex], "status", json.status);
 
                 // 최근통화 목록 갱신
                 // recentListAllRequest(m_local_deviceid)
@@ -2268,8 +2270,8 @@ onMounted(() => {
 
     // disconnect 시
     $signallingSocket.on("disconnect", function (response) {
-        // console.log("socket disconnect !!! ")
-        signallingToastMessage(t("signallingSocket Disconnect"));
+        console.log("socket disconnect !!! ")
+        // signallingToastMessage(t("signallingSocket Disconnect"));
     });
 
     // callingTimer 초기화
@@ -3714,7 +3716,7 @@ function discallingRequest(
     remotedeviceid,
     roomid,
     institution,
-    nickname를,
+    nickname,
 ) {
     const obj = {
         localdeviceid,
@@ -4386,8 +4388,8 @@ function main_stream_check() {
     const mainVideo = document.getElementById("videoMain");
 
     if (!mainVideo) {
-        if (callStoreingLayoutType != 1) {
-        } else if (callStoreingLayoutType == 1) {
+        if (callStore.callingLayoutType != 1) {
+        } else if (callStore.callingLayoutType == 1) {
             // 바둑판일 경우에 메인으로 선택된 사용자가 나갔는지 체크한다.
             // 나갔을 경우 다른 사용자로 메인을 변경한다.
 
@@ -4844,7 +4846,7 @@ function screenShare(type) {
                 callStore.setVideoMainIndex(0);
 
                 // video Layout Type Change
-                if (callStoreingLayoutType != 3) {
+                if (callStore.callingLayoutType != 3) {
                     // videolayout change
                     saveVideoInfo();
                 } else {
@@ -5331,7 +5333,7 @@ function newRemoteFeed(id, display, audio, video) {
 
                     try {
                         // 바둑판이 아닐 경우에만 메인화면 교체
-                        if (callStoreingLayoutType != 1) {
+                        if (callStore.callingLayoutType != 1) {
                             // 큰 비디오에 적용
                             const videoMain = document.getElementById("videoMain");
                             videoMain.srcObject = video.srcObject;
@@ -5350,7 +5352,7 @@ function newRemoteFeed(id, display, audio, video) {
                             oldDurationFlag.value = true;
 
                             // 바둑판일 경우에 border를 생성한다. -> 바둑판외에는 main_stream_check에서 생성한다.
-                            if (callStoreingLayoutType == 1) {
+                            if (callStore.callingLayoutType == 1) {
                                 // Main Index 관리
                                 callStore.setVideoMainIndex(remoteFeed.rfindex);
 
@@ -5391,7 +5393,7 @@ function newRemoteFeed(id, display, audio, video) {
 
                     if (videoCallHost.value) {
                         // 바둑판이 아닐 경우
-                        if (callStoreingLayoutType != 1) {
+                        if (callStore.callingLayoutType != 1) {
                             // eslint-disable-next-line camelcase
                             const main_video = document.getElementById("videoMain");
 
@@ -5423,7 +5425,7 @@ function newRemoteFeed(id, display, audio, video) {
                             // host가 바라보는 메인 화면으로 변경
                             console.log("hostSelectedMainVideo 13");
                             hostSelectedMainVideo(remoteFeed.rfid);
-                        } else if (callStoreingLayoutType == 1) {
+                        } else if (callStore.callingLayoutType == 1) {
                             // 바둑판 일 경우에도 메인화면을 변경할 수 있도록 수정한다.
                             // 실제로 메인 비디오가 존재하지 않기 때문에 mainIndex만 변경하도록 한다.
 
@@ -6129,35 +6131,7 @@ function contentsBtnClick(seq) {
     escapeFullScreen();
 
     changeAlertNum(seq);
-    const modalsContainerStyle = document.getElementById("modalsContainer").style;
-    modalsContainerStyle.display = "block";
-    $modal.show(
-        mainModal,
-        {},
-        {
-            name: "modal",
-            width:
-                accessDeviceCheck.value !== "Mobile"
-                    ? 700
-                    : innerWidth - 30 > 700
-                      ? 700
-                      : "90%",
-            height:
-                accessDeviceCheck.value !== "Mobile"
-                    ? 480
-                    : innerHeight - 30 > 480
-                      ? 480
-                      : "90%",
-            maxWidth: 700,
-            maxHeight: 480,
-            clickToClose: false,
-        },
-        {
-            "before-close": () => {
-                modalsContainerStyle.display = "none";
-            },
-        },
-    );
+    modalStore.openModal("call")
 }
 // -> kyj 통화 화면에서 발신중, 수신중 메세지 표시
 function callingLayoutChange(status, text, col) {
@@ -6271,7 +6245,7 @@ function mainVideoChangeFunc(type, req) {
     // type 3 :: videoOFF Vuex init & unstable Vuex init
     // type 4 :: unstable Show
     // type 5 :: unstable OFF
-    if (callStoreingLayoutType == 1) {
+    if (callStore.callingLayoutType == 1) {
         // console.log("@@@@@@ Main Video Change :: callingLayout 1")
         return;
     }
@@ -6376,7 +6350,7 @@ function videoLayoutChange() {
 
                     if (videoCallHost.value) {
                         // 바둑판 형식이 아닐 경우
-                        if (callStoreingLayoutType != 1) {
+                        if (callStore.callingLayoutType != 1) {
                             // 메인화면 변경
                             video_change(this);
 
@@ -6391,7 +6365,7 @@ function videoLayoutChange() {
                             // host가 바라보는 메인 화면으로 변경
                             console.log("hostSelectedMainVideo 15");
                             hostSelectedMainVideo(myid.value);
-                        } else if (callStoreingLayoutType == 1) {
+                        } else if (callStore.callingLayoutType == 1) {
                             const beforeMainIndex = callStore.videoMainIndex;
                             if (beforeMainIndex == 0 && feeds.value.length !== 0) {
                                 document.getElementById("myvideo").style.scale = 1;
@@ -6440,7 +6414,7 @@ function videoLayoutChange() {
 
                     /* 바둑판 일 경우에도 메인화면을 클릭할 수 있도록 기능을 변경하므로 주석처리 */
                     // 바둑판 형식일 경우 mainVideoBorder 색상 제거
-                    // if (callStoreingLayoutType == 1) {
+                    // if (callStore.callingLayoutType == 1) {
                     //  const initFindClass = document.getElementsByClassName(
                     //      "mainVideoBorder"
                     //  )
@@ -6472,7 +6446,7 @@ function videoLayoutChange() {
                         // video_change(
                         if (videoCallHost.value) {
                             // 바둑판 형식일 경우
-                            if (callStoreingLayoutType != 1) {
+                            if (callStore.callingLayoutType != 1) {
                                 // eslint-disable-next-line camelcase
                                 const main_video = document.getElementById("videoMain");
 
@@ -6519,7 +6493,7 @@ function videoLayoutChange() {
                                 // host가 바라보는 메인 화면으로 변경
                                 console.log("hostSelectedMainVideo 17");
                                 hostSelectedMainVideo(feeds.value[i].rfid);
-                            } else if (callStoreingLayoutType == 1) {
+                            } else if (callStore.callingLayoutType == 1) {
                                 const beforeMainIndex = callStore.videoMainIndex;
                                 if (beforeMainIndex == 0 && feeds.value.length !== 0) {
                                     document.getElementById("myvideo").style.scale = 1;
@@ -6574,7 +6548,7 @@ function videoLayoutChange() {
                 if (motionFailCheck.value) {
                     setTimeout(() => {
                         /* 좌측 정렬이 아닐 경우에만 화면 전환 */
-                        if (callStoreingLayoutType != 3) {
+                        if (callStore.callingLayoutType != 3) {
                             saveVideoInfo();
                         }
 
@@ -6666,7 +6640,7 @@ function mainVideoBorder(index) {
 
         // }
         let mainVideoElement = "";
-        if (callStoreingLayoutType == 1) {
+        if (callStore.callingLayoutType == 1) {
             mainVideoElement = document.getElementById("videoremote" + index);
             mainVideoElement.classList.add("mainVideoBorder");
             // mainVideoElement.style.border = "4px solid white"
@@ -6749,10 +6723,10 @@ function saveVideoInfo() {
 }
 // canvasSaveVideoInfo -> canvasCreateOffer 까지 한다.
 function canvasSaveVideoInfo(boolFlag) {
-    // console.log("*** methods: canvasSaveVideoInfo", callStoreingLayoutType)
+    // console.log("*** methods: canvasSaveVideoInfo", callStore.callingLayoutType)
     //
 
-    if (callStoreingLayoutType != 3) {
+    if (callStore.callingLayoutType != 3) {
         /* layout type != 3 */
         // mask Show
         commonStore.setVideoLayoutChangeResult(true);
@@ -7531,7 +7505,7 @@ function hostSelectedMainVideo(rfid) {
     let curMainVideoZoomLevel = commonStore.userListStatus[mainVideoIndex].zoomLevel;
     let targetToChange = "";
     // 호스트가 바라보는 메인비디오 사용자의 줌레벨값으로 화면비율을 설정한다.
-    if (callStoreingLayoutType !== 1) {
+    if (callStore.callingLayoutType !== 1) {
         targetToChange = document.getElementById("videoMain");
     } else {
         if (mainVideoIndex == 0) {
@@ -7759,7 +7733,7 @@ function hostViewMainVideo(feedsIndex) {
     // console.log("# selectedRemoteVideo : " + feedsIndex)
 
     // 현재 나의 레이아웃이 바둑판이 아니라면
-    if (callStoreingLayoutType != 1) {
+    if (callStore.callingLayoutType != 1) {
         // mainVideo의 돔을 가져오고, mainVideo의 srcObject를 변경한다.
         // eslint-disable-next-line camelcase
         const main_video = document.getElementById("videoMain");
@@ -7776,9 +7750,9 @@ function hostViewMainVideo(feedsIndex) {
     const beforeMainIndex = callStore.videoMainIndex;
     let curMainVideoZoomLevel = commonStore.userListStatus[feedsIndex].zoomLevel;
     let targetToChange = "";
-    if (feedsIndex !== "" && callStoreingLayoutType !== 1) {
+    if (feedsIndex !== "" && callStore.callingLayoutType !== 1) {
         targetToChange = document.getElementById("videoMain");
-    } else if (feedsIndex !== "" && callStoreingLayoutType == 1) {
+    } else if (feedsIndex !== "" && callStore.callingLayoutType == 1) {
         // 레이아웃 1번일 경우 이전메인비디오의 화면비율은 1로 되돌린다.
         if (beforeMainIndex == 0) {
             console.log(document.getElementById("myvideo"));
@@ -9033,7 +9007,7 @@ function canvasCreateOffer(type) {
                 // callStore.setVideoMainIndex", 0)
 
                 // // video Layout Type Change
-                // if (callStoreingLayoutType != 3) {
+                // if (callStore.callingLayoutType != 3) {
                 //  // videolayout change
                 //  saveVideoInfo()
                 // } else {
@@ -10024,7 +9998,6 @@ function sayHello() {
                             const event = msg.videoroom;
 
                             if (event) {
-                                alert("!!!");
                                 // 방 참가 시
                                 if (event === "joined") {
                                     // Publisher/manager created, negotiate WebRTC and attach to existing feeds.value, if any
@@ -10430,9 +10403,8 @@ function sayHello() {
                                         }
 
                                         // 통화 종료 처리
-                                        $store.commit(
-                                            "call/setHangupCallingConfirmFlag",
-                                            true,
+                                        callStore.setHangupCallingConfirmFlag(
+                                            true
                                         );
                                     }
                                 }
@@ -10548,7 +10520,7 @@ function sayHello() {
                                         // }
 
                                         // 바둑판이 아닐 경우
-                                        if (callStoreingLayoutType != 1) {
+                                        if (callStore.callingLayoutType != 1) {
                                             video_change(this);
                                             (callStore.setVideoMainIndex(0),
                                                 mainVideoChangeFunc(1, "localstream"));
@@ -10559,7 +10531,7 @@ function sayHello() {
                                             // host가 바라보는 메인 화면으로 변경
                                             console.log("hostSelectedMainVideo 22");
                                             hostSelectedMainVideo(myid.value);
-                                        } else if (callStoreingLayoutType == 1) {
+                                        } else if (callStore.callingLayoutType == 1) {
                                             const beforeMainIndex =
                                                 callStore.videoMainIndex;
                                             console.log(beforeMainIndex);

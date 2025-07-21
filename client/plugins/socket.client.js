@@ -42,24 +42,27 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     if (process.client) {
         const config = useRuntimeConfig();
-        const res = await $axios.post("/homeRest/tokenCheck", {
-            jwt: tokenStore.accessToken,
-        });
-
-        if (res.data) {
-            loginStore.setTokenResult(0);
-            loginStore.decodeToken(tokenStore.accessToken);
-            const tokenDecodeResult = loginStore.tokenDecodeResult;
-            // 복호화 실패일 경우
-            if (tokenDecodeResult == 1) {
-                alert("복호화 실패");
+        if (router.name == "/dashboard" ||  router.name == "meeting") {
+            const res = await $axios.post("/homeRest/tokenCheck", {
+                jwt: tokenStore.accessToken,
+            });
+    
+            if (res.data) {
+                loginStore.setTokenResult(0);
+                loginStore.decodeToken(tokenStore.accessToken);
+                const tokenDecodeResult = loginStore.tokenDecodeResult;
+                // 복호화 실패일 경우
+                if (tokenDecodeResult == 1) {
+                    alert("복호화 실패");
+                    window.location.href = "http://localhost:8223";
+                }
+            } else {
+                loginStore.setTokenResult(2);
+                alert("토큰 체크 에러");
                 window.location.href = "http://localhost:8223";
             }
-        } else {
-            loginStore.setTokenResult(2);
-            alert("토큰 체크 에러");
-            window.location.href = "http://localhost:8223";
         }
+        
         signallingSocket = io(config.public.NUXT_PUBLIC_SIGNALLING_URL, {
             transports: ["websocket"], // WebSocket 전송 방식 강제
             reconnection: true,

@@ -2,7 +2,7 @@
 		<div class="main-container notice directCall"
 			v-if="commonStore.alertNum > 0 && commonStore.alertNum < 5">
 			<div class="notice notice-header">
-				<span>{{ $t("알림창") }}</span> 
+				<span>{{ t("알림창") }}</span> 
 				<button @click="close">
 					<img src="@/assets/images/ic_close.png">
 				</button>
@@ -257,7 +257,7 @@ const { t } = useI18n();
 
 const { hide } = useModal("modal");
 
-const { requestCreateRoomID, requestJoinMeeting, requestOpenMeetingChecking } = useSocketEmitEvents();
+const { requestCreateRoomID, requestJoinMeeting, requestInviteCancelCalling, requestOpenMeetingChecking } = useSocketEmitEvents();
 
 onMounted(() => {
 	if (commonStore.alertNum == 8) {
@@ -310,7 +310,11 @@ function setCancelCalling() {
 
 function setInviteCancelCalling() {
     sessionStorage.removeItem("m_inviting");
-    callStore.setInviteCancelFlag("cancel");
+	requestInviteCancelCalling({
+		remoteDeviceId: sessionStorage.getItem("m_remote_deviceid"),
+		roomID: sessionStorage.getItem("m_roomid")
+	})
+	modalStore.closeModal("call")
 }
 
 function directCallResult(type) {
@@ -353,7 +357,7 @@ function checkMediaDevice(type) {
 function openDeviceModal(meetingType) {
     const modalsParameter = {
         type: meetingType,
-        func: deviceSettingFin,
+        func: deviceSettingFin(meetingType),
     };
     modalStore.openModal("device", modalsParameter)
 }

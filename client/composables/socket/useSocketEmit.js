@@ -22,8 +22,6 @@ export default function useSocketEmitEvents(signallingSocket) {
     const preperenceStore = useUserPreferenceStore();
     const meetingStore = useMeetingStore();
 
-    console.log($signallingSocket);
-
     const requestCreateFixRoomID = () => {
         const json = {
             deviceid: loginStore.m_local_deviceid,
@@ -94,7 +92,7 @@ export default function useSocketEmitEvents(signallingSocket) {
             const json = {
                 deviceid: loginStore.m_local_deviceid,
                 sendDurationEnable: preperenceStore.recordingStatus,
-            };
+            };  
             $signallingSocket.emit("createRoomID", JSON.stringify(json));
         } catch(error) {
 

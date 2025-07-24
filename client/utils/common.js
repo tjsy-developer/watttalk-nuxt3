@@ -136,6 +136,54 @@ export function callingBell(type) {
         audio.pause();
     }
 }
+export function messageBell(state, type) {
+    let audio = "";
+    if (state > 0) {
+        audio = document.getElementById("normal_message_bell");
+    } else {
+        audio = document.getElementById("emergency_message_bell");
+    }
+
+    audio.currentTime = 0;
+    if (type == "play") {
+        audio.play();
+    } else {
+        audio.pause();
+    }
+}
+
+export function  dircetMessageBell(type) {
+    const audio = document.getElementById("direct_message_bell");
+
+    audio.currentTime = 0;
+    if (type == "play") {
+    audio.play();
+    } else {
+    audio.pause();
+    }
+}
+
+export function fileReceiveMessageBell(type) {
+    const audio = document.getElementById("fileReceive_message_bell");
+
+    audio.currentTime = 0;
+    if (type == "play") {
+    audio.play();
+    } else {
+    audio.pause();
+    }
+}
+
+export function emergencyAlarmBell(type) {
+    const audio = document.getElementById("emergency_alarm_bell");
+
+    audio.currentTime = 0;
+    if (type == "play") {
+    audio.play();
+    } else {
+    audio.pause();
+    }
+}
 
 export function leadingZeros(n, digits) {
     let zero = "";
@@ -215,7 +263,7 @@ export function videoResize() {
 }
 
 export function escapeFullScreen() {
-    document.exitFullscreen();
+    // document.exitFullscreen();
 }
 
 export function getPersonnelInRoom() {
@@ -235,6 +283,33 @@ export function getPersonnelInRoom() {
     chattingStore.setPersonnelInRoom(personnelInRoomCalc.length);
 }
 
+export function getDirectMessageTimeZone(standard) {
+    // let x = new Date().getTimezoneOffset() / 60 // UTC - GMT = x (대한민국 기준 x = -9)		주어가 UTC 이기 때문에 -9 라고 나옴
+    // x = x * 60 * 60 * -1 // (시 * 분 * 초)	음수는 양수로, 양수는 음수로
+
+    // const now = new Date((standard + x) * 1000)
+    const now = new Date(Number(standard) * 1000);
+
+    const strDatetime =
+    leadingZeros(now.getMonth() + 1, 2) +
+    "/" +
+    leadingZeros(now.getDate(), 2) +
+    "　" +
+    leadingZeros(now.getHours(), 2) +
+    ":" +
+    leadingZeros(now.getMinutes(), 2);
+    return strDatetime;
+}
+
+export function getFeedsDisplay(type, content) {
+    const feedsDisplay = content.split("#");
+    if (type == "display") {
+    return feedsDisplay[0];
+    } else {
+    return feedsDisplay[1];
+    }
+}
+
 export default {
     getWorldTime,
     buildTree,
@@ -244,4 +319,9 @@ export default {
     deleteCookie,
     getChattingTimeZone,
     videoResize,
+    getDirectMessageTimeZone,
+    dircetMessageBell,
+    getFeedsDisplay,
+    fileReceiveMessageBell,
+    emergencyAlarmBell,
 };

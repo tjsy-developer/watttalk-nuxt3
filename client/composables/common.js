@@ -81,6 +81,7 @@ export function customUserNickname(deviceid) {
     return remoteInfo.nickName;
 }
 
+let toastCount = 0;
 export function commonToastMessage(string) {
     const toast = document.getElementById("toast_common_message");
     // const result = toast.classList.contains("reveal")

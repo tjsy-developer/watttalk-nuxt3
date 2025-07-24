@@ -7,16 +7,15 @@
             autoplay
         ></audio>
 
-        <div v-if="callingLayoutType === 1" class="row justify-center callingLayout1">
+        <div :class="`callingLayout${callingLayoutType}`">
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
-                    userList[windowKey].status !== 'none' &&
-                    userList[windowKey].status !== 'main'
+                    userList[windowKey]?.status !== 'none'
                 "
                 :key="windowKey"
                 :style="{
-                    width: videoWidth,
+                    width: callingLayoutType == 1 ? videoWidth : 'inherit',
                     display: 'inline-block',
                     'object-fit': 'cover',
                 }"
@@ -24,21 +23,28 @@
             >
                 <CallWindow
                     v-if="windowKey === 0"
-                    id="videolocal"
-                    :comp-data="userList[windowKey]"
+                    :id="videolocal"
+                    :compData="userList[windowKey] || []"
                     :value="windowKey"
                 />
                 <CallWindow
-                    v-else
+                    v-else-if="windowKey !== 0"
                     :id="`videoremote${windowKey}`"
-                    :comp-data="userList[windowKey]"
+                    :compData="userList[windowKey] || []"
+                    :value="windowKey"
+                    :style="{ 'object-fit': 'cover' }"
+                />
+                <CallWindow
+                    v-if="callingLayoutType !== 1 && userList[windowKey]?.status == 'main'"
+                    :id="`root${windowKey}`"
+                    :compData="userList[windowKey] || []"
                     :value="windowKey"
                     :style="{ 'object-fit': 'cover' }"
                 />
             </div>
         </div>
 
-        <div v-else-if="callingLayoutType === 3" class="row content-start callingLayout3">
+        <!-- <div v-else-if="callingLayoutType === 3" class="row content-start callingLayout3">
             <div id="callingLayoutWrap3" class="col-auto column callingLayoutWrap3">
                 <div class="callingLayoutForm">
                     <div
@@ -47,25 +53,33 @@
                         :key="windowKey"
                         class="col callingWindowContainer3"
                     >
-                        <CallWindow
+                        <div
                             v-if="windowKey === 0"
                             id="videolocal"
-                            :comp-data="userList[windowKey]"
+                            :compData="userList[windowKey] || []"
+                            :videoTag="callStore.videoTagArray[0]"
+                            :stream="callStore.videoStreamArray[0]"
                             :value="windowKey"
-                        />
-                        <CallWindow
+                        >
+                            <CallWindow />
+                        </div>
+                        <div
                             v-else
                             :id="`videoremote${windowKey}`"
-                            :comp-data="userList[windowKey]"
+                            :compData="userList[windowKey] || []"
+                            :videoTag="callStore.videoTagArray[windowKey]"
+                            :stream="callStore.videoStreamArray[windowKey]"
                             :value="windowKey"
                             :style="{ height: '105px', 'object-fit': 'cover' }"
-                        />
+                        >
+                            <CallWindow />
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col z-index-1">
                 <CallWindow
-                    :comp-data="userList[roomNumberCount - 1]"
+                    :compData="userList[roomNumberCount - 1] || []"
                     :calling-layout-type="callingLayoutType"
                 >
                     <template #default>
@@ -78,7 +92,7 @@
         <div v-else-if="callingLayoutType === 4" class="row content-start callingLayout4">
             <div class="col-12 fullTrue">
                 <CallWindow
-                    :comp-data="userList[roomNumberCount - 1]"
+                    :compData="userList[roomNumberCount - 1] || []"
                     :calling-layout-type="callingLayoutType"
                 >
                     <template #default>
@@ -200,7 +214,7 @@
                     class="upDownImg upImg blinking"
                 />
             </button>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -209,6 +223,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
+import CallWindow from "./CallWindow.vue";
 
 const commonStore = useCommonStore();
 const callStore = useCallStore();
@@ -216,7 +231,6 @@ const chattingStore = useChattingStore();
 
 // Assuming callingWindow and thumbnail are components that Nuxt auto-imports
 // from your components/ directory. If not, you might need to import them:
-import CallWindow from '@/components/CallWindow.vue';
 
 // import Thumbnail from '@/components/Thumbnail.vue';
 
@@ -233,10 +247,6 @@ const headerHeight = ref(0);
 const test = ref([]);
 const videoWidth = ref("");
 const displayMode = ref("darkmode");
-
-// --- Store access (computed equivalent) ---
-// Using Vuex for demonstration, replace with Pinia if that's your Nuxt 3 setup
-const store = useStore();
 
 const userList = computed(() => commonStore.userListStatus);
 const callingLayoutType = computed(() => commonStore.callingLayoutType);
@@ -404,10 +414,10 @@ onMounted(() => {
             console.warn("Element with id 'fixBg' not found during mount for layout 4.");
         }
 
-        nextTick(() => {
-            window.addEventListener("resize", onResize);
-            document.addEventListener("wheel", handleWheelScroll);
-        });
+        // nextTick(() => {
+        //     window.addEventListener("resize", onResize);
+        //     document.addEventListener("wheel", handleWheelScroll);
+        // });
     }
 
     // Initial setup for layout 1
@@ -418,20 +428,14 @@ onMounted(() => {
     // Socket.io setup
     // Nuxt 3 typically uses `useNuxtApp().$nuxtSocket` or imports directly
     // if you've configured a plugin. Assuming `@nuxtjs/websocket` or similar.
-    const { $nuxtSocket } = useNuxtApp(); // Get $nuxtSocket from Nuxt app instance
-    const signalling_socket = $nuxtSocket({
-        name: "signalling",
-        persist: "signalling",
-        reconnection: true,
-        teardown: false,
-    });
+    const { $signallingSocket } = useNuxtApp(); // Get $nuxtSocket from Nuxt app instance
 
-    signalling_socket.on("multiCalling", (response) => {
+    $signallingSocket.on("multiCalling", (response) => {
         if (response) {
             calcWidth(personnelInRoom.value + 1);
         }
     });
-    signalling_socket.on("cancelCalling", (res) => {
+    $signallingSocket.on("cancelCalling", (res) => {
         if (res) {
             calcWidth(personnelInRoom.value);
         }
@@ -513,6 +517,7 @@ watch(callingLayoutType, (result) => {
         nextTick(() => {
             calcWidth(personnelInRoom.value);
         });
+        videoWidth.value =  "263.5px"
     }
 });
 
@@ -545,10 +550,7 @@ onUnmounted(() => {
         width: 7px;
         height: 11px;
     }
-
-    &::-webkit-scrollbar-thumb {
-        // No properties defined here in the original
-    }
+    position: relative;
 }
 
 .fit {
@@ -590,36 +592,6 @@ onUnmounted(() => {
         }
     }
 }
-
-.callingLayout4 {
-    width: 100%;
-    height: 100%;
-    // padding: 30px
-
-    > div {
-        &:first-child {
-            width: 100%;
-            //height: 80%
-        }
-
-        &:last-child {
-            width: 100%;
-            position: absolute;
-        }
-    }
-}
-
-.callingWindowContainer4:not(:last-child) {
-    padding-right: 30px;
-    width: 263.5px;
-    height: 150px;
-}
-
-.callingWindowContainer4:last-child {
-    width: 229px;
-    height: 90%;
-}
-
 .aaa {
     height: 100%;
 }
@@ -633,30 +605,61 @@ onUnmounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
-    // >.windowContainer
-    //  max-height: calc(100% / 3.25) !important
+    > .windowContainer {
+        aspect-ratio: 16 / 9.14;
+        margin: 6.9px 12px;
+        min-width: 315px;
+    }
+}
+
+.callingLayout3 {
+    display: flex;
+    align-items: center;
+    /* padding-bottom: 52px; */
+    height: 100%;
+    background: rgba(60, 60, 60, 0.9);
+    padding: 18px;
+    border-radius: 13px;
+    overflow: scroll;
+    max-width: 227px;
+    width: -webkit-fill-available;
+    position: absolute;
+    gap: 25px;
+    /* bottom: 8px; */
+    flex-direction: column;
+    >.windowContainer {
+        width: 227px !important;
+        height: 150px;
+        flex-shrink: 0;
+    }
+}
+
+.callingLayout4 {
+    display: flex;
+    align-items: center;
+    /* padding-bottom: 52px; */
+    height: 176px;
+    background: rgba(60, 60, 60, 0.9);
+    padding: 0 18px;
+    border-radius: 13px;
+    overflow: scroll;
+    max-width: 100%;
+    width: -webkit-fill-available;
+    position: absolute;
+    gap: 10px;
+    bottom: 8px;
+    > .windowContainer + .windowContainer {
+        margin-left: 10px;
+    }
+    >.windowContainer {
+        width: 227px !important;
+        height: 150px;
+        flex-shrink: 0;
+    }
 }
 
 .windowContainer:nth-child(3n + 1) {
     // margin-left: 55px
-}
-
-.windowContainer {
-    aspect-ratio: 16 / 9.14;
-    margin: 6.9px 12px;
-    // max-height: 279px
-    min-width: 315px;
-    //  min-height: 168px
-    //  margin: 4px 12px
-    @media all and (min-width: 1000px) and (max-width: 1340px) {
-        // width: calc(100% / 2.2)
-        height: auto;
-    }
-    @media all and (max-width: 999px) {
-        // width: calc(100% / 1.2)
-        height: auto;
-        // height: 279px
-    }
 }
 
 .userWindow {
@@ -665,62 +668,17 @@ onUnmounted(() => {
     margin: 10px;
 }
 
-.callingLayout3 {
-    width: 100%;
-    height: 100%;
-    padding: 20px 10px 20px 20px;
-
-    > div {
-        height: 100%;
-
-        &:first-child {
-            // width: 180px
-            width: 200px;
-            margin-right: 10px;
-        }
-
-        &:last-child {
-            // padding-left: 30px
-        }
-    }
-}
-
-.mobileLayout {
-    width: 100%;
-    height: 100%;
-    position: relative;
-
-    > div {
-        height: 100%;
-
-        &:first-child {
-            // width: 180px
-            width: 200px;
-        }
-    }
-}
-
-.callingWindowContainer3:not(:first-child) {
-    padding-top: 28px;
-    height: 139px !important;
-}
-
-.callingWindowContainer3 {
-    width: 180px;
-    height: 139px !important;
-}
-.callingWindowContainer3:first-child {
-    width: 180px;
-    height: 105px !important;
-}
-
-#videoMain {
-    // max-height: calc(calc(calc(100vw - 86px) / 16) * 9)
-}
 
 #videolocal {
     border: 4px solid red !important;
     object-fit: cover;
+    position: relative;
+    box-sizing: border-box;
+    > video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 #panel-inner-main {
@@ -737,29 +695,6 @@ onUnmounted(() => {
     padding-top: 56.25%;
     height: 0;
     overflow: hidden;
-}
-.callingLayoutWrap3 {
-    overflow-y: auto;
-    min-height: 105px !important;
-}
-
-.callingLayoutForm {
-    //height: 100%
-}
-
-.callingLayoutWrap4 {
-    border-radius: 11px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    position: absolute;
-    bottom: 0;
-    left: 2px;
-    height: 180px;
-}
-
-.callingLayoutForm4 {
-    padding-left: 10px;
-    margin: auto;
 }
 
 .fullFalse {
@@ -851,12 +786,6 @@ onUnmounted(() => {
             position: absolute !important;
         }
     }
-    > #callingLayoutWrap3 {
-        direction: rtl;
-        > .callingLayoutForm {
-            direction: ltr;
-        }
-    }
 }
 
 .fade-leave-active,
@@ -878,16 +807,4 @@ onUnmounted(() => {
     left: 20%;
     top: 43%;
 }
-
-/* 모바일 가로, 테블릿 세로 (해상도 ~767px)*/
-@media all and (max-width: 767px) {
-    .remoteCaptionName {
-        font-size: 14px !important;
-    }
-}
-
-// mobileResponsive
-// @media (orientation: landscape )
-//  #videoMain
-//      height: 100%
 </style>

@@ -5,6 +5,9 @@ export default defineNuxtConfig({
     devtools: {
         enabled: true,
     },
+    imports: {
+        dirs: ["utils"], // 또는 'composables', 'stores', 'utils' 등
+    },
     app: {
         head: {
             title: process.env.NUXT_PUBLIC_HEAD_TITLE,
@@ -26,6 +29,14 @@ export default defineNuxtConfig({
                     type: "module",
                     src: "/js/janus.js",
                     defer: false,
+                },
+                {
+                    src: "/js/toastr.min.js",
+                    defer: true,
+                },
+                {
+                    src: "/js/spin.min.js",
+                    defer: true,
                 },
             ],
             link: [

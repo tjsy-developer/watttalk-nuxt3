@@ -36,7 +36,7 @@ export function useLoginEvents() {
 
     const handleLoginResponse = (response) => {
         const data = JSON.parse(response);
-
+        console.log('login', data)
         const status = loginStore.loginStatus;
 
         if (data.errcode === statusCode.Unauthorized) {

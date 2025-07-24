@@ -1,5 +1,6 @@
 // stores/app.ts (or a more descriptive name like stores/meeting.ts)
 // eslint-disable-next-line no-undef
+import { useRouter } from 'nuxt/app';
 import { defineStore } from 'pinia';
 // import { axiosRequest } from "../plugins/axiosRequest"; // axiosRequest는 그대로 임포트
 
@@ -50,7 +51,6 @@ function newNoticeDateCompare(saveDate) {
 // 간단한 전역 변수라면 그대로 유지할 수 있습니다.
 // 여기서는 `userDevice`를 상태에 직접 통합하고, `moduleA`는 제거합니다.
 // 만약 `moduleA`가 더 복잡한 로직을 가진다면 별도의 Pinia 스토어로 만드는 것이 좋습니다.
-
 export const useCommonStore = defineStore("common", {
     state: () => ({
         contentsViewType: 0,
@@ -132,9 +132,6 @@ export const useCommonStore = defineStore("common", {
         isShare() {
             this.isShare = !this.isShare;
         },
-        isDrawing() {
-            this.isDrawing = !this.isDrawing;
-        },
         setIsDrawing(payload) {
             this.isDrawing = payload;
         },
@@ -161,6 +158,8 @@ export const useCommonStore = defineStore("common", {
         },
         setAlert(payload) {
             this.alertNum = payload;
+            const modalStore = useModalStore();
+            modalStore.openModal("call");
         },
         // `userList`라는 state 속성이 정의되어 있지 않습니다.
         // 만약 `userListStatus`를 의미한다면 해당 속성으로 변경해야 합니다.
@@ -332,6 +331,8 @@ export const useCommonStore = defineStore("common", {
         },
         setNoneOverlayAlertStatus(payload) {
             this.noneOverlayAlertStatus = payload;
+            const modalStore = useModalStore();
+            modalStore.openModal("noneOverlayModal");
         },
         // 메인화면 줌 레벨 변경
         setMainScreenZoomLevel(payload) {

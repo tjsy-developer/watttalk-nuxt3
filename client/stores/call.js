@@ -1,5 +1,6 @@
 // stores/calling.ts
 import { defineStore } from 'pinia';
+import { useModalStore } from './modal';
 
 export const useCallStore = defineStore("call", {
     state: () => ({
@@ -253,7 +254,9 @@ export const useCallStore = defineStore("call", {
             this.hostChangeRequest = payload;
         },
         setHostRequestStatus(payload) {
+            const modalStore = useModalStore();
             this.hostRequestStatus = payload;
+            modalStore.openModal("host")
         },
         setHostRequestResult(payload) {
             this.hostRequestResult = payload;

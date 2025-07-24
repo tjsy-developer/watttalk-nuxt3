@@ -1,33 +1,96 @@
 <script setup lang="ts">
 
 import { useImageAssets } from '@/composables/useImageAssets';
-import { ref } from 'vue';
+import { useCommonStore } from '@/stores';
+import { useCallStore } from '@/stores/call';
+import { useChattingStore } from '@/stores/chatting';
+import { useModalStore } from '@/stores/modal';
+import { computed, ref } from 'vue';
 
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
 
 const { menuImages } = useImageAssets();
+const commonStore = useCommonStore();
+const callStore = useCallStore();
+const chattingStore = useChattingStore();
+const modalStore = useModalStore();
+
+const isHost = computed(() => chattingStore.videoCallHost)
+const isDrawing = computed(() => commonStore.isDrawing)
+const isHQCapture = computed(() => callStore.HQCaptureShow)
+const isFileSend = computed(() => commonStore.fileSend)
+const isShare  = computed(() => commonStore.isShare)
+const isSound = computed(() => commonStore.isSounded)
+const isVideo = computed(() => commonStore.isVideo)
+
+const getCallingType = computed(() => callStore.callingType);
+const getPersonnelInRoom = computed(() => chattingStore.personnelInRoom);
+const getCallingPopupResult = computed(() => callStore.callingPopupResult);
+
+function handleClickHangUp() {
+
+    if (getCallingType.value == "videoCall") {
+        // 통화 종료 확인 팝업
+        commonStore.setNoneOverlayAlertStatus(4)
+        modalStore.openModal("noneOverlayModal")
+    } else if (
+        getCallingType.value == "meetingCall" ||
+        getCallingType.value == "joinGuestCall"
+    ) {
+        // 회의실 일 경우 혼자가 아닌 경우에는 항상 4번
+        if (getPersonnelInRoom.value > 1) {
+            // 통화 종료 확인 팝업
+            commonStore.setNoneOverlayAlertStatus(4)
+            modalStore.openModal("noneOverlayModal")
+        } else if (getPersonnelInRoom.value == 1) {
+            // 회의실 일 경우 혼자일 경우에는 항상 5번
+            commonStore.setNoneOverlayAlertStatus(5)
+            modalStore.openModal("noneOverlayModal")
+        } else {
+            console.log(
+                "*** methods: cancelCallClick -> 현재 방에 입장한 사람이 없습니다."
+            )
+        }
+    }
+}
 </script>
 
 <template>
-    <div class="leftbar">
-        <router-link to="/dashboard" class="icon-btn" title="연락처">
-            <img :src="menuImages.call" />
-            <label class="icon-label">연락처</label>
-        </router-link>
-
-        <router-link to="/meeting" class="icon-btn" title="회의실">
-            <img :src="menuImages.meetingRoom" />
-            <label class="icon-label">회의실</label>
-        </router-link>
-
-        <a :href="'http://localhost:8223/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
-            <img :src="menuImages.cloud" />
-            <label class="icon-label">클라우드</label>
-        </a>
-        <div class="icon-btn bell" title="알림">
-            <img :src="menuImages.notice"></img>
+    <div class="leftbar end">
+        <div
+            v-if="isHost && (!isDrawing && !isShare && isHQCapture)"
+            class="icon-btn func-img" title="고화질 캡처">
+            <img src="@/assets/images/leftSideBar/ic_capture_hd.png">
         </div>
+        <div
+            v-if="isHost && (!isDrawing && !isShare && !isHQCapture)"
+            class="icon-btn func-img" title="화면 캡처">
+            <img src="@/assets/images/leftSideBar/ic_capture.png">
+        </div>
+        <div
+            v-if="isHost"
+            class="icon-btn func-img" title="드로잉">
+            <img src="@/assets/images/leftSideBar/ic_drawing.png">
+        </div>
+        <div class="icon-btn func-img" title="파일전송">
+            <img src="@/assets/images/leftSideBar/ic_file.png">
+        </div>
+        <div
+            v-if="isHost"
+            class="icon-btn func-img" title="화면공유">
+            <img src="@/assets/images/leftSideBar/ic_share-1.png">
+        </div>
+        <div class="icon-btn func-img" title="내 마이크 음소거">
+            <img src="@/assets/images/leftSideBar/ic_mic-large.png">
+        </div>
+        <div class="icon-btn func-img" title="내 화면 활성화">
+            <img src="@/assets/images/leftSideBar/ic_video.png">
+        </div>
+        <div class="icon-btn func-img" title="통화종료" @click="handleClickHangUp">
+            <img src="@/assets/images/leftSideBar/ic_hang-up.png">
+        </div>
+        <div class="icon-btn func-img"></div>
         <audio id='calling_bell' loop style="display:none;">
             <source src="@/assets/sounds/Wood.ogg" type='audio/ogg' />
         </audio>
@@ -47,6 +110,6 @@ const { menuImages } = useImageAssets();
             <source src="@/assets/sounds/emergency_alarm.wav" type='audio/wav' />
         </audio>
     </div>
-    //- 카메라 장치가 없을 경우 공유할 canvas
     <canvas id="videoNone" style="display:none;"></canvas>
 </template>
+

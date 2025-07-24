@@ -2344,7 +2344,7 @@ const getisPdfUploading = computed(() => drawingStore.isPdfUploading);
 
 // mapState로 가져오던 Vuex 상태들을 개별 computed로 변환
 const files = computed(() => drawingStore.files);
-const callingLayoutType = computed(() => callStore.callingLayoutType);
+const callingLayoutType = computed(() => commonStore.callingLayoutType);
 const callingWindowCount = computed(() => callStore.callingWindowCount);
 const lastCanvasJson = computed(() => drawingStore.lastCanvasJson);
 const vxCanvasHistory = computed(() => drawingStore.canvasHistory);

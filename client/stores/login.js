@@ -53,6 +53,7 @@ export const useLoginStore = defineStore("login", {
                 // `this.UserInfo`는 state에 없으므로, `this.userInfo`로 변경하거나
                 // 임시 변수로 사용 후 state.userInfo에 할당합니다.
                 const decodedUserInfo = jwtDecode(payload);
+                console.log(decodedUserInfo);
                 this.userInfo = decodedUserInfo; // Assuming userInfo in state stores the decoded object
                 this.sessionAuth = decodedUserInfo.auth;
                 this.sessionID = decodedUserInfo.id;

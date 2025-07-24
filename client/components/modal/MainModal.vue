@@ -3,7 +3,7 @@
 			v-if="commonStore.alertNum > 0 && commonStore.alertNum < 5">
 			<div class="notice notice-header">
 				<span>{{ t("알림창") }}</span> 
-				<button @click="close">
+				<button @click="openModalCheck">
 					<img src="@/assets/images/ic_close.png">
 				</button>
 			</div>
@@ -241,6 +241,7 @@ import { useMeetingStore } from "@/stores/meeting";
 import { useModal, VueFinalModal } from "vue-final-modal";
 import { useLoginStore } from "@/stores/login";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
+import { emitter } from "@/utils/eventBus";
 
 const commonStore = useCommonStore();
 const directCallStore = useDirectCallStore();
@@ -263,6 +264,31 @@ onMounted(() => {
 	if (commonStore.alertNum == 8) {
 		firstEntry()
 	}
+
+	emitter.on("openMeetingChecking", (response) => {
+		console.log("*** socket.on: openMeetingChecking res = ", response)
+		const json = response
+		console.log("*** socket.on: json = ", json)
+		if (json.start_status == 0) {
+			if (json.everyone_start_yn == 1) {
+				this.openMeeting(json.unique_roomid)
+				this.$store.commit("directcall/clearDirectCallInfo")
+			} else {
+				alert('noneOverlayModal 6')
+				// this.noneOverlayModal(6)
+			}
+		} else if (json.start_status == 1) {
+			requestJoinMeeting({
+				meetingSeq: meetingSeq,
+				roomID: json.roomid,
+				uniqueRoomID:json.unique_roomid
+			})
+		} else if (json.start_status == 3) {
+			console.log("회의실이 삭제되어있다.")
+			alert('noneOverlayModal 6')
+			// this.noneOverlayModal(8)
+		}
+	})
 });
 function openModalCheck() {
     modalStore.closeModal("call");
@@ -319,10 +345,11 @@ function setInviteCancelCalling() {
 
 function directCallResult(type) {
     const meetingSeq = directcallSeq.value;
-
+	alert(type)
     if (type == 1) {
-        requestOpenMeetingChecking(meetingSeq);
-        meetingStore.setMeetingSeq(meetingSeq);
+		requestOpenMeetingChecking(meetingSeq);
+		meetingStore.setOpenMeetingCheck(true)
+		meetingStore.setMeetingSeq(meetingSeq);
         directCallStore.resetDirectCallInfo();
         close();
     } else {

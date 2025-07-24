@@ -9,11 +9,11 @@
         <MainModal></MainModal>
     </VueFinalModal>
     <VueFinalModal
-        v-model="deviceModalState.visible"
+        v-model="isDeviceModalVisible.visible"
         :clickToClose="false"
         class="modal-container device-modal"
     >
-        <DeviceSelectModal v-bind="deviceModalState.props"></DeviceSelectModal>
+        <DeviceSelectModal v-bind="isDeviceModalVisible.props"></DeviceSelectModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isMessageModalVisible"
@@ -36,25 +36,44 @@
     >
         <FileSendModal></FileSendModal>
     </VueFinalModal>
-    <!--  -->
+    <VueFinalModal
+        v-model="isAlertModal"
+        :clickToClose="false"
+        class="modal-container alert-modal"
+    >
+        <AlertModal></AlertModal>
+    </VueFinalModal>
     <dHeader></dHeader>
     <div class="content">
         <slot></slot>
     </div>
     <sidebar></sidebar>
+    <div id="toast">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
+    <div id="toast_signalling">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
+    <div id="toast_common_message">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
 </template>
 
 <script setup>
-import { watch } from "vue";
+import { onMounted } from "vue";
 import { ModalsContainer, VueFinalModal } from "vue-final-modal";
+
 import dHeader from "@/components/layout/header.vue";
 import sidebar from "@/components/layout/sidebar.vue";
 import MainModal from "@/components/modal/MainModal.vue";
 import DeviceSelectModal from "@/components/modal/DeviceSelectModal.vue";
 import MessageModal from "@/components/modal/MessageModal.vue";
-import { onMounted } from "vue";
 import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
+import AlertModal from "@/components/modal/AlertModal.vue"
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -68,13 +87,6 @@ const isLoginModalVisible = computed({
 });
 
 const isDeviceModalVisible = computed({
-    get: () => modalStore.isModalOpen("device"),
-    set: (val) => {
-        if (!val) modalStore.closeModal("device", false);
-    },
-});
-
-const deviceModalState = computed({
     get: () => ({
         visible: modalStore.isModalOpen("device"),
         props: modalStore.getModalData("device"),
@@ -86,7 +98,7 @@ const deviceModalState = computed({
     },
 });
 
-console.log(deviceModalState);
+console.log(isDeviceModalVisible);
 
 const isMessageModalVisible = computed({
     get: () => modalStore.isModalOpen("message"),
@@ -106,6 +118,13 @@ const isFileSendModalVisible = computed({
     get: () => modalStore.isModalOpen("fileSend"),
     set: (val) => {
         if (!val) modalStore.closeModal("fileSend", false);
+    },
+});
+
+const isAlertModal = computed({
+    get: () => modalStore.isModalOpen("noneOverlayModal"),
+    set: (val) => {
+        if (!val) modalStore.closeModal("noneOverlayModal", false); // ESC 키나 외부 클릭으로 닫힐 때
     },
 });
 

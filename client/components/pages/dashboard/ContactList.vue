@@ -2,7 +2,7 @@
     <div>
         <div class="menu-container">
             <button
-                v-for="(menuOpt, index) in contactListMenus"
+                v-for="(menuOpt) in contactListMenus"
                 @click="handleChangeMenu(menuOpt.value)"
                 :key="menuOpt.value"
                 :class="menuType == menuOpt.value ? 'menu-btn selected' : 'menu-btn'"

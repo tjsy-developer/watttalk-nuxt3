@@ -15,21 +15,24 @@ import ContactList from "@/components/pages/dashboard/ContactList.vue";
 import { userDataGetInfo } from "@/composables/common";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useLoginStore } from "@/stores/login";
-import { callingBell } from "@/utils/common";
+import { useMeetingStore } from "@/stores/meeting";
+import { callingBell, getDirectMessageTimeZone } from "@/utils/common";
 import { emitter } from "@/utils/eventBus";
+import { userListGetNickname } from "@/utils/userList";
 import { useRoute, useRouter } from "nuxt/app";
 import { storeToRefs } from "pinia";
+import { emit } from "process";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed } from "vue";
 const router = useRouter();
 
 const count = ref(0);
 
+const meetingStore = useMeetingStore();
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const loginStore = useLoginStore();
-const meetingStore = useMeetingStore();
 // 상태 값 추출
 const {
     contentsViewType,
@@ -118,9 +121,9 @@ watch(
                 if (callingPopupResultData.meetingSeq != null) {
                     console.log("*** watch: meetingSeq is Not Null !!");
                     // @ts-ignore
-                    meettingStore.setMeetingSeq(callingPopupResultData.meetingSeq);
+                    meetingStore.setMeetingSeq(callingPopupResultData.meetingSeq);
                     requestJoinMeeting({
-                        meetingSeq: meettingStore.meetingSeq,
+                        meetingSeq: meetingStore.meetingSeq,
                         roomID: callingPopupResultData.roomid,
                         uniqueRoomID: callStore.uniqueRoomid,
                     });
@@ -143,13 +146,12 @@ watch(
             callingBell("stop");
             console.log("*** watch: reject");
 
-            requestRefuseCalling(
-                callingPopupResultData.roomid,
-                callingPopupResultData.m_local_deviceid,
-                callingPopupResultData.deviceid,
-                callingPopupResultData.institution,
-                callingPopupResultData.nickname,
-            );
+            requestRefuseCalling({
+                remoteDeviceId: callingPopupResultData.deviceid,
+                roomID: callingPopupResultData.roomid,
+                institution: callingPopupResultData.institution,
+                nickname: callingPopupResultData.nickname
+            });
 
             callStore.setUniqueRoomid("");
 
@@ -224,6 +226,31 @@ onMounted(() => {
     sessionStorage.removeItem("m_remote_devicetype")
     sessionStorage.removeItem("m_remote_status")
     sessionStorage.removeItem("m_remote_deviceid")
+    commonStore.makeUserListStatus()
+
+    emitter.on("createRoomID", function(response) {
+        if (response) {
+            const json = response
+            console.log('*** create room id response:', json);
+            // console.log("*** socket: createRoom response : roomid: " + json.roomid)
+
+            if (json.roomid != "") {
+                // 새로 생성한 roomid sessionStorage 등록
+                sessionStorage.setItem("m_roomid", json.roomid)
+                sessionStorage.setItem("inRoomFlag", "true")
+                sessionStorage.setItem("createRoomFlag", "true")
+
+                // callingType 설정 : 회의실인지 영상통화 인지 구분
+                callStore.setCallingType("videoCall")
+
+                // uniqueRoomid 설정
+                callStore.setUniqueRoomid(json.unique_roomid)
+
+                // 페이지 이동 (방입장)
+                router.push("/call")
+            }
+        }
+    })
 
     emitter.on("calling", (response) => {
         const json = response;
@@ -258,7 +285,6 @@ onMounted(() => {
 
             // 통화중 팝업창 표시
             commonStore.setAlert(1);
-            modalStore.openModal("call");
         } else {
             console.log("*** socket: calling >> When not making calls at the same time");
 
@@ -273,13 +299,12 @@ onMounted(() => {
 
             // 통화중 팝업창 표시
             commonStore.setAlert(0);
-            modalStore.openModal("call");
 
             // 사용자 동적 생성
             // 테스트 :: 사용자가 참가할 때 현재 방의 인원수를 알아야 하기에 추가
             if (json.roomNumberCount != null) {
                 commonStore.setRoomNumberCount(json.roomNumberCount);
-                commonStore.setRoomNumberCount();
+                commonStore.makeUserListStatus();
             }
 
             // callingPopupResult
@@ -352,11 +377,10 @@ onMounted(() => {
                 sessionStorage.setItem("m_inviting", true);
 
                 commonStore.setAlert(6);
-                modalStore.openModal("call");
 
                 // 통화 중 상대 초대할 경우 room ID 설정
                 if (
-                    self.contentsViewType == 2 &&
+                    contentsViewType.value == 2 &&
                     sessionStorage.getItem("m_roomid") != null
                 ) {
                     m_roomid.value = sessionStorage.getItem("m_roomid");
@@ -376,13 +400,12 @@ onMounted(() => {
 
                 // 통화중 팝업창 표시
                 commonStore.setAlert(1);
-                modalStore.openModal("call");
             }
         }
     });
 
     emitter.on("groupRoom", (response) => {
-        const json = JSON.parse(response);
+        const json = response;
         console.log("*** groupRoom response", json);
 
         if (json.roomid != "") {
@@ -392,7 +415,6 @@ onMounted(() => {
 
                 // 거절 팝업창 표시
                 commonStore.setAlert(3);
-                modalStore.openModal("call");
                 sessionStorage.setItem("m_callWaiting", "false");
             } else {
                 // 발신중 팝업 제거
@@ -406,7 +428,7 @@ onMounted(() => {
                     console.log("*** socket: groupRoom is MeetingSeq Not Null !!");
                     meetingStore.setMeetingSeq(json.meeting_seq);
                     requestJoinMeeting({
-                        meetingSeq: meettingStore.meetingSeq,
+                        meetingSeq: meetingStore.meetingSeq,
                         roomID: json.roomid,
                         uniqueRoomID: callStore.uniqueRoomid,
                     });
@@ -418,6 +440,7 @@ onMounted(() => {
                     sessionStorage.setItem("createRoomFlag", "false");
 
                     // 사용자가 참가할 때 현재 방의 인원수를 알아야 하기에 추가
+                    console.log(json.roomNumberCount)
                     if (json.roomNumberCount != null) {
                         commonStore.setRoomNumberCount(json.roomNumberCount);
                         commonStore.makeUserListStatus();
@@ -432,6 +455,269 @@ onMounted(() => {
             }
         }
     });
+
+    emitter.on("cancelCalling", function(response) {
+        console.log("*** socket: cancelCalling response")
+        console.log(response)
+
+        callingBell("stop")
+
+        // 수신 모달 해제
+        modalStore.closeModal("call")
+        sessionStorage.setItem("m_callWaiting", "false")
+
+        /* 전화 자동 수락 */
+        if (autoCallAcceptTime.value > 0) {
+            // 자동 수락 취소
+            if (funcAutoCallAceept.value != null) {
+                console.log("*** socket: cancelCalling >> AutoCallAccept Cancel")
+                clearTimeout(funcAutoCallAceept.value)
+                funcAutoCallAceept.value = null
+            }
+        }
+    })
+
+    emitter.on("multiRefuseCalling", function(response) {
+        console.log("*** socket: multiRefuseCalling response")
+        console.log(response)
+
+        // 통화 발신창 닫기 --> 통화 거절 팝업
+        commonStore.setAlert(3)
+        sessionStorage.setItem("m_callWaiting", "false")
+    })
+
+    emitter.on("inviteCancelCalling", function(response) {
+        try {
+            const json = JSON.parse(response)
+            console.log("*** socket: inviteCancelcalling response")
+            console.log(json)
+
+            m_remote_deviceid.value = json.deviceid
+
+            // 1:N 시 방을 나간 해당 대상만 Disconnection 처리
+            if (json.multiuser != undefined && json.multiuser == 1) {
+                console.log(
+                    "*** socket: inviteCancelcalling >> 1:N 시 방을 나간 해당 대상만 Disconnection 처리"
+                )
+
+                // 팝업 hide
+                modalStore.closeModal("call")
+                console.log("callingPopupHide")
+
+                // 통화 대기 중 상태 -> 통화 종료 상태로 변경
+                sessionStorage.setItem("m_callWaiting", false)
+            } else {
+                console.log(
+                    "*** socket: inviteCancelcalling >> 1:1 시 방을 완전히 나가는 걸로 처리"
+                )
+
+                // 팝업 hide
+                modalStore.closeModal("call")
+
+                // 통화 대기 중 상태 -> 통화 종료 상태로 변경
+                sessionStorage.setItem("m_callWaiting", false)
+            }
+
+            callingBell("stop")
+        } catch (e) {
+            console.error(`${e}`)
+        }
+    })
+
+    emitter.on("directMessage", function(response) {
+        console.log("*** socket: directMessage response")
+        console.log(response)
+
+        const json = JSON.parse(response)
+
+        const senderNickname = userListGetNickname(json.sender)
+        const receiverNickname = sessionStorage.getItem("m_nickname")
+
+        directMessageStore.receiveDM({
+            message: json.message,
+            type: 1,
+            sender: json.sender,
+            receiver: json.receiver,
+            senderNickname,
+            receiverNickname,
+            datetime: json.datetime,
+            chattingDateTime: getDirectMessageTimeZone(json.datetime)
+            // compareDatetime: json.compareDatetime
+        })
+
+        // directMessageBell play
+        dircetMessageBell("play")
+
+        const reciverNickname = userListGetNickname(json.sender)
+
+        // 모달 생성 vuex
+        directMessageStore.addChattingModal({
+            deviceid: json.sender,
+            nickname: reciverNickname
+        })
+
+
+        // 채팅관련
+        setTimeout(function() {
+            self.$emit("privateChatDeviceID", json.sender)
+        }, 500)
+    })
+
+    // 읽음처리 socket on event
+    emitter.on("directMessageReadProcess", function(response) {
+        console.log("*** socket: directMessageReadProcess response")
+        console.log(response)
+
+        const json = response
+
+        // 1) 현재 dircetMessageList에서 받아온 데이터의 sender와 receiver가 같고,
+        // compareDatetime과 같거나 작은 것을 읽음 처리로 한다.
+
+        for (
+            let i = 0;
+            i < directMessageStore.directMessageList.length;
+            i++
+        ) {
+            const directMessageList =
+                directMessageStore.directMessageList[i]
+
+            if (
+                directMessageList.sender == json.sender &&
+                directMessageList.receiver == json.receiver &&
+                directMessageList.datetime <= json.datetime
+            ) {
+                // 읽음 처리
+                directMessageStore.setReadMessage({
+                    index: i
+                })
+            }
+        }
+    })
+
+    // 소켓 openMeetingChecking 받기
+    emitter.on("openMeetingChecking", response => {
+        if (meetingStore.openMeetingCheck == false) {
+            const json = response
+
+            // 회의실 open 상태
+            if (json.start_status == 1) {
+                console.log("*** socket.on: 회의실이 open 되어있다. 참여하자")
+                console.log(
+                    "*** socket.on: 입장할 room id 는 ",
+                    json.roomid,
+                    " 입니다."
+                )
+
+                // 입장 전에 uniqueRoomid 설정
+                callStore.setUniqueRoomid(json.unique_roomid)
+
+                requestJoinMeeting({
+                    meetingSeq: meetingStore.meetingSeq,
+                    roomID: json.roomid,
+                    uniqueRoomID: callStore.uniqueRoomid
+               })
+
+                // 회의실 0 = close 상태, 회의실 2 = delete 상태
+            }
+            meetingStore.setOpenMeetingCheck("")
+        }
+    })
+
+    emitter.on("joinMeeting", response => {
+        console.log("*** socket.on: joinMeeting res = ", response)
+        const json = response
+        console.log("*** socket.on: json = ", json)
+
+        sessionStorage.setItem("m_roomid", json.roomid)
+        sessionStorage.setItem("createRoomFlag", "false") // 내가 방장이 아니라는 것을 알기 위해서
+        sessionStorage.setItem("inRoomFlag", "true") // 방에 입장했다는 것을 알기 위해서
+
+        if (json.roomNumberCount) {
+            // console.log("#" + json.roomNumberCount)
+            // console.log("@" + self.$store.state.roomNumberCount)
+            if (json.roomNumberCount >= commonStore.roomNumberCount) {
+                commonStore.setRoomNumberCount(json.roomNumberCount)
+            }
+        }
+
+        commonStore.makeUserListStatus()
+
+        // callingType 설정 : 회의실인지 영상통화 인지 구분
+        callStore.setCallingType("meetingCall")
+        // sessionStorage.setItem("callingType", "meetingCall")
+
+        // 페이지 이동 (방입장)
+        commonStore.changeViewType(2)
+        router.push("/call")
+    })
+
+    emitter.on("getPreviousMessage", response => {
+        // console.log("*** socket.on: getPreviousMessage res = ", response)
+        console.log("*** socket.on: getPreviousMessage")
+        const json = response
+        // console.log("*** socket.on: json = ", json)
+
+        // 이전 메세지 없음
+        if (json.message.length == 0) {
+            //  console.log("데이터 없다")
+            directMessageStore.previousMessageNone(false)
+        }
+        // if {
+        // 메시지 10개를 가져오는데 0개 이상일때 채팅이력을 차례대로 넣어준다
+        if (json.message.length > 0) {
+            for (let i = 0; i < json.message.length; i++) {
+                if (
+                    json.message[i].sender == loginStore.m_local_deviceid
+                ) {
+                    // 발신
+                    const userNickname = userListGetNickname(
+                        json.message[i].receiver
+                    )
+
+                    directMessageStore.previousSendDM({
+                        message: json.message[i].message,
+                        sender: loginStore.m_local_deviceid,
+                        receiver: json.message[i].receiver,
+                        senderNickname: loginStore.nickname,
+                        receiverNickname: userNickname,
+                        datetime: json.message[i].datetime,
+                        chattingDateTime: getDirectMessageTimeZone(
+                            json.message[i].datetime
+                        ),
+                        readCheck: JSON.parse(json.message[i].readCheck)
+                    })
+                } else {
+                    // 수신
+                    const userNickname = userListGetNickname(
+                        json.message[i].sender
+                    )
+
+                   directMessageStore.previousReceiveDM({
+                        message: json.message[i].message,
+                        sender: json.message[i].sender,
+                        receiver: json.message[i].receiver,
+                        senderNickname: userNickname,
+                        receiverNickname: loginStore.nickname,
+                        datetime: json.message[i].datetime,
+                        chattingDateTime: self.getDirectMessageTimeZone(
+                            json.message[i].datetime
+                        ),
+                        readCheck: JSON.parse(json.message[i].readCheck)
+                        // compareDatetime: json.compareDatetime
+                    })
+                }
+
+                // 가져온 메시지 만큼 돌고나서 메시지 개수가 10개 이하이면 더이상 가져올 메시지가 없다는 것으로 판단
+                // 이후 (이전 데이터보기) 버튼을 없앤다
+                if (json.message.length - 1 == i && json.message.length < 10) {
+                    directMessageStore.previousMessageNone(false)
+                } else {
+                    // 채팅이 10개 이상이거나 다른 채팅모달로 넘어갔을때를 대비하여 다시 true로 변경
+                    directMessageStore.previousMessageNone(true)
+                }
+            }
+        }
+    })
 });
 
 function callingAccept(roomid, remotedeviceid) {

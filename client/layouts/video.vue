@@ -9,11 +9,11 @@
         <MainModal></MainModal>
     </VueFinalModal>
     <VueFinalModal
-        v-model="deviceModalState.visible"
+        v-model="isDeviceModalVisible.visible"
         :clickToClose="false"
         class="modal-container device-modal"
     >
-        <DeviceSelectModal v-bind="deviceModalState.props"></DeviceSelectModal>
+        <DeviceSelectModal v-bind="isDeviceModalVisible.props"></DeviceSelectModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isMessageModalVisible"
@@ -23,18 +23,25 @@
         <MessageModal></MessageModal>
     </VueFinalModal>
     <VueFinalModal
-        v-model="isHostMessageModalVisible"
-        :clickToClose="false"
-        class="modal-container message-modal"
-    >
-        <HostMessageModal></HostMessageModal>
-    </VueFinalModal>
-    <VueFinalModal
         v-model="isFileSendModalVisible"
         :clickToClose="false"
         class="modal-container file-modal"
     >
         <FileSendModal></FileSendModal>
+    </VueFinalModal>
+    <VueFinalModal
+        v-model="isAlertModal"
+        :clickToClose="false"
+        class="modal-container alert-modal"
+    >
+        <AlertModal></AlertModal>
+    </VueFinalModal>
+    <VueFinalModal
+        v-model="isHostModal"
+        :clickToClose="false"
+        class="modal-container host-modal"
+    >
+        <HostModal></HostModal>
     </VueFinalModal>
     <!--  -->
     <CallHeader></CallHeader>
@@ -43,20 +50,33 @@
 		<ChatBar></ChatBar>
     </div>
     <CallSideBar></CallSideBar>
+    <div id="toast">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
+    <div id="toast_signalling">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
+    <div id="toast_common_message">
+		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
+		<span></span>
+    </div>
 </template>
 
 <script setup>
 import { watch } from "vue";
 import { ModalsContainer, VueFinalModal } from "vue-final-modal";
-import CallHeader from "@/components/layout/CallSidebar.vue";
+import CallHeader from "@/components/layout/CallHeader.vue";
 import CallSideBar from "@/components/layout/CallSidebar.vue";
 import ChatBar from "@/components/pages/call/chat/ChatLayout.vue"
 import MainModal from "@/components/modal/MainModal.vue";
 import DeviceSelectModal from "@/components/modal/DeviceSelectModal.vue";
 import MessageModal from "@/components/modal/MessageModal.vue";
 import { onMounted } from "vue";
-import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
+import AlertModal from "@/components/modal/AlertModal.vue";
+import HostModal from "@/components/modal/HostModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -70,13 +90,6 @@ const isLoginModalVisible = computed({
 });
 
 const isDeviceModalVisible = computed({
-    get: () => modalStore.isModalOpen("device"),
-    set: (val) => {
-        if (!val) modalStore.closeModal("device", false);
-    },
-});
-
-const deviceModalState = computed({
     get: () => ({
         visible: modalStore.isModalOpen("device"),
         props: modalStore.getModalData("device"),
@@ -88,19 +101,10 @@ const deviceModalState = computed({
     },
 });
 
-console.log(deviceModalState);
-
 const isMessageModalVisible = computed({
     get: () => modalStore.isModalOpen("message"),
     set: (val) => {
         if (!val) modalStore.closeModal("message", false);
-    },
-});
-
-const isHostMessageModalVisible = computed({
-    get: () => modalStore.isModalOpen("host"),
-    set: (val) => {
-        if (!val) modalStore.closeModal("host", false);
     },
 });
 
@@ -111,6 +115,19 @@ const isFileSendModalVisible = computed({
     },
 });
 
+const isAlertModal = computed({
+    get: () => modalStore.isModalOpen("noneOverlayModal"),
+    set: (val) => {
+        if (!val) modalStore.closeModal("noneOverlayModal", false); // ESC 키나 외부 클릭으로 닫힐 때
+    },
+});
+
+const isHostModal = computed({
+    get: () => modalStore.isModalOpen("host"),
+    set: (val) => {
+        if (!val) modalStore.closeModal("host", false); // ESC 키나 외부 클릭으로 닫힐 때
+    },
+});
 onMounted(() => {
     commonStore.setAlertStatus(0);
     modalStore.isModalOpen("message");
@@ -119,11 +136,14 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .content {
-    position: absolute;
+    position: fixed;
     left: 64px;
     top: 50px;
     width: 100%;
     height: 100vh;
+    display: flex;
+    max-width: calc(100vw - $sidebar-width);
+    max-height: calc(100vh - $header-height);
     @include tc(background-color, "bg-color");
 }
 </style>

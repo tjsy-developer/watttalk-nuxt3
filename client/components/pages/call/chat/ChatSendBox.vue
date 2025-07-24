@@ -7,7 +7,7 @@
             :style="{backgroundColor: messageType == 1 && displayType == 'darkmode' ? '#7E7E7E' : messageType == 1 && displayType == 'lightmode' ? '#D6D6D6' : displayType == 'darkmode' ? '#4D4D4D' : '#fff'}"
             class="normal"
           >
-            {{ t("normal") }}
+            {{ t("일반") }}
           </button>
           <button
             @click="switchMessageType(2)"
@@ -15,7 +15,7 @@
             v-if="!videoCallHost"
             class="emergency"
           >
-            {{ t("emergency") }}
+            {{ t("긴급") }}
           </button>
           <button
             @click="switchMessageType(4)"
@@ -171,7 +171,7 @@ const sendMessage = (iconKey) => {
   // my nickname, date, message, isReceived: true, type, Key -- messageType 3 == emergency Icons Index
 
   // sendMessageFlag 초기화
-  chattingStore.sendMessageFlag(false);
+  chattingStore.setSendMessageFlag(false);
 
   // UTC Date 생성
   const nowDate = getWorldTime();
@@ -246,7 +246,7 @@ const sendMessage = (iconKey) => {
   }
 
   sendMessageText.value = ""; // sendMessage 초기화
-  chattingStore.sendMessageFlag(true); // sendMessageFlag 변경 (calling : socket 통신)
+  chattingStore.setSendMessageFlag(true); // sendMessageFlag 변경 (calling : socket 통신)
 };
 
 const makeEnterEvent = (event) => {

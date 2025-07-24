@@ -1,23 +1,27 @@
 <template lang="html">
     <div
-        :style="{ border: compData.status == 'none' ? '1px dashed #767676' : '' }"
+        :style="{ border: props.compData?.status == 'none' ? '1px dashed #767676' : '' }"
         :class="[drawingIframe ? 'draw' : 'video']"
         @click="getMainVideoIndex"
         class="row window"
+        :id="props.id"
     >
         <button
-            v-if="compData && compData.status == 'calling'"
+            v-if="props.compData && props.compData?.status == 'calling'"
             @mousedown="windowClick"
-            class="col-12"
         >
-            <img :src="compData.img" />
+            <img :src="props.compData.img" />
             <div class="row items-center windowInfoBar">
-                <span class="col text-left">{{ compData.text }}</span>
-                <button v-if="!compData.isSounded" @click="soundedClick" @mousedown.stop>
+                <span class="col text-left">{{ props.compData.text }}</span>
+                <button
+                    v-if="!props.compData.isSounded"
+                    @click="soundedClick"
+                    @mousedown.stop
+                >
                     <img src="@/assets/images/ic_mic.png" />
                 </button>
                 <button
-                    v-else-if="compData.isSounded"
+                    v-else-if="props.compData.isSounded"
                     @click="soundedClick"
                     @mousedown.stop
                 >
@@ -26,18 +30,20 @@
             </div>
         </button>
         <div
-            v-else-if="compData && compData.status == 'main'"
+            v-else-if="props.compData && props.compData?.status == 'main'"
             :style="[
                 accessDeviceCheck == 'Mobile'
                     ? { display: 'flex', 'align-item': 'center' }
                     : '',
-                drawingIframe || compData.type == 'videoOFF' ? { height: 'inherit' } : '',
+                drawingIframe || props.compData.type == 'videoOFF'
+                    ? { height: 'inherit' }
+                    : '',
             ]"
             id="videoMainDivWrap"
             class="videoMainDivWrap"
         >
             <span id="videoMainName" style="display: none" class="col text-left">{{
-                compData.text
+                props.compData.text
             }}</span>
             <div
                 v-if="!drawingIframe && callingLayoutType == 1"
@@ -45,30 +51,25 @@
                 class="row items-center videoNameWrap"
             >
                 <span
-                    :value="compData.text"
+                    :value="props.compData.text"
                     id="videoMainCaption"
                     class="col text-left videoNameSpan"
                 ></span>
             </div>
-            <div
-                :style="{ height: drawingIframe ? 'inherit' : '100%' }"
-                id="videoMainDiv"
-                style="aspect-ratio: 16 / 9.14"
-                class="justify-center"
-            >
+            <div id="videoMainDiv" style="aspect-ratio: 16 / 9.14" class="justify-center">
                 <div
                     :class="[drawingIframe ? 'screen-draw' : 'screen-video']"
                     id="panel-inner-main"
                 >
                     <Drawing
                         v-if="
-                            this.$commonStore.contentsViewType == '2' &&
+                            commonStore.contentsViewType == '2' &&
                             drawingIframe &&
                             callingLayoutType != 1
                         "
                         id="test11"
                         class="callingWidth"
-                    ></Drawing>
+                    />
                     <video
                         v-show="!drawingIframe"
                         autoplay
@@ -285,31 +286,13 @@
                         class="laserPointer"
                     ></div>
                     <div
-                        v-if="compData.status != 'none' && !isDrawing"
-                        style="
-                            position: absolute;
-                            bottom: 0px;
-                            left: 0px;
-                            width: 80%;
-                            height: 30px;
-                            color: white;
-                            padding: 0 7px;
-                            z-index: 1;
-                        "
+                        v-if="props.compData?.status != 'none' && !isDrawing"
                         class="nickname row items-center"
                     >
                         <input
-                            :value="compData.nickname"
-                            @change="changeNickName(compData, $event)"
-                            style="
-                                text-align: left;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                white-space: nowrap;
-                                font-size: 18px;
-                                color: white;
-                            "
-                            class="col"
+                            :value="props.compData.nickname"
+                            @change="changeNickName(props.compData, $event)"
+                            class="nickname-text"
                         />
                     </div>
                 </div>
@@ -341,10 +324,10 @@
                         </button>
                     </div>
                 </div>
-                <gpsMapView
+                <GpsMapView
                     :isBigWindow="mapData.isMapBigWindow"
                     :isOnOff="mapData.isMapOnOff"
-                ></gpsMapView>
+                ></GpsMapView>
             </div>
             <div
                 v-show="motionFallFlag"
@@ -432,7 +415,7 @@
                 </button>
             </div>
             <div
-                v-if="compData.type == 'unstable'"
+                v-if="props.compData.type == 'unstable'"
                 :style="{ display: 'block' }"
                 class="row justify-center items-center otherBackground"
             >
@@ -447,7 +430,7 @@
                 </div>
             </div>
             <div
-                v-else-if="compData.type == 'videoOFF'"
+                v-else-if="props.compData.type == 'videoOFF'"
                 id="otherBackground"
                 class="row justify-center items-center otherBackground"
             >
@@ -455,46 +438,31 @@
                     <img src="@/assets/images/calling/ic_photo_140.png" />
                 </div>
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 100%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                        background: rgba(0, 0, 0, 0.5);
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            width: 100%;
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
             </div>
         </div>
-        <div v-else-if="compData && compData.status == 'my'" class="col-12"></div>
-        <div v-else-if="compData && compData.status == 'sending'" class="col-12 sending">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'my'"
+        ></div>
+        <div
+            v-else-if="props.compData && props.compData?.status == 'sending'"
+            class="sending"
+        >
             <div
                 v-if="callingLayoutType == 1"
                 class="row justify-center sendingBackground sendingLayout1"
             >
                 <div class="row justify-center items-center">
                     <img src="@/assets/images/calling/ic_call-send-1.png" />
-                    <span class="sendingSpan">{{ t("sending") }}</span>
+                    <span class="sendingSpan">{{ t("발신 중") }}</span>
                 </div>
             </div>
             <div
@@ -502,46 +470,28 @@
                 class="row justify-center items-center sendingBackground sendingLayout3"
             >
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
             </div>
             <div
                 v-else-if="callingLayoutType == 5"
                 class="row justify-center items-center sendingBackground sendingLayout3"
             >
-                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
             </div>
             <div v-else class="row justify-center items-center sendingBackground">
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ t("sending") }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
                 <button @click="cancelCallClick">
@@ -549,14 +499,17 @@
                 </button>
             </div>
         </div>
-        <div v-else-if="compData && compData.status == 'receive'" class="col-12 receive">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'receive'"
+            class="receive"
+        >
             <div
                 v-if="callingLayoutType == 1"
                 class="row justify-center content-center receiveBackground"
             >
                 <img src="@/assets/images/calling/ic_call-send-1.png" />
                 <div
-                    :style="{ paddingTop: compData == 1 ? '37px' : '20px' }"
+                    :style="{ paddingTop: props.compData == 1 ? '37px' : '20px' }"
                     class="col-12 row justify-center buttonsLayout1"
                 >
                     <button
@@ -623,36 +576,21 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
             </div>
         </div>
-        <div v-else-if="compData && compData.status == 'fail'" class="col-12 sending">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'fail'"
+            class="sending"
+        >
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
                 class="row justify-center otherBackground"
@@ -670,31 +608,13 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
                 <button>
@@ -702,7 +622,10 @@
                 </button>
             </div>
         </div>
-        <div v-else-if="compData && compData.status == 'other'" class="col-12 sending">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'other'"
+            class="sending"
+        >
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
                 class="row justify-center otherBackground"
@@ -720,31 +643,13 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
                 <button>
@@ -752,7 +657,10 @@
                 </button>
             </div>
         </div>
-        <div v-else-if="compData && compData.status == 'error'" class="col-12 sending">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'error'"
+            class="sending"
+        >
             <div
                 v-if="callingLayoutType == 1"
                 class="row justify-center items-center otherBackground errorLayout1"
@@ -792,31 +700,13 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
                 <button @click="setErrorClose()">
@@ -825,12 +715,12 @@
             </div>
         </div>
         <div
-            v-else-if="compData && compData.status == 'attach'"
-            class="col-12 sending"
+            v-else-if="props.compData && props.compData?.status == 'attach'"
+            class="sending"
         ></div>
         <div
-            v-else-if="compData && compData.status == 'connecting'"
-            class="col-12 sending"
+            v-else-if="props.compData && props.compData?.status == 'connecting'"
+            class="sending"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -861,39 +751,21 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
             </div>
         </div>
         <div
-            v-else-if="compData && compData.status == 'unstable'"
+            v-else-if="props.compData && props.compData?.status == 'unstable'"
             style="height: 100%"
-            class="col-12 sending"
+            class="sending"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -945,39 +817,21 @@
             </div>
             <div class="row items-center windowInfoBar">
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
             </div>
         </div>
         <div
-            v-else-if="compData && compData.status == 'unpublished'"
+            v-else-if="props.compData && props.compData?.status == 'unpublished'"
             style="height: 100%"
-            class="col-12 sending"
+            class="sending"
         >
             <div
                 @click="mainVideoImageChange()"
@@ -991,41 +845,23 @@
                 <img v-else src="@/assets/images/calling/ic_photo_52.png" style="" />
             </div>
             <div
-                v-if="compData.text != sessionNickname"
+                v-if="props.compData.text != sessionNickname"
                 class="items-center windowInfoBar row"
             >
                 <div
-                    v-if="compData.status != 'none'"
-                    style="
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0px;
-                        width: 80%;
-                        height: 30px;
-                        color: white;
-                        padding: 0 7px;
-                        z-index: 1;
-                    "
+                    v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
                     <input
-                        :value="compData.nickname"
-                        @change="changeNickName(compData, $event)"
-                        style="
-                            text-align: left;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            font-size: 18px;
-                            color: white;
-                        "
-                        class="col"
+                        :value="props.compData.nickname"
+                        @change="changeNickName(props.compData, $event)"
+                        class="nickname-text"
                     />
                 </div>
             </div>
         </div>
-        <div v-else-if="fileStatus" class="col-12 receive">
-            <div v-if="compData.status == 2" class="col-12 receiveStatus">
+        <div v-else-if="fileStatus" class="receive">
+            <div v-if="props.compData?.status == 2" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
                     style="background: #151515"
@@ -1033,24 +869,24 @@
                 >
                     <div class="row justify-center content-center">
                         <p style="font-size: 20px" class="requestText">
-                            {{ compData.fileReceiveInfo.fileSendNickname }}
+                            {{ props.compData.fileReceiveInfo.fileSendNickname }}
                             {{ t("fileReceptionRequest1") }}
                             {{ t("fileReceptionRequest2") }}
                         </p>
                     </div>
                     <div
-                        :style="{ paddingTop: compData == 1 ? '37px' : '20px' }"
+                        :style="{ paddingTop: props.compData == 1 ? '37px' : '20px' }"
                         class="col-12 row justify-center buttonsLayout1"
                     >
                         <button
-                            @click="fileReceiveAccept(compData.text)"
+                            @click="fileReceiveAccept(props.compData.text)"
                             style="background: #1c8eff"
                             class="receiveBtnCallingLayoutType3"
                         >
                             {{ t("accept") }}
                         </button>
                         <button
-                            @click="fileReceiveDecline(compData.text)"
+                            @click="fileReceiveDecline(props.compData.text)"
                             style="background: #464646"
                             class="receiveBtnCallingLayoutType4"
                         >
@@ -1069,7 +905,7 @@
                                 style="font-size: 12px; margin: auto"
                                 class="col-12 requestText"
                             >
-                                {{ compData.fileReceiveInfo.fileSendNickname }}
+                                {{ props.compData.fileReceiveInfo.fileSendNickname }}
                                 {{ t("fileReceptionRequest1") }}
                             </p>
                             <p style="font-size: 12px; margin: auto" class="requestText">
@@ -1078,18 +914,18 @@
                         </div>
                     </div>
                     <div
-                        :style="{ paddingTop: compData == 1 ? '37px' : '5px' }"
+                        :style="{ paddingTop: props.compData == 1 ? '37px' : '5px' }"
                         class="col-12 row justify-center acceptbuttons"
                     >
                         <button
-                            @click="fileReceiveAccept(compData.text)"
+                            @click="fileReceiveAccept(props.compData.text)"
                             style="background: #1c8eff"
                             class="receiveBtnCallingLayoutType3"
                         >
                             {{ t("accept") }}
                         </button>
                         <button
-                            @click="fileReceiveDecline(compData.text)"
+                            @click="fileReceiveDecline(props.compData.text)"
                             style="background: #464646"
                             class="receiveBtnCallingLayoutType4"
                         >
@@ -1098,7 +934,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="compData.status == 3" class="col-12 receiveStatus">
+            <div v-else-if="props.compData?.status == 3" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
                     class="row justify-center content-center fileReceptionLayout1"
@@ -1108,7 +944,8 @@
                             <div
                                 :style="{
                                     width:
-                                        userListStatus[compData.userListIndex].rate + '%',
+                                        userListStatus[props.compData.userListIndex]
+                                            .rate + '%',
                                 }"
                                 id="progressing"
                                 class="progs"
@@ -1135,7 +972,8 @@
                             <div
                                 :style="{
                                     width:
-                                        userListStatus[compData.userListIndex].rate + '%',
+                                        userListStatus[props.compData.userListIndex]
+                                            .rate + '%',
                                 }"
                                 id="progressing"
                                 class="progs"
@@ -1144,7 +982,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="compData.status == 5" class="col-12 receiveStatus">
+            <div v-else-if="props.compData?.status == 5" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
                     class="row justify-center content-center fileReceptionLayout1"
@@ -1182,7 +1020,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="compData.status == 6" class="col-12 receiveStatus">
+            <div v-else-if="props.compData?.status == 6" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
                     class="row justify-center content-center fileReceptionLayout1"
@@ -1234,7 +1072,7 @@
         <div
             v-if="
                 callingLayoutType == 1 &&
-                this.$commonStore.mainVideoIndex === compData.userListIndex
+                commonStore.mainVideoIndex === props.compData.userListIndex
             "
             class="optionWrap"
         >
@@ -1285,7 +1123,7 @@
                 class="row items-center videoNameWrap"
             >
                 <span id="videoMainName" class="col text-left videoNameSpan">{{
-                    compData.text
+                    props.compData.text
                 }}</span>
             </div>
             <div
@@ -1294,7 +1132,7 @@
                 class="row items-center videoNameWrap"
             >
                 <span
-                    :value="compData.text"
+                    :value="props.compData.text"
                     id="videoMainCaption"
                     class="col text-left videoNameSpan"
                 ></span>
@@ -1333,6 +1171,7 @@
                 ></div>
             </div>
         </div>
+        {{  props.videoTag }}
     </div>
 </template>
 
@@ -1347,8 +1186,8 @@ import {
     nextTick,
 } from "vue";
 // --- Component Imports ---
-import Drawing from "@/components/drawing/Drawing.vue"
-import GpsMapView from "@/components/call/gpsMapView.vue";
+import Drawing from "@/components/pages/call/drawing/Drawing.vue";
+import GpsMapView from "@/components/pages/call/GpsMapView.vue";
 import { useCommonStore } from "@/stores";
 import { useCached } from "@vueuse/core";
 import { useCallStore } from "@/stores/call";
@@ -1361,10 +1200,11 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    id: { // id 프롭스 정의 시작
+        type: String, // 타입은 문자열
+        required: true, // 이 프롭스는 필수
+    }
 });
-
-// --- State Management (Vuex example, adapt for Pinia if using) ---
-const store = useStore(); // Access the Vuex store
 
 // --- Reactive Data (replacing Vue 2's data()) ---
 const sessionNickname = ref("");
@@ -1416,8 +1256,7 @@ const userListStatus = computed(() => commonStore.userListStatus);
 const getChattingShow = computed(() => chattingStore.chattingShow);
 const getIsDrawing = computed(() => commonStore.isDrawing);
 const getIsShare = computed(() => commonStore.isShare);
-const watchMainVideoIndex = computed(() => commonStore.mainVideoIndex);
-
+const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
 const commonStore = useCommonStore();
 const callStore = useCallStore();
@@ -1644,7 +1483,7 @@ onMounted(() => {
     }
 
     // Laser Pointer Event Creation
-    if (callingLayoutType.value !== 1 && props.compData.status === "main") {
+    if (callingLayoutType.value !== 1 && props.compData?.status === "main") {
         const videoMainElement = document.getElementById("videoMain");
         if (videoMainElement) {
             // You'll likely need to replace jQuery usage here with pure JS or a modern library if needed
@@ -1793,12 +1632,9 @@ watch(motionNoMoveInfo, (newVal) => {
             });
         }
     } else if (motionFallFlag.value && motionNoMoveFlag.value) {
-        const fallInfo =
-            callStore.motionFallInfo[callStore.motionFallInfo.length - 1];
+        const fallInfo = callStore.motionFallInfo[callStore.motionFallInfo.length - 1];
         const noMoveInfo =
-            callStore.motionNoMoveInfo[
-                callStore.motionNoMoveInfo.length - 1
-            ];
+            callStore.motionNoMoveInfo[callStore.motionNoMoveInfo.length - 1];
 
         if (fallInfo.datetimeUTC > noMoveInfo.datetimeUTC) {
             callStore.setMotionFallFlag(true);
@@ -1848,18 +1684,1106 @@ watch(getIsShare, (res) => {
     }
 });
 
-watch(watchMainVideoIndex, (res) => {
+watch(getMainVideoIdx, (res) => {
     if (commonStore.callingLayoutType === 1 && !isDrawing.value && !getIsShare.value) {
         commonStore.setMainVideoInfo(res);
     }
 });
 </script>
 
-<template>
-    <div class="calling-window"></div>
-</template>
+<style lang="scss">
+$windowInfoBarHeight: 30px;
 
-<style lang="sass">
-/* Your SASS styles here */
-/* Ensure your path to the sass file is correct within Nuxt 3 project structure */
+.window {
+    width: 100%;
+    height: 100% !important;
+    // align-items: centerb
+    // display: table
+
+    > button {
+        width: 100%;
+        height: 100%;
+
+        > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &.draw {
+        overflow: initial;
+    }
+
+    &.video {
+        overflow: hidden;
+    }
+}
+
+.mainVideoBorder {
+}
+
+.panel-inner {
+    overflow: hidden;
+    position: relative;
+}
+
+.windowInfoBar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: $windowInfoBarHeight;
+    padding: 0 7px;
+
+    > span {
+        // This looks like a mixin, so I'm commenting it out or assuming it's defined elsewhere.
+        // +ellipsis
+        font-size: 18px;
+        //padding-left: 12px
+    }
+}
+
+.border {
+    width: 100%;
+    height: 100%;
+
+    > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    > span {
+        position: absolute;
+        top: 0;
+        font-size: 9px;
+        padding-left: 3px;
+        padding-right: 6px;
+    }
+}
+
+.sending,
+.receive {
+    > .windowInfoBar {
+        > span {
+            padding-left: 0;
+        }
+    }
+}
+
+.sending > .windowInfoBar {
+    padding-right: 6px;
+}
+
+.sending {
+    color: #fff;
+    background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
+        padding-box;
+}
+
+.receiveBackground {
+}
+
+.sendingBackground,
+.receiveBackground,
+.otherBackground {
+    width: 100% !important;
+    // aspect-ratio: 16 / 9.14
+    height: 100%;
+    max-width: inherit !important;
+    max-height: inherit;
+    padding-bottom: $windowInfoBarHeight;
+
+    > .sendingSpan,
+    > .receiveSpan {
+        position: absolute;
+        top: 23px;
+        right: 23px;
+        font-size: 14px;
+    }
+
+    > .sendingSpanCallingLayoutType3 {
+        font-size: 15px;
+        padding-left: 20px;
+    }
+
+    > .receiveBtnCallingLayoutType3 {
+        width: 60px;
+        height: 26px;
+        margin-left: 5px;
+        font-size: 14px;
+        border-radius: 20px;
+    }
+
+    > .receiveBtnCallingLayoutType4 {
+        width: 60px;
+        height: 26px;
+        margin-left: 10px;
+        font-size: 14px;
+        border-radius: 20px;
+    }
+}
+
+.otherBackground {
+    //border: 1px solid #323232
+}
+
+#antennaStauts {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.antennaDetailInfoBox {
+    width: auto;
+    min-width: 157px;
+    height: auto;
+    position: absolute;
+    right: 10px;
+    top: 46px;
+    font-size: 14px;
+    padding: 9px;
+    display: grid;
+    background: rgba(0, 0, 0, .5);
+    color: #fff;
+
+    > div {
+        > .antennaDetailValue {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-top: 1px;
+        }
+    }
+}
+
+.buttonsLayout1 {
+    > button {
+        width: 85px;
+        height: 32px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+
+        &:first-child {
+        }
+
+        &:last-child {
+            margin-left: 26px;
+        }
+    }
+}
+
+.buttonsLayout3,
+.buttonsLayout5 {
+    > img {
+        width: 40px;
+    }
+
+    > button {
+        width: 55px;
+        height: 25px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 10px;
+
+        &:nth-child(2) {
+            margin-left: 10px;
+        }
+
+        &:last-child {
+            margin-left: 5px;
+        }
+    }
+}
+
+.errorLayout1 {
+    > img {
+    }
+
+    > span {
+        font-size: 19px !important;
+        padding-left: 0px !important;
+    }
+}
+
+.errorLayout3 {
+    > img {
+        width: 30px;
+    }
+
+    > span {
+        font-size: 11px !important;
+        padding-left: 0px !important;
+    }
+}
+
+.sendingLayout1 {
+    > div {
+        > span {
+            margin-left: 27px;
+            font-size: 25px;
+        }
+    }
+}
+
+.sendingLayout3 {
+    > img {
+        width: 35px;
+    }
+
+    > span {
+        padding-left: 12px !important;
+    }
+}
+
+.unstableLayout1 {
+    > div {
+        > img {
+            margin-bottom: 10px;
+        }
+
+        > span {
+            font-size: 19px;
+            margin-top: 3px;
+        }
+    }
+}
+
+.unstableLayout4 {
+    > span {
+        font-size: 12px !important;
+    }
+
+    > img {
+        width: 55px;
+    }
+}
+
+.connectLayout1 {
+    > img {
+        width: 90px;
+    }
+
+    > span {
+        font-size: 25px !important;
+    }
+}
+
+.connectLayout3 {
+    > img {
+        width: 46px;
+    }
+
+    > span {
+        font-size: 14px !important;
+        padding-left: 12px !important;
+    }
+}
+
+.connectLayout5 {
+    > img {
+        width: 34px;
+    }
+
+    > span {
+        font-size: 13px !important;
+        padding-left: 7px !important;
+    }
+}
+
+.callingLayout1-unpublished {
+    max-height: 70%;
+}
+
+.aligned {
+    text-align: center;
+}
+
+.longTypeText {
+    padding: 0 !important;
+    bottom: 5px;
+}
+
+.videoMainDivWrap {
+    width: inherit;
+    height: inherit;
+}
+
+.videoNameWrap {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 30px;
+    /* padding: 0 15px; */
+    z-index: 1;
+    bottom: 0;
+    color: #fff;
+    background: rgba(0, 0, 0, .5);
+    line-height: 30px;
+    padding-left: 10px;
+}
+
+#videoMainDiv {
+}
+
+#videoMain {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.videoNameSpan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+}
+
+.unstableText {
+    font-size: 25px;
+    float: none;
+    width: 100%;
+    line-height: 50px;
+}
+
+.unstableWrap {
+    width: 100%;
+    padding-top: 150px;
+    padding-bottom: 15px;
+}
+
+.hostIcon {
+    position: absolute !important;
+    top: 9px !important;
+    left: 13px !important;
+    z-index: 1 !important;
+}
+
+.motionFallIcon {
+    position: absolute !important;
+    right: 13px !important;
+    top: 9px;
+    z-index: 1 !important;
+}
+
+.motionNoMoveIcon {
+    position: absolute !important;
+    right: 40px !important;
+    top: 9px;
+    z-index: 1 !important;
+}
+
+.muteIcon {
+    width: auto !important;
+    height: auto !important;
+    position: absolute;
+    bottom: 7px;
+    right: 32px;
+    z-index: 1;
+}
+
+.chatMessageIcon {
+    width: auto !important;
+    height: auto !important;
+    position: absolute;
+    bottom: 7px;
+    right: 68px;
+    z-index: 1;
+}
+
+.msgMuteBtn {
+    margin: auto !important;
+}
+
+.forceLeaveIcon {
+    // width: auto !important
+    // height: auto !important
+    position: absolute;
+    bottom: -1px;
+    right: -2px;
+    z-index: 1;
+}
+
+.forceLeaveBtn {
+    height: 35px;
+}
+
+.userMuteIcon {
+    position: absolute;
+    top: 9px;
+    left: 40px;
+    z-index: 1;
+}
+
+.prog {
+    margin-top: 10px;
+    padding: 5px auto !important;
+    height: 12px;
+    border-radius: 15px;
+}
+
+.progs {
+    text-align: center;
+    line-height: 50px;
+    border-radius: 15px;
+}
+
+.receiveStatus {
+    width: 100%;
+    height: 100%;
+}
+
+.fileReceptionLayout1 {
+    width: 100%;
+    height: 100%;
+
+    > p {
+        font-size: 18px;
+        margin: 0;
+        margin-top: 28px;
+    }
+
+    img.fileReceptionComplete {
+        width: 70px;
+        margin: auto;
+    }
+
+    p.receptionCompleteText {
+        font-size: 18px;
+        margin: 0;
+        margin-top: 28px;
+    }
+
+    p.fileReceivingText {
+        font-size: 18px;
+        margin: 0px;
+    }
+}
+
+.fileReceptionLayout3 {
+    width: 100%;
+    height: 100%;
+
+    img.fileReceptionComplete {
+        margin: 0px 10px auto;
+        padding-bottom: 10px !important;
+    }
+
+    p.receptionCompleteText {
+        font-size: 13px !important;
+        margin: auto !important;
+    }
+
+    p.fileReceivingText {
+        font-size: 13px;
+        margin: auto;
+    }
+}
+
+.acceptbuttons {
+    > img {
+        width: 40px;
+    }
+
+    > button {
+        width: 63px;
+        height: 25px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 10px;
+
+        &:nth-child(2) {
+            margin-left: 10px;
+        }
+
+        &:last-child {
+            margin-left: 5px;
+        }
+    }
+}
+
+.guidBox {
+    position: absolute;
+    top: 24px;
+    left: 42px;
+
+    > img {
+        margin-top: 1px;
+    }
+}
+
+.fullScreenGuidance {
+    position: absolute;
+    bottom: 20px;
+    right: -8px;
+    z-index: 0;
+}
+
+.mainVideoFullScreen {
+    position: absolute;
+    right: 12px;
+    bottom: 7px;
+    cursor: pointer;
+
+    > img {
+        width: 21px;
+    }
+}
+
+#pdfProgress {
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    height: 30px;
+    margin-top: 1px;
+    padding: 7px 6px;
+    border-radius: 2px;
+}
+
+.pdfUploadText {
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.progressBar {
+    width: 92px;
+    opacity: 1;
+    height: 16px;
+    border-radius: 7px;
+    padding-left: 1px;
+    padding-right: 1px;
+
+    > p {
+        font-size: 12px;
+        position: absolute;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.guage {
+    border-radius: 10px;
+    height: 12px;
+    margin-top: 2px;
+    line-height: 15px;
+}
+
+.laserPointer {
+    background-color: transparent;
+    border: solid 3px #c81515;
+    width: 30px;
+    height: 30px;
+    opacity: 0;
+    border-radius: 50%;
+    position: absolute;
+    animation: blink 0.8s ease 6 reverse;
+    animation-fill-mode: backwards;
+}
+
+@keyframes blink {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.laserCircle {
+    position: absolute;
+    content: "";
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: #c81515 solid 4px;
+    opacity: 0;
+    animation: fadeout 0.8s ease-in-out 6 reverse;
+    animation-fill-mode: backwards;
+}
+
+@keyframes fadeout {
+    from {
+        width: 70px;
+        height: 70px;
+        transform: translate(-20px, -20px);
+        opacity: 1;
+        border: #c81515 solid 2px;
+    }
+    to {
+        width: 30px;
+        height: 30px;
+        border: #c81515 solid 6px;
+        opacity: 0;
+    }
+}
+
+/* 모바일 가로, 테블릿 세로 (해상도 ~767px)*/
+@media all and (max-width: 1023px) {
+    .acceptbuttons {
+        > img {
+            width: 40px;
+        }
+
+        > button {
+            width: 54px;
+            height: 25px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-left: 10px;
+
+            &:nth-child(2) {
+                margin-left: 10px;
+            }
+
+            &:last-child {
+                margin-left: 5px;
+            }
+        }
+    }
+    .videoNameSpan {
+        font-size: 16px;
+    }
+    .windowInfoBar {
+        > span {
+            font-size: 14px;
+        }
+    }
+
+    .laserPointer {
+        background-color: transparent;
+        width: 20px;
+        height: 20px;
+        opacity: 0;
+        border-radius: 50%;
+        position: absolute;
+        animation: blink 0.8s ease 6 reverse;
+        animation-fill-mode: backwards;
+    }
+
+    @keyframes blink {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    .laserCircle {
+        position: absolute;
+        content: "";
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        opacity: 0;
+        animation: fadeout 0.8s ease-in-out 6 reverse;
+        animation-fill-mode: backwards;
+    }
+
+    @keyframes fadeout {
+        from {
+            width: 40px;
+            height: 40px;
+            transform: translate(-10px, -10px);
+            opacity: 1;
+            border: #c81515 solid 2px;
+        }
+        to {
+            width: 20px;
+            height: 20px;
+            border: #c81515 solid 6px;
+            opacity: 0;
+        }
+    }
+}
+
+.optionWrap {
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+    /* position: absolute; */
+    width: 100%;
+    height: auto;
+}
+
+.mainVideoFullScreenBtn {
+    position: absolute;
+    right: 60px;
+}
+
+.motionAlarm {
+    width: 100%;
+    height: 20%;
+    @media (min-height: 484px) {
+        // height: 20%
+    }
+    @media (max-height: 483px) {
+        height: 35%;
+    }
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0px;
+    z-index: 1;
+    user-select: none;
+}
+
+.motionAlarm-ly1 {
+    width: inherit;
+    height: auto;
+    padding: 5px 0px;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0px;
+    z-index: 1;
+    user-select: none;
+}
+
+.blinking {
+    -webkit-animation: blink 0.5s ease-in-out infinite alternate;
+    -moz-animation: blink 0.5s ease-in-out infinite alternate;
+    animation: blink 0.5s ease-in-out infinite alternate;
+}
+
+@-webkit-keyframes blink {
+    0% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes blink {
+    0% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.emergencyImg {
+    @media (min-height: 484px) {
+        margin-right: 1.5773%;
+        max-height: 49%;
+        width: auto;
+    }
+    @media (max-height: 483px) {
+        margin-right: 6.7px;
+        height: 39px;
+        width: auto;
+    }
+}
+
+.emergencyImg-ly1 {
+    max-height: 21px;
+    margin-right: 10px;
+}
+
+.emergencyFont {
+    @media (max-height: 483px) {
+        font-size: 10px;
+    }
+    @media (min-height: 484px) and (max-height: 523px) {
+        font-size: 11px;
+    }
+    @media (min-height: 524px) and (max-height: 563px) {
+        font-size: 12px;
+    }
+    @media (min-height: 564px) and (max-height: 603px) {
+        font-size: 13px;
+    }
+    @media (min-height: 604px) and (max-height: 643px) {
+        font-size: 14px;
+    }
+    @media (min-height: 644px) and (max-height: 683px) {
+        font-size: 15px;
+    }
+    @media (min-height: 684px) and (max-height: 723px) {
+        font-size: 16px;
+    }
+    @media (min-height: 724px) and (max-height: 763px) {
+        font-size: 17px;
+    }
+    @media (min-height: 764px) and (max-height: 803px) {
+        font-size: 18px;
+    }
+    @media (min-height: 804px) and (max-height: 843px) {
+        font-size: 19px;
+    }
+    @media (min-height: 844px) and (max-height: 883px) {
+        font-size: 20px;
+    }
+    @media (min-height: 884px) and (max-height: 923px) {
+        font-size: 21px;
+    }
+    @media (min-height: 924px) and (max-height: 983px) {
+        font-size: 22px;
+    }
+    @media (min-height: 984px) and (max-height: 1023px) {
+        font-size: 23px;
+    }
+    @media (min-height: 1024px) {
+        font-size: 24px;
+    }
+}
+
+.boldText {
+    font-weight: bold;
+}
+
+.userInfoWrap {
+    width: 100%;
+    margin-bottom: 0.366%;
+    padding: 5px 10px;
+    @media (max-height: 643px) {
+        font-size: 10px !important;
+        // height: 20px
+    }
+    @media (min-height: 644px) and (max-height: 683px) {
+        font-size: 11px !important;
+        // height: 22px
+    }
+    @media (min-height: 684px) and (max-height: 723px) {
+        font-size: 12px !important;
+        // height: 24px
+    }
+    @media (min-height: 724px) and (max-height: 763px) {
+        font-size: 13px !important;
+        // height: 26px
+    }
+    @media (min-height: 764px) and (max-height: 803px) {
+        font-size: 14px !important;
+        // height: 28px
+    }
+    @media (min-height: 804px) and (max-height: 843px) {
+        font-size: 15px !important;
+        // height: 30px
+    }
+    @media (min-height: 844px) and (max-height: 883px) {
+        font-size: 16px !important;
+        // height: 32px
+    }
+    @media (min-height: 884px) and (max-height: 923px) {
+        font-size: 17px !important;
+        // height: 34px
+    }
+    @media (min-height: 924px) and (max-height: 983px) {
+        font-size: 18px !important;
+        // height: 36px
+    }
+    @media (min-height: 984px) and (max-height: 1023px) {
+        font-size: 19px !important;
+        // height: 38px
+    }
+    @media (min-height: 1024px) {
+        font-size: 20px !important;
+        height: 40px;
+    }
+}
+
+.userInfoBtn {
+    cursor: pointer;
+    @media (min-height: 438px) {
+        width: auto;
+    }
+    @media (max-height: 437px) {
+        width: 41%;
+    }
+    height: 100%;
+    padding-left: 2.192%;
+    padding-right: 1.754%;
+    border-radius: 12px;
+}
+
+.userInfo {
+    padding-right: 3.081%;
+    width: 34.7%;
+    white-space: nowrap;
+    // overflow: hidden
+    // text-overflow: ellipsis
+
+    // &:hover
+    //  background-color: red
+    //  position: absolute
+    //  text-overflow: ellipsis
+    //  overflow: hidden
+    //  white-space: nowrap
+    //  width: 100%
+    //  max-width: calc(100% - 40px)
+    //  max-height: 130px
+    //  z-index: 999
+}
+
+.emergencyBtn {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    border-radius: 20px;
+    font: normal normal 800 18px / 21px NanumSquare;
+    width: 60px;
+    height: 26px;
+}
+
+.emergencyBtn-ly1 {
+    position: absolute;
+    right: 14px;
+    border-radius: 20px;
+    font: normal normal 800 18px / 21px NanumSquare;
+    @media (max-height: 1800px) {
+        width: 45px;
+        font-size: 16px;
+    }
+}
+
+.sendingSpanCallingLayoutType3 {
+    font-size: 12px;
+}
+
+.gpsView {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 2;
+}
+
+.fallMapButton {
+    position: absolute;
+    top: 18px;
+    right: 80px;
+    @media (max-height: 483px) {
+        left: 10px;
+    }
+    border-radius: 20px;
+    font: normal normal 800 18px / 21px NanumSquare;
+    width: 130px;
+    height: 26px;
+}
+
+.noMoveMapButton {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    @media (max-height: 483px) {
+        left: 10px;
+    }
+    border-radius: 20px;
+    font: normal normal 800 18px / 21px NanumSquare;
+    width: 130px;
+    height: 26px;
+}
+
+.mapTitleBar {
+    width: 100%;
+    height: 30px;
+
+    .mapTitle {
+        font: normal normal bold 14px / 20px NanumSquare;
+        margin-left: 10px;
+    }
+
+    .mapSmallBtn {
+        margin-right: 11px;
+        width: 17px;
+        height: 17px;
+    }
+
+    .mapCloseBtn {
+        margin-right: 6px;
+        width: 22px;
+        height: 22px;
+    }
+}
+
+#selectBox {
+    position: absolute;
+    top: 10px;
+    right: 49px;
+}
+
+.selectBoxDetailInfoBox {
+    position: absolute;
+    top: 45px;
+    right: 21px;
+    width: 104px;
+    height: 60px;
+}
+
+.selectBoxDetailInfoBoxHDplus,
+.selectBoxDetailInfoBoxHD {
+    width: 100%;
+    height: 50%;
+    opacity: 0.65;
+}
+
+.selectBoxDetailInfoBoxHDplus:hover,
+.selectBoxDetailInfoBoxHD:hover {
+}
+
+.selectBoxDetailInfoBoxBtn {
+}
+
+.selectBoxDetailInfoBoxBtnHDplusImg {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+}
+
+.selectBoxDetailInfoCheckBoxHDPlus {
+    padding-left: 8px;
+    padding-right: 6px;
+}
+
+.selectBoxDetailInfoCheckBoxHD {
+    padding-left: 8px;
+    padding-right: 14px;
+}
+
+#thumbnailTest {
+    left: 0px !important;
+    bottom: 0px !important;
+}
+
+.nickname {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 30px;
+    color: white;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.nickname-text {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+    color: white;
+    background: transparent;
+    border: none;
+}
 </style>

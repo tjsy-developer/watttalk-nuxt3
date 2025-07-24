@@ -47,6 +47,5 @@ const { menuImages } = useImageAssets();
             <source src="@/assets/sounds/emergency_alarm.wav" type='audio/wav' />
         </audio>
     </div>
-    //- 카메라 장치가 없을 경우 공유할 canvas
     <canvas id="videoNone" style="display:none;"></canvas>
 </template>

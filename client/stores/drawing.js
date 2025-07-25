@@ -439,6 +439,71 @@ export const useDrawingCanvasStore = defineStore('drawingCanvas', {
     },
     setChangedHost(payload) {
       this.changedHost = payload;
+    },
+    initDrawing() {
+      this.canvas = null;
+      this.canvasWidth = null;
+      this.src = null;
+      this.lastCanvasJson = null;
+      this.firstFiles = [];
+      this.files = [];
+      this.pdfNum = 0;
+      this.pdfGroup = -1;
+      this.selectedFileIndex = 0;
+      this.selectCount = 0;
+      this.index = 0;
+      this.totalPages = null;
+      this.firstHistory = null;
+      this.canvasHistory = {
+        state: [],
+        currentStateIndex: -1,
+        undoStatus: false,
+        redoStatus: false,
+        undoFinishedStatus: true,
+        redoFinishedStatus: true
+      };
+      this.isUpdate = false;
+      this.pdfPushIndex = 0;
+      this.canvasNumber = 1;
+      this.pdfNumber = 0;
+      this.thumbnailWidth = null;
+      this.pdfIndex = 0;
+      this.isPdfUploading = false;
+      this.saveThumbnailImg = null;
+      this.isOpenSaveThumbnail = false;
+      this.lastPDFGroupIndex = null;
+      this.pdfUrlSaveArrays = [];
+      this.isThumbnailTransfer = false;
+      this.beforeThumbnailTransfer = false;
+      this.isGivenThumbnailTransfer = false;
+      this.beforeCloseCanvas = false;
+      this.escapeDrawingPage = false;
+      this.drawingVideo = true;
+      this.thumbnailFileReceive = false;
+      this.beforeSelectedState = false;
+      this.loadImageOnCanvasFinished = true;
+      this.lastCanvasSeted = false;
+      this.changedHost = false;
+      this.beforeHostIndex = 0;
+      this.readyStatus = false;
+    },
+    setbeforeHostIndex(payload) {
+      this.beforeHostIndex = payload;
+    },
+    setReadyStatus(payload) {
+      this.readyStatus = payload;
+    },
+    addFirstInFiles() {
+      const params = {
+        img: this.firstFiles[0]?.img,
+        type: 'canvas',
+        index: 0,
+        history: deepClone(this.firstHistory)
+      };
+      this.files.unshift(params);
+    },
+    deleteFirstInFiles() {
+      this.files.splice(0, 1);
     }
   }
 })

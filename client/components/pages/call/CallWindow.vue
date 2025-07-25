@@ -78,7 +78,6 @@
                         id="videoMain"
                         style="
                             aspect-ratio: 16 / 9.14;
-                            background: black;
                             height: 100%;
                             position: absolute;
                             top: 0px;
@@ -88,7 +87,7 @@
                     <div
                         v-if="antennaStatus"
                         @click="antennaInfoStatus = !antennaInfoStatus"
-                        :title="t('antennaInfo')"
+                        :title="t('안테나 정보')"
                         id="antennaStauts"
                         class="cursor-pointer"
                     >
@@ -196,7 +195,7 @@
                                 class="fullScreenIcon"
                             />
                             <span class="fullScreenGuidText"
-                                >&nbsp; {{ t("fullScreen guidText") }}</span
+                                >&nbsp; {{ t("전체화면 버튼을 눌러주세요") }}</span
                             >
                         </div>
                     </div>
@@ -205,7 +204,7 @@
                         :style="{ right: antennaStatus ? '50px' : '10px' }"
                         id="pdfProgress"
                     >
-                        <span class="pdfUploadText">{{ t("Server uploading") }}</span>
+                        <span class="pdfUploadText">{{ t("서버 업로드 중") }}</span>
                         <div style="width: 92px" class="progressBar">
                             <div
                                 :style="{ width: pdfUploadProgrss + '%' }"
@@ -260,7 +259,7 @@
                         v-if="mainVideoFullScreen && !drawingIframe"
                         @click="mainVideoFull"
                         :style="{ bottom: callingLayoutType == 4 ? '5px' : '5px' }"
-                        style="z-index: 1"
+                        style="z-index: 2"
                         class="mainVideoFullScreen"
                     >
                         <img src="@/assets/images/calling/Iic_fullscreen.png" />
@@ -454,7 +453,7 @@
         ></div>
         <div
             v-else-if="props.compData && props.compData?.status == 'sending'"
-            class="sending"
+            class="mode sending"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -589,7 +588,7 @@
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'fail'"
-            class="sending"
+            class="mode"
         >
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
@@ -624,7 +623,7 @@
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'other'"
-            class="sending"
+            class="mode"
         >
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
@@ -659,7 +658,7 @@
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'error'"
-            class="sending"
+            class="mode"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -716,11 +715,11 @@
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'attach'"
-            class="sending"
+            class="mode"
         ></div>
         <div
             v-else-if="props.compData && props.compData?.status == 'connecting'"
-            class="sending"
+            class="mode sending"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -728,7 +727,7 @@
             >
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
-                    t("call Connecting")
+                    t("통화 연결 중")
                 }}</span>
             </div>
             <div
@@ -765,7 +764,7 @@
         <div
             v-else-if="props.compData && props.compData?.status == 'unstable'"
             style="height: 100%"
-            class="sending"
+            class="mode"
         >
             <div
                 v-if="callingLayoutType == 1"
@@ -830,8 +829,7 @@
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'unpublished'"
-            style="height: 100%"
-            class="sending"
+            class="mode unpublish"
         >
             <div
                 @click="mainVideoImageChange()"
@@ -1070,19 +1068,16 @@
             <slot></slot>
         </div>
         <div
-            v-if="
-                callingLayoutType == 1 &&
-                commonStore.mainVideoIndex === props.compData.userListIndex
-            "
             class="optionWrap"
         >
             <div
-                v-if="antennaStatus"
+                v-if="antennaStatus && callingLayoutType == 1 && getMainVideoIdx == props.compData.userListIndex"
                 @click="antennaInfoStatus = !antennaInfoStatus"
                 :title="t('antennaInfo')"
                 id="antennaStauts"
                 class="cursor-pointer"
             >
+                
                 <img
                     v-if="antennaStep == 1"
                     src="@/assets/images/calling/ic_antenna_1.png"
@@ -1119,7 +1114,7 @@
                 </div>
             </div>
             <div
-                v-if="!drawingIframe && callingLayoutType == 1"
+                v-if="!drawingIframe && props.compData.status !== 'main'"
                 class="row items-center videoNameWrap"
             >
                 <span id="videoMainName" class="col text-left videoNameSpan">{{
@@ -1208,7 +1203,6 @@ const props = defineProps({
 
 // --- Reactive Data (replacing Vue 2's data()) ---
 const sessionNickname = ref("");
-const callingLayoutType = ref("");
 const fileStatus = ref(true);
 const fileReceiveStatus = ref(1);
 const antennaInfoStatus = ref(false);
@@ -1224,6 +1218,7 @@ const fileReceptionRate = ref(0);
 // --- Computed Properties (replacing Vue 2's computed) ---
 const videoCallHost = computed(() => chattingStore.videoCallHost);
 const callingUser = computed(() => commonStore.callingUser);
+const callingLayoutType = computed(() => commonStore.callingLayoutType);
 const fileSendStatusComputed = computed(() => commonStore.fileSendStatus); // Renamed to avoid conflict with reactive data
 const ReceptionRate = computed(() => callStore.ReceptionRate);
 const fileSendNickname = computed(() => commonStore.fileSendNickname);
@@ -1258,6 +1253,7 @@ const getIsDrawing = computed(() => commonStore.isDrawing);
 const getIsShare = computed(() => commonStore.isShare);
 const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
+const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value])
 const commonStore = useCommonStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
@@ -1477,10 +1473,10 @@ onMounted(() => {
         headerHeight.value = headerElement.clientHeight;
     }
 
-    const videolocalElement = document.getElementById("videolocal");
-    if (videolocalElement && videolocalElement.childNodes[5]) {
-        videolocalElement.childNodes[5].style.display = "none"; // Type assertion for TypeScript
-    }
+    // const videolocalElement = document.getElementById("videolocal");
+    // if (videolocalElement && videolocalElement.childNodes[5]) {
+    //     videolocalElement.childNodes[5].style.display = "none"; // Type assertion for TypeScript
+    // }
 
     // Laser Pointer Event Creation
     if (callingLayoutType.value !== 1 && props.compData?.status === "main") {
@@ -1571,6 +1567,7 @@ onBeforeUnmount(() => {
     window.removeEventListener("resize", videoResize);
     callStore.setEnterenceCheck(0);
 });
+
 
 // --- Watchers (replacing Vue 2's watch) ---
 watch(getChattingShow, () => {
@@ -1688,6 +1685,13 @@ watch(getMainVideoIdx, (res) => {
     if (commonStore.callingLayoutType === 1 && !isDrawing.value && !getIsShare.value) {
         commonStore.setMainVideoInfo(res);
     }
+
+    if (commonStore.callingLayoutType !== 1) {
+       const mainVideoEle = document.getElementById("videoMain")
+        console.log(callStore.videoStreamArray[res])
+        mainVideoEle.srcObject = callStore.videoStreamArray[res]
+    }
+
 });
 </script>
 
@@ -1697,6 +1701,7 @@ $windowInfoBarHeight: 30px;
 .window {
     width: 100%;
     height: 100% !important;
+    position: relative;
     // align-items: centerb
     // display: table
 
@@ -1764,6 +1769,8 @@ $windowInfoBarHeight: 30px;
 
 .sending,
 .receive {
+    width: 100%;
+    height: 100%;
     > .windowInfoBar {
         > span {
             padding-left: 0;
@@ -1773,12 +1780,6 @@ $windowInfoBarHeight: 30px;
 
 .sending > .windowInfoBar {
     padding-right: 6px;
-}
-
-.sending {
-    color: #fff;
-    background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
-        padding-box;
 }
 
 .receiveBackground {
@@ -2007,7 +2008,6 @@ $windowInfoBarHeight: 30px;
 
 .videoMainDivWrap {
     width: inherit;
-    height: inherit;
 }
 
 .videoNameWrap {
@@ -2785,5 +2785,20 @@ $windowInfoBarHeight: 30px;
     color: white;
     background: transparent;
     border: none;
+}
+
+
+.mode {
+    width: 100%;
+    height: 100%;
+    color: #fff;
+}
+.mode.unpublish {
+    background: #000;
+}
+.mode.sending {
+    color: #fff;
+    background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
+        padding-box;
 }
 </style>

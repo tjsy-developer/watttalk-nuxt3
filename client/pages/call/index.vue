@@ -353,7 +353,7 @@ onMounted(() => {
                 sessionStorage.setItem("m_callWaiting", "false");
 
                 // 해당 수락 거절 메시지 삭제
-                chattingStore.chattingMessageList.splice(chattingCallingIndex, 1);
+                chattingStore.chattingMessageList.splice(chattingCallingIndex.value, 1);
 
                 // 하단 정렬일 경우에만
                 // callingLayout 4 하단 레이아웃 default 버튼 변경
@@ -479,7 +479,7 @@ onMounted(() => {
                         );
 
                         // 수락 거절 메세지 index 저장
-                        chattingCallingIndex =
+                        chattingCallingIndex.value =
                             chattingStore.chattingMessageList.length - 1;
                         break;
                     }
@@ -569,6 +569,7 @@ onMounted(() => {
                 // VideoMain Index와 해당 Index가 동일 할 경우 Main 이미지 변경
                 if (callStore.videoMainIndex == videoOnOffIndex) {
                     // mainVideoChangeFunc(0, feeds[videoOnOffIndex].rfdisplay)
+                    console.log('여기')
                     mainVideoChangeFunc(0, customNickname);
                 }
             } else {
@@ -1122,6 +1123,7 @@ onMounted(() => {
                         } else {
                             showHostMainRfid = feeds.value[showHostMainIndex].rfid;
                             console.log('나 호스트아님')
+                            console.log('아니여기 안탔어?')
                         }
 
                         setTimeout(function () {
@@ -1185,7 +1187,7 @@ onMounted(() => {
                             toggleMute();
 
                             // 마이크 on/off socket event 실행
-                            micOnOff(1, myid);
+                            micOnOff(1, myid.value);
 
                             // userListStatus 마이크 아이콘 해제
                             setUserListMicMute(0, false);
@@ -1231,12 +1233,12 @@ onMounted(() => {
                     let showHostMainRfid = "";
 
                     if (showHostMainIndex == 0) {
-                        showHostMainRfid = myid;
+                        showHostMainRfid = myid.value;
                     } else if (
                         showHostMainIndex != 0 &&
                         feeds.value[showHostMainIndex] == null
                     ) {
-                        showHostMainRfid = myid;
+                        showHostMainRfid = myid.value;
                     } else {
                         showHostMainRfid = feeds.value[showHostMainIndex].rfid;
                     }
@@ -1413,7 +1415,7 @@ onMounted(() => {
             } else if (callStore.videoMainIndex == 0) {
                 // 1) 사용자가 혼자가 아니며,
                 // 2) mainVideo가 자신일 경우 자신의 rfid
-                mainVideoRfid = myid;
+                mainVideoRfid = myid.value;
             } else {
                 // 1) 사용자가 혼자가 아니며,
                 // 2) mainIndex가 나 외에 다른 사람일 경우
@@ -1428,22 +1430,22 @@ onMounted(() => {
             // feeds (사용자) for문 수행 -> unpublished와 mute가 있는지 확인.
             for (let i = 0; i < feeds.value.length; i++) {
                 const obj = {};
-                // 자신 일 경우 : myid
+                // 자신 일 경우 : myid.value
                 if (i == 0) {
                     // unpublished (videoOff) 가 있는지 확인한다. -> 있으면 videoOffRfid 에 push
                     if (commonStore.userListStatus[i].status == "unpublished") {
-                        videoOffRfid.push(myid);
+                        videoOffRfid.push(myid.value);
                     }
 
                     // mute (음소거) 가 있는지 확인한다. -> 있으면 muteRfid 에 push
                     if (commonStore.userListStatus[i].mute == true) {
-                        muteRfid.push(myid);
+                        muteRfid.push(myid.value);
                     }
 
                     // 나의 zoomLevel값을 셋팅한다
                     if (commonStore.userListStatus[i].zoomLevel) {
                         console.log(commonStore.userListStatus[i].zoomLevel);
-                        obj.rfid = myid;
+                        obj.rfid = myid.value;
                         obj.zoomLevel = commonStore.userListStatus[i].zoomLevel;
                         zoomLevelObj.push(obj);
                     }
@@ -1577,7 +1579,7 @@ onMounted(() => {
             const showHostMainIndex = callStore.videoMainIndex;
             console.log("showHostMainIndex:", showHostMainIndex);
 
-            console.log("rfid", feeds.value, "myid", myid);
+            console.log("rfid", feeds.value, "myid.value", myid.value);
             if (feedsIndex && feedsIndex !== 0) {
                 commonStore.userListStatus[feedsIndex].zoomLevel = json.level;
                 feeds.value[feedsIndex].zoomLevel = json.level;
@@ -1732,25 +1734,25 @@ onMounted(() => {
 
         // 자신이 메인이 아닐 경우에만 실행한다.
         //
-        if (json.mainRfid != myid && json.mainRfid !== "createRoom") {
+        if (json.mainRfid != myid.value && json.mainRfid !== "createRoom") {
             /* 신규 사용자 Audio Duration 생성 */
             insertNewAudioDuration(
                 json.mainRfid, // main_uid
-                myid, // my_uid
+                myid.value, // my_uid
                 loginStore.m_local_deviceid,
                 uniqueRoomid.value, // uniqueRoomid.value
             );
         } else if (
-            (json.mainRfid != myid &&
+            (json.mainRfid != myid.value &&
                 json.mainRfid == "createRoom" &&
                 json.useScreenShare) ||
-            (json.mainRfid != myid && json.mainRfid == "createRoom" && json.useDrawing)
+            (json.mainRfid != myid.value && json.mainRfid == "createRoom" && json.useDrawing)
         ) {
             // 1:1 통화이지만, 호스트가 화면 공유 또는 드로잉일 경우 자신을 신규 사용자 AudioDuration을 등록한다.
             /* 신규 사용자 Audio Duration 생성 */
             insertNewAudioDuration(
                 feeds.value[mainFeedsIndex].rfid, // main_uid
-                myid, // my_uid
+                myid.value, // my_uid
                 loginStore.m_local_deviceid,
                 uniqueRoomid.value, // uniqueRoomid.value
             );
@@ -1774,7 +1776,7 @@ onMounted(() => {
 
             // 받아온 rfid가 자신일 경우
             // status에 따라 음소거 및 음소거 해제를 한다.
-            if (json.rfid == myid) {
+            if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
                     store.commit("isSounded");
@@ -1816,7 +1818,7 @@ onMounted(() => {
 
             // 받아온 rfid가 자신일 경우
             // status에 따라 음소거 및 음소거 헤제 및 설정한다.
-            if (json.rfid == myid) {
+            if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
                     store.commit("isSounded");
@@ -1939,7 +1941,7 @@ onMounted(() => {
 
             const rfidIndex = findFeedsIndexDeviceid(json.deviceid);
             // console.log("*** socket: fileTransfer response - fileReceiver handleId: " + feeds.value[rfidIndex].rfid)
-            // console.log("*** socket: fileTransfer response - fileReceiver handleId: " + myid)
+            // console.log("*** socket: fileTransfer response - fileReceiver handleId: " + myid.value)
 
             // 누군가 나에게 파일 전송을 요청했을 때 callingWindow 수락 거절 창으로 변경되어야
             // 이미 내가 파일 송수신을 하고 있을 경우 보낸 사람에게 거절로 보낸다.
@@ -1950,7 +1952,7 @@ onMounted(() => {
             //      localdeviceid: loginStore.m_local_deviceid,
             //      remotedeviceid: json.deviceid,
             //      status: 0,
-            //      // handleId: myid
+            //      // handleId: myid.value
             //      handleId: feeds.value[rfidIndex].rfid
             //  }
             //  const sendJson = JSON.stringify(obj)
@@ -1974,7 +1976,7 @@ onMounted(() => {
             //      localdeviceid: loginStore.m_local_deviceid,
             //      remotedeviceid: json.deviceid,
             //      status: 0,
-            //      // handleId: myid
+            //      // handleId: myid.value
             //      handleId: feeds.value[rfidIndex].rfid
             //  }
             //  const sendJson = JSON.stringify(obj)
@@ -4194,7 +4196,7 @@ function fileSend(result) {
         let rfdeviceid = feeds.value[rfidIndex].rfdeviceid;
         // console.log("*** methods: fileSend - 수락했을 때, remote deviceid = " + rfdeviceid)
         // console.log("*** methods: fileSend - fileReceiver handleId = " + feeds.value[rfidIndex].rfid)
-        // console.log("*** methods: fileSend - fileReceiver handleId = " + myid.value)
+        // console.log("*** methods: fileSend - fileReceiver handleId = " + myid.value.value)
         // status : 0 Decline, 1 Access
 
         const obj = {
@@ -4799,7 +4801,7 @@ function screenShare(type) {
 
         // 화면 공유 전 나의 상태가 video OFF 였다면 videoOFF 상태로 돌려주기.
         if (callStore.myVideoStatus == "videoOFF") {
-            commonStore.isVideo();
+            commonStore.setIsVideo();
         }
     }
 
@@ -4847,7 +4849,7 @@ function screenShare(type) {
                     // video가 Off일 경우 비디오를 켜준다. - 임시
                     if (commonStore.isVideo == true) {
                         callStore.setMyVideoStatus("videoOFF");
-                        commonStore.isVideo();
+                        commonStore.setIsVideo();
                     }
                 } else {
                     // 다른사용자(videoOFF상태)가 메인인 경우 - 호스트가 화면 공유를 시작할 때 videoOFF화면이 사라지지않는 버그 처리 ksy
@@ -5465,13 +5467,13 @@ function newRemoteFeed(id, display, audio, video) {
                 });
 
                 // remote의 이름을 보여주는 div
-                $("#panel-inner" + remoteFeed.rfindex).append(
-                    '<div class="row items-center" style="position: absolute; bottom: 0px; width: 100%; height: 30px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 0 7px; z-index: -999;"><span id="remoteCaption' +
-                        remoteFeed.rfindex +
-                        '" class="col text-left remoteCaptionName" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 18px;">' +
-                        customNickname +
-                        "</span></div>",
-                );
+                // $("#panel-inner" + remoteFeed.rfindex).append(
+                //     '<div class="row items-center" style="position: absolute; bottom: 0px; width: 100%; height: 30px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 0 7px; z-index: 1;"><span id="remoteCaption' +
+                //         remoteFeed.rfindex +
+                //         '" class="col text-left remoteCaptionName" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 18px;">' +
+                //         customNickname +
+                //         "</span></div>",
+                // );
 
                 $("#panel-inner" + remoteFeed.rfindex).append(
                     '<span class="label label-primary hide" id="curres' +
@@ -6277,7 +6279,7 @@ function mainVideoChangeFunc(type, req) {
         $("#videoMainDivWrap").css("width", width);
 
         $("#videoMainDiv").hide();
-
+        console.log('videoOFF')
         commonStore.setMainVideoStatus({
             type: "videoOFF",
             text: name,
@@ -6323,6 +6325,7 @@ function mainVideoChangeFunc(type, req) {
         });
     } else if (type == 5) {
         if (videoOffResult.value == true) {
+            console.log('videoOFF')
             commonStore.setMainVideoStatus({
                 type: "videoOFF",
                 text: name,
@@ -7471,6 +7474,7 @@ function setZoomLevel(level) {
 }
 // 호스트가 바라보는 화면으로 모두 전환 요청
 function hostSelectedMainVideo(rfid) {
+    console.log(rfid, myid.value)
     // rfid로 인덱스 찾기
     let mainVideoIndex = "";
     let mainVideoDeviceid = "";
@@ -7691,7 +7695,8 @@ function hostViewMainVideo(feedsIndex) {
     if (feedsIndex == 0) {
         // 메인화면에 선택된 사람의 상태로 mainVideo 상태를 변경한다.
         // console.log("@@@@@ 여기는 내가 메인이다.")
-        if (commonStore.isVideo) {
+        if (!commonStore.isVideo) {
+            console.log('여기')
             mainVideoChangeFunc(0, "localstream");
         } else if (
             !(
@@ -7730,6 +7735,7 @@ function hostViewMainVideo(feedsIndex) {
         // console.log(commonStore.userListStatus[feedsIndex].status)
         // 메인화면에 선택된 사람의 상태로 mainVideo 상태를 변경한다.
         if (commonStore.userListStatus[feedsIndex].status == "unpublished") {
+            console.log('여기')
             mainVideoChangeFunc(0, selectedMainName);
         } else if (commonStore.userListStatus[feedsIndex].status == "attach") {
             mainVideoChangeFunc(1, selectedMainName);
@@ -9003,7 +9009,7 @@ function canvasCreateOffer(type) {
                 // // 저장하는 이유는, 드로잉을 종료할 때 MyVideoStatus가 videoOFF이면 자신의 카메라 비디오 오프를 해주기 위해서.
                 if (commonStore.isVideo == true) {
                     // callStore.setMyVideoStatus", "videoOFF")
-                    commonStore.isVideo();
+                    commonStore.setIsVideo();
                 }
 
                 // // main Index 변경
@@ -11018,9 +11024,9 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
     // 전화 벨 끄기
     callingBell("stop");
 
-    if (result === 0 || result === 1) {
+    if (newValue === 0 || newValue === 1) {
         // 0 : 거절,  1: 수락
-        if (result == 1) {
+        if (newValue == 1) {
             console.log("*** watch: multicalling Accept");
             requestMultiCalling({
                 remoteDeviceId: multiCallingData.remotedeviceid,
@@ -11057,7 +11063,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
                     funcAutoCallAceept.value = null;
                 }
             }
-        } else if (result == 0) {
+        } else if (newValue == 0) {
             console.log("*** watch: multiCalling Reject");
             requestMultiRefuseCalling({
                 remoteDeviceId: multiCallingData.remotedeviceid,
@@ -11171,7 +11177,7 @@ watch(getCacncelCallFlag, (newValue, oldValue) => {
 watch(getisVideoResult, (newValue, oldValue) => {
     console.log("getisVideoResult 변경됨:", newValue, oldValue);
 
-    if (result) {
+    if (newValue) {
         muteVideoCustom();
         // console.log("보여지지 않는다.")
     } else {
@@ -11228,7 +11234,7 @@ watch(getMainVideoImage, (newValue, oldValue) => {
             // 자신의 화면 main으로 만들기
             mainVideoBorder(0);
         } else {
-            const mainRfid = feeds.value.value[callStore.videoMainIndex].rfid;
+            const mainRfid = feeds.value[callStore.videoMainIndex].rfid;
             console.log("hostSelectedMainVideo 29");
             hostSelectedMainVideo(mainRfid);
 
@@ -11625,7 +11631,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         // callingLayoutType.value == 1인 상태에서 drawing 접근 시 mainVideo설정이 되어있지 않아, drawing 종료 시 nickname 표기가 안되는 현상 fix
         checkMainVideo();
         commonStore.setIsVideoTrue();
-        commonStore.isVideo();
+        commonStore.setIsVideo();
         // 드로잉 클릭 시 열려있던 모달 닫기
         for (let i = 1; i <= previewModalInfo.value.previewModalcnt; i++) {
             commonStore.setPreviewModalFlag({ modalIndex: i, url: "", show: "hide" });
@@ -11637,7 +11643,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         if (hostSelectedMainIndex == 0) {
             // video가 Off일 경우 비디오를 켜준다. - 임시
             if (commonStore.insert_main_video == true) {
-                commonStore.isVideo();
+                commonStore.setIsVideo();
             }
         } else {
             // 일반사용자가 메인(videoOff)인상태에서 드로잉 > videoOff 화면이 나타나는 현상으로 예외처리 ksy

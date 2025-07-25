@@ -144,7 +144,7 @@ export const useCommonStore = defineStore("common", {
         setIsSoundedFalse() {
             this.isSounded = false;
         },
-        isVideo() {
+        setIsVideo() {
             this.isVideo = !this.isVideo;
         },
         setIsVideoTrue() {
@@ -214,7 +214,7 @@ export const useCommonStore = defineStore("common", {
         setUserOne(payload) {
             if (payload.index) {
                 // 해당 인덱스가 없으면 초기화 (빈 객체로)
-                this.userListStatus[payload.index] = payload.newObj;
+                this.userListStatus[payload.index].hostIcon = payload.newObj;
             }
         },
         // 파일 송신자 채팅 index 관련 정보저장

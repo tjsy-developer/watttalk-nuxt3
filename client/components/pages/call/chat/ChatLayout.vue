@@ -173,6 +173,7 @@ onMounted(() => {
 .chat-container {
     display: flex;
     flex-direction: column;
+    flex: 282px;
 }
 .cancleCall {
     width: 100%;

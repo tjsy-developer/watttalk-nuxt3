@@ -11,7 +11,8 @@
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
-                    userList[windowKey]?.status !== 'none'
+                    userList[windowKey]?.status !== 'none' &&
+                    userList[windowKey]?.status !== 'main'
                 "
                 :key="windowKey"
                 :style="{
@@ -23,7 +24,7 @@
             >
                 <CallWindow
                     v-if="windowKey === 0"
-                    :id="videolocal"
+                    :id="'videolocal'"
                     :compData="userList[windowKey] || []"
                     :value="windowKey"
                 />
@@ -34,15 +35,17 @@
                     :value="windowKey"
                     :style="{ 'object-fit': 'cover' }"
                 />
-                <CallWindow
-                    v-if="callingLayoutType !== 1 && userList[windowKey]?.status == 'main'"
-                    :id="`root${windowKey}`"
-                    :compData="userList[windowKey] || []"
-                    :value="windowKey"
-                    :style="{ 'object-fit': 'cover' }"
-                />
             </div>
         </div>
+        <CallWindow
+            v-if="callingLayoutType !== 1"
+            :id="'mainVideo'"
+            :compData="userList[roomNumberCount - 1]"
+            :value="windowKey"
+            :style="{ 'object-fit': 'cover' }"
+        >
+            <ThumbNail></ThumbNail>
+        </CallWindow>
 
         <!-- <div v-else-if="callingLayoutType === 3" class="row content-start callingLayout3">
             <div id="callingLayoutWrap3" class="col-auto column callingLayoutWrap3">
@@ -224,6 +227,7 @@ import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import CallWindow from "./CallWindow.vue";
+import ThumbNail from "./drawing/ThumbNail.vue";
 
 const commonStore = useCommonStore();
 const callStore = useCallStore();
@@ -256,7 +260,9 @@ const personnelInRoom = computed(() => chattingStore.personnelInRoom);
 const getDeclineStatus = computed(() => callStore.declineStatus);
 const chattingShow = computed(() => chattingStore.chattingShow);
 const getLoadingMask = computed(() => callStore.loadingMask);
-
+const mainUser = computed(() => {
+  return userList.value[commonStore.mainVideoIndex] || null;
+});
 // No need for separate computed properties like `getCallingLayoutType` etc.
 // when directly using the computed refs from the store as above.
 
@@ -551,6 +557,7 @@ onUnmounted(() => {
         height: 11px;
     }
     position: relative;
+    display: flex;
 }
 
 .fit {
@@ -622,8 +629,7 @@ onUnmounted(() => {
     border-radius: 13px;
     overflow: scroll;
     max-width: 227px;
-    width: -webkit-fill-available;
-    position: absolute;
+    width: 227px;
     gap: 25px;
     /* bottom: 8px; */
     flex-direction: column;
@@ -631,6 +637,9 @@ onUnmounted(() => {
         width: 227px !important;
         height: 150px;
         flex-shrink: 0;
+    }
+    [id^="videoremote"] {
+        position: relative;
     }
 }
 
@@ -655,6 +664,18 @@ onUnmounted(() => {
         width: 227px !important;
         height: 150px;
         flex-shrink: 0;
+    }
+}
+
+#mainVideo {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    /* background: #151515; */
+    > .videoMainWrap {
+        line-height: 100%;
+        margin: auto;
     }
 }
 
@@ -683,6 +704,7 @@ onUnmounted(() => {
 
 #panel-inner-main {
     width: 100%;
+    height: 100%;
     position: relative;
 }
 
@@ -692,7 +714,6 @@ onUnmounted(() => {
     overflow: initial;
 }
 .screen-video {
-    padding-top: 56.25%;
     height: 0;
     overflow: hidden;
 }

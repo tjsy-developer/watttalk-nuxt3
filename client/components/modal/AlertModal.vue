@@ -524,7 +524,6 @@ const hangupCallingConfirm = (result) => {
 	let receiveRejectFlag = ''
 	if (result) {
 		callStore.setHangupCallingConfirmFlag(result);
-		callStore.setHangupCallingConfirmFlag(false);
 
 		for (let i = 0; i < commonStore.userListStatus.length; i++) {
 			// flag를 설정한다.
@@ -559,10 +558,11 @@ const hangupCallingConfirm = (result) => {
 		} else {
 			commonStore.janus.destroy()
 		}
-
-		modalStore.closeModal("noneOverlayModal");
 		meetingStore.meetingLeaveFlag(true)
-	};
+		modalStore.closeModal("noneOverlayModal");
+	} else {
+		modalStore.closeModal("noneOverlayModal");
+	}
 }
 
 // 드로잉 이동 확인

@@ -7,71 +7,76 @@ import { useNuxtApp } from "nuxt/app";
 import { useRouter } from "vue-router";
 
 export default defineNuxtPlugin((nuxtApp) => {
-    const config = useRuntimeConfig();
-    const router = useRouter()
 
-    const isLocalhost =
-        (process.client && (window.location.hostname === "localhost") ||
-        window.location.origin == "https://192.168.20.66:3000");
-    const instance = axios.create({
-        baseURL: isLocalhost
-            ? "https://hdcardev.watttalk.kr/wattmanager-server" // ✅ 로컬일 때 완전한 URL
-            : "/wattmanager-server",
-        timeout: 10000,
-    });
+    if (process.client) {
+        const config = useRuntimeConfig();
+        const router = useRouter();
 
-    // 🔐 Request Interceptor (예: 토큰 자동 주입)
-    instance.interceptors.request.use(
-        async (config) => {
-            const tokenStore = useTokenStore(); // Pinia 스토어에서 토큰 가져오기
-            const accessToken = tokenStore.accessToken;
+        const isLocalhost =
+            (process.client && window.location.hostname === "localhost") ||
+            window.location.origin == "https://192.168.20.66:3000";
+        const instance = axios.create({
+            baseURL: isLocalhost
+                ? "https://hdcardev.watttalk.kr/wattmanager-server" // ✅ 로컬일 때 완전한 URL
+                : "/wattmanager-server",
+            timeout: 10000,
+        });
 
-            if (accessToken) {
-                const tokenStatus = decodeToken(accessToken);
-                if (tokenStatus === "expired") {
-                    try {
-                        // 1) 리프레시 토큰으로 액세스 토큰 재발급 요청
-                        const refreshToken = tokenStore.enRToken;
-                        const { newAccessToken, newRefreshToken } = await requestNewToken(refreshToken); // API 호출 함수
-                        tokenStore.setAccessToken(newAccessToken);
-                        tokenStore.setRToken(newRefreshToken);
-                        config.headers.jwt = newAccessToken;
-                    } catch (e) {
-                        // 재발급 실패 시, 로그인 페이지 이동 or 로그아웃 처리
-                        alert('만료된 토큰입니다 다시 로그인해주세요')
-                        window.location.href = "http://localhost:8223"
-                        return Promise.reject(e);
+        // 🔐 Request Interceptor (예: 토큰 자동 주입)
+        instance.interceptors.request.use(
+            async (config) => {
+                const tokenStore = useTokenStore(); // Pinia 스토어에서 토큰 가져오기
+                const accessToken = tokenStore.accessToken;
+
+                if (accessToken) {
+                    const tokenStatus = decodeToken(accessToken);
+                    if (tokenStatus === "expired") {
+                        try {
+                            // 1) 리프레시 토큰으로 액세스 토큰 재발급 요청
+                            const refreshToken = tokenStore.enRToken;
+                            const { newAccessToken, newRefreshToken } =
+                                await requestNewToken(refreshToken); // API 호출 함수
+                            tokenStore.setAccessToken(newAccessToken);
+                            tokenStore.setRToken(newRefreshToken);
+                            config.headers.jwt = newAccessToken;
+                        } catch (e) {
+                            // 재발급 실패 시, 로그인 페이지 이동 or 로그아웃 처리
+                            alert("만료된 토큰입니다 다시 로그인해주세요");
+                            window.location.href = "http://localhost:8223";
+                            return Promise.reject(e);
+                        }
+                    } else {
+                        config.headers.jwt = accessToken;
                     }
-                } else {
-                    config.headers.jwt = accessToken;
                 }
-            }
-            return config;
-        },
-        (error) => {
-            return Promise.reject(error);
-        },
-    );
+                config.headers["Content-Type"] = "application/json";
+                return config;
+            },
+            (error) => {
+                return Promise.reject(error);
+            },
+        );
 
-    // 🚨 Response Interceptor (예: 에러 처리)
-    instance.interceptors.response.use(
-        (response) => {
-            return response;
-        },
-        (error) => {
-            console.log(error)
-            alert(error)
-            window.location.href = "http://localhost:8223"
-            // if (error.response?.status === 401) {
-            //     console.warn("인증 실패 - 로그인 다시 해주세요");
-                
-            // }
-            return Promise.reject(error);
-        },
-    );
+        // 🚨 Response Interceptor (예: 에러 처리)
+        instance.interceptors.response.use(
+            (response) => {
+                return response;
+            },
+            (error) => {
+                console.log(error);
+                alert(error);
+                window.location.href = "http://localhost:8223";
+                // if (error.response?.status === 401) {
+                //     console.warn("인증 실패 - 로그인 다시 해주세요");
 
-    // Nuxt 앱에 주입
-    nuxtApp.provide("axios", instance);
+                // }
+                return Promise.reject(error);
+            },
+        );
+
+        // Nuxt 앱에 주입
+        nuxtApp.provide("axios", instance);   
+    }
 });
 
 function decodeToken(jwt) {

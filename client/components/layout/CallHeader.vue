@@ -199,8 +199,10 @@ watch(sendDurationEnable, (newVal) => {
                 />
                 <span>{{ t("드로잉 종료") }}</span>
             </button>
-            <button>
-                <img src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
+            <button @click="handleChangeVideoOnOff">
+                <img
+                     
+                    src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
                 <span>{{ t("화면공유 종료") }}</span>
             </button>
         </div>

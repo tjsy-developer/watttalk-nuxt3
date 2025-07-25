@@ -123,6 +123,7 @@ export const useChattingStore = defineStore('chatting', {
       this.newEmergencyConfirm = payload;
     },
     setVideoCallHost(payload) {
+      console.log(payload)
       this.videoCallHost = payload;
     },
     setPersonnelInRoom(payload) {

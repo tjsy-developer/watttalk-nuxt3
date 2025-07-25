@@ -54,6 +54,10 @@ function handleClickHangUp() {
         }
     }
 }
+
+function handleChangeVideoOnOff() {
+    commonStore.setIsVideo();
+}
 </script>
 
 <template>
@@ -78,13 +82,14 @@ function handleClickHangUp() {
         </div>
         <div
             v-if="isHost"
+            
             class="icon-btn func-img" title="화면공유">
             <img src="@/assets/images/leftSideBar/ic_share-1.png">
         </div>
         <div class="icon-btn func-img" title="내 마이크 음소거">
             <img src="@/assets/images/leftSideBar/ic_mic-large.png">
         </div>
-        <div class="icon-btn func-img" title="내 화면 활성화">
+        <div @click="handleChangeVideoOnOff" class="icon-btn func-img" title="내 화면 활성화">
             <img src="@/assets/images/leftSideBar/ic_video.png">
         </div>
         <div class="icon-btn func-img" title="통화종료" @click="handleClickHangUp">

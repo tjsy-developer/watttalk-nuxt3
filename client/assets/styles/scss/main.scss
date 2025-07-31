@@ -13,6 +13,10 @@ html {
 body {
     font-family: NanumSquare;
     font-size: 1.6rem;
+
+    * {
+        box-sizing: border-box;
+    }
 }
 
 button {
@@ -43,6 +47,11 @@ button {
 .main-modal {
     width: 700px;
     height: 480px;
+}
+
+.meeting-modal {
+    width: 440px;
+    height: 650px;
 }
 
 .device-modal {

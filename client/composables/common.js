@@ -1,7 +1,6 @@
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 
-
 // userData 검색
 export function userDataGetIndex(deviceId) {
     console.log(deviceId);
@@ -33,7 +32,7 @@ export function updateStatusByDeviceId(treeData, targetDeviceId, newStatus) {
         return nodes.map((node) => {
             if (!node.children || node.children.length === 0) {
                 if (node.deviceId === targetDeviceId) {
-                    return { ...node, status: newStatus }; // 상태만 바꿔서 새 객체 반환
+                    return { ...node, status: newStatus, checked: false }; // 상태만 바꿔서 새 객체 반환
                 }
                 return node;
             } else {
@@ -41,6 +40,7 @@ export function updateStatusByDeviceId(treeData, targetDeviceId, newStatus) {
                 return {
                     ...node,
                     children: recursiveUpdate(node.children),
+                    checked: false,
                 };
             }
         });
@@ -79,6 +79,23 @@ export function userDataGetInfo(deviceId) {
 export function customUserNickname(deviceid) {
     const remoteInfo = userDataGetInfo(deviceid);
     return remoteInfo.nickName;
+}
+
+export function leadZero(value) {
+    const zeroWithValue = String(value).padStart(2, "0");
+    return zeroWithValue;
+}
+// 이미지 파일명 (확장자 미포함) 생성
+export function getImageFileName(filetype) {
+    const utcDate = new Date();
+    const year = utcDate.getFullYear();
+    const month = leadZero(utcDate.getMonth() + 1);
+    const date = leadZero(utcDate.getDate());
+    const hour = leadZero(utcDate.getHours());
+    const minutes = leadZero(utcDate.getMinutes());
+    const seconds = leadZero(utcDate.getSeconds());
+    const formatted = `watttalk_${year}${month}${date}${hour}${minutes}${seconds}.${filetype}`;
+    return formatted;
 }
 
 let toastCount = 0;

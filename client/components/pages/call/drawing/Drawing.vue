@@ -10,8 +10,8 @@
                         tool.type == nowTool && displayMode == 'darkmode'
                             ? '1px solid #D6D6D6'
                             : tool.type == nowTool && displayMode == 'lightmode'
-                            ? '1px solid #1C8EFF'
-                            : undefined,
+                              ? '1px solid #1C8EFF'
+                              : undefined,
                 }"
                 :key="toolKey"
                 onmouseenter="this.childNodes[1].style.display = 'flex'; this.style.zIndex = '2';"
@@ -40,9 +40,9 @@
                                     displayMode == 'darkmode'
                                         ? '1px solid white'
                                         : subMenu.value == tool.selected &&
-                                          displayMode == 'lightmode'
-                                        ? '1px solid #1C8EFF'
-                                        : undefined,
+                                            displayMode == 'lightmode'
+                                          ? '1px solid #1C8EFF'
+                                          : undefined,
                                 padding: tool.type == 'color' ? '3px' : undefined,
                             }"
                         >
@@ -102,10 +102,14 @@
 </template>
 
 <script setup>
+import { fabric } from "fabric";
+import _ from "lodash";
+
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useDrawingCanvasStore } from "@/stores/drawing";
+import { setRemoveDuplicates } from "@/utils/common";
 import { computed, nextTick, reactive, ref, watch } from "vue";
 
 const commonStore = useCommonStore();
@@ -116,172 +120,211 @@ const drawingStore = useDrawingCanvasStore();
 const tools = ref([
     {
         type: "pen",
-        img: require("@/assets/images/callAttachment/bt_1_pen.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_pen_fix.png"),
-        subMenu: [
-            { circle: 1, value: 1 },
-            { circle: 3, value: 3 },
-            { circle: 6, value: 6 },
-            { circle: 10, value: 10 },
-            { circle: 13, value: 13 },
-            { circle: 16, value: 16 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_1_pen.png", import.meta.url).href,
+        fixImg: new URL("@/assets/images/callAttachment/bt_pen_fix.png", import.meta.url)
+            .href,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
         selected: 3,
-        tooltip: "연필"
+        tooltip: "연필",
     },
     {
         type: "line",
-        img: require("@/assets/images/callAttachment/bt_2_line.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_2_line_fix.png"),
-        subMenu: [
-            { circle: 1, value: 1 },
-            { circle: 3, value: 3 },
-            { circle: 6, value: 6 },
-            { circle: 10, value: 10 },
-            { circle: 13, value: 13 },
-            { circle: 16, value: 16 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_2_line.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_2_line_fix.png",
+            import.meta.url,
+        ).href,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
         selected: 3,
-        tooltip: "선"
+        tooltip: "선",
     },
     {
         type: "arrow",
-        img: require("@/assets/images/callAttachment/bt_3_arrow.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_3_arrow_fix.png"),
-        subMenu: [
-            { square: 1, value: 1 },
-            { square: 3, value: 3 },
-            { square: 6, value: 6 },
-            { square: 10, value: 10 },
-            { square: 13, value: 13 },
-            { square: 16, value: 16 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_3_arrow.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_3_arrow_fix.png",
+            import.meta.url,
+        ).href,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
         selected: 3,
-        tooltip: "화살표"
+        tooltip: "화살표",
     },
     {
         type: "square",
-        img: require("@/assets/images/callAttachment/bt_4_square.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_4_square_fix.png"),
-        subMenu: [
-            { square: 1, value: 1 },
-            { square: 3, value: 3 },
-            { square: 6, value: 6 },
-            { square: 10, value: 10 },
-            { square: 13, value: 13 },
-            { square: 16, value: 16 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_4_square.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_4_square_fix.png",
+            import.meta.url,
+        ).href,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
         selected: 3,
-        tooltip: "사각형"
+        tooltip: "사각형",
     },
     {
         type: "circle",
-        img: require("@/assets/images/callAttachment/bt_5_circle.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_drawing_circle_fix.png"),
-        subMenu: [
-            { circle: 1, value: 1 },
-            { circle: 3, value: 3 },
-            { circle: 6, value: 6 },
-            { circle: 10, value: 10 },
-            { circle: 13, value: 13 },
-            { circle: 16, value: 16 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_5_circle.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_drawing_circle_fix.png",
+            import.meta.url,
+        ).href,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
         selected: 3,
-        tooltip: "원"
+        tooltip: "원",
     },
     {
         type: "text",
-        img: require("@/assets/images/callAttachment/bt_6_text.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_6_text_fix.png"),
-        subMenu: [
-            { text: 16, value: 16 },
-            { text: 32, value: 32 },
-            { text: 64, value: 64 },
-            { text: 128, value: 128 },
-            { text: 256, value: 256 },
-            { text: 512, value: 512 }
-        ],
+        img: new URL("@/assets/images/callAttachment/bt_6_text.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_6_text_fix.png",
+            import.meta.url,
+        ).href,
+        subMenu: [16, 32, 64, 128, 256, 512].map((v) => ({ text: v, value: v })),
         selected: 32,
-        tooltip: "텍스트"
+        tooltip: "텍스트",
     },
     {
         type: "photo",
-        img: require("@/assets/images/callAttachment/bt_7_zoom.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_7_zoom_fix.png"),
-        tooltip: "이미지 삽입"
+        img: new URL("@/assets/images/callAttachment/bt_7_zoom.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_7_zoom_fix.png",
+            import.meta.url,
+        ).href,
+        tooltip: "이미지 삽입",
     },
     {
         type: "pdf",
-        img: require("@/assets/images/callAttachment/bt_8_pdf.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_8_pdf.png"),
-        tooltip: "PDF 삽입"
+        img: new URL("@/assets/images/callAttachment/bt_8_pdf.png", import.meta.url).href,
+        fixImg: new URL("@/assets/images/callAttachment/bt_8_pdf.png", import.meta.url)
+            .href,
+        tooltip: "PDF 삽입",
     },
     {
         type: "undo",
-        img: require("@/assets/images/callAttachment/bt_9_undo.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_11_back_fix.png"),
-        tooltip: "되돌리기"
+        img: new URL("@/assets/images/callAttachment/bt_9_undo.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_11_back_fix.png",
+            import.meta.url,
+        ).href,
+        tooltip: "되돌리기",
     },
     {
         type: "redo",
-        img: require("@/assets/images/callAttachment/bt_10_redo.png"),
-        fixImg: require("@/assets/images/callAttachment/bt_11_forward_fix.png"),
-        tooltip: "다시실행"
+        img: new URL("@/assets/images/callAttachment/bt_10_redo.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/bt_11_forward_fix.png",
+            import.meta.url,
+        ).href,
+        tooltip: "다시실행",
     },
     {
         type: "moveLayer",
-        img: require("@/assets/images/callAttachment/ic_layer_move_fix.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_layer_move_fix.png"),
-        tooltip: "레이어 선택"
+        img: new URL(
+            "@/assets/images/callAttachment/ic_layer_move_fix.png",
+            import.meta.url,
+        ).href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_layer_move_fix.png",
+            import.meta.url,
+        ).href,
+        tooltip: "레이어 선택",
     },
     {
         type: "clear",
-        img: require("@/assets/images/callAttachment/ic_fresh_34.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_fresh_34_2.png"),
-        tooltip: "캔버스 초기화"
+        img: new URL("@/assets/images/callAttachment/ic_fresh_34.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_fresh_34_2.png",
+            import.meta.url,
+        ).href,
+        tooltip: "캔버스 초기화",
     },
     {
         type: "group",
-        img: require("@/assets/images/callAttachment/ic_grouping.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_grouping_2.png"),
-        tooltip: "레이어 그룹화"
+        img: new URL("@/assets/images/callAttachment/ic_grouping.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_grouping_2.png",
+            import.meta.url,
+        ).href,
+        tooltip: "레이어 그룹화",
     },
     {
         type: "layer",
-        img: require("@/assets/images/callAttachment/ic_z-index.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_z-index_fix.png"),
+        img: new URL("@/assets/images/callAttachment/ic_z-index.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_z-index_fix.png",
+            import.meta.url,
+        ).href,
         subMenu: [
-            { img: require("@/assets/images/callAttachment/ic_bring_to_front.png"), value: "F" },
-            { img: require("@/assets/images/callAttachment/ic_bring_forward.png"), value: "f" },
-            { img: require("@/assets/images/callAttachment/ic_send_backward.png"), value: "B" },
-            { img: require("@/assets/images/callAttachment/ic_send_to_back.png"), value: "b" }
+            {
+                img: new URL(
+                    "@/assets/images/callAttachment/ic_bring_to_front.png",
+                    import.meta.url,
+                ).href,
+                value: "F",
+            },
+            {
+                img: new URL(
+                    "@/assets/images/callAttachment/ic_bring_forward.png",
+                    import.meta.url,
+                ).href,
+                value: "f",
+            },
+            {
+                img: new URL(
+                    "@/assets/images/callAttachment/ic_send_backward.png",
+                    import.meta.url,
+                ).href,
+                value: "B",
+            },
+            {
+                img: new URL(
+                    "@/assets/images/callAttachment/ic_send_to_back.png",
+                    import.meta.url,
+                ).href,
+                value: "b",
+            },
         ],
         selected: "F",
-        tooltip: "레이어 정돈"
+        tooltip: "레이어 정돈",
     },
     {
         type: "color",
         subMenu: [
-            { color: "#EE324A", value: "#EE324A" },
-            { color: "#fe9a2f", value: "#fe9a2f" },
-            { color: "#f8e644", value: "#f8e644" },
-            { color: "#2ced66", value: "#2ced66" },
-            { color: "#349ced", value: "#349ced" },
-            { color: "#ADB5BD", value: "#ADB5BD" },
-            { color: "#000000", value: "#000000" }
-        ],
+            "#EE324A",
+            "#fe9a2f",
+            "#f8e644",
+            "#2ced66",
+            "#349ced",
+            "#ADB5BD",
+            "#000000",
+        ].map((color) => ({ color, value: color })),
         selected: "#EE324A",
-        tooltip: "색상 변경"
+        tooltip: "색상 변경",
     },
     {
         type: "download",
-        img: require("@/assets/images/callAttachment/ic_save_34.png"),
-        fixImg: require("@/assets/images/callAttachment/ic_save_34_fix.png"),
-        tooltip: "캔버스 이미지 저장"
-    }
+        img: new URL("@/assets/images/callAttachment/ic_save_34.png", import.meta.url)
+            .href,
+        fixImg: new URL(
+            "@/assets/images/callAttachment/ic_save_34_fix.png",
+            import.meta.url,
+        ).href,
+        tooltip: "캔버스 이미지 저장",
+    },
 ]);
 
 // Primitive values (or objects that will be fully replaced) use `ref`
+const can = ref(null);
 const canvas = ref(null);
 const isDrawing = ref(null);
 const nowTool = ref("pen");
@@ -314,7 +357,7 @@ const canvasHistory = reactive({
     undoStatus: false,
     redoStatus: false,
     undoFinishedStatus: true,
-    redoFinishedStatus: true
+    redoFinishedStatus: true,
 });
 
 const canvasWrapWidth = ref(0);
@@ -330,52 +373,40 @@ const calcCanvasHeight = ref(null);
 const magnification = ref("100"); // Note: it's a string "100" in original data
 const fileSize = ref(null);
 const file = ref(null);
-const displayMode = ref('darkmode'); // Initial value 'darkmode' as per original
-
-if (typeof window !== "undefined") {
-    // If you have a custom worker creation logic or a plugin providing `$worker`,
-    // you'll need to adapt it. Here's a generic example for a Web Worker.
-    // If you're using a specific library for workers, replace this with its API.
-    let worker;
-    try {
-        // Assuming 'worker-loader' or a similar setup for 'pdf.worker.js'
-        // Or if you're using Vite, you might do: new Worker(new URL('./pdf.worker.js', import.meta.url))
-        // For demonstration, let's assume a direct path if the worker is in public/
-        worker = new Worker("/pdf.worker.js"); // Adjust path as per your build setup
-        if (typeof pdfjsLib !== "undefined") {
-            pdfjsLib.GlobalWorkerOptions.workerPort = worker;
-        } else {
-            console.warn(
-                "pdfjsLib is not defined. Ensure it's imported or globally available.",
-            );
-        }
-        worker.addEventListener("message", workerResponseHandler);
-        worker.postMessage("Message sent to worker from Vue 3 setup");
-    } catch (e) {
-        console.error("Failed to create Web Worker:", e);
-    }
-}
+const displayMode = ref("darkmode"); // Initial value 'darkmode' as per original
 
 // Replaces `mounted()`
 onMounted(() => {
-    // Load styles dynamically (adjust path for Vite/Webpack setup)
-    // In Vite, `require` is not available for dynamic imports like this for CSS.
-    // You might need to import all modes at compile time or use a different CSS loading strategy.
-    // For demonstration, commenting out or assuming a global import.
-    // require(`@/assets/styles/${sessionStorage.getItem("displayMode")}/components/call/drawings/drawing.sass`)
-
+    if (typeof window !== "undefined") {
+        // If you have a custom worker creation logic or a plugin providing `$worker`,
+        // you'll need to adapt it. Here's a generic example for a Web Worker.
+        // If you're using a specific library for workers, replace this with its API.
+        let worker;
+        try {
+            // Assuming 'worker-loader' or a similar setup for 'pdf.worker.js'
+            // Or if you're using Vite, you might do: new Worker(new URL('./pdf.worker.js', import.meta.url))
+            // For demonstration, let's assume a direct path if the worker is in public/
+            worker = new Worker("/pdf.worker.js"); // Adjust path as per your build setup
+            if (typeof pdfjsLib !== "undefined") {
+                pdfjsLib.GlobalWorkerOptions.workerPort = worker;
+            } else {
+                console.warn(
+                    "pdfjsLib is not defined. Ensure it's imported or globally available.",
+                );
+            }
+            worker.addEventListener("message", workerResponseHandler);
+            worker.postMessage("Message sent to worker from Vue 3 setup");
+        } catch (e) {
+            console.error("Failed to create Web Worker:", e);
+        }
+    }
     // Set display mode
     displayMode.value = sessionStorage.getItem("displayMode") || "lightmode";
-    setTools(displayMode.value); // Call setTools function
+    // setTools(displayMode.value); // Call setTools function
 
-    // Access template refs using .value
-    // Make sure you have <canvas ref="can">, <input type="file" ref="imgFile"> etc. in your template
-    // const refCan = document.getElementById('pt2Canvas'); // Assuming 'pt2Canvas' is the ID for the canvas
-    const refCan = document.querySelector('canvas[ref="can"]'); // Or by id if you prefer
-
-    if (refCan && fabric.Canvas) {
+    if (can.value && fabric.Canvas) {
         // Ensure Fabric.js is loaded
-        canvas.value = new fabric.Canvas(refCan, {
+        canvas.value = new fabric.Canvas(can.value, {
             isDrawingMode: true,
             preserveObjectStacking: true,
             backgroundColor: "#ffffff",
@@ -394,7 +425,7 @@ onMounted(() => {
         // Set Fabric.js fraction digits
         fabric.Object.NUM_FRACTION_DIGITS = 10;
 
-        setCanvas(canvas.value); // Set canvas instance
+        drawingStore.setCanvas(canvas.value); // Set canvas instance
 
         // Attach Fabric.js event listeners
         canvas.value.on("mouse:down", beginDrawing);
@@ -485,7 +516,7 @@ onMounted(() => {
             if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
                 const lastHistory =
                     vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
-                setCanvasJson(lastHistory); // Load JSON
+                drawingStore.setCanvasJson(lastHistory); // Load JSON
             }
 
             // Append lastCanvasJson to history if not already present
@@ -514,11 +545,11 @@ onMounted(() => {
             }
             console.log("this.redo() is commented out but originally here");
             // this.redo() // Assuming a redo function exists
-            store.commit("drawing/setCanvasHistoryFin", true); // Call Vuex mutation
+            drawingStore.setCanvasHistoryFin(true); // Call Vuex mutation
         } else if (vxCanvasHistory.value.state.length === 0) {
             if (!isGivenThumbnailTransfer.value) {
                 updateHistory(8);
-                setFirstHistory(vxCanvasHistory.value); // Set initial history
+                drawingStore.setFirstHistory(vxCanvasHistory.value); // Set initial history
             }
         }
 
@@ -547,8 +578,8 @@ onMounted(() => {
             });
             console.log("this.canvas.renderAll.bind(this.canvas)");
         }
-        setCanvasHistory(vxCanvasHistory.value); // Set overall canvas history
-        setIsGivenThumbnailTransfer(false); // Call Vuex mutation
+        drawingStore.setCanvasHistory(vxCanvasHistory.value); // Set overall canvas history
+        drawingStore.setIsGivenThumbnailTransfer(false); // Call Vuex mutation
     } else {
         console.error("Canvas element or Fabric.js not found!");
     }
@@ -556,24 +587,6 @@ onMounted(() => {
 
 const commonToastMessage = (message) => {
     console.log("Toast:", message);
-};
-
-// Assuming these are Vuex mutations or similar state updates
-const setDrawingGetFileSrc = (src) => {
-    console.log("Setting drawing file src:", src);
-    // Example: useStore().commit('drawing/setSrc', src);
-};
-const setDrawingGetFileObject = (fileObject) => {
-    console.log("Setting drawing file object:", fileObject);
-    // Example: useStore().commit('drawing/setFileObject', fileObject);
-};
-const setDrawingGetFileChangeFlag = (flag) => {
-    console.log("Setting drawing file change flag:", flag);
-    // Example: useStore().commit('drawing/setFileChangeFlag', flag);
-};
-const setSrc = (payload) => {
-    console.log("Setting src:", payload);
-    // Example: useStore().commit('drawing/setSrc', payload);
 };
 
 // Methods
@@ -860,8 +873,8 @@ const fabricCalcArrowAngle = (x1, y1, x2, y2) => {
             x < 0
                 ? Math.atan(y / x) + Math.PI
                 : y < 0
-                ? Math.atan(y / x) + 2 * Math.PI
-                : Math.atan(y / x);
+                  ? Math.atan(y / x) + 2 * Math.PI
+                  : Math.atan(y / x);
     }
     return (angle * 180) / Math.PI + 90;
 };
@@ -1058,12 +1071,12 @@ const drawingImageOnchangeEvent = (e) => {
         const imgObj = new Image();
         imgObj.src = event.target.result;
 
-        setDrawingGetFileSrc(event.target.result);
-        setDrawingGetFileObject(imgFile.value.files);
+        callStore.setDrawingGetFileSrc(event.target.result);
+        callStore.setDrawingGetFileObject(imgFile.value.files);
 
         imgObj.crossOrigin = "anonymous";
 
-        setDrawingGetFileChangeFlag(true);
+        callStore.setDrawingGetFileChangeFlag(true);
 
         imgObj.onload = () => {
             image.value = new fabric.Image(imgObj, {
@@ -1102,7 +1115,7 @@ const drawingImageOnchangeEvent = (e) => {
             console.log(image.value, ". canvas.add(image.value)");
             canvas.value.add(image.value);
         };
-        setSrc({
+        drawingStore.setSrc({
             type: "img",
             src: event.target.result,
         });
@@ -1112,136 +1125,83 @@ const drawingImageOnchangeEvent = (e) => {
 
 // ---
 const drawingPdfOnchangeEvent = async (e) => {
-    const localFile = e.target.files[0];
-    if (!localFile) return;
-
+    const file = event.target.files[0];
     const acceptFileType = ["pdf"];
-    const fileTypeIndex = localFile.name.lastIndexOf(".");
-    const selectFileType = localFile.name.substring(fileTypeIndex + 1).toLowerCase();
+    const fileType = file.name.split(".").pop().toLowerCase();
 
-    if (acceptFileType.includes(selectFileType)) {
-        isPdfUploading.value = true;
-        const reader = new FileReader();
+    if (!acceptFileType.includes(fileType)) {
+        alert("pdf 파일만 업로드 가능합니다.");
+        return;
+    }
 
-        reader.onload = async (event) => {
-            try {
-                // Configure PDF.js worker (important for production)
-                // pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-                pdfjsLib.disableWorker = true; // For simple use, disable worker
+    if (!file) return;
 
-                const loadingTask = pdfjsLib.getDocument(reader.result);
-                const pdf = await loadingTask.promise;
+    const reader = new FileReader();
 
-                // Set PDF upload source and object
-                drawingGetPDFUploadSrc.value = new Blob([event.target.result], {
+    reader.onload = (e) => {
+        pdfjsLib.disableWorker = true;
+        const loadingTask = pdfjsLib.getDocument(e.target.result);
+
+        loadingTask.promise
+            .then(async (pdf) => {
+                drawingStore.setIsPdfUploading(true);
+                const uploadSrc = new Blob([e.target.result], {
                     type: "application/pdf",
                 });
-                drawingGetPDFUploadObject.value = pdfFileInput.value.files; // Assuming pdfFileInput is correctly ref'd
 
-                // Update total pages
-                totalPages.value = pdf.numPages;
-                // Assuming setPdfGroup and clearPdfNum are methods that manage UI/state
-                // setPdfGroup();
-                // clearPdfNum(); // You might want to call this after all pages are rendered
+                // 업로드용 저장 로직 연결 필요
+                callStore.setDrawingGetPDFUploadSrc(uploadSrc);
+                callStore.setDrawingGetPDFUploadObject(pdfFile.value.files);
 
-                const pageNums = Array.from(
-                    {
-                        length: pdf.numPages,
-                    },
-                    (_, i) => i + 1,
-                );
+                drawingStore.canvassetTotalPages(pdf.numPages);
 
-                const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+                const pageNums = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
 
-                // Process each page
                 for (const pageNum of pageNums) {
-                    if (!isDrawingPage.value && !escapeDrawingPage.value) {
-                        // Allows for an external mechanism to stop PDF processing
-                        setEscapeDrawingPage(true);
-                        break;
-                    }
-
-                    await delay(200); // Small delay to prevent UI freezing
+                    await new Promise((resolve) => setTimeout(resolve, 200));
                     const page = await pdf.getPage(pageNum);
+
                     const scale = 1.0;
-                    const viewport = page.getViewport({
-                        scale,
-                    });
+                    const viewport = page.getViewport({ scale });
 
-                    // Create a new canvas for each PDF page rendering
-                    const canvasElement = document.createElement("canvas");
-                    if (canvasContainer.value) {
-                        canvasContainer.value.appendChild(canvasElement);
-                    }
+                    const canvas = document.createElement("canvas");
+                    canvasWrapper.value.appendChild(canvas);
 
-                    const fCanvas = new fabric.Canvas(canvasElement);
-                    const canvasContext = fCanvas.getContext("2d"); // Use native context for rendering PDF
+                    const fCanvas = new fabric.Canvas(canvas);
+                    const canvasContext = fCanvas.contextTop;
 
                     fCanvas.setDimensions({
                         width: viewport.width,
                         height: viewport.height,
                     });
 
-                    const renderContext = {
-                        canvasContext,
-                        viewport,
-                    };
-                    const renderTask = page.render(renderContext);
-                    await renderTask.promise;
+                    const renderContext = { canvasContext, viewport };
+                    await page.render(renderContext).promise;
 
-                    // Convert rendered canvas to image data for Fabric.js
-                    // Note: Fabric.js upperCanvasEl might not be present if not fully initialized or if rendering isn't on main canvas
-                    const imageData = fCanvas.getElement().toDataURL({
-                        format: "png",
+                    const imageData = fCanvas.upperCanvasEl.toDataURL("image/png");
+                    fabric.Image.fromURL(imageData, (img) => {
+                        img.scaleToHeight(page.view[3]);
+                        fCanvas.setHeight(page.view[3]);
+                        fCanvas.setWidth(page.view[2]);
+                        setSrc({ type: "pdf", src: imageData, name: file.name });
                     });
 
-                    // Add the image to the main Fabric canvas, or manage as thumbnails
-                    // This logic might need adjustment based on how 'self.setSrc' is intended to work.
-                    // If it's for the main drawing canvas, you'd add to 'canvas.value'
-                    if (canvas.value) {
-                        fabric.Image.fromURL(imageData, (img) => {
-                            // Scale image to fit drawing area or maintain aspect ratio
-                            if (
-                                img.width > viewport.width ||
-                                img.height > viewport.height
-                            ) {
-                                img.scaleToHeight(viewport.height); // Or scaleToWidth
-                            }
-                            // Add to the main Fabric.js canvas
-                            canvas.value.add(img);
-                            canvas.value.renderAll();
-                            updateHistory(1); // Update history after adding
-                        });
-                    }
-                    // For thumbnails or other uses, 'setSrc' might store the image data differently
-                    // setSrc({
-                    //     type: "pdf",
-                    //     src: imageData,
-                    //     name: localFile.name
-                    // });
+                    fCanvas.renderAll();
+                }
 
-                    fCanvas.dispose(); // Clean up the temporary canvas
+                drawingStore.clearPdfNum();
+            })
+            .catch((error) => {
+                console.error(error);
+                drawingStore.setIsPdfUploading(false);
+
+                if (error.code === 1) {
+                    alert("PDF 비밀번호가 필요합니다.");
                 }
-            } catch (error) {
-                console.error("Error loading PDF:", error);
-                isPdfUploading.value = false;
-                if (
-                    error.name === "PasswordException" ||
-                    error.message.includes("password")
-                ) {
-                    commonToastMessage(t("drawingPDF password"));
-                } else {
-                    commonToastMessage(`Error loading PDF: ${error.message}`);
-                }
-            } finally {
-                isPdfUploading.value = false; // Ensure loading state is reset
-            }
-        };
-        reader.readAsArrayBuffer(localFile);
-    } else {
-        alert("pdf," + t("fileSend extension")[0]); // Using t() for translation
-        return false;
-    }
+            });
+    };
+
+    reader.readAsArrayBuffer(file);
 };
 
 const resetDrawingFileForm = () => {
@@ -1465,7 +1425,9 @@ const updateHistory = (type) => {
         }
 
         canvasHistory.value.currentStateIndex = canvasHistory.value.state.length - 1;
-        setCanvasJson(canvasHistory.value.state[canvasHistory.value.currentStateIndex]);
+        drawingStore.setCanvasJson(
+            canvasHistory.value.state[canvasHistory.value.currentStateIndex],
+        );
     }
 };
 
@@ -1930,7 +1892,7 @@ const canvasWidthHeightChange = () => {
             );
 
             // 캔버스 Width setting (외부 스토어/상태에 업데이트하는 함수 호출)
-            setCanvasWidth(cavasCalcWidth); // self.setCanvasWidth -> setCanvasWidth
+            drawingStore.setCanvasWidth(cavasCalcWidth); // self.setCanvasWidth -> setCanvasWidth
 
             // 캔버스에 적용 (렌더링 요청)
             canvas.value.requestRenderAll();
@@ -1941,10 +1903,10 @@ const canvasWidthHeightChange = () => {
 
             if (allWidth.value > 1080) {
                 canvas.value.setWidth(canvasWrapWidth.value);
-                setCanvasWidth(canvasWrapWidth.value);
+                drawingStore.setCanvasWidth(canvasWrapWidth.value);
             } else {
                 canvas.value.setWidth(520);
-                setCanvasWidth(520);
+                drawingStore.setCanvasWidth(520);
             }
 
             const height = allHeight.value - 279;
@@ -2021,8 +1983,8 @@ const setTools = (parameter) => {
     tools.value = [
         {
             type: "pen",
-            img: "/images/lightmode/drawing/bt_1_pen.svg",
-            fixImg: "/images/lightmode/drawing/bt_1_pen.svg",
+            img: "@/assets/images/lightmode/drawing/bt_1_pen.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_1_pen.svg",
             subMenu: [
                 {
                     circle: 1,
@@ -2054,8 +2016,8 @@ const setTools = (parameter) => {
         },
         {
             type: "line",
-            img: "/images/lightmode/drawing/bt_2_line.svg",
-            fixImg: "/images/lightmode/drawing/bt_2_line.svg",
+            img: "@/assets/images/lightmode/drawing/bt_2_line.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_2_line.svg",
             subMenu: [
                 {
                     circle: 1,
@@ -2087,8 +2049,8 @@ const setTools = (parameter) => {
         },
         {
             type: "arrow",
-            img: "/images/lightmode/drawing/bt_3_arrow.svg",
-            fixImg: "/images/lightmode/drawing/bt_3_arrow.svg",
+            img: "@/assets/images/lightmode/drawing/bt_3_arrow.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_3_arrow.svg",
             subMenu: [
                 {
                     square: 1,
@@ -2120,8 +2082,8 @@ const setTools = (parameter) => {
         },
         {
             type: "square",
-            img: "/images/lightmode/drawing/bt_4_square.svg",
-            fixImg: "/images/lightmode/drawing/bt_4_square.svg",
+            img: "@/assets/images/lightmode/drawing/bt_4_square.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_4_square.svg",
             subMenu: [
                 {
                     square: 1,
@@ -2153,8 +2115,8 @@ const setTools = (parameter) => {
         },
         {
             type: "circle",
-            img: "/images/lightmode/drawing/bt_5_circle.svg",
-            fixImg: "/images/lightmode/drawing/bt_5_circle.svg",
+            img: "@/assets/images/lightmode/drawing/bt_5_circle.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_5_circle.svg",
             subMenu: [
                 {
                     circle: 1,
@@ -2186,8 +2148,8 @@ const setTools = (parameter) => {
         },
         {
             type: "text",
-            img: "/images/lightmode/drawing/bt_6_text.svg",
-            fixImg: "/images/lightmode/drawing/bt_6_text.svg",
+            img: "@/assets/images/lightmode/drawing/bt_6_text.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_6_text.svg",
             subMenu: [
                 {
                     text: 16,
@@ -2219,50 +2181,50 @@ const setTools = (parameter) => {
         },
         {
             type: "photo",
-            img: "/images/lightmode/drawing/bt_7_zoom.svg",
-            fixImg: "/images/lightmode/drawing/bt_7_zoom.svg",
+            img: "@/assets/images/lightmode/drawing/bt_7_zoom.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_7_zoom.svg",
             tooltip: "이미지 삽입",
         },
         {
             type: "pdf",
-            img: "/images/lightmode/drawing/bt_8_pdf.svg",
-            fixImg: "/images/lightmode/drawing/bt_8_pdf.svg",
+            img: "@/assets/images/lightmode/drawing/bt_8_pdf.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_8_pdf.svg",
             tooltip: "PDF 삽입",
         },
         {
             type: "undo",
-            img: "/images/lightmode/drawing/bt_9_undo.svg",
-            fixImg: "/images/lightmode/drawing/bt_9_undo.svg",
+            img: "@/assets/images/lightmode/drawing/bt_9_undo.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_9_undo.svg",
             tooltip: "되돌리기",
         },
         {
             type: "redo",
-            img: "/images/lightmode/drawing/bt_10_redo.svg",
-            fixImg: "/images/lightmode/drawing/bt_10_redo.svg",
+            img: "@/assets/images/lightmode/drawing/bt_10_redo.svg",
+            fixImg: "@/assets/images/lightmode/drawing/bt_10_redo.svg",
             tooltip: "다시실행",
         },
         {
             type: "moveLayer",
-            img: "/images/lightmode/drawing/ic_layer_move.svg",
-            fixImg: "/images/lightmode/drawing/ic_layer_move.svg",
+            img: "@/assets/images/lightmode/drawing/ic_layer_move.svg",
+            fixImg: "@/assets/images/lightmode/drawing/ic_layer_move.svg",
             tooltip: "레이어 선택",
         },
         {
             type: "clear",
-            img: "/images/lightmode/drawing/ic_fresh_34.svg",
-            fixImg: "/images/lightmode/drawing/ic_fresh_34.svg",
+            img: "@/assets/images/lightmode/drawing/ic_fresh_34.svg",
+            fixImg: "@/assets/images/lightmode/drawing/ic_fresh_34.svg",
             tooltip: "캔버스 초기화",
         },
         {
             type: "group",
-            img: "/images/lightmode/drawing/ic_grouping.svg",
-            fixImg: "/images/lightmode/drawing/ic_grouping.svg",
+            img: "@/assets/images/lightmode/drawing/ic_grouping.svg",
+            fixImg: "@/assets/images/lightmode/drawing/ic_grouping.svg",
             tooltip: "레이어 그룹화",
         },
         {
             type: "layer",
-            img: "/images/lightmode/drawing/ic_z-index.svg",
-            fixImg: "/images/lightmode/drawing/ic_z-index.svg",
+            img: "@/assets/images/lightmode/drawing/ic_z-index.svg",
+            fixImg: "@/assets/images/lightmode/drawing/ic_z-index.svg",
             subMenu: [
                 {
                     img: "/images/callAttachment/ic_bring_to_front.png",
@@ -2321,8 +2283,8 @@ const setTools = (parameter) => {
         },
         {
             type: "download",
-            img: "/images/lightmode/drawing/ic_save_34.svg",
-            fixImg: "/images/lightmode/drawing/ic_save_34.svg",
+            img: "@/assets/images/lightmode/drawing/ic_save_34.svg",
+            fixImg: "@/assets/images/lightmode/drawing/ic_save_34.svg",
             tooltip: "캔버스 이미지 저장",
         },
     ];
@@ -2351,16 +2313,12 @@ const vxCanvasHistory = computed(() => drawingStore.canvasHistory);
 const index = computed(() => drawingStore.index);
 const selectedFileIndex = computed(() => drawingStore.selectedFileIndex);
 const update = computed(() => drawingStore.isUpdate); // isUpdate는 Vuex에서 가져오므로 이름 중복 방지를 위해 update로 변경
-const isGivenThumbnailTransfer = computed(
-    () => drawingStore.isGivenThumbnailTransfer,
-);
+const isGivenThumbnailTransfer = computed(() => drawingStore.isGivenThumbnailTransfer);
 const isPdfUploading = computed(() => drawingStore.isPdfUploading); // getisPdfUploading과 동일하므로 하나만 사용하거나 필요에 따라 통합
 const escapeDrawingPage = computed(() => drawingStore.escapeDrawingPage);
 const isDrawingPage = computed(() => commonStore.isDrawing);
 const thumbnailFileReceive = computed(() => drawingStore.thumbnailFileReceive);
-const loadImageOnCanvasFinished = computed(
-    () => drawingStore.loadImageOnCanvasFinished,
-);
+const loadImageOnCanvasFinished = computed(() => drawingStore.loadImageOnCanvasFinished);
 const chattingShow = computed(() => chattingStore.chattingShow); // computed 속성 중복 제거
 
 watch(color, (newVal) => {
@@ -2402,7 +2360,7 @@ watch(update, (newVal) => {
     console.log("update Start", newVal);
     if (newVal) {
         updateHistory(2); // Call helper function
-        setUpdate(false); // Call helper function (likely a Vuex action/mutation)
+        drawingStore.setUpdate(false); // Call helper function (likely a Vuex action/mutation)
     }
 });
 
@@ -2412,8 +2370,8 @@ watch(getisPdfUploading, (newVal, oldVal) => {
     console.log("newValue", newVal, " && ", "oldValue", oldVal);
     // true -> false로 바뀔 때만 실행
     if (!newVal && oldVal) {
-        setDrawingGetPDFUploadFlag(true); // Call helper function (likely a Vuex action/mutation)
-        setPDFUploading(true); // Call helper function (likely a Vuex action/mutation)
+        callStore.setDrawingGetPDFUploadFlag(true); // Call helper function (likely a Vuex action/mutation)
+        callStore.setPDFUploading(true); // Call helper function (likely a Vuex action/mutation)
     }
 });
 
@@ -2516,3 +2474,143 @@ onBeforeUnmount(() => {
     }
 });
 </script>
+<style lang="scss" scoped>
+#pt2Canvas {
+    border: 1px solid gray;
+    // background-color: #ffffff;
+}
+
+.callAttachment {
+    width: 100%;
+    height: 100%;
+    // height: $contentsContainerHeight;
+    // max-height: calc(100vh - $contentsContainerHeight);
+}
+
+.toolbar {
+    padding: 0px 24px 0px 12px;
+    z-index: 2;
+    max-height: calc(100vh - 80px);
+
+    @media screen and (max-height: 700px) {
+        padding: 0px 40px 0px 6px !important;
+    }
+
+    @media screen and (max-height: 400px) {
+        padding: 0px 76px 0px 0px !important;
+    }
+
+    // overflow: scroll;
+    // display: grid;
+}
+
+.tool {
+    border: 1px solid rgba(0, 0, 0, 0);
+    z-index: 1;
+
+    &:nth-child(14) {
+        margin-top: 25px;
+    }
+
+    &:nth-child(16) {
+        margin-top: 10px;
+    }
+
+    &[name]:hover::before {
+        content: attr(name);
+        position: absolute;
+        right: 40px;
+        z-index: 50;
+        width: max-content;
+        padding: 5px 7px;
+        border-radius: 3px;
+    }
+}
+
+// 변수
+$toolSize: 34px;
+$toolPaddingSize: 1px;
+
+.colorContainer {
+    height: $toolSize;
+    padding: 3px;
+}
+
+.color {
+    width: 100%;
+    height: 100%;
+}
+
+.subMenu {
+    display: none;
+    position: absolute;
+    left: $toolSize;
+    height: $toolSize;
+}
+
+.subMenuContainer {
+    width: calc($toolSize + $toolPaddingSize);
+    height: 100%;
+    padding-left: $toolPaddingSize;
+    z-index: 2;
+}
+
+.subMenuContents {
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+
+    > span {
+        cursor: default;
+    }
+}
+
+.circle,
+.square {
+    // 공유 스타일이 있다면 여기에 추가
+}
+
+.circle {
+    border-radius: 8px;
+}
+
+.canvas {
+    height: 100%;
+    // padding: 30px 50px 10px 10px;
+    display: flex;
+    justify-content: flex-start;
+    z-index: 0;
+
+    > img {
+        width: 100%;
+        height: 100%;
+        object-position: top left;
+    }
+}
+
+.hiddenFileInput {
+    width: 0px;
+    height: 0px;
+}
+
+.canvasSavePng {
+    position: absolute;
+    width: 85px;
+    height: 32px;
+    left: 0;
+    top: -5px;
+    border-radius: 20px;
+}
+
+.zoomMagnification {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    z-index: 3;
+
+    &.show {
+        display: flex;
+    }
+}
+</style>

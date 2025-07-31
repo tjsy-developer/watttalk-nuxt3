@@ -126,16 +126,20 @@ export const useCommonStore = defineStore("common", {
             // 일단 기존 코드를 최대한 유지하기 위해 주석 처리합니다.
             // this.fileSend = e;
         },
-        fileSendStatus(e) {
+        setFileSendStatus(e) {
             this.fileSendStatus = e;
         },
-        isShare() {
+        setIsShare() {
             this.isShare = !this.isShare;
         },
         setIsDrawing(payload) {
-            this.isDrawing = payload;
+            if (!payload) {
+                this.isDrawing = !this.isDrawing;
+            } else {
+                this.isDrawing = payload;
+            }
         },
-        isSounded() {
+        setIsSounded() {
             this.isSounded = !this.isSounded;
         },
         setIsSoundedTrue() {
@@ -469,8 +473,8 @@ export const useCommonStore = defineStore("common", {
         setConnectionPathCheck(payload) {
             this.connectionPathCheck = payload;
         },
-        isDrawingEnable(payload) {
-            this.isDrawingEnable = payload.result;
+        setIsDrawingEnable(payload) {
+            this.isDrawingEnable = payload;
         },
         setOnlyVoiceIdInterval(payload) {
             if (payload === true) {

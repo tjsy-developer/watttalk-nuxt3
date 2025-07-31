@@ -259,7 +259,7 @@ const displayMode = ref('darkmode');
 const uploadFiles = ref(null);
 
 onMounted(() => {
-    if (fileSendStatus == 0) {
+    if (fileSendStatus.value == 0) {
         commonStore.setFileModalFlag(true);
     }
 });
@@ -289,7 +289,7 @@ watch(fileSendStatus, (newStatus) => {
 function fileSendModalClose() {
     modalStore.closeModal("fileSend")
     commonStore.fileSend();
-    commonStore.fileSendStatus(0);
+    commonStore.setFileSendStatus(0);
     commonStore.setFileModalFlag(false); // 파일 송수신 팝업 flag 초기화
 }
 function fileSelect() {
@@ -327,12 +327,12 @@ function fileSelect() {
     }
 }
 function selectSender(selectedUser) {
-    commonStore.fileSendStatus(1);
+    commonStore.setFileSendStatus(1);
     commonStore.setFileReceiver(selectedUser);
 }
 
 function fileSelectComplete() {
-    commonStore.fileSendStatus(2);
+    commonStore.setFileSendStatus(2);
     commonStore.setFileSendFlag(true);
 }
 
@@ -353,7 +353,7 @@ function checkOnlyVoice() {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 // SCSS 변수 정의 (필요에 따라 추가하세요)
 $color-white: #fff;
 $color-dark-gray: #262627;

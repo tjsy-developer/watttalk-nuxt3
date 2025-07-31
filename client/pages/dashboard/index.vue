@@ -17,9 +17,9 @@ import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
 import { callingBell, getDirectMessageTimeZone } from "@/utils/common";
-import { emitter } from "@/utils/eventBus";
+
 import { userListGetNickname } from "@/utils/userList";
-import { useRoute, useRouter } from "nuxt/app";
+import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
 import { storeToRefs } from "pinia";
 import { emit } from "process";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed } from "vue";
@@ -65,6 +65,7 @@ const getSendDMFlag = computed(() => directMessageStore.sendDMFlag);
 const getReadProcFlag = computed(() => directMessageStore.readProcFlag);
 const getPreviousMessageFlag = computed(() => directMessageStore.previousMessageFlag);
 
+const { $signallingSocket } = useNuxtApp();
 const { requestCancelCalling } = useSocketEmitEvents();
 const buttonIndex = ref("");
 const isFilter = ref(0);
@@ -107,7 +108,7 @@ const callingPopupResultData = reactive({
 const { requestRefuseCalling, requestCalling, requestJoinMeeting } = useSocketEmitEvents();
 
 watch(
-    () => getCallingPopupResult.value,
+    getCallingPopupResult,
     (result) => {
         console.log("*** watch: getCallingPopupResult result =", result);
 
@@ -144,7 +145,7 @@ watch(
             }
         } else if (result === 0) {
             callingBell("stop");
-            console.log("*** watch: reject");
+            console.log("*** watch: reject", callingPopupResultData);
 
             requestRefuseCalling({
                 remoteDeviceId: callingPopupResultData.deviceid,
@@ -164,11 +165,12 @@ watch(
 
         callingPopupResultData.value = [];
         callStore.setCallingResult("init");
+        sessionStorage.setItem("m_callWaiting", "false");
     },
 );
 
 watch(
-    () => getGroupCallCancelFlag.value,
+    () => getGroupCallCancelFlag,
     (result) => {
         console.log("*** watch: getGroupCallCancelFlag");
         if (result === "cancel") {
@@ -179,7 +181,7 @@ watch(
 );
 
 watch(
-    () => getSendDMFlag.value,
+    () => getSendDMFlag,
     (result) => {
         if (result) {
             // const messageList = store.state.directMessage.directMessageList;
@@ -197,7 +199,7 @@ watch(
 );
 
 watch(
-    () => getReadProcFlag.value,
+    () => getReadProcFlag,
     (result) => {
         if (result) {
             // const info = store.state.directMessage.readMessageInfo[0];
@@ -208,7 +210,7 @@ watch(
 );
 
 watch(
-    () => getPreviousMessageFlag.value,
+    () => getPreviousMessageFlag,
     (result) => {
         if (result) {
             // getPreviousMessage();
@@ -219,18 +221,19 @@ watch(
 
 // 마운트될 때 실행할 작업
 onMounted(() => {
+    sessionStorage.setItem("m_callWaiting", false)
+    sessionStorage.setItem("inRoomFlag", false)
     sessionStorage.removeItem("m_inviting")
     sessionStorage.removeItem("hostRequestFlag")
-    sessionStorage.setItem("m_callWaiting", false)
     sessionStorage.removeItem("m_remote_nickname")
     sessionStorage.removeItem("m_remote_devicetype")
     sessionStorage.removeItem("m_remote_status")
     sessionStorage.removeItem("m_remote_deviceid")
     commonStore.makeUserListStatus()
 
-    emitter.on("createRoomID", function(response) {
+    $signallingSocket.on("createRoomID", function(response) {
         if (response) {
-            const json = response
+            const json = JSON.parse(response);
             console.log('*** create room id response:', json);
             // console.log("*** socket: createRoom response : roomid: " + json.roomid)
 
@@ -252,18 +255,17 @@ onMounted(() => {
         }
     })
 
-    emitter.on("calling", (response) => {
-        const json = response;
-        console.log("*** socket: calling response");
+    $signallingSocket.on("calling", (response) => {
+        const json = JSON.parse(response);;
+        console.log("*** socket: calling response", json);
         console.log(json);
 
         if (sessionStorage.getItem("m_callWaiting") === "true") {
             const obj = {
-                localdeviceid: loginStore.m_local_deviceid,
                 remoteDeviceId: json.deviceid,
                 roomID: json.roomid,
                 institution: json.institution,
-                nickname: json.nickname,
+                nickname: json.nickname
             };
             const json2 = JSON.stringify(obj);
 
@@ -308,15 +310,14 @@ onMounted(() => {
             }
 
             // callingPopupResult
-            Object.assign(callingPopupResultData, {
-                roomid: json.roomid,
-                m_local_deviceid: loginStore.m_local_deviceid,
-                deviceid: json.deviceid,
-                institution: json.institution,
-                nickname: json.nickname,
-                meetingSeq: json.meeting_seq,
-                uniqueRoomid: json.unique_roomid,
-            });
+            callingPopupResultData.roomid = json.roomid,
+            callingPopupResultData.m_local_deviceid=  loginStore.m_local_deviceid,
+            callingPopupResultData.deviceid = json.deviceid,
+            callingPopupResultData.institution = json.institution,
+            callingPopupResultData.nickname = json.nickname,
+            callingPopupResultData.meetingSeq = json.meeting_seq,
+            callingPopupResultData.uniqueRoomid = json.unique_roomid,
+            console.log(callingPopupResultData)
 
             /* 전화 자동 수락 */
             if (autoCallAcceptTime.value > 0) {
@@ -348,9 +349,9 @@ onMounted(() => {
         }
     });
 
-    emitter.on("canMakeCall", (response) => {
+    $signallingSocket.on("canMakeCall", (response) => {
         if (response) {
-            const json = response;
+            const json = JSON.parse(response);;
             // console.log("*** socket: canMakeCall response, json:", json)
 
             // 통화 가능
@@ -404,8 +405,8 @@ onMounted(() => {
         }
     });
 
-    emitter.on("groupRoom", (response) => {
-        const json = response;
+    $signallingSocket.on("groupRoom", (response) => {
+        const json = JSON.parse(response);;
         console.log("*** groupRoom response", json);
 
         if (json.roomid != "") {
@@ -456,7 +457,7 @@ onMounted(() => {
         }
     });
 
-    emitter.on("cancelCalling", function(response) {
+    $signallingSocket.on("cancelCalling", function(response) {
         console.log("*** socket: cancelCalling response")
         console.log(response)
 
@@ -477,7 +478,7 @@ onMounted(() => {
         }
     })
 
-    emitter.on("multiRefuseCalling", function(response) {
+    $signallingSocket.on("multiRefuseCalling", function(response) {
         console.log("*** socket: multiRefuseCalling response")
         console.log(response)
 
@@ -486,9 +487,9 @@ onMounted(() => {
         sessionStorage.setItem("m_callWaiting", "false")
     })
 
-    emitter.on("inviteCancelCalling", function(response) {
+    $signallingSocket.on("inviteCancelCalling", function(response) {
         try {
-            const json = JSON.parse(response)
+            const json = JSON.parse(response);
             console.log("*** socket: inviteCancelcalling response")
             console.log(json)
 
@@ -520,11 +521,11 @@ onMounted(() => {
 
             callingBell("stop")
         } catch (e) {
-            console.error(`${e}`)
+            console.error(e)
         }
     })
 
-    emitter.on("directMessage", function(response) {
+    $signallingSocket.on("directMessage", function(response) {
         console.log("*** socket: directMessage response")
         console.log(response)
 
@@ -564,11 +565,11 @@ onMounted(() => {
     })
 
     // 읽음처리 socket on event
-    emitter.on("directMessageReadProcess", function(response) {
+    $signallingSocket.on("directMessageReadProcess", function(response) {
         console.log("*** socket: directMessageReadProcess response")
         console.log(response)
 
-        const json = response
+        const json = JSON.parse(response);
 
         // 1) 현재 dircetMessageList에서 받아온 데이터의 sender와 receiver가 같고,
         // compareDatetime과 같거나 작은 것을 읽음 처리로 한다.
@@ -595,9 +596,9 @@ onMounted(() => {
     })
 
     // 소켓 openMeetingChecking 받기
-    emitter.on("openMeetingChecking", response => {
+    $signallingSocket.on("openMeetingChecking", response => {
         if (meetingStore.openMeetingCheck == false) {
-            const json = response
+            const json = JSON.parse(response);
 
             // 회의실 open 상태
             if (json.start_status == 1) {
@@ -623,9 +624,9 @@ onMounted(() => {
         }
     })
 
-    emitter.on("joinMeeting", response => {
+    $signallingSocket.on("joinMeeting", response => {
         console.log("*** socket.on: joinMeeting res = ", response)
-        const json = response
+        const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json)
 
         sessionStorage.setItem("m_roomid", json.roomid)
@@ -651,10 +652,10 @@ onMounted(() => {
         router.push("/call")
     })
 
-    emitter.on("getPreviousMessage", response => {
+    $signallingSocket.on("getPreviousMessage", response => {
         // console.log("*** socket.on: getPreviousMessage res = ", response)
         console.log("*** socket.on: getPreviousMessage")
-        const json = response
+        const json = JSON.parse(response);
         // console.log("*** socket.on: json = ", json)
 
         // 이전 메세지 없음
@@ -721,6 +722,7 @@ onMounted(() => {
 });
 
 function callingAccept(roomid, remotedeviceid) {
+    console.log(roomid, remotedeviceid, "여기찍어라")
     const remoteInfo = userDataGetInfo(remotedeviceid)
     m_roomid.value = roomid
     m_remote_deviceid.value = remotedeviceid

@@ -2,7 +2,7 @@
     <div>
         <div class="menu-container">
             <button
-                v-for="(menuOpt) in contactListMenus"
+                v-for="menuOpt in contactListMenus"
                 @click="handleChangeMenu(menuOpt.value)"
                 :key="menuOpt.value"
                 :class="menuType == menuOpt.value ? 'menu-btn selected' : 'menu-btn'"
@@ -44,20 +44,21 @@ import { useUserListStore } from "@/stores/userList";
 
 import { useModal } from "vue-final-modal";
 import { ref } from "vue";
+import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
+import { useVfm } from 'vue-final-modal';
 
-
+const vfm = useVfm();
 const userListStore = useUserListStore();
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
-
 const { requestUserListAll, requestLastCallTime } = useSocketEmitEvents();
 const { open } = useModal({
     component: MainModal,
     attrs: {
         title: "Hello World!",
         clickToClose: false,
-        class: 'modal-container main-modal'
+        class: "modal-container main-modal",
     },
 });
 const contactListMenus = [
@@ -94,8 +95,8 @@ function handleChangeMenu(type) {
 }
 
 onMounted(() => {
-    requestLastCallTime()
-    requestUserListAll()
+    requestLastCallTime();
+    requestUserListAll();
 });
 
 onBeforeUnmount(() => {});

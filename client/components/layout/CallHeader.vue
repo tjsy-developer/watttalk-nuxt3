@@ -143,8 +143,8 @@ const connectionPathCheck = computed(() => callStore.connectionPathCheck); // ca
 const chattingMessageList = computed(() => chattingStore.chattingMessageList);
 const sendDurationEnable = computed(() => callStore.sendDurationEnable);
 const useVideoRecording = computed(() => callStore.useVideoRecording);
-const isDrawing = computed(() => callStore.isDrawing); // callStore에 있다고 가정
-const isShare = computed(() => callStore.isShare); // callStore에 있다고 가정
+const isDrawing = computed(() => commonStore.isDrawing); // callStore에 있다고 가정
+const isShare = computed(() => commonStore.isShare); // callStore에 있다고 가정
 const devicedSelection = computed(() => callStore.devicedSelection); // callStore에 있다고 가정
 
 // getLang computed 속성
@@ -172,6 +172,14 @@ watch(getLang, (newResult, oldResult) => {
 watch(sendDurationEnable, (newVal) => {
     checked.value = newVal;
 });
+
+function handleChangeDrawingOnOff() {
+    commonStore.setIsDrawing()
+}
+
+function handleChangeShareOnOff() {
+    commonStore.setIsShare()
+}
 </script>
 
 <template>
@@ -186,20 +194,25 @@ watch(sendDurationEnable, (newVal) => {
                 <span>{{ callingTimer || "00:00:00" }}</span>
             </div>
             <div class="call-timer">
-                <span class="circle red"></span>
-                <span class="circle grey"></span>
+                <span v-if="sendDurationEnable" class="circle red"></span>
+                <span v-else class="circle grey"></span>
                 <span>REC</span>
             </div>
         </div>
         <div class="func-butttons">
-            <button>
+            <button
+                v-if="isDrawing"
+                @click="handleChangeDrawingOnOff"    
+            >
                 <img
                     src="@/assets/images/attachment_header/ic_drawing.svg"
                     class="icon"
                 />
                 <span>{{ t("드로잉 종료") }}</span>
             </button>
-            <button @click="handleChangeVideoOnOff">
+            <button 
+                v-if="isShare"
+                @click="handleChangeShareOnOff">
                 <img
                      
                     src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />

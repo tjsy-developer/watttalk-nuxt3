@@ -5,7 +5,11 @@
         @click="getMainVideoIndex"
         class="row window"
         :id="props.id"
-    >
+    >  
+        <div class="status-indicators">
+            <img class="host-icon" v-if="props.compData.hostIcon" src="@/assets/images/calling/ic_host.png" />
+	        <img class="mute-icon" v-if="props.compData.mute" src="@/assets/images/calling/ic_r_mute.png" />
+        </div>
         <button
             v-if="props.compData && props.compData?.status == 'calling'"
             @mousedown="windowClick"
@@ -48,7 +52,7 @@
             <div
                 v-if="!drawingIframe && callingLayoutType == 1"
                 style="display: none"
-                class="row items-center videoNameWrap"
+                class="row items-center user-name-wrap"
             >
                 <span
                     :value="props.compData.text"
@@ -63,7 +67,6 @@
                 >
                     <Drawing
                         v-if="
-                            commonStore.contentsViewType == '2' &&
                             drawingIframe &&
                             callingLayoutType != 1
                         "
@@ -131,10 +134,6 @@
                             <span class="antennaDetailValue">{{ calcBitrate }}</span>
                         </div>
                     </div>
-                    <div
-                        v-if="!drawingIframe"
-                        class="row items-center videoNameWrap"
-                    ></div>
                     <div
                         v-if="streamInfoStatus && isGlassSelected"
                         class="selectBoxDetailInfoBox row justify-center items-center"
@@ -258,7 +257,6 @@
                     <div
                         v-if="mainVideoFullScreen && !drawingIframe"
                         @click="mainVideoFull"
-                        :style="{ bottom: callingLayoutType == 4 ? '5px' : '5px' }"
                         style="z-index: 2"
                         class="mainVideoFullScreen"
                     >
@@ -269,7 +267,7 @@
                             laserPointerShow &&
                             !drawingIframe &&
                             callingLayoutType != 1 &&
-                            !this.$commonStore.isShare
+                            !commonStore.isShare
                         "
                         id="laserCircle"
                         class="laserCircle"
@@ -279,7 +277,7 @@
                             laserPointerShow &&
                             !drawingIframe &&
                             callingLayoutType != 1 &&
-                            !this.$commonStore.isShare
+                            !commonStore.isShare
                         "
                         id="laserPointer"
                         class="laserPointer"
@@ -482,17 +480,7 @@
                 <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
                 <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
             </div>
-            <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
+            <div class="windowInfoBar">
                 <button @click="cancelCallClick">
                     <img src="@/assets/images/calling/ic_x_blue.png" />
                 </button>
@@ -842,7 +830,7 @@
                 />
                 <img v-else src="@/assets/images/calling/ic_photo_52.png" style="" />
             </div>
-            <div
+            <!-- <div
                 v-if="props.compData.text != sessionNickname"
                 class="items-center windowInfoBar row"
             >
@@ -856,13 +844,12 @@
                         class="nickname-text"
                     />
                 </div>
-            </div>
+            </div> -->
         </div>
         <div v-else-if="fileStatus" class="receive">
             <div v-if="props.compData?.status == 2" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
-                    style="background: #151515"
                     class="row justify-center content-center fileReceptionLayout1"
                 >
                     <div class="row justify-center content-center">
@@ -1068,7 +1055,7 @@
             <slot></slot>
         </div>
         <div
-            class="optionWrap"
+            :class="props.compData.status == 'main'? 'name-wrap main' : 'name-wrap'"
         >
             <div
                 v-if="antennaStatus && callingLayoutType == 1 && getMainVideoIdx == props.compData.userListIndex"
@@ -1115,7 +1102,7 @@
             </div>
             <div
                 v-if="!drawingIframe && props.compData.status !== 'main'"
-                class="row items-center videoNameWrap"
+                class="row items-center user-name-wrap"
             >
                 <span id="videoMainName" class="col text-left videoNameSpan">{{
                     props.compData.text
@@ -1124,7 +1111,7 @@
             <div
                 v-if="!drawingIframe && callingLayoutType == 1"
                 style="display: none"
-                class="row items-center videoNameWrap"
+                class="row items-center user-name-wrap"
             >
                 <span
                     :value="props.compData.text"
@@ -1352,13 +1339,13 @@ const forceLeaveClick = (e) => {
 
 const fileReceiveAccept = (userName) => {
     commonStore.setReceiveFileResFlag({ flag: true, selectedUserName: userName });
-    commonStore.fileSendStatus(3);
+    commonStore.setFileSendStatus(3);
     commonStore.setFileSendFlag(true);
 };
 
 const fileReceiveDecline = (userName) => {
     commonStore.setReceiveFileResFlag({ flag: true, selectedUserName: userName });
-    commonStore.fileSendStatus(4);
+    commonStore.setFileSendStatus(4);
     commonStore.setFileSendFlag(true);
 };
 
@@ -1700,7 +1687,7 @@ $windowInfoBarHeight: 30px;
 
 .window {
     width: 100%;
-    height: 100% !important;
+    height: 100%;
     position: relative;
     // align-items: centerb
     // display: table
@@ -1726,6 +1713,8 @@ $windowInfoBarHeight: 30px;
 }
 
 .mainVideoBorder {
+    border: 3px solid #fff;
+    box-sizing: border-box;
 }
 
 .panel-inner {
@@ -1739,6 +1728,7 @@ $windowInfoBarHeight: 30px;
     width: 100%;
     height: $windowInfoBarHeight;
     padding: 0 7px;
+    
 
     > span {
         // This looks like a mixin, so I'm commenting it out or assuming it's defined elsewhere.
@@ -1779,7 +1769,13 @@ $windowInfoBarHeight: 30px;
 }
 
 .sending > .windowInfoBar {
-    padding-right: 6px;
+padding-right: 1px;
+    z-index: 2;
+    position: right;
+    position: absolute;
+    box-sizing: border-box;
+    text-align: right;
+    bottom: -2px;
 }
 
 .receiveBackground {
@@ -1859,18 +1855,16 @@ $windowInfoBarHeight: 30px;
 
 .buttonsLayout1 {
     > button {
+        color: #fff;
         width: 85px;
         height: 32px;
         border-radius: 20px;
         font-size: 14px;
         font-weight: bold;
+    }
 
-        &:first-child {
-        }
-
-        &:last-child {
-            margin-left: 26px;
-        }
+    >button+button {
+        margin-left: 26px;
     }
 }
 
@@ -2008,23 +2002,35 @@ $windowInfoBarHeight: 30px;
 
 .videoMainDivWrap {
     width: inherit;
+    .nickname {
+        bottom: 3px;
+        padding-left: 4px;
+    }
 }
 
 .videoNameWrap {
     position: absolute;
-    bottom: 0px;
+    bottom: 3px;
     width: 100%;
     height: 30px;
-    /* padding: 0 15px; */
     z-index: 1;
-    bottom: 0;
     color: #fff;
     background: rgba(0, 0, 0, .5);
     line-height: 30px;
     padding-left: 10px;
 }
 
-#videoMainDiv {
+.user-name-wrap {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 30px;
+    z-index: 1;
+    color: #fff;
+    background: rgba(0, 0, 0, .5);
+    line-height: 30px;
+    padding-left: 10px;
+    box-sizing: border-box;
 }
 
 #videoMain {
@@ -2134,6 +2140,8 @@ $windowInfoBarHeight: 30px;
 .receiveStatus {
     width: 100%;
     height: 100%;
+    background-color: #151515;
+    color: #fff;
 }
 
 .fileReceptionLayout1 {
@@ -2226,7 +2234,7 @@ $windowInfoBarHeight: 30px;
 .mainVideoFullScreen {
     position: absolute;
     right: 12px;
-    bottom: 7px;
+    bottom: 4px;
     cursor: pointer;
 
     > img {
@@ -2405,13 +2413,39 @@ $windowInfoBarHeight: 30px;
     }
 }
 
-.optionWrap {
+.name-wrap {
     display: flex;
     justify-content: center;
     z-index: 1;
-    /* position: absolute; */
+    position: relative;
     width: 100%;
     height: auto;
+}
+
+.name-wrap.main {
+    position: absolute;
+}
+
+.nickname {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 30px;
+    color: white;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.nickname-text {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+    color: white;
+    background: transparent;
+    border: none;
 }
 
 .mainVideoFullScreenBtn {
@@ -2501,106 +2535,9 @@ $windowInfoBarHeight: 30px;
     margin-right: 10px;
 }
 
-.emergencyFont {
-    @media (max-height: 483px) {
-        font-size: 10px;
-    }
-    @media (min-height: 484px) and (max-height: 523px) {
-        font-size: 11px;
-    }
-    @media (min-height: 524px) and (max-height: 563px) {
-        font-size: 12px;
-    }
-    @media (min-height: 564px) and (max-height: 603px) {
-        font-size: 13px;
-    }
-    @media (min-height: 604px) and (max-height: 643px) {
-        font-size: 14px;
-    }
-    @media (min-height: 644px) and (max-height: 683px) {
-        font-size: 15px;
-    }
-    @media (min-height: 684px) and (max-height: 723px) {
-        font-size: 16px;
-    }
-    @media (min-height: 724px) and (max-height: 763px) {
-        font-size: 17px;
-    }
-    @media (min-height: 764px) and (max-height: 803px) {
-        font-size: 18px;
-    }
-    @media (min-height: 804px) and (max-height: 843px) {
-        font-size: 19px;
-    }
-    @media (min-height: 844px) and (max-height: 883px) {
-        font-size: 20px;
-    }
-    @media (min-height: 884px) and (max-height: 923px) {
-        font-size: 21px;
-    }
-    @media (min-height: 924px) and (max-height: 983px) {
-        font-size: 22px;
-    }
-    @media (min-height: 984px) and (max-height: 1023px) {
-        font-size: 23px;
-    }
-    @media (min-height: 1024px) {
-        font-size: 24px;
-    }
-}
 
 .boldText {
     font-weight: bold;
-}
-
-.userInfoWrap {
-    width: 100%;
-    margin-bottom: 0.366%;
-    padding: 5px 10px;
-    @media (max-height: 643px) {
-        font-size: 10px !important;
-        // height: 20px
-    }
-    @media (min-height: 644px) and (max-height: 683px) {
-        font-size: 11px !important;
-        // height: 22px
-    }
-    @media (min-height: 684px) and (max-height: 723px) {
-        font-size: 12px !important;
-        // height: 24px
-    }
-    @media (min-height: 724px) and (max-height: 763px) {
-        font-size: 13px !important;
-        // height: 26px
-    }
-    @media (min-height: 764px) and (max-height: 803px) {
-        font-size: 14px !important;
-        // height: 28px
-    }
-    @media (min-height: 804px) and (max-height: 843px) {
-        font-size: 15px !important;
-        // height: 30px
-    }
-    @media (min-height: 844px) and (max-height: 883px) {
-        font-size: 16px !important;
-        // height: 32px
-    }
-    @media (min-height: 884px) and (max-height: 923px) {
-        font-size: 17px !important;
-        // height: 34px
-    }
-    @media (min-height: 924px) and (max-height: 983px) {
-        font-size: 18px !important;
-        // height: 36px
-    }
-    @media (min-height: 984px) and (max-height: 1023px) {
-        font-size: 19px !important;
-        // height: 38px
-    }
-    @media (min-height: 1024px) {
-        font-size: 20px !important;
-        height: 40px;
-    }
 }
 
 .userInfoBtn {
@@ -2615,25 +2552,6 @@ $windowInfoBarHeight: 30px;
     padding-left: 2.192%;
     padding-right: 1.754%;
     border-radius: 12px;
-}
-
-.userInfo {
-    padding-right: 3.081%;
-    width: 34.7%;
-    white-space: nowrap;
-    // overflow: hidden
-    // text-overflow: ellipsis
-
-    // &:hover
-    //  background-color: red
-    //  position: absolute
-    //  text-overflow: ellipsis
-    //  overflow: hidden
-    //  white-space: nowrap
-    //  width: 100%
-    //  max-width: calc(100% - 40px)
-    //  max-height: 130px
-    //  z-index: 999
 }
 
 .emergencyBtn {
@@ -2737,13 +2655,6 @@ $windowInfoBarHeight: 30px;
     opacity: 0.65;
 }
 
-.selectBoxDetailInfoBoxHDplus:hover,
-.selectBoxDetailInfoBoxHD:hover {
-}
-
-.selectBoxDetailInfoBoxBtn {
-}
-
 .selectBoxDetailInfoBoxBtnHDplusImg {
     position: absolute;
     top: 5px;
@@ -2765,29 +2676,6 @@ $windowInfoBarHeight: 30px;
     bottom: 0px !important;
 }
 
-.nickname {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    width: 100%;
-    height: 30px;
-    color: white;
-    z-index: 1;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.nickname-text {
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 18px;
-    color: white;
-    background: transparent;
-    border: none;
-}
-
-
 .mode {
     width: 100%;
     height: 100%;
@@ -2800,5 +2688,13 @@ $windowInfoBarHeight: 30px;
     color: #fff;
     background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
         padding-box;
+}
+.status-indicators {
+    position: absolute;
+    z-index: 1;
+    left: 10px;
+    top: 10px;
+    display: flex;
+    gap: 8px;
 }
 </style>

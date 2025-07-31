@@ -12,6 +12,7 @@ import { emitter } from "@/utils/eventBus";
 import { useRouter } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
 import { useDirectCallStore } from "@/stores/directCall";
+import { userListAdd } from "@/utils/userList";
 
 
 // environment, joinMeeting  > 연락처, 회의실, 회원대기실
@@ -49,7 +50,9 @@ export function bindSocketEvents(socket) {
     socket.on("userListAll", (response) => {
         const json = JSON.parse(response);
         
+        console.log("왜 안들어와", json.users)
         userListStore.init();
+        userListAdd(json.users);
         callStore.setUserData([]);
         callStore.setUserDataAll([]);
 
@@ -149,119 +152,119 @@ export function bindSocketEvents(socket) {
     });
 
 
-    // 분기
-    socket.on("createRoomID", function (response) {
-        console.log("*** socket on createRoomID:", JSON.parse(response));
-        emitter.emit("createRoomID", JSON.parse(response));
-    });
+    // // 분기
+    // socket.on("createRoomID", function (response) {
+    //     console.log("*** socket on createRoomID:", JSON.parse(response));
+    //     emitter.emit("createRoomID", JSON.parse(response));
+    // });
 
-    socket.on("calling", (response) => {
-        console.log("*** socket on calling:", JSON.parse(response));
-        emitter.emit("calling", JSON.parse(response));
-    });
+    // socket.on("calling", (response) => {
+    //     console.log("*** socket on calling:", JSON.parse(response));
+    //     emitter.emit("calling", JSON.parse(response));
+    // });
 
-    socket.on("canMakeCall", (response) => {
-        console.log("*** socket on canMakeCall:", JSON.parse(response));
-        emitter.emit("canMakeCall", JSON.parse(response));
-    });
+    // socket.on("canMakeCall", (response) => {
+    //     console.log("*** socket on canMakeCall:", JSON.parse(response));
+    //     emitter.emit("canMakeCall", JSON.parse(response));
+    // });
 
-    socket.on("groupRoom", (response) => {
-        console.log("*** socket on groupRoom:", JSON.parse(response));
-        emitter.emit("groupRoom", JSON.parse(response));
-    })
+    // socket.on("groupRoom", (response) => {
+    //     console.log("*** socket on groupRoom:", JSON.parse(response));
+    //     emitter.emit("groupRoom", JSON.parse(response));
+    // })
 
-    socket.on("multiRefuseCalling", (response) => {
-        console.log("*** socket on multiRefuseCalling:", JSON.parse(response));
-        emitter.emit("multiRefuseCalling", JSON.parse(response));
-    });
+    // socket.on("multiRefuseCalling", (response) => {
+    //     console.log("*** socket on multiRefuseCalling:", JSON.parse(response));
+    //     emitter.emit("multiRefuseCalling", JSON.parse(response));
+    // });
 
-    socket.on("cancelCalling", (response) => {
-        console.log("*** socket on cancelCalling:", JSON.parse(response));
-        emitter.emit("cancelCalling", JSON.parse(response));
-    });
+    // socket.on("cancelCalling", (response) => {
+    //     console.log("*** socket on cancelCalling:", JSON.parse(response));
+    //     emitter.emit("cancelCalling", JSON.parse(response));
+    // });
 
-    socket.on("inviteCancelCalling", (response) => {
-        console.log("*** socket on inviteCancelCalling:", JSON.parse(response));
-        emitter.emit("inviteCancelCalling", JSON.parse(response));
-    });
+    // socket.on("inviteCancelCalling", (response) => {
+    //     console.log("*** socket on inviteCancelCalling:", JSON.parse(response));
+    //     emitter.emit("inviteCancelCalling", JSON.parse(response));
+    // });
 
-    socket.on("joinMeeting", (response) => {
-        console.log("*** socket on joinMeeting:", JSON.parse(response));
-        emitter.emit("joinMeeting", JSON.parse(response));
-    });
+    // socket.on("joinMeeting", (response) => {
+    //     console.log("*** socket on joinMeeting:", JSON.parse(response));
+    //     emitter.emit("joinMeeting", JSON.parse(response));
+    // });
 
-    socket.on("directMessage", (response) => {
-        console.log("*** socket on directMessage:", JSON.parse(response));
-        emitter.emit("directMessage", JSON.parse(response));
-    });
+    // socket.on("directMessage", (response) => {
+    //     console.log("*** socket on directMessage:", JSON.parse(response));
+    //     emitter.emit("directMessage", JSON.parse(response));
+    // });
 
-    socket.on("directMessageReadProcess", (response) => {
-        console.log("*** socket on directMessageReadProcess:", JSON.parse(response));
-        emitter.emit("directMessageReadProcess", JSON.parse(response));
-    });
+    // socket.on("directMessageReadProcess", (response) => {
+    //     console.log("*** socket on directMessageReadProcess:", JSON.parse(response));
+    //     emitter.emit("directMessageReadProcess", JSON.parse(response));
+    // });
 
-    socket.on("getPreviousMessage", (response) => {
-        console.log("*** socket on getPreviousMessage:", JSON.parse(response));
-        emitter.emit("getPreviousMessage", JSON.parse(response));
-    });
+    // socket.on("getPreviousMessage", (response) => {
+    //     console.log("*** socket on getPreviousMessage:", JSON.parse(response));
+    //     emitter.emit("getPreviousMessage", JSON.parse(response));
+    // });
 
-    socket.on("getOverhaul", (response) => {
-        console.log("*** socket on getOverhaul:", JSON.parse(response));
-        emitter.emit("getOverhaul", JSON.parse(response));
-    });
+    // socket.on("getOverhaul", (response) => {
+    //     console.log("*** socket on getOverhaul:", JSON.parse(response));
+    //     emitter.emit("getOverhaul", JSON.parse(response));
+    // });
 
-    // 분기
-    socket.on("openMeetingChecking", (response) => {
-        console.log("*** socket on openMeetingChecking:", JSON.parse(response));
-        emitter.emit("openMeetingChecking", JSON.parse(response));
-        // console.log("*** socket.on: openMeetingChecking res = ", response);
-        // const json = JSON.parse(response);
-        // console.log("*** socket.on: json = ", json);
-        // if (json.start_status == 0) {
-        //     if (json.everyone_start_yn == 1) {
+    // // 분기
+    // socket.on("openMeetingChecking", (response) => {
+    //     console.log("*** socket on openMeetingChecking:", JSON.parse(response));
+    //     emitter.emit("openMeetingChecking", JSON.parse(response));
+    //     // console.log("*** socket.on: openMeetingChecking res = ", response);
+    //     // const json = JSON.parse(response);
+    //     // console.log("*** socket.on: json = ", json);
+    //     // if (json.start_status == 0) {
+    //     //     if (json.everyone_start_yn == 1) {
 
-        //         const openMeetingData = {
-        //             entryNotification: json.unique_roomid,
-        //         };
+    //     //         const openMeetingData = {
+    //     //             entryNotification: json.unique_roomid,
+    //     //         };
 
-        //         meetingStore.setOpenMeetingData(openMeetingData);
-        //         callStore.setUniqueRoomid(json.unique_roomid)
-        //         directCallStore.clearDirectCallInfo();
+    //     //         meetingStore.setOpenMeetingData(openMeetingData);
+    //     //         callStore.setUniqueRoomid(json.unique_roomid)
+    //     //         directCallStore.clearDirectCallInfo();
 
-        //         requestCreateRoomID()
-        //         meetingStore.openAndJoin("open");
-        //         meetingStore.meetingSeq(json.unique_roomid);
-        //         meetingStore.meetingOpenFlag(true);
-        //     } else {
-        //         noneOverlayModal(6);
-        //     }
-        // } else if (json.start_status == 1) {
-        //     if (!json.roomid) {
-        //         meetingStore.setOpenMeetingCheck(false);
-        //     }
-        //     console.log("*** methods: joinMeeting::");
-        //     console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
+    //     //         requestCreateRoomID()
+    //     //         meetingStore.openAndJoin("open");
+    //     //         meetingStore.meetingSeq(json.unique_roomid);
+    //     //         meetingStore.meetingOpenFlag(true);
+    //     //     } else {
+    //     //         noneOverlayModal(6);
+    //     //     }
+    //     // } else if (json.start_status == 1) {
+    //     //     if (!json.roomid) {
+    //     //         meetingStore.setOpenMeetingCheck(false);
+    //     //     }
+    //     //     console.log("*** methods: joinMeeting::");
+    //     //     console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
             
-        //     meetingStore.openAndJoin("join");
-        //     meetingStore.meetingSeq(json.unique_roomid);
-        //     meetingStore.meetingJoinFlag(true);
-        // } else if (json.start_status == 3) {
-        //     console.log("회의실이 삭제되어있다.");
-        //     commonStore.setNoneOverlayAlertStatus(8);
-        //     noneOverlayModal(8);
-        // }
-    });
+    //     //     meetingStore.openAndJoin("join");
+    //     //     meetingStore.meetingSeq(json.unique_roomid);
+    //     //     meetingStore.meetingJoinFlag(true);
+    //     // } else if (json.start_status == 3) {
+    //     //     console.log("회의실이 삭제되어있다.");
+    //     //     commonStore.setNoneOverlayAlertStatus(8);
+    //     //     noneOverlayModal(8);
+    //     // }
+    // });
 
-    socket.on("sendEntryNotification", (response) => {
-        console.log("*** socket on sendEntryNotification:", JSON.parse(response));
-        const json = JSON.parse(response);
-        console.log("sendEntryNotification", json);
-        console.log(json)
-        directCallStore.setDirectCallInfo(json);
-        // callingPopup Show
-        if (directCallStore.directcallList.length == 1) {
-            commonStore.setAlert(8);
-        }
-    })
+    // socket.on("sendEntryNotification", (response) => {
+    //     console.log("*** socket on sendEntryNotification:", JSON.parse(response));
+    //     const json = JSON.parse(response);
+    //     console.log("sendEntryNotification", json);
+    //     console.log(json)
+    //     directCallStore.setDirectCallInfo(json);
+    //     // callingPopup Show
+    //     if (directCallStore.directcallList.length == 1) {
+    //         commonStore.setAlert(8);
+    //     }
+    // })
 }
 

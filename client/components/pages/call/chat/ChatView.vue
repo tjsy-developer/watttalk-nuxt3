@@ -1,10 +1,10 @@
 <template>
     <div class="row content-start messageBox">
-      <div class="col-12" v-if="compData.emergencyIcon || compData.moveIcon || compData.directionIcon">
+      <div class="" v-if="compData.emergencyIcon || compData.moveIcon || compData.directionIcon">
         <span class="messageBoxNickname">{{ compData.nickname }} → {{ compData.mainVideoName }}</span>
         <span class="messageBoxDate">{{ compData.chattingDate }}</span>
       </div>
-      <div class="row col-12" v-else>
+      <div class="row " v-else>
         <div class="col-auto">
           <span v-if="compData.isReceived" class="receiver messageBoxNickname">{{ compData.nickname }}</span>
         </div>
@@ -17,50 +17,50 @@
       </div>
   
       <div
-        class="col-12 messageContainer emergencyIcons"
+        class="messageContainer emergencyIcons"
         v-if="compData.emergencyIcon"
         :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight', {emergencyIconsWarnColor: compData.emergencyIcon > 3} ]"
       >
         <img :src="emergencyIcons[compData.emergencyIcon-1].img">
-        <span class="col-12 text-center">{{ emergencyIcons[compData.emergencyIcon-1].text }}</span>
+        <span class="text-center">{{ emergencyIcons[compData.emergencyIcon-1].text }}</span>
       </div>
       <div
-        class="col-12 messageContainer arrowMoveIcons"
+        class="messageContainer arrowMoveIcons"
         v-else-if="compData.moveIcon"
         :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight']"
       >
         <img :src="moveIcons[compData.moveIcon-1].img">
-        <span class="col-12 text-center arrowIconMoveText" :style="{lineHeight: $i18n.locale == 'ko' ? '50px' : '50px' }">{{ moveIcons[compData.moveIcon-1].text }}</span>
+        <span class="text-center arrowIconMoveText" :style="{lineHeight: $i18n.locale == 'ko' ? '50px' : '50px' }">{{ moveIcons[compData.moveIcon-1].text }}</span>
       </div>
       <div
-        class="col-12 messageContainer arrowIcons"
+        class="messageContainer arrowIcons"
         v-else-if="compData.directionIcon"
         :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight']"
       >
         <img :src="directionIcons[compData.directionIcon-1].img">
-        <span class="col-12 text-center arrowIconDirectionText">{{ directionIcons[compData.directionIcon-1].text }}</span>
+        <span class=" text-center arrowIconDirectionText">{{ directionIcons[compData.directionIcon-1].text }}</span>
       </div>
-      <div class="col-12 receivebubblyLeft" v-else-if="compData.calling">
+      <div class=" receivebubblyLeft" v-else-if="compData.calling">
         <div class="row justify-center content-center receiveBackground">
           <img src="@/assets/images/calling/ic_call-send-2.png" :style="{paddingTop:'10px'}">
-          <div class="col-12 row justify-center buttonsLayout1" :style="{paddingTop: '10px'}">
+          <div class=" row justify-center buttonsLayout1" :style="{paddingTop: '10px'}">
             <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">{{ t("accept") }}</button>
             <button @click="setMultiCalling(0)" class="receiveBtnCallingLayoutType4">{{ t("decline") }}</button>
           </div>
         </div>
       </div>
-      <div class="col-12 bubblyLeft messageContainer" v-else-if="compData.fileSend">
+      <div class=" bubblyLeft messageContainer" v-else-if="compData.fileSend">
         <div class="row" style="text-align: center">
-          <p class="col-12 fileReceiveText1" style="margin: 0">{{ compData.nickname }} {{ t("fileSending text7") }}</p>
-          <p class="col-12 fileReceiveText2" style="margin-bottom: 7px">{{ t("fileSending text8") }}</p>
-          <div class="col-12 row justify-center buttonsLayout2" :style="{paddingTop: '10px'}">
+          <p class=" fileReceiveText1" style="margin: 0">{{ compData.nickname }} {{ t("fileSending text7") }}</p>
+          <p class=" fileReceiveText2" style="margin-bottom: 7px">{{ t("fileSending text8") }}</p>
+          <div class=" row justify-center buttonsLayout2" :style="{paddingTop: '10px'}">
             <button @click="fileReceiveAccept(compData.nickname)" class="receiveBtnCallingLayoutType3">{{ t("accept") }}</button>
             <button @click="fileReceiveDecline(compData.nickname)" class="receiveBtnCallingLayoutType4">{{ t("decline") }}</button>
           </div>
         </div>
       </div>
       <div
-        class="col-12 messageContainer"
+        class=" messageContainer"
         v-else
         :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight', { emergencyColor: compData.isEmergency} ]"
       >
@@ -84,7 +84,7 @@ const props = defineProps({
   }
 });
 
-const { t, locale: $i18nLocale } = useI18n(); // Access translation function and locale
+const { t } = useI18n(); // Access translation function and locale
 
 // Reactive data (formerly 'data()' in Options API)
 const emergencyIcons = ref([
@@ -128,13 +128,13 @@ const makeNewLine = (messageText) => {
 
 const fileReceiveAccept = (userName) => {
   commonStore.setReceiveFileResFlag({ flag: true, selectedUserName: userName });
- commonStore.fileSendStatus(3);
+ commonStore.setFileSendStatus(3);
  commonStore.setFileSendFlag(true);
 };
 
 const fileReceiveDecline = (userName) => {
  commonStore.setReceiveFileResFlag({ flag: true, selectedUserName: userName });
- commonStore.fileSendStatus(4);
+ commonStore.setFileSendStatus(4);
  commonStore.setFileSendFlag(true);
 };
 
@@ -186,6 +186,8 @@ onMounted(() => {
 
 .messageBox {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 
   &:not(:first-child) {
     margin-top: 20px;
@@ -210,6 +212,9 @@ onMounted(() => {
   font-size: 14px;
   border-radius: 6px;
   padding: 10px;
+  color: #fff;
+  background-color: #474b4e;
+  border: 1px solid #5d5d5d;
 }
 
 $bubblyWidth: 16px;
@@ -267,12 +272,15 @@ $bubblyHeight: 10px;
 .emergencyIcons {
   font-size: 20px;
   letter-spacing: 4px;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: rgb(235, 49, 73);
 
-  &:before {
-    // Styles for before pseudo-element if needed
+  &.emergencyIconsWarnColor {
+    background-color: rgb(255, 153, 15);
   }
-
   > img {
     width: 76px;
     height: 76px;
@@ -282,58 +290,25 @@ $bubblyHeight: 10px;
   }
 }
 
-.emergencyIconsWarnColor {
-  &:before {
-    // Styles for before pseudo-element if needed
-  }
-}
-
-.arrowIconsWarnColor {
-  &:before {
-    // Styles for before pseudo-element if needed
-  }
-}
-
-.arrowIcons {
-  font-size: 18px;
+.arrowIcons, .arrowMoveIcons {
+  font-size: 17px;
   letter-spacing: 4px;
   height: 100px;
+  display: flex;
   align-items: center;
-
-  &:before {
-    // Styles for before pseudo-element if needed
-  }
-
-  > span {
-    // Styles for span if needed
-  }
-}
-
-.arrowMoveIcons {
-  font-size: 18px;
-  letter-spacing: 4px;
-  height: 100px;
-  align-items: center;
-
-  &:before {
-    // Styles for before pseudo-element if needed
-  }
-
-  > span {
-    // Styles for span if needed
-  }
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: #242424;
 }
 
 .arrowIconMoveText {
   width: auto;
   margin-left: 13px;
-  line-height: 50px;
 }
 
 .arrowIconDirectionText {
   width: auto;
   margin-left: 15px;
-  line-height: 50px;
 }
 
 .commands {
@@ -434,6 +409,7 @@ $windowInfoBarHeight: 30px;
   margin-left: 10px;
   font-size: 13px;
   line-height: 23px;
+  color: #bcbcbc;
 }
 
 .outgoingTime {
@@ -441,6 +417,7 @@ $windowInfoBarHeight: 30px;
   margin-right: 10px;
   font-size: 13px;
   line-height: 23px;
+  color: #bcbcbc;
 }
 
 .bubblyRight,

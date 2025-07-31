@@ -1,5 +1,5 @@
 <template>
-    <ModalsContainer> </ModalsContainer>
+    <ModalsContainer />
     <!-- 모달 -->
     <VueFinalModal
         v-model="isLoginModalVisible"
@@ -139,7 +139,7 @@ onMounted(() => {
     position: absolute;
     left: 64px;
     top: 50px;
-    width: 100%;
+    width: -webkit-fill-available;
     height: 100vh;
     @include tc(background-color, "bg-color");
 }

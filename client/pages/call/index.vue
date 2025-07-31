@@ -41,6 +41,7 @@
                 </p>
             </div>
         </div> -->
+        <canvas id="captureCanvas" style="display: none;"></canvas>
     </div>
 </template>
 
@@ -67,22 +68,27 @@ import {
 import {
     commonToastMessage,
     customUserNickname,
+    getImageFileName,
     getNickname,
     userDataGetInfo,
 } from "@/composables/common";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import {
+    convertImageToBlob,
     escapeFullScreen,
     getChattingTimeZone,
     getFeedsDisplay,
     getPersonnelInRoom,
     getWorldTime,
+    handleFileDownload,
 } from "@/utils/common";
 import { useI18n } from "vue-i18n";
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import CallLayout from "@/components/pages/call/CallLayout.vue";
-import { userListGetNickname } from "@/utils/userList";
+import { checkMainVideo, userListGetNickname } from "@/utils/userList";
+import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
+import { useModal } from "vue-final-modal";
 const { $signallingSocket, $transferSocket } = useNuxtApp();
 const { t } = useI18n();
 const {
@@ -152,6 +158,10 @@ let chattingCallingIndex = ref("");
 let oldDurationFlag = ref(false);
 let chattingFileSendIndex = ref("");
 let sendFileReader = ref(null);
+let fileReceivedSize = ref(0);
+let receiveFileType = ref("");
+let fileReceiveTotalSize = ref(0);
+let fileReceiveBuffer = ref([]);
 
 let str_stream_picture_file_path = ref("");
 
@@ -179,6 +189,7 @@ let subVideoBitrate = ref(1500000);
 let fullScreenApplyCount = ref(0);
 
 let maskLoading = ref(false);
+let autoPictureModal = ref(false);
 let funcAutoCallAceept = ref(null);
 let motionFailCheck = ref(false);
 let sendDurationEnableFlag = ref(false);
@@ -746,8 +757,8 @@ onMounted(() => {
                 //  "*** methods: fileSend - 전송자가 파일 전송을 취소했을 경우"
                 // )
 
-                // fileReceiveBuffer = []
-                // fileReceivedSize = 0
+                // fileReceiveBuffer.value = []
+                // fileReceivedSize.value = 0
 
                 // const sendFileNickname =
                 //  chattingStore.chattingMessageList[
@@ -786,10 +797,10 @@ onMounted(() => {
                 // )
                 $("#myvideo").show();
 
-                store.commit("fileSend");
+               commonStore.fileSend();
                 // 파일 송수신 flag 초기화
-                // store.commit("fileSendStatus", 0)
-                // store.commit("setFileModalFlag", false) // 파일 송수신 팝업 flag 초기화
+                //commonStore.fileSendStatus", 0)
+                //commonStore.setFileModalFlag", false) // 파일 송수신 팝업 flag 초기화
 
                 // 하단 정렬일 경우에만
                 // callingLayout 4 하단 레이아웃 default 버튼 변경
@@ -803,7 +814,7 @@ onMounted(() => {
                 userNickname == commonStore.fileReceiver
             ) {
                 // 거절 팝업창으로 변경
-                store.commit("fileSendStatus", 4);
+               commonStore.setFileSendStatus(4);
 
                 console.log(sendFileReader.value, rateStopper.value);
                 // 송신할 파일 Reader 중단
@@ -1051,7 +1062,7 @@ onMounted(() => {
                 );
 
                 // 팝업 hide
-                modal.hide("modal");
+                modalStore.closeModal("call");
 
                 // 통화 대기 중 상태 -> 통화 종료 상태로 변경
                 sessionStorage.setItem("m_callWaiting", false);
@@ -1061,7 +1072,7 @@ onMounted(() => {
                 );
 
                 // 팝업 hide
-                modal.hide("modal");
+                modalStore.closeModal("call");
 
                 // 통화 대기 중 상태 -> 통화 종료 상태로 변경
                 sessionStorage.setItem("m_callWaiting", false);
@@ -1094,8 +1105,8 @@ onMounted(() => {
     $signallingSocket.on("videoCallHostCheck", function (response) {
         try {
             const json = JSON.parse(response);
-            console.log("Type of json.deviceid:", typeof json.deviceid); // string이 나와야 합니다.
-            console.log("Type of loginStore.m_local_deviceid:", typeof loginStore.m_local_deviceid); // string이 나와야 합니다.
+            console.log("Type of json.deviceid:", json.deviceid); // string이 나와야 합니다.
+            console.log("Type of loginStore.m_local_deviceid:", loginStore.m_local_deviceid); // string이 나와야 합니다.
 
             // 2. 길이 확인
             if (json.deviceid == loginStore.m_local_deviceid) {
@@ -1120,10 +1131,12 @@ onMounted(() => {
                         if (showHostMainIndex == 0) {
                             showHostMainRfid = myid.value;
                             console.log('내가 호스트')
+                            chattingStore.setVideoCallHost(true);
                         } else {
                             showHostMainRfid = feeds.value[showHostMainIndex].rfid;
                             console.log('나 호스트아님')
                             console.log('아니여기 안탔어?')
+                            chattingStore.setVideoCallHost(false);
                         }
 
                         setTimeout(function () {
@@ -1164,7 +1177,7 @@ onMounted(() => {
                     );
 
                     // 썸네일을 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
-                    if (commonStore.isDrawingEnable == "true") {
+                    if (commonStore.isDrawingEnable) {
                         console.log("썸네일 이관 모달을 생성했다.");
                         createLoadingMask("ThumnailTransfer");
                     }
@@ -1181,7 +1194,7 @@ onMounted(() => {
                         // 현재 마이크 상태가 off 일 경우에만 진행
                         if (isSounded.value) {
                             // 음소거 버튼 변경
-                            store.commit("isSounded");
+                            commonStore.setIsSounded();
 
                             // 마이크 음소거 해제
                             toggleMute();
@@ -1779,7 +1792,7 @@ onMounted(() => {
             if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
-                    store.commit("isSounded");
+                   commonStore.setIsSounded();
                     // 마이크 음소거
                     toggleMute();
 
@@ -1821,7 +1834,7 @@ onMounted(() => {
             if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
-                    store.commit("isSounded");
+                   commonStore.setIsSounded();
                     // 마이크 음소거
                     toggleMute();
 
@@ -1836,7 +1849,7 @@ onMounted(() => {
                         callStore.setMicOnOffClick(true);
 
                         // 토스트 메세지 출력 : 음소거
-                        if (prefrenceStore.lang == "ko") {
+                        if (preferenceStore.lang == "ko") {
                             commonToastMessage(
                                 t("toastMessage host") +
                                     sessionStorage.getItem("m_nickname") +
@@ -1858,7 +1871,7 @@ onMounted(() => {
                         callStore.setMicOnOffClick(false);
 
                         // 토스트 메세지 출력 : 음소거 해제
-                        if (prefrenceStore.lang == "ko") {
+                        if (preferenceStore.lang == "ko") {
                             commonToastMessage(
                                 t("toastMessage host") +
                                     sessionStorage.getItem("m_nickname") +
@@ -1989,7 +2002,7 @@ onMounted(() => {
             // }
 
             // fileReceiver 저장
-            store.commit("setFileReceiver", json.deviceid);
+           commonStore.setFileReceiver(json.deviceid);
 
             /* 파일 송수신과 고화질 캡쳐 구분 */
             // 고화질 캡쳐일 경우는 바로 수락 처리 한다.
@@ -2002,7 +2015,7 @@ onMounted(() => {
                     flag: true,
                     selectedUserName: nickname,
                 });
-                commonStore.fileSendStatus(3);
+                commonStore.setFileSendStatus(3);
                 commonStore.setFileSendFlag(true);
 
                 $("#remotevideo" + rfidIndex).hide();
@@ -2011,8 +2024,8 @@ onMounted(() => {
                 // $("#myvideo").hide()
 
                 // 수신 파일 정보를 저장
-                fileReceiveTotalSize = json.filelength;
-                receiveFileType = getFileExtension(json.filetype);
+                fileReceiveTotalSize.value = json.filelength;
+                receiveFileType.value = getFileExtension(json.filetype);
             } else {
                 // 내 화면을 파일 수락/거절 질의로 callingWindow 변경
                 // callingLayoutChange(2, sessionStorage.getItem("m_nickname"), 0)
@@ -2024,7 +2037,7 @@ onMounted(() => {
                 const status = commonStore.userListStatus[rfidIndex].status;
 
                 // callingWindow에 파일 보내는 사람 이름 저장
-                store.commit("setFileSendNickname", fileSendNickname);
+               commonStore.setFileSendNickname(fileSendNickname);
 
                 // 하단 정렬일 경우에만
                 // callingLayout 4 하단 레이아웃 파일 송수신으로 버튼 변경
@@ -2058,7 +2071,7 @@ onMounted(() => {
 								beforeStatus: 수신완료 or 거절 할 경우 송신자측 이전 화면 상태값 저장
 							}
 					*/
-                store.commit("setFileReceiveInfo", {
+               commonStore.setFileReceiveInfo({
                     index: rfidIndex,
                     fileReceiveInfo: {
                         fileChatIndex: chattingFileSendIndex.value,
@@ -2071,8 +2084,8 @@ onMounted(() => {
                 $("#panel-inner" + rfidIndex).hide();
 
                 // 수신 파일 정보를 저장
-                fileReceiveTotalSize = json.filelength;
-                receiveFileType = getFileExtension(json.filetype);
+                fileReceiveTotalSize.value = json.filelength;
+                receiveFileType.value = getFileExtension(json.filetype);
 
                 // 파일 송수신 효과음 호출
                 fileReceiveMessageBell("play");
@@ -2094,7 +2107,7 @@ onMounted(() => {
                             flag: true,
                             selectedUserName: nickname,
                         });
-                        commonStore.fileSendStatus(3);
+                        commonStore.setFileSendStatus(3);
                         commonStore.setFileSendFlag(true);
                     }, 700);
                 }
@@ -2121,7 +2134,7 @@ onMounted(() => {
             // 파일 송신측이 수신측으로부터 파일 수신 거절을 받았을 때
             if (json.status === 0) {
                 // 거절 팝업창으로 변경
-                store.commit("fileSendStatus", 4);
+               commonStore.setFileSendStatus(4);
 
                 // 사진 전송 중 메세지 -> 사진 수신 거절 메세지로 변경 ksy
                 const fileChatIndex =
@@ -2133,7 +2146,7 @@ onMounted(() => {
                 const file = commonStore.sendFileData[0];
 
                 // 파일 송신중 모달창으로 변경
-                store.commit("fileSendStatus", 3);
+               commonStore.setFileSendStatus(3);
 
                 console.log(
                     `*** socket: fileReceiver - file is ${[
@@ -2206,7 +2219,7 @@ onMounted(() => {
         const senderNickname = userListGetNickname(json.sender);
         const receiverNickname = sessionStorage.getItem("m_nickname");
 
-        store.commit("directMessage/receiveDM", {
+       directMessageStore.receiveDM({
             message: json.message,
             type: 1,
             sender: json.sender,
@@ -2226,7 +2239,7 @@ onMounted(() => {
         const reciverNickname = userListGetNickname(json.sender);
 
         // 모달 생성 vuex
-        store.commit("directMessage/addChattingModal", {
+       directMessageStore.addChattingModal({
             deviceid: json.sender,
             nickname: reciverNickname,
         });
@@ -2255,7 +2268,7 @@ onMounted(() => {
                 directMessageList.datetime <= json.datetime
             ) {
                 // 읽음 처리
-                store.commit("directMessage/setReadMessage", {
+               directMessageStore.setReadMessage({
                     index: i,
                 });
             }
@@ -2312,34 +2325,34 @@ onMounted(() => {
 
     // 썸네일 이관
     $signallingSocket.on("moveThumbnail", function (response) {
-        store.commit("drawing/setChangedHost", true);
+        drawingStore.setChangedHost(true);
         console.log("*** socket: moveThumbnail response");
         // console.log(response)
-        store.commit("drawing/initDrawing");
-        store.commit("drawing/setChangedHost", true);
+        drawingStore.initDrawing();
+        drawingStore.setChangedHost(true);
         const json = JSON.parse(response);
-        store.commit("drawing/setbeforeHostIndex", json.selectedFileIndex);
-        store.commit("drawing/setIsGivenThumbnailTransfer", true);
-        store.commit("drawing/setIndexes", {
+        drawingStore.setbeforeHostIndex(json.selectedFileIndex);
+        drawingStore.setIsGivenThumbnailTransfer(true);
+        drawingStore.setIndexes({
             group: json.lastGroup,
             index: json.lastIndex,
         });
-        store.commit("drawing/setFirstHistory", json.firstHistory);
-        store.commit("drawing/setNewFirstFiles", json.firstFiles);
-        // store.commit("drawing/setCanvasJson", json.lastCanvasJson)
+        drawingStore.setFirstHistory(json.firstHistory);
+        drawingStore.setNewFirstFiles(json.firstFiles);
+        // drawingStore.setCanvasJson", json.lastCanvasJson)
         // console.log("*******##** Changed lastCanvasJson  #1")
-        // store.commit("drawing/setCanvasHistory", json.canvasHistory)
+        // drawingStore.setCanvasHistory", json.canvasHistory)
         // console.log("drawing/setCanvasHistory: ", json.canvasHistory)
 
         // ksy:: 기존 호스트가 선택한 썸네일로 설정해준다.  ▽(img, canvas) 관련 index
-        store.commit("drawing/setSelectedFileIndex", 0);
+        drawingStore.setSelectedFileIndex(0);
         // 썸네일에 추가한다.
         if (json.thumbnailList != null) {
-            store.commit("drawing/setAllFiles", json.thumbnailList);
+            drawingStore.setAllFiles(json.thumbnailList);
             // console.log("******##** received files", drawingStore.files)
         }
         if (json.pdfUrlSaveArrays.length > 0) {
-            store.commit("drawing/setThumbnailPdfUrlSaveArrays", json.pdfUrlSaveArrays);
+            drawingStore.setThumbnailPdfUrlSaveArrays(json.pdfUrlSaveArrays);
         }
         // ksy:: 기존 호스트가 드로잉 사용 중이였는지 체크
         let drawingState = json.isDrawingEnable;
@@ -2347,8 +2360,7 @@ onMounted(() => {
         setTimeout(() => {
             // ksy:: 렌더링 해줄 canvas 정보를 셋팅한다(type == img, canvas)
             if (drawingStore.files[json.selectedFileIndex].type !== "pdf") {
-                store.commit(
-                    "drawing/setCanvasHistory",
+                drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].history,
                 );
             } else {
@@ -2358,17 +2370,16 @@ onMounted(() => {
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
                 );
-                store.commit(
-                    "drawing/setCanvasHistory",
+               drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
                 );
             }
 
             // ksy:: 기존 호스트가 선택한 썸네일로 설정해준다. ▽(pdf) 관련 index
-            store.commit("drawing/setPdfIndex", json.selectedPdfIndex);
+            drawingStore.setPdfIndex(json.selectedPdfIndex);
             // thumbnail.vue fileClick() 안에 설명
-            store.commit("drawing/setBeforeIndexInitialized", true);
+            drawingStore.setBeforeIndexInitialized(true);
             if (drawingState) {
                 // 썸네일 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
                 // createLoadingMask("ThumnailTransfer")
@@ -2382,7 +2393,7 @@ onMounted(() => {
             // ksy:: 썸네일 이관이 끝나면 로딩바 제거
             // loadingMaskDelete();
             // nextTick(() => {
-            //  store.commit("drawing/setCanvasHistoryFin", true)
+            //  drawingStore.setCanvasHistoryFin", true)
             // })
         }, 500);
     });
@@ -2396,14 +2407,14 @@ onMounted(() => {
 
         let url = "";
         if (json.url != null && json.name != null) {
-            url = json.url + "/" + json.name;
+            url = json.url + json.name;
             url = await convertImageToBlob(url);
             // 캡쳐 일 경우
             if (callStore.isCapture) {
-                store.commit("drawing/setIsOpenSaveThumbnail", false);
+                drawingStore.setIsOpenSaveThumbnail(false);
 
                 // 호스트가 아니라면 팝업 닫기
-                modal.hide("noneOverlayModal");
+                modalStore.closeModal("noneOverlayModal");
 
                 if (videoCallHost.value && accessDeviceCheck.value == "PC") {
                     // 드로잉으로 이동하시겠습니까 ? 모달
@@ -2411,7 +2422,7 @@ onMounted(() => {
                 }
 
                 // 드로잉 썸네일 등록
-                store.commit("drawing/setSaveThumbnailImg", {
+                drawingStore.setSaveThumbnailImg({
                     type: "img",
                     src: url,
                     status: "off",
@@ -2420,24 +2431,24 @@ onMounted(() => {
                 /* 캡쳐 저장 완료 - 초기화 시작 */
                 // captureSaveFlag false 변경 = 초기화
                 callStore.setCaptureSaveFlag(false);
-                callStore.isCapture(false);
+                callStore.setIsCapture(false);
             } else {
-                store.commit("drawing/setIsOpenSaveThumbnail", false);
+                drawingStore.setIsOpenSaveThumbnail(false);
 
                 // 호스트인 경우 썸네일 등록 및 수신 사진 미리보기 표시
                 if (videoCallHost.value) {
                     // 드로잉이 켜져있을 경우 썸네일만 등록하기
                     if (commonStore.isDrawing) {
                         // 드로잉 썸네일 등록하기
-                        store.commit("drawing/setSaveThumbnailImg", {
+                        drawingStore.setSaveThumbnailImg({
                             type: "img",
                             src: url,
                             status: "on",
                         });
-                        store.commit("drawing/setSaveThumbnailImgInCanvas", "on");
-                        store.commit("drawing/setSrc", saveThumbnailImg.value);
-                        store.commit("drawing/setIsOpenSaveThumbnail", true);
-                        store.commit("drawing/setThumbnailFileReceive", true);
+                        drawingStore.setSaveThumbnailImgInCanvas("on");
+                        drawingStore.setSrc(saveThumbnailImg.value);
+                        drawingStore.setIsOpenSaveThumbnail(true);
+                        drawingStore.setThumbnailFileReceive(true);
                     } else {
                         // const previewManageIndex = commonStore.previewModalInfo.previewModalcnt
                         // 미리보기
@@ -2450,24 +2461,23 @@ onMounted(() => {
                             // 바로 보일 경우 간혈적으로 미리보기가 안뜨는 현상이 있어서 예외처리
                             setTimeout(() => {
                                 // 수신파일 이미지 미리보기
-                                // previewModal(url, "show")
-                                previewModal(url, "show");
+                                previewModal(url);
                             }, 500);
                         } else {
                             // 수신파일 이미지 미리보기
                             // previewModal(url)
-                            previewModal(url, "show");
+                            previewModal(url);
                         }
 
                         // 드로잉 썸네일 추가
-                        store.commit("drawing/setSaveThumbnailImg", {
+                        drawingStore.setSaveThumbnailImg({
                             type: "img",
                             src: url,
                             status: "off",
                         });
 
                         // setSrc
-                        // store.commit("drawing/setSrc", {
+                        // drawingStore.setSrc", {
                         //  type: "img",
                         //  src: url,
                         //  status: "off"
@@ -2476,15 +2486,15 @@ onMounted(() => {
                 }
                 // 호스트가 아닌 경우 수신 사진 미리보기 표시
                 else {
-                    if (autoPictureModal) {
+                    if (autoPictureModal.value) {
                         // 바로 보일 경우 간혈적으로 미리보기가 안뜨는 현상이 있어서 예외처리
                         setTimeout(() => {
                             // 수신파일 이미지 미리보기
-                            previewModal(url, "show");
+                            previewModal(url);
                         }, 500);
                     } else {
                         // 수신파일 이미지 미리보기
-                        previewModal(url, "show");
+                        previewModal(url);
                     }
                 }
 
@@ -2679,7 +2689,7 @@ onMounted(() => {
         }
 
         // kjs : json을 이용하여 img url를 변경한다.
-        store.commit("drawing/setPdfUrlSaveArrays", json);
+        drawingStore.setPdfUrlSaveArrays(json);
     });
 
     // 룸이 가득찼을 때 event 수신
@@ -2721,7 +2731,7 @@ onMounted(() => {
                 const chattingNickname = sessionStorage.getItem("m_nickname");
                 let chattingMessage = "";
 
-                if (prefrenceStore.lang == "ko") {
+                if (preferenceStore.lang == "ko") {
                     chattingMessage =
                         t("videoRoom Full") + leaveNickname + t("videoRoom Full1");
                 } else {
@@ -2754,18 +2764,18 @@ onMounted(() => {
                 // drawing OFF
                 // 호스트가 드로잉을 종료했고  일반사용자의 #videoMainWrap의 높이를 조정한다 -inherit
                 console.log("*** drawing height fit-content change");
-                store.commit("drawing/setDrawingVideo", true);
+                drawingStore.setDrawingVideo(true);
 
                 // 호스트가 드로잉을 비활성화 했음을 store 에 저장한다
-                store.commit("isDrawingEnable", {
-                    result: "false",
+               commonStore.setIsDrawingEnable({
+                    result: false,
                 });
                 console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
             } else {
                 // 호스트가 드로잉을 시작했고  일반사용자의 #videoMainWrap의 높이를 조정한다 -inherit
                 console.log("*** drawing height inherit change");
                 if (!videoCallHost.value) {
-                    store.commit("drawing/setDrawingVideo", false);
+                    drawingStore.setDrawingVideo(false);
                 }
                 // 1번레이아웃에서 다른사용자가 메인일 때 드로잉을 시작한경우 3번레이아웃으로 바뀌면서
                 // 호스트가 메인이되며 기존 메인이였던 사용자의 화면 비율을 원래대로 돌려야한다.
@@ -2793,8 +2803,8 @@ onMounted(() => {
                 }
 
                 // 호스트가 드로잉을 활성화 했음을 store 에 저장한다
-                store.commit("isDrawingEnable", {
-                    result: "true",
+                commonStore.setIsDrawingEnable({
+                    result: true,
                 });
                 console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
             }
@@ -2851,17 +2861,17 @@ onMounted(() => {
             // const rfidIndex = findFeedsIndexDeviceid(remotedeviceid)
             console.log("*** mounted: failHQCaptrue - 고화질 파일 전송을 취소했을 경우");
 
-            fileReceiveBuffer = [];
-            fileReceivedSize = 0;
+            fileReceiveBuffer.value = [];
+            fileReceivedSize.value = 0;
 
             // 내 화면을 비디오로 변경
             callingLayoutChange("attach", sessionStorage.getItem("m_nickname"), 0);
             $("#myvideo").show();
 
-            store.commit("fileSend");
+            commonStore.fileSend();
             // 파일 송수신 flag 초기화
-            store.commit("fileSendStatus", 0);
-            store.commit("setFileModalFlag", false); // 파일 송수신 팝업 flag 초기화
+            commonStore.setFileSendStatus(0);
+            commonStore.setFileModalFlag(false); // 파일 송수신 팝업 flag 초기화
 
             // 고화질 캡쳐 버튼 활성화
             callStore.setHQCaptrueFlag(false);
@@ -2881,7 +2891,7 @@ onMounted(() => {
         // 이전 메세지 없음
         if (json.message.length == 0) {
             // console.log("데이터 없다")
-            store.commit("directMessage/previousMessageNone", false);
+           directMessageStore.previousMessageNone(false);
         }
         // if {
         // 메시지 10개를 가져오는데 0개 이상일때 채팅이력을 차례대로 넣어준다
@@ -2891,7 +2901,7 @@ onMounted(() => {
                     // 발신
                     const userNickname = userListGetNickname(json.message[i].receiver);
 
-                    store.commit("directMessage/previousSendDM", {
+                   directMessageStore.previousSendDM({
                         message: json.message[i].message,
                         sender: loginStore.m_local_deviceid,
                         receiver: json.message[i].receiver,
@@ -2907,7 +2917,7 @@ onMounted(() => {
                     // 수신
                     const userNickname = userListGetNickname(json.message[i].sender);
 
-                    store.commit("directMessage/previousReceiveDM", {
+                   directMessageStore.previousReceiveDM({
                         message: json.message[i].message,
                         sender: json.message[i].sender,
                         receiver: json.message[i].receiver,
@@ -2925,10 +2935,10 @@ onMounted(() => {
                 // 가져온 메시지 만큼 돌고나서 메시지 개수가 10개 이하이면 더이상 가져올 메시지가 없다는 것으로 판단
                 // 이후 (이전 데이터보기) 버튼을 없앤다
                 if (json.message.length - 1 == i && json.message.length < 10) {
-                    store.commit("directMessage/previousMessageNone", false);
+                   directMessageStore.previousMessageNone(false);
                 } else {
                     // 채팅이 10개 이상이거나 다른 채팅모달로 넘어갔을때를 대비하여 다시 true로 변경
-                    store.commit("directMessage/previousMessageNone", true);
+                   directMessageStore.previousMessageNone(true);
                 }
             }
         }
@@ -4915,7 +4925,7 @@ function screenShare(type) {
                             $("#myvideo")[0].srcObject.getVideoTracks()[0].readyState ==
                             "ended"
                         ) {
-                            commonStore.isShare(); // side bar 영상공유 버튼 값 변경
+                            commonStore.setIsShare(); // side bar 영상공유 버튼 값 변경
                             // screenShare(false);             // 모니터 공유 -> 내 카메라 영상 공유
 
                             /* 21-07-26 드로잉 관련 기능 분리 */
@@ -4962,7 +4972,7 @@ function screenShare(type) {
                     console.log(
                         "screenMoveToDrawing true이기 때문에 drawing을 실행합니다.",
                     );
-                    commonStore.isDrawing();
+                    commonStore.setIsDrawing();
 
                     // noneOverlatyAlert에서 화면공유 중 드로잉으로 이동한다는 것을 변수에 저장한다.
                     // 화면공유 -> 드로잉 이동 시 드로잉 호출 후 초기화
@@ -4981,7 +4991,7 @@ function screenShare(type) {
                 //  " >>> ",
                 //  !commonStore.isShare
                 // )
-                commonStore.isShare();
+                commonStore.setIsShare();
             } else {
                 // console.log("어디로 들어오는지 보자. 2")
                 screenShare(false);
@@ -5316,7 +5326,7 @@ function newRemoteFeed(id, display, audio, video) {
                 $("#videoremote" + remoteFeed.rfindex).append(
                     '<div class="panel-inner" id="panel-inner' +
                         remoteFeed.rfindex +
-                        '" style="width:100%; height:100%;"/>',
+                        '" style="width:100%; height:100%; position: absolute;"/>',
                 );
 
                 // No remote video yet
@@ -5407,7 +5417,7 @@ function newRemoteFeed(id, display, audio, video) {
                 // janus destroy 시 이전 사용자들은 남겨야 하기 때문에 다시 한번 remoteStream을 호출한다.
                 video.addEventListener("click", function () {
                     // video_change(
-                    // console.log("상대방 Viedo 클릭")
+                    console.log("상대방 Viedo 클릭")
 
                     // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
                     if (commonStore.isDrawing) {
@@ -5418,25 +5428,10 @@ function newRemoteFeed(id, display, audio, video) {
                     if (videoCallHost.value) {
                         // 바둑판이 아닐 경우
                         if (commonStore.callingLayoutType != 1) {
-                            // eslint-disable-next-line camelcase
-                            const main_video = document.getElementById("videoMain");
-
-                            // // mainVideo가 videoOff가 아닐 경우 && mainVideo와 현재 클릭한 video가 같다면 변경하지 않도록 하기. (중복클릭 방지)
-                            // if (
-                            //  !commonStore.isVideo &&
-                            //  main_video.srcObject == srcObject
-                            // ) {
-                            //  return
-                            // }
-
-                            main_video.srcObject = srcObject;
-                            // $("#videoMainCaption").html(remoteFeed.rfdisplay)
                             $("#videoMainCaption").html(customNickname); // 사용자의 언어에 따라 닉네임 변경
 
                             // MainVideo Check
                             if (callStore.videoMainIndex != remoteFeed.rfindex) {
-                                // $("#videoMainOff").remove()
-                                // $("#videoMain").show()
                                 mainVideoChangeFunc(1, customNickname);
                             }
 
@@ -5703,7 +5698,7 @@ function newRemoteFeed(id, display, audio, video) {
             // if (bitrateTimer[remoteFeed.rfindex])
             //  clearInterval(bitrateTimer[remoteFeed.rfindex])
 
-            bitrateTimer.value[remoteFeed.rfindex] = null;
+            // bitrateTimer.value[remoteFeed.rfindex] = null;
             remoteFeed.simulcastStarted = false;
             $("#simulcast" + remoteFeed.rfindex).remove();
             // #simulcast 는 뭐지??
@@ -5727,7 +5722,7 @@ function newRemoteFeed(id, display, audio, video) {
             // Janus.debug("We got data from the DataChannel!", data)
             // // console.log("*** methods: onData json: " + data)
             // // console.log("Other's Ondata json:", data)
-            // fileReceiveBuffer.push(data)
+            // fileReceiveBuffer.value.push(data)
             // fileReceivedSize += data.byteLength
             // // console.log("*** methods: onData fileReceivedSize: " + fileReceivedSize)
             // // console.log("*** methods: onData fileReceiveTotalSize: " + fileReceiveTotalSize)
@@ -5740,13 +5735,13 @@ function newRemoteFeed(id, display, audio, video) {
             // // 파일 수신 완료
             // if (fileReceivedSize === fileReceiveTotalSize) {
             //  console.log("*** methods: onData - Received File Save Start")
-            //  const received = new Blob(fileReceiveBuffer)
+            //  const received = new Blob(fileReceiveBuffer.value)
             //  const url = window.URL.createObjectURL(received)
             //  const a = document.createElement("a")
             //  a.style.display = "none"
             //  a.href = url
             //  // PC에 저장
-            //  const fname = getImageFileName(receiveFileType)
+            //  const fname = getImageFileName(receiveFileType.value)
             //  // console.log("***** image file name: ".concat(fname))
             //  a.download = fname
             //  document.body.appendChild(a)
@@ -6684,7 +6679,7 @@ function saveVideoInfo() {
 
     //
     videoArray.value = [];
-    videoStream.value.value = [];
+    videoStream.value = [];
     // 이전 비디오 저장
     // for 조건 문 중 해당 기업의 최대 인원 수로 for문 조건
     // if (videoremote + i)의 dom이 없을 경우 break <-- break 하게 되면, 중간에 사람이 나가면 break 되므로 구현하지 않음.
@@ -6711,7 +6706,7 @@ function saveVideoInfo() {
 
     callStore.setVideoInfoArray({
         videoTag: videoArray.value,
-        videoStream: videoStream,
+        videoStream: videoStream.value,
     });
 
     commonStore.changeLayoutType(3);
@@ -7257,75 +7252,33 @@ function noneOverlayModal(seq) {
 function alertModal(seq) {
     escapeFullScreen();
     commonStore.setAlertStatus(seq);
-    // $modal.show(
-    //     alertModal,
-    //     {},
-    //     {
-    //         name: "alertModal",
-    //         width: "350",
-    //         height: "270",
-    //     },
-    //     {
-    //         "before-close": () => {
-    //             modalsContainerStyle.display = "none";
-    //         },
-    //     },
-    // );
+
 }
 // 파일 수신 미리보기 모달창 추가
-function previewModal(url, showState) {
+function previewModal(url) {
     escapeFullScreen();
 
     commonStore.setPreviewModalFlag({
         modalIndex: commonStore.previewModalInfo.previewModalcnt + 1,
         url: url,
-        show: showState,
+        show: "show",
     });
-    // blobtoUrl = url
-    // $modal.show("previewModal" + commonStore.previewModalInfo.previewModalcnt, { blobToUrl: url, index: commonStore.previewModalInfo.previewModalcnt })
-
-    // blobtoUrl = obj.blobURL
-    // previewModalState = obj.showState
-    // $modal.show("previewModal", {blobToUrl: blobtoUrl})
-    // const modalsContainerStyle = document.getElementById("modalsContainer")
-    //  .style
-    // modalsContainerStyle.display = "block"
-    // modalsContainerStyle.backgroundColor = "rgba(0, 0, 0, 0.4)"
-
     // // 파일 수신 자동일 경우
-    // if (autoPictureAccept.value) {
-    //  // autoPictureModal = true 변경
-    //  autoPictureModal = true
-    // }
+    if (autoPictureAccept.value) {
+        autoPictureModal.value = true
+    }
 
-    // $modal.show(
-    //  previewModal,
-    //  {
-    //      blobToUrl: blobtoUrl
-    //  },
-    //  {
-    //      name: "previewModal",
-    //      width: 415,
-    //      height: 265,
-    //      adaptive: true,
-    //      clickToClose: false,
-    //      pivotX: 0,
-    //      pivotY: 0.99,
-    //      styles: {
-    //          minHeight: "220px"
-    //      },
-    //      classes: "test"
-    //  },
-    //  {
-    //      "opened": (e) => {
-    //          e.ref.style.left = "70px"
-    //      },
-    //      "before-close": () => {
-    //          modalsContainerStyle.display = "none"
-    //      }
-    //  }
-    // )
+    const { open, close } = useModal({
+        component: FilePreviewModal,
+        key: `preview-modal-${commonStore.previewModalInfo.previewModalcnt + 1}`,
+        attrs: {
+            previewImage: url,
+            onClose: () => close(),
+        },
+    })
+    open()
 }
+
 function previewModalHide(result) {
     previewModalState.value = result.showState;
 }
@@ -7557,7 +7510,7 @@ function hostSelectedMainVideo(rfid) {
 }
 // 마이크 상태 변경
 function micStatusChange(status, hostDeviceid) {
-    console.log("*** methods: micStatusChange");
+    console.log("*** methods: micStatusChange", hostDeviceid);
     // 현재 마이크 상태 가져오기
     const currentMicStatus = isSounded.value;
 
@@ -7570,7 +7523,7 @@ function micStatusChange(status, hostDeviceid) {
         // console.log("# mic off !")
         // 현재 마이크 상태 변경 : ON -> OFF
         if (!currentMicStatus) {
-            commonStore.isSounded.value();
+            commonStore.setIsSounded()
 
             // 마이크 음소거
             toggleMute();
@@ -7623,7 +7576,7 @@ function micStatusChange(status, hostDeviceid) {
         // console.log("# mic on !")
         if (currentMicStatus) {
             // 현재 마이크 상태 변경 : OFF -> ON
-            commonStore.isSounded();
+            commonStore.setIsSounded()
             // 마이크 음소거 해제
             toggleMute();
         }
@@ -7967,134 +7920,96 @@ function sendFileServerUploadFileToBlob(sendImage) {
     return bb;
 }
 // 파일 송수신 용 서버 업로드
-function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
-    const reader = new FileReader();
+async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
+  const dateName = createDateName();
+  const fileExtension = fname.split('.').pop();
+  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
 
-    reader.onload = function (event) {
-        const sendImageSrc = event.target.result;
+  // 전송률 업데이트 관련 변수
+  let sizeSent = 0;
+  let rate = 0;
 
-        const dateName = createDateName();
+  const chunkSize = 64 * 1024; // 64KB 청크
+  const totalChunks = Math.ceil(file.size / chunkSize);
+  let chunkIndex = 0;
 
-        const fileExtentionSplit = fname.split(".");
-        const fileExtention = fileExtentionSplit[fileExtentionSplit.length - 1];
+  const reader = new FileReader();
 
-        // 파일 이름이 유니크한 값으로 만들기 위해 deviceid를 뒤에 추가한다.
-        const sendFileName =
-            dateName + "_" + loginStore.m_local_deviceid + "." + fileExtention;
+  // 청크 읽어서 전송 함수
+  function readAndSendChunk() {
+    const start = chunkIndex * chunkSize;
+    const end = Math.min(start + chunkSize, file.size);
+    const blob = file.slice(start, end);
+    reader.readAsArrayBuffer(blob);
+  }
 
-        const stream = ss.createStream();
-        const obj = {
-            en_seq: loginStore.sessionEnSeq,
-            fname: sendFileName,
-            fsize,
-        };
-        const json = JSON.stringify(obj);
-        console.log("server upload Info json", json);
-        const fn = sendFileServerUploadFileToBlob(sendImageSrc);
-        console.log("server upload Info fn", fn);
-        ss($transferSocket).emit("sendFileServerUpload", stream, json);
-        console.log("*** transfer socket: sendFileServerUpload");
-        const blobstream = ss.createBlobReadStream(fn);
+  reader.onload = (e) => {
+    const buffer = e.target.result;
+    // Uint8Array 형태로 변환해서 보냄 (기존 이벤트명 그대로 사용)
+    $transferSocket.emit("sendFileServerUpload", {
+      chunkIndex,
+      data: new Uint8Array(buffer),
+      fname: sendFileName,
+      totalChunks,
+      type,
+    });
 
-        // 전송률 측정
-        let size = 0;
-        let rate = 0;
+    sizeSent += buffer.byteLength;
+    rate = Math.floor((sizeSent / file.size) * 100);
 
-        // 전송률 전송 재귀함수
-        const rateInterval = (callback, interval) => {
-            let flag = true;
-            const tick = () => {
-                setTimeout(() => {
-                    if (!flag) return;
-                    const obj = {
-                        localdeviceid: loginStore.m_local_deviceid, // 송신자
-                        remotedeviceid: commonStore.fileReceiver, // 수신자
-                        rate,
-                    };
-                    const json = JSON.stringify(obj);
-                    $signallingSocket.emit("fileSendRate", json);
-                    console.log("*** socket emit fileSendRate", json);
-
-                    // 파일 송신 모달창에 전송률 입력
-                    callStore.setTransmissionRate(rate);
-                    // console.log("rate: " + rate + "%")
-                    callback();
-                    tick();
-                }, interval);
-            };
-            tick();
-            return () => {
-                flag = false;
-            };
-        };
-        rateStopper.value = rateInterval(() => {}, 500);
-
-        // io stream 데이터 전송
-        blobstream.on("data", function (chunk) {
-            size += chunk.length;
-            rate = Math.floor((size / file.size) * 100);
-        });
-
-        // io stream 전송 완료
-        blobstream.on("end", function () {
-            if (typeof rateStopper.value == "undefined" || rateStopper.value == null) {
-                return;
-            }
-
-            // 전송률 전송 정지
-            rateStopper.value();
-            rateStopper.value = null;
-
-            // 전송률 100% 전송
-            const obj = {
-                localdeviceid: loginStore.m_local_deviceid, // 송신자
-                remotedeviceid: commonStore.fileReceiver, // 수신자
-                rate: 100,
-            };
-            const json = JSON.stringify(obj);
-            $signallingSocket.emit("fileSendRate", json);
-
-            // 파일 송신 모달창에 전송률 입력
-            callStore.setTransmissionRate(rate);
-            // console.log("rate: " + 100 + "%")
-
-            // 파일 정보 DB 에 저장
-            const obj2 = {
-                en_seq: loginStore.sessionEnSeq,
-                hq_seq: loginStore.sessionHqSeq,
-                br_seq: loginStore.sessionBrSeq,
-                // joined_members: "joined_members", // 보내는 사람과 받는사람 (ex. 김승하, 곽선영)
-                joined_members: fileJoinMembers,
-                file_path: str_stream_picture_file_path.value,
-                file_name: sendFileName,
-                // file_type: "picture",
-                file_type: type,
-                getWorldTime: getWorldTime(),
-                localdeviceid: loginStore.m_local_deviceid,
-                remotedeviceid: commonStore.fileReceiver,
-                roomid: sessionStorage.getItem("m_roomid"),
-            };
-            const json2 = JSON.stringify(obj2);
-            $signallingSocket.emit("sendFileServerUploadInfo", json2);
-            console.log("*** socket: sendFileServerUploadInfo request:", json2);
-
-            // 파일 송신 완료 모달창 출력
-            commonStore.fileSendStatus(6);
-
-            // 채팅창에 메세지 파일 전송 완료 메세지 추가 (5)
-            const nickname = userListGetNickname(commonStore.fileReceiver);
-            addChatFileSendMessage(nickname, 5, "");
-
-            // 파일 송신 초기화
-            fileSendReset();
-        });
-
-        blobstream.pipe(stream);
-
-        console.log("*** socket: sendFileServerUpload request: " + json);
+    // 기존 전송률 이벤트 그대로 사용
+    const rateObj = {
+      localdeviceid: loginStore.m_local_deviceid,
+      remotedeviceid: commonStore.fileReceiver,
+      rate,
     };
-    reader.readAsDataURL(file);
+    $signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
+    callStore.setTransmissionRate(rate);
+
+    chunkIndex++;
+
+    if (chunkIndex < totalChunks) {
+      readAndSendChunk();
+    } else {
+      // 전송 완료 처리
+
+      // 기존 DB 저장 요청 이벤트 그대로 사용
+      const infoObj = {
+        en_seq: loginStore.sessionEnSeq,
+        hq_seq: loginStore.sessionHqSeq,
+        br_seq: loginStore.sessionBrSeq,
+        joined_members: fileJoinMembers,
+        file_path: str_stream_picture_file_path.value,
+        file_name: sendFileName,
+        file_type: type,
+        getWorldTime: getWorldTime(),
+        localdeviceid: loginStore.m_local_deviceid,
+        remotedeviceid: commonStore.fileReceiver,
+        roomid: sessionStorage.getItem("m_roomid"),
+      };
+      $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
+      console.log("*** socket: sendFileServerUploadInfo request:", infoObj);
+
+      commonStore.setFileSendStatus(6);
+      const nickname = userListGetNickname(commonStore.fileReceiver);
+      addChatFileSendMessage(nickname, 5, "");
+      fileSendReset();
+
+      // 전송률 100% 전송
+      const rateObj = {
+        localdeviceid: loginStore.m_local_deviceid,
+        remotedeviceid: commonStore.fileReceiver,
+        rate: 100,
+      };
+      $signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
+      callStore.setTransmissionRate(100);
+    }
+  };
+
+  // 첫 청크 전송 시작
+  readAndSendChunk();
 }
+
 // <- kyj
 // socket sendMessage
 function sendDirectMessageRequest(sender, receiver, type, message, datetime) {
@@ -8547,14 +8462,14 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
             thumbnailList.push(myThumbnailList[i]);
         } else if (myThumbnailList[i].type == "pdf") {
             console.log("pdf in");
-            for (let j = 0; j < pdfUrlSaveArrays.length; j++) {
-                if (pdfUrlSaveArrays[j].groupIndex == myThumbnailList[i].group) {
+            for (let j = 0; j < pdfUrlSaveArrays.value.length; j++) {
+                if (pdfUrlSaveArrays.value[j].groupIndex == myThumbnailList[i].group) {
                     console.log("same group");
-                    for (let k = 0; k < pdfUrlSaveArrays[j].pages.length; k++) {
+                    for (let k = 0; k < pdfUrlSaveArrays.value[j].pages.length; k++) {
                         if (myThumbnailList[i].pdf[k].history.state.length == 0) {
                             console.log("no length");
                             myThumbnailList[i].pdf[k].img =
-                                pdfUrlSaveArrays[j].pages[k].url;
+                                pdfUrlSaveArrays.value[j].pages[k].url;
                         } else {
                             console.log("yes length");
                             for (
@@ -8565,9 +8480,9 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
                                 const changeURL = JSON.parse(
                                     myThumbnailList[i].pdf[k].history.state[l],
                                 );
-                                if (changeURL.objects[0].src != pdfUrlSaveArrays[j]) {
+                                if (changeURL.objects[0].src != pdfUrlSaveArrays.value[j]) {
                                     changeURL.objects[0].src =
-                                        pdfUrlSaveArrays[j].pages[k].url;
+                                        pdfUrlSaveArrays.value[j].pages[k].url;
                                     changeURL.objects[0].crossOrigin = "anonymous";
                                     myThumbnailList[i].pdf[k].history.state[l] =
                                         JSON.stringify(changeURL);
@@ -8601,7 +8516,7 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
     // const canvasJson = thumbnailList.length < 1 ? null : thumbnailList[0].history
     // const lastCanvasJson = canvasJson == null ? null : canvasJson.state[canvasJson.currentStateIndex]
 
-    const pdfUrlSaveArrays = [...pdfUrlSaveArrays];
+    const pdfUrlSaveArrays = [...pdfUrlSaveArrays.value];
     // console.log("lastJson", lastCanvasJson)
     // console.log("pdfUrlSaveArrays", pdfUrlSaveArrays)
 
@@ -8652,279 +8567,238 @@ function getMeetingInfo(meetingSeq) {
     console.log("*** socket: emit getMeetingInfo");
     console.log(json);
 }
-// 드로잉에서 불러온 이미지 업로드 및 캡쳐 이미지 업로드
+function base64ToBlob(base64) {
+  const [prefix, base64Data] = base64.split(',');
+  const mime = prefix.match(/:(.*?);/)[1];
+  const byteString = atob(base64Data);
+  const arrayBuffer = new ArrayBuffer(byteString.length);
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  for (let i = 0; i < byteString.length; i++) {
+    uint8Array[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([arrayBuffer], { type: mime });
+}
+
 function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
-    // type == "drawingImage" -> 드로잉 이미지 불러오기
-    // type == "captureImage" -> 메인화면 캡쳐
-    //
-    const dateName = createDateName();
+  const dateName = createDateName();
+  const fileExtension = fname.split('.').pop();
+  const fileType = "picture";
 
-    const fileExtentionSplit = fname.split(".");
-    const fileExtention = fileExtentionSplit[fileExtentionSplit.length - 1];
-    const fileType = "picture";
+  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
 
-    // 파일 이름이 유니크한 값으로 만들기 위해 deviceid를 뒤에 추가한다.
-    const sendFileName =
-        dateName + "_" + loginStore.m_local_deviceid + "." + fileExtention;
+  // base64 string을 Blob으로 변환
+  const blob = base64ToBlob(sendImageSrc);
 
-    const stream = ss.createStream();
-    const obj = {
-        en_seq: loginStore.sessionEnSeq,
-        fname: sendFileName,
-        fsize,
-    };
-    const json = JSON.stringify(obj);
-    const fn = sendFileServerUploadFileToBlob(sendImageSrc);
-    ss($transferSocket).emit("sendFileServerUpload", stream, json);
-    console.log("*** transfer socket: sendFileServerUpload");
-    const blobstream = ss.createBlobReadStream(fn);
-    blobstream.on("end", function () {
-        // DB Save
-        let obj2 = "";
-        if (type == "drawingImage") {
-            obj2 = {
-                en_seq: loginStore.sessionEnSeq,
-                hq_seq: loginStore.sessionHqSeq,
-                br_seq: loginStore.sessionBrSeq,
-                // joined_members: "joined_members", // 보내는 사람과 받는사람 (ex. 김승하, 곽선영)
-                joined_members: sessionStorage.getItem("m_nickname"),
-                file_path: str_stream_picture_file_path.value,
-                file_name: sendFileName,
-                // file_type: "picture",
-                file_type: fileType,
-                getWorldTime: getWorldTime(),
-                localdeviceid: loginStore.m_local_deviceid,
-                remotedeviceid: null,
-                roomid: sessionStorage.getItem("m_roomid"),
-            };
-        } else if (type == "captureImage") {
-            const videoMainIndex = callStore.videoMainIndex;
+  const chunkSize = 64 * 1024; // 64KB
+  const totalChunks = Math.ceil(blob.size / chunkSize);
+  let chunkIndex = 0;
+  let sizeSent = 0;
 
-            /* joinMembers 만들기 - mainVideoIndex를 이용하여 닉네임 가져오기 */
-            let joinMembers = "";
+  const reader = new FileReader();
 
-            // 내 자신이 메인일 경우 내 자신을 찍을 경우 예외처리
-            let localdeviceid = "";
-            if (feeds.value[videoMainIndex] != null && videoMainIndex != 0) {
-                joinMembers =
-                    sessionStorage.getItem("m_nickname") +
-                    ", " +
-                    feeds.value[videoMainIndex].rfdisplay;
+  function readAndSendChunk() {
+    const start = chunkIndex * chunkSize;
+    const end = Math.min(start + chunkSize, blob.size);
+    const chunkBlob = blob.slice(start, end);
+    reader.readAsArrayBuffer(chunkBlob);
+  }
 
-                localdeviceid = feeds.value[videoMainIndex].rfdeviceid;
-            } else {
-                joinMembers = sessionStorage.getItem("m_nickname");
-                localdeviceid = loginStore.m_local_deviceid;
-            }
+  reader.onload = (e) => {
+    const buffer = e.target.result;
+    sizeSent += buffer.byteLength;
 
-            obj2 = {
-                en_seq: loginStore.sessionEnSeq,
-                hq_seq: loginStore.sessionHqSeq,
-                br_seq: loginStore.sessionBrSeq,
-                // joined_members: "joined_members", // 보내는 사람과 받는사람 (ex. 김승하, 곽선영)
-                joined_members: joinMembers,
-                file_path: str_stream_picture_file_path.value,
-                file_name: sendFileName,
-                // file_type: "picture",
-                file_type: fileType,
-                getWorldTime: getWorldTime(),
-                localdeviceid,
-                remotedeviceid: loginStore.m_local_deviceid,
-                roomid: sessionStorage.getItem("m_roomid"),
-            };
+    // 기존 이벤트명 유지, 청크별 바이너리 데이터 전송
+    $transferSocket.emit("sendFileServerUpload", {
+      chunkIndex,
+      totalChunks,
+      data: new Uint8Array(buffer),
+      fname: sendFileName,
+      type: fileType,
+    });
+
+    chunkIndex++;
+
+    if (chunkIndex < totalChunks) {
+      readAndSendChunk();
+    } else {
+      // 모든 청크 전송 완료 후 DB 저장 요청 등 처리
+      let obj2;
+
+      if (type === "drawingImage") {
+        obj2 = {
+          en_seq: loginStore.sessionEnSeq,
+          hq_seq: loginStore.sessionHqSeq,
+          br_seq: loginStore.sessionBrSeq,
+          joined_members: sessionStorage.getItem("m_nickname"),
+          file_path: str_stream_picture_file_path.value,
+          file_name: sendFileName,
+          file_type: fileType,
+          getWorldTime: getWorldTime(),
+          localdeviceid: loginStore.m_local_deviceid,
+          remotedeviceid: null,
+          roomid: sessionStorage.getItem("m_roomid"),
+        };
+
+        // 초기화
+        callStore.setDrawingGetFileSrc("");
+        callStore.setDrawingGetFileObject(null);
+        callStore.setDrawingGetFileChangeFlag(false);
+      } else if (type === "captureImage") {
+        const videoMainIndex = callStore.videoMainIndex;
+
+        let joinMembers = "";
+        let localdeviceid = "";
+
+        if (feeds.value[videoMainIndex] != null && videoMainIndex !== 0) {
+          joinMembers = sessionStorage.getItem("m_nickname") + ", " + feeds.value[videoMainIndex].rfdisplay;
+          localdeviceid = feeds.value[videoMainIndex].rfdeviceid;
+        } else {
+          joinMembers = sessionStorage.getItem("m_nickname");
+          localdeviceid = loginStore.m_local_deviceid;
         }
 
-        // const obj2 = {
-        //  en_seq: loginStore.sessionEnSeq,
-        //  hq_seq: loginStore.sessionHqSeq,
-        //  br_seq: loginStore.sessionBrSeq,
-        //  // joined_members: "joined_members", // 보내는 사람과 받는사람 (ex. 김승하, 곽선영)
-        //  joined_members: sessionStorage.getItem("m_nickname"),
-        //  file_path: str_stream_picture_file_path.value,
-        //  file_name: sendFileName,
-        //  // file_type: "picture",
-        //  file_type: fileType,
-        //  getWorldTime: getWorldTime(),
-        //  localdeviceid: loginStore.m_local_deviceid,
-        //  remotedeviceid: null,
-        //  roomid: sessionStorage.getItem("m_roomid")
-        // }
-        const json2 = JSON.stringify(obj2);
-        $signallingSocket.emit("sendFileServerUploadInfo", json2);
-        console.log("*** socket: sendFileServerUploadInfo request:", json2);
-    });
-    blobstream.pipe(stream);
-    console.log("*** socket: sendFileServerUpload request: " + json);
+        obj2 = {
+          en_seq: loginStore.sessionEnSeq,
+          hq_seq: loginStore.sessionHqSeq,
+          br_seq: loginStore.sessionBrSeq,
+          joined_members: joinMembers,
+          file_path: str_stream_picture_file_path.value,
+          file_name: sendFileName,
+          file_type: fileType,
+          getWorldTime: getWorldTime(),
+          localdeviceid,
+          remotedeviceid: loginStore.m_local_deviceid,
+          roomid: sessionStorage.getItem("m_roomid"),
+        };
+      }
 
-    if (type == "drawingImage") {
-        // 드로잉 이미지 불러오기 파일 경로 초기화
-        callStore.setDrawingGetFileSrc("");
-
-        // 드로잉 이미지 불러오기 파일 초기화
-        callStore.setDrawingGetFileObject(null);
-
-        // 드로잉 이미지 불러오기 업로드 flag 초기화
-        callStore.setDrawingGetFileChangeFlag(false);
+      $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
+      console.log("*** socket: sendFileServerUploadInfo request:", obj2);
     }
+  };
+
+  // 전송 시작
+  readAndSendChunk();
+
+  console.log("*** socket: sendFileServerUpload request: " + sendFileName);
 }
 // drawingPDFServerUpload
 function drawingPDFServerUpload(fname, fsize, pdfSrc) {
-    //
-    const dateName = createDateName();
+  const dateName = createDateName();
+  const fileExtension = fname.split('.').pop();
+  const fileType = "pdf";
 
-    const fileExtentionSplit = fname.split(".");
-    const fileExtention = fileExtentionSplit[fileExtentionSplit.length - 1];
-    const fileType = "pdf";
+  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
+  PDFsendFileName.value = sendFileName;
 
-    // 파일 이름이 유니크한 값으로 만들기 위해 deviceid를 뒤에 추가한다.
-    const sendFileName =
-        dateName + "_" + loginStore.m_local_deviceid + "." + fileExtention;
+  const chunkSize = 64 * 1024; // 64KB
+  const totalChunks = Math.ceil(fsize / chunkSize);
 
-    // sendFileName 저장 -> pdfToImageRate에서 cancel할 때 파라미터로 필요하기 때문에 저장함.
-    PDFsendFileName.value = sendFileName;
+  let chunkIndex = 0;
+  let sizeSent = 0;
 
-    // console.log("PDFsendFileName.value", PDFsendFileName.value)
-    const stream = ss.createStream();
-    const obj = {
-        en_seq: loginStore.sessionEnSeq,
-        fname: sendFileName,
-        fsize,
-    };
-    const json = JSON.stringify(obj);
-    // node에서 이미지와 다르게 pdf는 buffer로 돌려주기 때문에, buffer -> blob처리 한다.
-    // 업로드 호출 할 때 blob 처리해서 보내줌.
-    // const fn = new Blob([pdfSrc], {
-    //  type: "application/pdf"
-    // })
-    const fn = pdfSrc;
-    // const fn = sendFileServerUploadFileToBlob(pdfSrc)
+  const reader = new FileReader();
 
-    ss($transferSocket).emit("sendPdfFileServerUpload", stream, json);
-    // console.log("*** transfer socket: sendFileServerUpload")
-    const blobstream = ss.createBlobReadStream(fn);
-    // 업로드 진행률 받아오기
-    let uploadSize = 0;
-    blobstream.on("data", function (chunk) {
-        uploadSize += chunk.length;
-        // console.log("uploadSize", uploadSize)
-        let progress = Math.floor((uploadSize / fsize) * 100);
+  function readAndSendChunk() {
+    const start = chunkIndex * chunkSize;
+    const end = Math.min(start + chunkSize, fsize);
+    const blob = pdfSrc.slice(start, end);
 
-        // 진행률이 100보다 클 경우 100으로 설정
-        if (progress > 100) {
-            progress = 50;
-        }
+    reader.readAsArrayBuffer(blob);
+  }
 
-        // pdf 서버 업로드 진행률 증가
-        // console.log("progress(progress)
-        callStore.setPDFUploadProgrss(Math.floor(progress / 2));
+  reader.onload = (e) => {
+    const buffer = e.target.result;
+    sizeSent += buffer.byteLength;
+    let progress = Math.floor((sizeSent / fsize) * 100);
+
+    // 진행률 100보다 크면 100으로 고정
+    if (progress > 100) progress = 100;
+
+    // 기존 전송 이벤트 사용 (서버에서 청크 합치기 구현 필요)
+    $transferSocket.emit("sendPdfFileServerUpload", {
+      chunkIndex,
+      totalChunks,
+      data: new Uint8Array(buffer),
+      fname: sendFileName,
+      type: fileType,
     });
-    blobstream.on("end", function () {
-        // 업로드 취소 버튼을 클릭 안했을 경우에만 실행한다.
-        if (callStore.PDFcancelUploadFlag == false) {
-            // upload Cancel Interval 초기화
-            clearInterval(PDFCancelUploadInterval.value);
 
-            // DB Save
-            const obj2 = {
-                en_seq: loginStore.sessionEnSeq,
-                hq_seq: loginStore.sessionHqSeq,
-                br_seq: loginStore.sessionBrSeq,
-                // joined_members: "joined_members", // 보내는 사람과 받는사람 (ex. 김승하, 곽선영)
-                joined_members: sessionStorage.getItem("m_nickname"),
-                file_path: str_stream_picture_file_path.value,
-                file_name: sendFileName,
-                // file_type: "picture",
-                file_type: fileType,
-                getWorldTime: getWorldTime(),
-                localdeviceid: loginStore.m_local_deviceid,
-                remotedeviceid: null,
-                roomid: sessionStorage.getItem("m_roomid"),
-            };
-            const json2 = JSON.stringify(obj2);
-            $signallingSocket.emit("sendFileServerUploadInfo", json2);
-            // console.log("*** socket: sendFileServerUploadInfo request:", json2)
+    callStore.setPDFUploadProgrss(Math.floor(progress / 2));
 
-            // pdf 업로드 후, DB에 등록 한 후에 stream transfer PDF to Image 호출
-            const pdfToImageInfo = {
-                file_name: sendFileName,
-                groupIndex: drawingStore.lastPDFGroupIndex,
-            };
-            const pdfToImageJson = JSON.stringify(pdfToImageInfo);
-            $transferSocket.emit("pdfToImage", pdfToImageJson);
-            // console.log("*** transfer socket: pdfToImage request:", pdfToImageInfo)
-        } else {
-            // /* 업로드 취소 FLOW Start */
+    chunkIndex++;
 
-            // 쌓인 Que 중 가장 앞쪽에 있는 Que 제거
-            callStore.removePdfUploadQueArray();
+    if (chunkIndex < totalChunks) {
+      readAndSendChunk();
+    } else {
+      // 업로드 완료 후 처리
 
-            // PDF CancelUpload Flag 초기화를 interval.value 에서 초기화하면 pdfToImage를 무조건 false로 타기 때문에
-            // 여기서 초기화를 진행한다.
-            callStore.setPDFcancelUploadFlag(false);
-            console.log(
-                "*** setPDFCancelUploadFlag Change : ",
-                callStore.PDFcancelUploadFlag,
-            );
+      if (!callStore.PDFcancelUploadFlag) {
+        clearInterval(PDFCancelUploadInterval.value);
 
-            // 이번 업로드 건은 취소하였고, 쌓인 Que가 있는지 확인한다.
-            // queArray의 length가 남아있으면, 쌓여있던 Que를 실행시켜라.
-            if (callStore.pdfUploadQueArray.length > 0) {
-                console.log("QueArray가 0보다 크며, 남은 Que가 있다.");
+        const obj2 = {
+          en_seq: loginStore.sessionEnSeq,
+          hq_seq: loginStore.sessionHqSeq,
+          br_seq: loginStore.sessionBrSeq,
+          joined_members: sessionStorage.getItem("m_nickname"),
+          file_path: str_stream_picture_file_path.value,
+          file_name: sendFileName,
+          file_type: fileType,
+          getWorldTime: getWorldTime(),
+          localdeviceid: loginStore.m_local_deviceid,
+          remotedeviceid: null,
+          roomid: sessionStorage.getItem("m_roomid"),
+        };
+        $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
 
-                // upload 시작
-                callStore.setPDFUploading(true);
-                drawingPDFServerUpload(
-                    callStore.pdfUploadQueArray[0].name,
-                    callStore.pdfUploadQueArray[0].size,
-                    callStore.pdfUploadQueArray[0].src,
-                );
-            }
+        const pdfToImageInfo = {
+          file_name: sendFileName,
+          groupIndex: drawingStore.lastPDFGroupIndex,
+        };
+        $transferSocket.emit("pdfToImage", JSON.stringify(pdfToImageInfo));
+      } else {
+        // 업로드 취소 처리 (기존 로직 유지)
+        callStore.removePdfUploadQueArray();
+        callStore.setPDFcancelUploadFlag(false);
+        console.log("*** setPDFCancelUploadFlag Change : ", callStore.PDFcancelUploadFlag);
 
-            /* 업로드 취소 FLOW End */
+        if (callStore.pdfUploadQueArray.length > 0) {
+          callStore.setPDFUploading(true);
+          const next = callStore.pdfUploadQueArray[0];
+          drawingPDFServerUpload(next.name, next.size, next.src);
         }
-    });
-    blobstream.pipe(stream);
+      }
+    }
+  };
 
-    PDFCancelUploadInterval.value = setInterval(function () {
-        // 업로드 전송 취소가 true 일 경우 unpipe !
-        // console.log(
-        //  "cancelUploadFlag",
-        //  callStore.PDFcancelUploadFlag
-        // )
-        if (callStore.PDFcancelUploadFlag == true) {
-            console.log(
-                "*** transfer socket: PDF CancelUpload - blobStream unpipe Start",
-            );
+  // 취소 감시용 인터벌 (기존 코드 유지)
+  PDFCancelUploadInterval.value = setInterval(() => {
+    if (callStore.PDFcancelUploadFlag) {
+      console.log("*** transfer socket: PDF CancelUpload - abort upload");
 
-            // pipe 연결 끊기
-            blobstream.unpipe();
+      // 취소 플래그 세팅
+      callStore.setDrawingGetPDFUploadFlag(false);
+      callStore.setPDFUploading(false);
+      callStore.setPDFUploadProgrss(0);
+      clearInterval(PDFCancelUploadInterval.value);
 
-            /* 업로드 취소 FLOW Start */
-            // 드로잉 pdf 업로드 flag로 변경
-            callStore.setDrawingGetPDFUploadFlag(false);
+      // reader가 읽고 있으면 중단 가능 (FileReader는 abort 지원)
+      if (reader.readyState === 1) {
+        reader.abort();
+      }
+    }
+  }, 1000);
 
-            // 드로잉 pdf 업로드 중임을 저장 Flag 초기화
-            // -> 이것이 true일 경우 호스트 변경 요청을 막기 때문에 false로 변경
-            callStore.setPDFUploading(false);
+  // 업로드 시작
+  readAndSendChunk();
 
-            // 진행률 0 만들기
-            callStore.setPDFUploadProgrss(0);
-
-            // Interval 초기화
-            clearInterval(PDFCancelUploadInterval.value);
-        }
-    }, 1000);
-    // console.log("*** socket: sendFileServerUpload request: " + json)
-
-    // 드로잉 이미지 불러오기 파일 경로 초기화
-    callStore.setDrawingGetPDFUploadSrc("");
-
-    // 드로잉 이미지 불러오기 파일 초기화
-    callStore.setDrawingGetPDFUploadObject(null);
-
-    // // 드로잉 이미지 불러오기 업로드 flag 초기화 -> serverUpload 실행 후 바로 false 처리 -> 그래야 바로 불러오기 가능
-    // callStore.setDrawingGetPDFUploadFlag", false)
+  // 드로잉 관련 UI 상태 초기화 (기존 코드 유지)
+  callStore.setDrawingGetPDFUploadSrc("");
+  callStore.setDrawingGetPDFUploadObject(null);
 }
+
 // 방 인원 초과
 function roomFullRequest() {
     const obj = {
@@ -9109,7 +8983,7 @@ function canvasCreateOffer(type) {
                 // noneOverlatyAlert에서 드로잉 중 화면공유로 이동한다는 것을 true로 설정헌다.
                 if (callStore.drawingMoveToScreen) {
                     // console.log("drawingMoveToScreen이 true이기 때문에  screenShare를 실행합니다.")
-                    commonStore.isShare();
+                    commonStore.setIsShare();
 
                     // noneOverlatyAlert에서 드로잉 중 화면공유로 이동한다는 것을 변수에 저장한다.
                     // 드로잉 -> 화면공유 이동 시 화면 공유 호출 후 초기화
@@ -9135,7 +9009,7 @@ function canvasCreateOffer(type) {
             console.log("*** methods: canvasCreateOffer - WebRTC Error. " + error);
 
             if (commonStore.isDrawing) {
-                commonStore.isDrawing();
+                commonStore.setIsDrawing();
             } else {
                 canvasCreateOffer(false);
             }
@@ -9511,7 +9385,7 @@ function addChatFileSendMessage(nickname, status, rfIndex, fileChatIndex) {
 
     // 한/영 조건
     let message = "";
-    if (prefrenceStore.lang == "ko") {
+    if (preferenceStore.lang == "ko") {
         message = nickname + fileSendingMessage;
     } else {
         message = fileSendingMessage + nickname;
@@ -9526,14 +9400,14 @@ function addChatFileSendMessage(nickname, status, rfIndex, fileChatIndex) {
     }
 
     // 채팅창에 파일 송수신 관련 메세지 넣기
-    $set(chattingStore.chattingMessageList, changeChatIndex, {
+    chattingStore.chattingMessageList[changeChatIndex] = {
         type: 0,
         message,
         date: nowDate,
         chattingDate: getChattingTimeZone(nowDate),
         nickname: sessionStorage.getItem("m_nickname"),
         level: 1,
-    });
+    };
 }
 function checkAlreadyJoined(id) {
     console.log(`*** method check already joined`);
@@ -9621,7 +9495,7 @@ function cleanUpDummyFeed(id, index) {
         userNickname == commonStore.fileReceiver
     ) {
         // 거절 팝업창으로 변경
-        commonStore.fileSendStatus(4);
+        commonStore.setFileSendStatus(4);
 
         console.log(sendFileReader.value, rateStopper.value);
         // 송신할 파일 Reader 중단
@@ -9763,7 +9637,7 @@ function sayHello() {
         getQueryStringValue("subscriber-mode") === "true";
 
     // -> kyj
-    str_stream_picture_file_path.value = process.env.fileSavePath;
+    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}/watttalk/photos/`
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
@@ -10514,20 +10388,8 @@ function sayHello() {
                                     }
 
                                     if (videoCallHost.value) {
-                                        // eslint-disable-next-line camelcase
-                                        // const main_video = document.getElementById("videoMain")
-
-                                        // // mainVideo가 videoOff가 아닐 경우(video가 off이면 해당 영상이 숨겨져있으므로 return 처리만 하게 됨) && mainVideo와 현재 클릭한 video가 같다면 변경하지 않도록 하기. (중복클릭 방지)
-                                        // if (
-                                        //  !commonStore.isVideo &&
-                                        //  main_video.srcObject == srcObject
-                                        // ) {
-                                        //  return
-                                        // }
-
                                         // 바둑판이 아닐 경우
                                         if (commonStore.callingLayoutType != 1) {
-                                            video_change(this);
                                             (callStore.setVideoMainIndex(0),
                                                 mainVideoChangeFunc(1, "localstream"));
 
@@ -10540,7 +10402,6 @@ function sayHello() {
                                         } else if (commonStore.callingLayoutType == 1) {
                                             const beforeMainIndex =
                                                 callStore.videoMainIndex;
-                                            console.log(beforeMainIndex);
                                             if (
                                                 beforeMainIndex == 0 &&
                                                 feeds.value.length !== 0
@@ -11044,7 +10905,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
             const nowDate = getWorldTime();
 
             // vue 배열 감지를 위해 $set 사용
-            chattingStrore.chattingMessageList[chattingCallingIndex.value] = {
+            chattingStore.chattingMessageList[chattingCallingIndex.value] = {
                 type: 0,
                 message: chattingMessage,
                 calling: false,
@@ -11077,7 +10938,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
             // 현재 UTC 시간 가져오기
             const nowDate = getWorldTime();
 
-            chattingStrore.chattingMessageList[chattingCallingIndex.value] = {
+            chattingStore.chattingMessageList[chattingCallingIndex.value] = {
                 type: 0,
                 message: chattingMessage,
                 calling: false,
@@ -11190,7 +11051,7 @@ watch(getisVideoResult, (newValue, oldValue) => {
 watch(getFileSendFlag, (newValue, oldValue) => {
     console.log("getFileSendFlag 변경됨:", newValue, oldValue);
 
-    if (result) {
+    if (newValue) {
         // console.log("파일 송수신 클릭했다.")
         const status = commonStore.fileSendStatus;
         fileSend(status);
@@ -11258,7 +11119,7 @@ watch(getCallingLayoutType, (newValue, oldValue) => {
 watch(getisShareResult, (newValue, oldValue) => {
     console.log("getisShareResult.value 변경됨:", newValue, oldValue);
 
-    console.log("*** watch: getisShareResult.value. result = ", result);
+    console.log("*** watch: getisShareResult.value. result = ", newValue);
 
     screenShare(newValue);
 
@@ -11283,21 +11144,21 @@ watch(getisShareResult, (newValue, oldValue) => {
         ) {
             navigator.mediaDevices.getUserMedia({ video: false, audio: true });
             commonStore.setOnlyVoiceIdInterval(true);
-            interval.value.value = setInterval(() => {
+            interval.value = setInterval(() => {
                 muteVideoCustom();
             }, 300);
             setTimeout(() => {
-                clearInterval(callStoreinterval);
-                interval.value.value = "";
+                clearInterval(interval.value);
+                interval.value = "";
             }, 2000);
         }
     } else {
         commonStore.setOnlyVoiceIdInterval(false);
-        if (callStoreinterval) {
-            clearInterval(callStoreinterval);
-            callStoreinterval = "";
+        if (interval.value) {
+            clearInterval(interval.value);
+            interval.value = "";
         }
-        callStorecheckMainVideo();
+        checkMainVideo();
     } // isShare 결과 변경 시 필요한 로직을 여기에 추가합니다.
 });
 
@@ -11423,7 +11284,7 @@ watch(getHostRequestResult, (newValue, oldValue) => {
             // 전체 음소거가 맞다면, 나의 마이크 상태가 ON 이라면 OFF로 변경한다. (isSounded = flase (mic on 상태))
             if (!commonStore.isSounded) {
                 // 음소거 버튼 변경
-                commonStore.isSounded();
+                commonStore.setIsSounded()
 
                 // 마이크 음소거
                 commonStore.toggleMute();
@@ -11452,13 +11313,13 @@ watch(getHostRequestResult, (newValue, oldValue) => {
             moveThumbnail(loginStore.m_local_deviceid, callStore.hostRequestInfo);
             // 자신이 드로잉 상태라면 드로잉을 종료한다.
             if (commonStore.isDrawing) {
-                commonStore.isDrawing();
+                commonStore.setIsDrawing();
             }
 
             /* 21-07-26 드로잉 분리 작업 */
             // 자신이 화면 공유 중 일 경우 화면 공유를 종료한다.
             if (commonStore.isShare) {
-                commonStore.isShare();
+                commonStore.setIsShare();
             }
         }, 100);
     } else if (newValue == "reject") {
@@ -11501,7 +11362,7 @@ watch(getAllMicMuteStatus, (newValue, oldValue) => {
     console.log("getAllMicMuteStatus.value 변경됨:", newValue, oldValue);
 
     if (videoCallHost.value) {
-        setAllMicMute(result, loginStore.m_local_deviceid);
+        setAllMicMute(newValue, loginStore.m_local_deviceid);
 
         // 마이크 off 일 경우 true / on 일 경우 false
         let resultBoolean = false; // 기본값 false로
@@ -11575,7 +11436,7 @@ watch(getMicOnOffClick, (newValue, oldValue) => {
     micOnOff(status, myid.value);
 
     // userListStatus 마이크 등록
-    setUserListMicMute(0, result);
+    setUserListMicMute(0, newValue);
     // 마이크 음소거 클릭 시 필요한 로직을 여기에 추가합니다.
 });
 
@@ -11619,7 +11480,6 @@ watch(getForceMicMuteBtnClick, (newValue, oldValue) => {
 
 watch(getIsDrawing, (newValue, oldValue) => {
     console.log("getIsDrawing.value 변경됨:", newValue, oldValue);
-    s;
 
     if (newValue) {
         commonStore.setVideoState(commonStore.isVideo);
@@ -11635,7 +11495,8 @@ watch(getIsDrawing, (newValue, oldValue) => {
         // 드로잉 클릭 시 열려있던 모달 닫기
         for (let i = 1; i <= previewModalInfo.value.previewModalcnt; i++) {
             commonStore.setPreviewModalFlag({ modalIndex: i, url: "", show: "hide" });
-            document.getElementsByName("previewModal" + i)[0].style.display = "none";
+            // document.getElementsByName("previewModal" + i)[0].style.display = "none";
+            modalStore.closeModal("preview" + i)
         }
 
         // 메인이 videoOFF 상태일 경우 예외 처리
@@ -11656,22 +11517,23 @@ watch(getIsDrawing, (newValue, oldValue) => {
         console.log("*** watch: drawing Start");
 
         // videoLayout을 변경하고, canvas createOffer를 한다.
-        canvasSaveVideoInfo(result);
+        canvasSaveVideoInfo(newValue);
 
         // 메인화면 전체화면 버튼 숨김
         callStore.setMainVideoFullScreen(false);
 
         // 호스트가 드로잉을 활성화 했음을 store 에 저장한다
-        commonStore.isDrawingEnable({
-            result: "true",
+        commonStore.setIsDrawingEnable({
+            result: true,
         });
         // console.log("**** 드로잉 활성화 상태: ", $store.state.isDrawingEnable)
     } else {
         // 드로잉 hide !
+        alert("여기를 안타는거야?")
         callStore.setDrawingIframe(false);
 
         // 투명 찍어주는 interval.value 초기화
-        canvasCreateOffer(result);
+        canvasCreateOffer(newValue);
 
         /* 서버 업로드 취소 및 초기화 */
         /* 업로드 예약 된 Que를 취소한다. -> 예약된 Que를 먼저 제거해야 오류에 안전하다. */
@@ -11711,8 +11573,8 @@ watch(getIsDrawing, (newValue, oldValue) => {
         callStore.setMainVideoFullScreen(true);
 
         // 호스트가 드로잉을 비활성화 했음을 store 에 저장한다
-        commonStore.isDrawingEnable({
-            result: "false",
+        commonStore.setIsDrawingEnable({
+            result: false,
         });
         console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
         if (
@@ -11899,18 +11761,18 @@ watch(getCancelFileTransferFlag, (newValue, oldValue) => {
 
     if (newValue) {
         // 송신할 파일 Reader 중단
-        if (!(typeofsendFileReader == "undefined" || sendFileReader.value == null)) {
+        if (!(typeof sendFileReader.value == "undefined" || sendFileReader.value == null)) {
             sendFileReader.value.abort();
         }
 
         // 전송률 전송 재귀함수 정지
-        if (!(typeofrateStopper == "undefined" || rateStopper.value == null)) {
+        if (!(typeof rateStopper.value == "undefined" || rateStopper.value == null)) {
             rateStopper.value();
             rateStopper.value = null;
         }
 
         // 파일 송신 취소 모달창 출력
-        commonStore.fileSendStatus(7);
+        commonStore.setFileSendStatus(7);
 
         // 수신측 PC 채팅창에 파일 송신 취소 메시지 추가 (9)
         const remoteInfo = userDataGetInfo(commonStore.fileReceiver);

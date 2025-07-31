@@ -7,6 +7,7 @@
                 :node="node"
                 :openNodes="openNodes"
                 :parentPath="[]"
+                :useCheckBox="props.useCheckBox"
             />
         </ul>
     </div>
@@ -26,6 +27,7 @@ interface OrgNode {
 const props = defineProps<{
     data: OrgNode[];
     search: string;
+    useCheckBox?: boolean;
 }>();
 
 const openNodes = ref(new Set<string>());

@@ -261,6 +261,7 @@ const { hide } = useModal("modal");
 const { requestCreateRoomID, requestJoinMeeting, requestInviteCancelCalling, requestOpenMeetingChecking } = useSocketEmitEvents();
 
 onMounted(() => {
+	callStore.setCallingResult("init");
 	if (commonStore.alertNum == 8) {
 		firstEntry()
 	}

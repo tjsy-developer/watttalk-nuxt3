@@ -63,7 +63,7 @@
         </div>
         <div class="footer">
             <div class="buttonWrap">
-                <button class="closeBtn" v-if="showCloseBtn" @click="close">
+                <button class="closeBtn" v-if="showCloseBtn" @click.stop="close()">
                     {{ t("취소") }}
                 </button>
                 <button class="applyBtn" @click="apply()">
@@ -113,7 +113,11 @@ onMounted(() => {
     getMediaList();
 });
 function close(type) {
-    commonStore.setShowDeviceModal(false);
+    if (!type) {
+        modalStore.closeModal("device");
+        return;
+    }
+
     if (checked.value == false) {
         console.log("close deviceModal permanant");
         setCookie("closeDeviceModalPermanant", true, 1000);
@@ -124,7 +128,6 @@ function close(type) {
     if (type != 1) {
         checkParameter();
     }
-    modalStore.closeModal("device");
 }
 
 function getMediaList() {
@@ -315,8 +318,6 @@ function compare() {
     }
 }
 function checkParameter() {
-    alert(props.type);
-    console.log(props);
     if (props.type == "request") {
         // 1:1 통화를 걸 경우
         props.requestCall();

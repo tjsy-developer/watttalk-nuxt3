@@ -2,18 +2,9 @@
     <div class="chat-container">
         <div
             class="column content-start layout"
-            :style="{
-                height:
-                    accessDeviceCheck == 'Mobile'
-                        ? `calc(100vh - ${headerHeight}px)`
-                        : `calc(100vh - ${headerHeight}px)`,
-            }"
         >
             <div class="col-auto chatTopButtonsContainer">
-                <div>
-                    
-                </div>
-                <div>
+                <div class="participants-box">
                     <img src="@/assets/images/ic_people.png" />
                     <span class="participants"> {{ t("참여자") }} </span>
                     <span class="personnel"> ({{ personnelInRoom }}) </span>
@@ -154,8 +145,8 @@ onMounted(() => {
             const scrollLocation = scrollHeight - clientHeight;
 
             if (scrollTop >= scrollLocation - 50) {
-                store.commit("chatting/newMessageConfrim", false);
-                store.commit("chatting/newEmergencyConfirm", false);
+                chattingStore.newMessageConfrim(false);
+                chattingStore.newEmergencyConfirm(false);
             }
         });
     }
@@ -167,13 +158,15 @@ onMounted(() => {
 
 .layout {
     width: 100%;
-    /* ksh 추가 :: 채팅바 scroll 제거 */
-    height: 100%;
+    * {
+        color: #fff;
+    }
 }
 .chat-container {
     display: flex;
     flex-direction: column;
     flex: 282px;
+    background-color: #323232;
 }
 .cancleCall {
     width: 100%;
@@ -186,9 +179,10 @@ onMounted(() => {
 
 .chattingBarMessageBoxContainer {
     width: 100%;
-    padding: 10px 0;
+    padding: 10px;
     max-height: calc(100vh - 60px);
     height: 618px;
+    color: #fff;
 }
 
 .chatTopButtonsContainer {
@@ -197,6 +191,11 @@ onMounted(() => {
     display: flex;
     align-items: center;
     /* border-bottom: 2px solid #242424 */
+}
+
+.chattingBarMessageBoxScroll {
+    overflow-y: scroll;
+    height: inherit;
 }
 
 .chatTopButtonsContainer > img {
@@ -224,6 +223,8 @@ onMounted(() => {
     font-size: 11px;
     display: flex;
     justify-content: center;
+    background: #5d5d5d;
+    border: 1px solid #393939;
 }
 
 .chatTopButtons > span {
@@ -232,5 +233,16 @@ onMounted(() => {
 
 .chatTopButtons > img {
     margin-right: 4px;
+}
+
+.messageContainer {
+    color: #fff;
+    background-color: #474b4e;
+    border: 1px solid #5d5d5d;
+}
+
+.participants-box {
+    display: flex;
+    width: max-content;
 }
 </style>

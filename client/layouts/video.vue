@@ -1,5 +1,5 @@
 <template>
-    <ModalsContainer> </ModalsContainer>
+    <ModalsContainer />
     <!-- 모달 -->
     <VueFinalModal
         v-model="isLoginModalVisible"
@@ -43,6 +43,13 @@
     >
         <HostModal></HostModal>
     </VueFinalModal>
+    <!-- <VueFinalModal
+        v-model="isPreviewModal"
+        :clickToClose="false"
+        class="modal-container host-modal"
+    >
+        <FilePreviewModal></FilePreviewModal>
+    </VueFinalModal> -->
     <!--  -->
     <CallHeader></CallHeader>
     <div class="content">
@@ -77,6 +84,7 @@ import { onMounted } from "vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
 import HostModal from "@/components/modal/HostModal.vue";
+import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -126,6 +134,13 @@ const isHostModal = computed({
     get: () => modalStore.isModalOpen("host"),
     set: (val) => {
         if (!val) modalStore.closeModal("host", false); // ESC 키나 외부 클릭으로 닫힐 때
+    },
+});
+
+const isPreviewModal = computed({
+    get: () => modalStore.isModalOpen("preview"),
+    set: (val) => {
+        if (!val) modalStore.closeModal("preview", false); // ESC 키나 외부 클릭으로 닫힐 때
     },
 });
 onMounted(() => {

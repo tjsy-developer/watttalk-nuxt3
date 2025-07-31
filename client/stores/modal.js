@@ -7,11 +7,12 @@ export const useModalStore = defineStore("modal", {
         activeModals: [], // 현재 열려 있는 모달들의 타입 (예: ['login', 'confirm'])
         modalData: {}, // 각 모달 타입별 데이터를 저장할 객체 (예: { login: { ... }, confirm: { ... } })
         modalResolves: {}, // 각 모달 타입별 Promise resolve 함수를 저장할 객체
+        modalContentStyle: {}
     }),
     actions: {
         // 모달 열기 액션
         openModal(type, data = {}) {
-            console.log(data)
+            console.log(data);
             // 이미 열려 있는 모달인지 확인하여 중복 추가 방지
             if (!this.activeModals.includes(type)) {
                 this.activeModals.push(type); // 배열에 모달 타입 추가
@@ -60,5 +61,5 @@ export const useModalStore = defineStore("modal", {
         getModalData: (state) => (type) => state.modalData[type],
         // 현재 열려 있는 모든 모달의 타입을 가져오는 getter
         getAllActiveModalTypes: (state) => state.activeModals,
-	},
+    },
 });

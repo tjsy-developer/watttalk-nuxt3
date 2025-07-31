@@ -73,6 +73,9 @@ export const useUserListStore = defineStore("userList", {
             this.recentCallList = [];
             this.recentCallList = [...payload];
         },
-        
+        persist: {
+            key: 'user-store',
+            storage: process.client ? sessionStorage : undefined,
+        }
     },
 });

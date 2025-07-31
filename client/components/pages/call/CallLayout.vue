@@ -18,7 +18,6 @@
                 :style="{
                     width: callingLayoutType == 1 ? videoWidth : 'inherit',
                     display: 'inline-block',
-                    'object-fit': 'cover',
                 }"
                 class="windowContainer"
             >
@@ -33,7 +32,6 @@
                     :id="`videoremote${windowKey}`"
                     :compData="userList[windowKey] || []"
                     :value="windowKey"
-                    :style="{ 'object-fit': 'cover' }"
                 />
             </div>
         </div>
@@ -42,7 +40,6 @@
             :id="'mainVideo'"
             :compData="userList[roomNumberCount - 1]"
             :value="windowKey"
-            :style="{ 'object-fit': 'cover' }"
         >
             <ThumbNail></ThumbNail>
         </CallWindow>
@@ -657,6 +654,7 @@ onUnmounted(() => {
     position: absolute;
     gap: 10px;
     bottom: 8px;
+    z-index: 1;
     > .windowContainer + .windowContainer {
         margin-left: 10px;
     }
@@ -672,6 +670,7 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     align-items: center;
+    object-fit: fill;
     /* background: #151515; */
     > .videoMainWrap {
         line-height: 100%;
@@ -691,7 +690,7 @@ onUnmounted(() => {
 
 
 #videolocal {
-    border: 4px solid red !important;
+    border: 3px solid red;
     object-fit: cover;
     position: relative;
     box-sizing: border-box;

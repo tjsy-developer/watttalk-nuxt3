@@ -31,6 +31,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                 if (accessToken) {
                     const tokenStatus = decodeToken(accessToken);
                     if (tokenStatus === "expired") {
+                        alert("액세스토큰 재발급");
                         try {
                             // 1) 리프레시 토큰으로 액세스 토큰 재발급 요청
                             const refreshToken = tokenStore.enRToken;
@@ -64,12 +65,14 @@ export default defineNuxtPlugin((nuxtApp) => {
             },
             (error) => {
                 console.log(error);
-                alert(error);
-                window.location.href = "http://localhost:8223";
-                // if (error.response?.status === 401) {
-                //     console.warn("인증 실패 - 로그인 다시 해주세요");
-
-                // }
+                // window.location.href = "http://localhost:8223";
+                if (error.response?.status === 401) {
+                    alert("인증 실패 - 로그인 다시 해주세요");
+                    window.location.href = "http://localhost:8223";
+                } else {
+                    console.log("일반 에러")
+                    return
+                }
                 return Promise.reject(error);
             },
         );

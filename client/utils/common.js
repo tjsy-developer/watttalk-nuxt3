@@ -1,6 +1,8 @@
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
+import { useTokenStore } from "@/stores/token";
+import { useNuxtApp } from "nuxt/app";
 
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
@@ -152,14 +154,14 @@ export function messageBell(state, type) {
     }
 }
 
-export function  dircetMessageBell(type) {
+export function dircetMessageBell(type) {
     const audio = document.getElementById("direct_message_bell");
 
     audio.currentTime = 0;
     if (type == "play") {
-    audio.play();
+        audio.play();
     } else {
-    audio.pause();
+        audio.pause();
     }
 }
 
@@ -168,9 +170,9 @@ export function fileReceiveMessageBell(type) {
 
     audio.currentTime = 0;
     if (type == "play") {
-    audio.play();
+        audio.play();
     } else {
-    audio.pause();
+        audio.pause();
     }
 }
 
@@ -179,9 +181,9 @@ export function emergencyAlarmBell(type) {
 
     audio.currentTime = 0;
     if (type == "play") {
-    audio.play();
+        audio.play();
     } else {
-    audio.pause();
+        audio.pause();
     }
 }
 
@@ -235,8 +237,7 @@ export function videoResize() {
     const commonStore = useCommonStore();
     const callStore = useCallStore();
 
-    const videoMainDivWrap =
-        document.getElementsByClassName("videoMainDivWrap")[0];
+    const videoMainDivWrap = document.getElementsByClassName("videoMainDivWrap")[0];
     const videoMainDiv = document.getElementById("videoMainDiv");
     const otherBackground = document.getElementsByClassName("otherBackground")[0];
 
@@ -262,6 +263,34 @@ export function videoResize() {
     }
 }
 
+export async function handleFileDownload(url, filename) {
+    if (url.startsWith("blob:")) {
+        const anchorElement = document.createElement("a");
+        anchorElement.download = filename;
+        anchorElement.href = url;
+        anchorElement.click();
+        setTimeout(() => {
+            document.body.removeChild(anchorElement);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+    } else {
+        const response = await fetch(url);
+        const file = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(file);
+
+        const anchorElement = document.createElement("a");
+        document.body.appendChild(anchorElement);
+        anchorElement.download = filename;
+        anchorElement.href = downloadUrl;
+
+        anchorElement.click();
+        setTimeout(() => {
+            document.body.removeChild(anchorElement);
+            window.URL.revokeObjectURL(downloadUrl);
+        }, 100);
+    }
+}
+
 export function escapeFullScreen() {
     // document.exitFullscreen();
 }
@@ -283,6 +312,42 @@ export function getPersonnelInRoom() {
     chattingStore.setPersonnelInRoom(personnelInRoomCalc.length);
 }
 
+export function setRemoveDuplicates(objToChange) {
+    let parentObjToRender = _.cloneDeep(JSON.parse(objToChange));
+    // console.log(parentObjToRender)
+    const objToRender = parentObjToRender.objects.filter((word, index, arr) => {
+        return (
+            parentObjToRender.objects.length - 1 == index ||
+            (arr[index + 1] &&
+                arr[index + 1].type !== "triangle" &&
+                word.type !== "triangle")
+        );
+    });
+    parentObjToRender.objects = objToRender;
+    // console.log(JSON.stringify(parentObjToRender))
+    return JSON.stringify(parentObjToRender);
+}
+
+export async function convertImageToBlob(src) {
+    const { $axios } = useNuxtApp();
+    const tokenStore = useTokenStore();
+    if (!src) return "";
+
+    try {
+        const url = src + `?token=${tokenStore.accessToken}`;
+        const result = await $axios.get(url, {
+            responseType: "blob",
+            timeout: 4000,
+        });
+        if (result.status === 200) {
+            return URL.createObjectURL(result.data);
+        }
+        return "";
+    } catch (err) {
+        return "";
+    }
+}
+
 export function getDirectMessageTimeZone(standard) {
     // let x = new Date().getTimezoneOffset() / 60 // UTC - GMT = x (대한민국 기준 x = -9)		주어가 UTC 이기 때문에 -9 라고 나옴
     // x = x * 60 * 60 * -1 // (시 * 분 * 초)	음수는 양수로, 양수는 음수로
@@ -291,22 +356,22 @@ export function getDirectMessageTimeZone(standard) {
     const now = new Date(Number(standard) * 1000);
 
     const strDatetime =
-    leadingZeros(now.getMonth() + 1, 2) +
-    "/" +
-    leadingZeros(now.getDate(), 2) +
-    "　" +
-    leadingZeros(now.getHours(), 2) +
-    ":" +
-    leadingZeros(now.getMinutes(), 2);
+        leadingZeros(now.getMonth() + 1, 2) +
+        "/" +
+        leadingZeros(now.getDate(), 2) +
+        "　" +
+        leadingZeros(now.getHours(), 2) +
+        ":" +
+        leadingZeros(now.getMinutes(), 2);
     return strDatetime;
 }
 
 export function getFeedsDisplay(type, content) {
     const feedsDisplay = content.split("#");
     if (type == "display") {
-    return feedsDisplay[0];
+        return feedsDisplay[0];
     } else {
-    return feedsDisplay[1];
+        return feedsDisplay[1];
     }
 }
 

@@ -277,7 +277,7 @@
 						:style="{ height: accessDeviceCheck == 'PC' ? '' : '100%' }"
 					>
 						<img
-							:src="$callStore.captureImageInfo.fileSrc"
+							:src="callStore.captureImageInfo.fileSrc"
 							style="width: 100%; height: 100%"
 						/>
 					</div>
@@ -542,7 +542,7 @@ const hangupCallingConfirm = (result) => {
 			// 파일 송수신 수락 대기 중인 것이 있는지 체크한다.
 			if (commonStore.userListStatus[i].status == 2) {
 				// 파일 송수신 거절 처리
-				commonStore.fileSendStatus(4)
+				commonStore.setFileSendStatus(4)
 				commonStore.setFileSendFlag(true)
 			}
 		}
@@ -574,17 +574,17 @@ const moveDrawingConfirm = (result, type) => {
                 modalStore.closeModal("noneOverlayModal");
 
                 if (commonStore.isShare) {
-                    commonStore.isShare();
+                    commonStore.setIsShare();
                     setTimeout(() => {
-                        commonStore.isDrawing();
+                        commonStore.setIsDrawing();
                     }, 1000);
                 } else {
                     setTimeout(() => {
-                        commonStore.isDrawing();
+                        commonStore.setIsDrawing();
                     }, 1000);
                 }
                 drawingStore.setDrawingVideo(false);
-                commonStore.isDrawingEnable({ result: "true" });
+                commonStore.setIsDrawingEnable(true);
             } else {
                 modalStore.closeModal("noneOverlayModal");
             }
@@ -593,17 +593,17 @@ const moveDrawingConfirm = (result, type) => {
                 modalStore.closeModal("noneOverlayModal");
 
                 if (commonStore.isShare) {
-                    commonStore.isShare();
+                    commonStore.setIsShare();
                     setTimeout(() => {
-                        commonStore.isDrawing();
+                        commonStore.setIsDrawing();
                     }, 1000);
                 } else {
                     setTimeout(() => {
-                        commonStore.isDrawing();
+                        commonStore.setIsDrawing();
                     }, 1000);
                 }
                 drawingStore.setDrawingVideo(false);
-                commonStore.isDrawingEnable({ result: "true" });
+                commonStore.setIsDrawingEnable(true);
             } else {
                 modalStore.closeModal("noneOverlayModal");
             }
@@ -611,11 +611,11 @@ const moveDrawingConfirm = (result, type) => {
             if (result) {
 				callStore.setScreenMoveToDrawing(true);
                 if (commonStore.isShare) {
-                    commonStore.isShare();
+                    commonStore.setIsShare();
                 }
                 modalStore.closeModal("noneOverlayModal");
                 drawingStore.setDrawingVideo(false);
-                commonStore.isDrawingEnable({ result: "true" });
+                commonStore.setIsDrawingEnable(true);
             } else {
                 modalStore.closeModal("noneOverlayModal");
             }
@@ -629,7 +629,7 @@ const moveScreenShare = (result) => {
        callStore.setDrawingMoveToScreen(true);
 
         if (commonStore.isDrawing) {
-            commonStore.isDrawing();
+            commonStore.setIsDrawing();
         }
         modalStore.closeModal("noneOverlayModal");
         drawingStore.setDrawingVideo(true);
@@ -648,7 +648,7 @@ const captureSave = (result) => {
         }
     } else {
         modalStore.closeModal("noneOverlayModal");
-       callStore.isCapture(false);
+       callStore.setIsCapture(false);
     }
 };
 
@@ -674,7 +674,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 p {
     margin: 0 0 0 !important;
 }

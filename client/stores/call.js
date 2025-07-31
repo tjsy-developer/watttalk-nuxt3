@@ -154,7 +154,7 @@ export const useCallStore = defineStore("call", {
             this.previousWorkingStatus = payload;
         },
         callingPopupInfo(payload) {
-            console.log(payload)
+            console.log(payload);
             this.callingPopupInstitution = payload.institution;
             this.callingPopupHeadquarters = payload.headquarters;
             this.callingPopupBranch = payload.branch;
@@ -207,8 +207,8 @@ export const useCallStore = defineStore("call", {
         setRecentDataAll(payload) {
             this.recentDataAll = payload;
         },
-      setUserDataStatusAtIndex(payload) {
-          console.log(payload)
+        setUserDataStatusAtIndex(payload) {
+            console.log(payload);
             if (payload.index >= 0 && payload.index < this.userData.length) {
                 this.userData[payload.index] = {
                     ...this.userData[payload.index],
@@ -217,7 +217,7 @@ export const useCallStore = defineStore("call", {
                 console.log("유저리스트 변경", this.userData[payload.index]);
             }
         },
-      setRecentDataStatusAtIndex(payload) {
+        setRecentDataStatusAtIndex(payload) {
             if (payload.index >= 0 && payload.index < this.recentData.length) {
                 this.recentData[payload.index] = {
                     ...this.recentData[payload.index],
@@ -256,7 +256,7 @@ export const useCallStore = defineStore("call", {
         setHostRequestStatus(payload) {
             const modalStore = useModalStore();
             this.hostRequestStatus = payload;
-            modalStore.openModal("host")
+            modalStore.openModal("host");
         },
         setHostRequestResult(payload) {
             this.hostRequestResult = payload;
@@ -420,7 +420,7 @@ export const useCallStore = defineStore("call", {
         setLaserPointerShow(payload) {
             this.laserPointerShow = payload;
         },
-        isCapture(payload) {
+        setIsCapture(payload) {
             this.isCapture = payload;
         },
         setCaptureSaveFlag(payload) {
@@ -613,5 +613,10 @@ export const useCallStore = defineStore("call", {
         setCctvInfo(payload) {
             this.cctvInfo = payload;
         },
+    },
+    persist: {
+        key: "call-store",
+        storage: process.client ? sessionStorage : undefined,
+        paths: ["userData", "userDataAll"],
     },
 });

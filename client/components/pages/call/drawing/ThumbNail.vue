@@ -168,8 +168,14 @@
 </template>
 
 <script setup>
+import { commonToastMessage } from "@/composables/common";
+import { useCallStore } from "@/stores/call";
+import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+
+const drawingStore = useDrawingCanvasStore();
+const callStore = useCallStore();
 
 const superIndex = ref(0);
 const beforeSuperIndex = ref(0);
@@ -257,9 +263,9 @@ const fileClick = (e, type) => {
         // console.log("*******##** fileClick Test: #5")
     }
 
-    setSelectedFileIndex(e);
+    drawingStore.setSelectedFileIndex(e);
     // console.log("####test3")
-    setFilesHistory({
+    drawingStore.setFilesHistory({
         num: beforeSuperIndex.value,
         history: canvasHistory.value,
     });
@@ -272,7 +278,7 @@ const fileClick = (e, type) => {
     if (files.value[e].type == "img") {
         console.log("fileClick start, file.type == img");
 
-        setCanvasHistory(files.value[e].history);
+        drawingStore.setCanvasHistory(files.value[e].history);
 
         if (canvasHistory.value.state.length > 0) {
             // console.log("canvasHistory.value.currentStateIndex:", canvasHistory.value.currentStateIndex)
@@ -313,19 +319,19 @@ const fileClick = (e, type) => {
             files.value[e].history.state[0] == firstFiles.value[0].history.state[0] &&
             files.value[e].history.length > 1
         ) {
-            setHistorySplice(e);
+            drawingStore.setHistorySplice(e);
         }
         // <-
 
-        setCanvasHistory(files.value[e].history);
-        // 최종 console.log("fileClick setCanvasHistory = ", files.value[e].history)
+        drawingStore.setCanvasHistory(files.value[e].history);
+        // 최종 console.log("fileClick drawingStore.setCanvasHistory = ", files.value[e].history)
 
         // console.log("img FileClick", files.value[e].history)
         // console.log("*******##** fileClick Test: #8")
     } else if (files.value[e].type == "canvas") {
         // 최종 console.log("fileClick quarter file.type == canvas")
 
-        setCanvasHistory(files.value[e].history);
+        drawingStore.setCanvasHistory(files.value[e].history);
         if (canvasHistory.value.state.length > 0) {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
                 setRemoveDuplicates(
@@ -347,7 +353,7 @@ const fileClick = (e, type) => {
     // 최종 console.log("fileClick finish")
     // console.log("files.value after History", files.value)
 
-    store.commit("drawing/setBeforeIndexInitialized", false);
+    drawingStore.setBeforeIndexInitialized(false);
 };
 
 // --- Other Methods Conversion ---
@@ -358,7 +364,7 @@ const openPdf = (e, group) => {
         const pdfNumCount = files.value[e].pdf[0].lastPage;
         const pdfWidth = pdfNumCount * 148 + 36;
         // console.log("#1", thumbnailWidth.value + pdfWidth)
-        setThumbnailWidth(thumbnailWidth.value + pdfWidth);
+        drawingStore.setThumbnailWidth(thumbnailWidth.value + pdfWidth);
         // document.getElementById("pdfCanvasPage" + group).style.width =
         //  pdfWidth + "px"
         document.getElementById("openCloseImg" + group).style.transform =
@@ -376,7 +382,7 @@ const openPdfBox = (e, group) => {
         const pdfNumCount = files.value[e].pdf[0].lastPage;
         const pdfWidth = pdfNumCount * 148 + 36;
         // console.log("#2", thumbnailWidth.value + pdfWidth)
-        setThumbnailWidth(thumbnailWidth.value + pdfWidth);
+        drawingStore.setThumbnailWidth(thumbnailWidth.value + pdfWidth);
         // document.getElementById("pdfCanvasPage" + group).style.width =
         //  pdfWidth + "px"
         document.getElementById("openCloseImg" + group).style.transform =
@@ -418,10 +424,10 @@ const pdfClick = (fileKey, pdfKey) => {
             );
         }
     }
-    setPdfIndex(pdfKey);
-    setSelectedFileIndex(fileKey);
+    drawingStore.setPdfIndex(pdfKey);
+    drawingStore.setSelectedFileIndex(fileKey);
     // 20221122 - 수정해야할 부분
-    setFilesHistory({
+    drawingStore.setFilesHistory({
         num: beforeSuperIndex.value,
         history: canvasHistory.value,
     });
@@ -470,12 +476,12 @@ const pdfClick = (fileKey, pdfKey) => {
             canvas.value.add(image);
             const jsonData = canvas.value.toJSON();
             const canvasAsJson = JSON.stringify(jsonData);
-            setPdfFirstHistoryState({
+            drawingStore.setPdfFirstHistoryState({
                 superIndex: superIndex.value,
                 firstState: canvasAsJson,
             });
             // console.log("pdfClick if 문", files.value[fileKey].pdf[pdfKey].history)
-            setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
+            drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
                 setRemoveDuplicates(
                     canvasHistory.value.state[canvasHistory.value.currentStateIndex],
@@ -487,12 +493,12 @@ const pdfClick = (fileKey, pdfKey) => {
                     console.log("fileClick finished, file.type == pdf:history");
                 },
             );
-            setUpdate(true);
+            drawingStore.setUpdate(true);
         };
     } else {
         // console.log("pdfClick else 문", files.value[fileKey].pdf[pdfKey].history, canvasHistory.value.currentStateIndex)
         // console.log(files.value[fileKey].pdf[pdfKey].history)
-        setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
+        drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
         // console.log(canvasHistory.value.state[canvasHistory.value.currentStateIndex])
         canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
             setRemoveDuplicates(
@@ -509,14 +515,14 @@ const pdfClick = (fileKey, pdfKey) => {
 
     if (beforeSelectedState.value) {
         openPdf(fileKey, files.value[selectedFileIndex.value].group);
-        store.commit("drawing/setBeforeIndexInitialized", false);
+        drawingStore.setBeforeIndexInitialized(false);
     }
     // console.log(canvasHistory.value)
 };
 
 const newCanvasAdd = () => {
     if (!isPdfUploading.value) {
-        setSrc({
+        drawingStore.setSrc({
             type: "canvas",
             src: firstFiles.value[0].img,
         });
@@ -529,7 +535,7 @@ const canvasImgChange = (num, beforeSuperIndex, type) => {
     if (type != "pdf") {
         // console.log("canvasImgChange", num, canvas.value.toDataURL("png"))
         // console.log("canvasImgChange num:", num, ", type:", type)
-        setFilesImgChange({
+        drawingStore.setFilesImgChange({
             num,
             image: canvas.value.toDataURL("png"),
         });
@@ -546,7 +552,7 @@ const canvasImgChange = (num, beforeSuperIndex, type) => {
         }
         // console.log("canvasImgChange num값을 확인한다", num, pdfNum)
         if (pdfNum !== null) {
-            setFilesImgChange({
+            drawingStore.setFilesImgChange({
                 num,
                 pdfNum,
                 image: canvas.value.toDataURL("png"),
@@ -570,7 +576,7 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 for (let i = 0; i < pdfUploadQueArray.value.length; i++) {
                     if (pdfUploadQueArray.value[i].groupIndex == group) {
                         if (i == 0 && pdfUploading.value == true) {
-                            setPDFcancelUploadFlag(true);
+                            callStore.setPDFcancelUploadFlag(true);
                             break;
                         } else {
                             pdfUploadQueArray.value.splice(i, 1);
@@ -582,9 +588,9 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 deleteIndex = files.value[e].index;
                 deleteWidth = 148;
             }
-            setFilesDelete(deleteIndex);
-            setUpdate(true);
-            setThumbnailWidth(thumbnailWidth.value - deleteWidth);
+            drawingStore.setFilesDelete(deleteIndex);
+            drawingStore.setUpdate(true);
+            drawingStore.setThumbnailWidth(thumbnailWidth.value - deleteWidth);
         } else {
             pdfClick(e - 1, 0);
             let deleteIndex = null;
@@ -597,7 +603,7 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 for (let i = 0; i < pdfUploadQueArray.value.length; i++) {
                     if (pdfUploadQueArray.value[i].groupIndex == group) {
                         if (i == 0 && pdfUploading.value == true) {
-                            setPDFcancelUploadFlag(true);
+                            callStore.setPDFcancelUploadFlag(true);
                             break;
                         } else {
                             pdfUploadQueArray.value.splice(i, 1);
@@ -609,9 +615,9 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 deleteIndex = files.value[e].index;
                 deleteWidth = 148;
             }
-            setFilesDelete(deleteIndex);
-            setUpdate(true);
-            setThumbnailWidth(thumbnailWidth.value - deleteWidth);
+            drawingStore.setFilesDelete(deleteIndex);
+            drawingStore.setUpdate(true);
+            drawingStore.setThumbnailWidth(thumbnailWidth.value - deleteWidth);
         }
     } else {
         commonToastMessage("uploading PDF");
@@ -621,16 +627,16 @@ const eachCanvasDelete = (e, pdfKey, group) => {
 const clearThumbnail = () => {
     if (!isPdfUploading.value) {
         clearFiles();
-        setSuperIndex(1);
+        drawingStore.setSuperIndex(1);
         canvas.value.loadFromJSON(
             canvasHistory.value.state[0],
             canvas.value.renderAll.bind(canvas.value),
         );
         canvasImgChange(0, beforeSuperIndex.value, files.value[0].type);
-        setSelectedFileIndex(0);
+        drawingStore.setSelectedFileIndex(0);
         beforeSuperIndex.value = 0;
-        setCanvasJson(null);
-        setUpdate(true);
+        drawingStore.setCanvasJson(null);
+        drawingStore.setUpdate(true);
 
         for (let i = 1; i < pdfUploadQueArray.value.length; i++) {
             if (pdfUploading.value == true) {
@@ -641,7 +647,7 @@ const clearThumbnail = () => {
 
         for (let i = 0; i < pdfUploadQueArray.value.length; i++) {
             if (i == 0 && pdfUploading.value == true) {
-                setPDFcancelUploadFlag(true);
+                callStore.setPDFcancelUploadFlag(true);
             } else {
                 pdfUploadQueArray.value.splice(i, 1);
                 i--;
@@ -844,14 +850,14 @@ watch(
         const beforeWidth = thumbnailWidth.value; // ref 접근 시 .value
 
         if (filesNumCount.value == 1) {
-            setThumbnailWidth(148);
+            drawingStore.setThumbnailWidth(148);
         }
 
         for (let i = 0; i < newFiles.length; i++) {
             // superIndex는 drawingStore.index로 가정합니다.
             if (index.value == newFiles[i].index) {
                 // ref 접근 시 .value
-                setSelectedFileIndex(i);
+                drawingStore.setSelectedFileIndex(i);
                 break;
             }
         }
@@ -868,7 +874,7 @@ watch(
             }
 
             if (fileType != "pdf") {
-                setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
+                drawingStore.setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
                 if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
                     // ref 접근 시 .value
                     fileClick(newFiles.length - 1);
@@ -880,7 +886,7 @@ watch(
                     }, 50);
                 }
             } else {
-                setThumbnailWidth(thumbnailWidth.value + 32); // ref 접근 시 .value
+                drawingStore.setThumbnailWidth(thumbnailWidth.value + 32); // ref 접근 시 .value
                 nextTick(() => {
                     // $nextTick 대신 nextTick 사용
                     // this.pdfClick(this.files.length - 1, 0)
@@ -901,11 +907,11 @@ watch(src, (newVal) => {
     if (newVal != null) {
         if (files.value.length == 0) {
             // ref 접근 시 .value
-            console.log("setFirstFiles");
-            setFirstFiles(newVal);
+            console.log("drawingStore.setFirstFiles");
+            drawingStore.setFirstFiles(newVal);
         }
-        console.log("setFiles");
-        setFiles(newVal);
+        console.log("drawingStore.setFiles");
+        drawingStore.setFiles(newVal);
     }
 });
 
@@ -913,7 +919,7 @@ watch(src, (newVal) => {
 watch(canvas, (newVal) => {
     if (files.value.length == 0) {
         // ref 접근 시 .value
-        setSrc({
+        drawingStore.setSrc({
             type: "canvas",
             src: newVal.toDataURL("png"),
         });
@@ -927,7 +933,7 @@ watch(selectedFileIndex, (newVal) => {
         // ref 접근 시 .value
         idx = files.value.length - 1;
     }
-    setSelectCount(true);
+    drawingStore.setSelectCount(true);
     if (files.value[idx].type == "pdf") {
         // ref 접근 시 .value
         openPdf(idx, files.value[idx].group); // ref 접근 시 .value
@@ -941,13 +947,13 @@ watch(isDrawing, (newVal) => {
     if (newVal == false) {
         if (selectCount.value == 0) {
             // ref 접근 시 .value
-            setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
+            drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
         }
         if (files.value[selectedFileIndex.value].type != "pdf") {
             // ref 접근 시 .value
             fileClick(selectedFileIndex.value); // ref 접근 시 .value
         }
-        setSelectCount(false);
+        drawingStore.setSelectCount(false);
     }
 
     //#region PDF logic
@@ -973,7 +979,7 @@ watch(isDrawing, (newVal) => {
     // PDF 로컬 업로드 중 드로잉 껐을 시 PDF 중단 및 삭제
     if (escapeDrawingPage.value) {
         // ref 접근 시 .value
-        setIsPdfUploading(false);
+        drawingStore.setIsPdfUploading(false);
         if (isEscape.value) {
             // ref 접근 시 .value
             isEscape.value = false; // ref 접근 시 .value
@@ -988,7 +994,7 @@ watch(isDrawing, (newVal) => {
                 files.value[files.value.length - 1].group, // ref 접근 시 .value
             );
         }
-        setEscapeDrawingPage(false);
+        drawingStore.setEscapeDrawingPage(false);
     }
     // PDF 서버 업로드 중 드로잉 껐을 시 PDF 중단 및 삭제
     // filesList는 deep copy가 필요할 수 있으므로 map을 사용합니다.
@@ -1041,7 +1047,7 @@ watch(isDrawing, (newVal) => {
     }
     //#endregion
 
-    setThumbnailWidth(pdfN * 32 + length * 148);
+    drawingStore.setThumbnailWidth(pdfN * 32 + length * 148);
 
     console.log(
         "drawing in 파일타입 확인",
@@ -1110,7 +1116,7 @@ watch(isThumbnailTransfer, (newVal) => {
         if (canvas.value != null) {
             // ref 접근 시 .value
             clearThumbnail();
-            setIsThumbnailTransfer(false);
+            drawingStore.setIsThumbnailTransfer(false);
         }
     }
 });
@@ -1123,10 +1129,10 @@ watch(beforeThumbnailTransfer, async (newVal) => {
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
                 await fileClick(selectedFileIndex.value); // ref 접근 시 .value
-                setBeforeThumbnailTransfer(false);
+                drawingStore.setBeforeThumbnailTransfer(false);
             } else {
                 await pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
-                setBeforeThumbnailTransfer(false);
+                drawingStore.setBeforeThumbnailTransfer(false);
             }
         }
     }
@@ -1138,14 +1144,14 @@ watch(beforeCloseCanvas, (newVal) => {
     if (newVal) {
         if (canvas.value != null) {
             // ref 접근 시 .value
-            setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
+            drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
                 fileClick(selectedFileIndex.value); // ref 접근 시 .value
             } else {
                 pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
             }
-            setBeforeCloseCanvas(false);
+            drawingStore.setBeforeCloseCanvas(false);
         }
     }
 });
@@ -1156,7 +1162,7 @@ watch(beforeCloseCanvas, (newVal) => {
 watch(escapeDrawingPage, (newVal) => {
     // PDF PDF 로컬 업로드 중 드로잉 껐을 시 PDF 중단 및 삭제
     if (newVal) {
-        setIsPdfUploading(false);
+        drawingStore.setIsPdfUploading(false);
         if (isEscape.value) {
             // ref 접근 시 .value
             isEscape.value = false; // ref 접근 시 .value
@@ -1171,7 +1177,7 @@ watch(escapeDrawingPage, (newVal) => {
                 files.value[files.value.length - 1].group, // ref 접근 시 .value
             );
         }
-        setEscapeDrawingPage(false);
+        drawingStore.setEscapeDrawingPage(false);
     }
 });
 
@@ -1179,7 +1185,7 @@ watch(escapeDrawingPage, (newVal) => {
 watch(lastCanvasSeted, async (res) => {
     // computed의 getLastCanvasInfo가 아닌, state의 lastCanvasSeted를 직접 감시하는 것으로 가정
     if (res) {
-        setCanvasHistoryFin(false);
+        drawingStore.setCanvasHistoryFin(false);
         await fileClick(selectedFileIndex.value); // ref 접근 시 .value
         await fileClick(selectedFileIndex.value); // 두 번 호출되는 이유가 명확하지 않으나, 기존 로직 유지
     }
@@ -1227,7 +1233,7 @@ onMounted(() => {
     }
 
     // 5. 썸네일 너비 설정
-    setThumbnailWidth(pdfN * 32 + length * 148);
+    drawingStore.setThumbnailWidth(pdfN * 32 + length * 148);
 
     // 6. inputPreviewImage 호출
     inputPreviewImage(500);
@@ -1238,13 +1244,13 @@ onMounted(() => {
 
     // 8. changedHost 조건부 로직
     // changedHost는 drawingStore의 상태이므로 .value로 접근
-    if (changedHost.value === true) {
+    if (drawingStore.changedHost === true) {
         getPreviousUserCanvas();
     }
 });
 
 onUnmounted(() => {
-    if (readyStatus.value) {
+    if (drawingStore.readyStatus) {
         // ref 접근 시 .value
         // 호스트 이관 시
         drawingStore.setReadyStatus(false); // Pinia 스토어 뮤테이션/액션 호출

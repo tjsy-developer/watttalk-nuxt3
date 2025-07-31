@@ -1,3 +1,4 @@
+import { useCommonStore } from "@/stores";
 import { useUserListStore } from "@/stores/userList";
 
 // userListStore를 전역으로 선언하지 않고, 각 함수 내부에서 호출
@@ -92,12 +93,12 @@ export const userListSetNewNotificationCount = (deviceid, value) => {
 };
 
 export const checkMainVideo = () => {
-    const userListStore = useUserListStore(); // ✨
-    const userListStatus = userListStore.userListStatus;
+    const commonStore = useCommonStore(); // ✨
+    const userListStatus = commonStore.userListStatus;
     if (userListStatus[userListStatus.length - 1]?.text === "") {
         for (const user of userListStatus) {
             if (user.hostIcon === true) {
-                userListStore.setMainVideoStatus({
+                commonStore.setMainVideoStatus({
                     type: "",
                     text: user.text,
                     nickname: user.nickname,

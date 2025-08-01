@@ -197,7 +197,7 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingJoinFlag = payload;
         },
         // 회의실 퇴장 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingLeaveFlag(payload) {
+        setMeetingLeaveFlag(payload) {
             this.meetingLeaveFlag = payload;
         },
         // createRoomId 를 호출 후 회의실 개설 함수를 실행할지, 참가 함수를 실행할지 결정하는 부분

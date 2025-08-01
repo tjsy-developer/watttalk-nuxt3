@@ -558,7 +558,7 @@ const hangupCallingConfirm = (result) => {
 		} else {
 			commonStore.janus.destroy()
 		}
-		meetingStore.meetingLeaveFlag(true)
+		meetingStore.setMeetingLeaveFlag(true)
 		modalStore.closeModal("noneOverlayModal");
 	} else {
 		modalStore.closeModal("noneOverlayModal");

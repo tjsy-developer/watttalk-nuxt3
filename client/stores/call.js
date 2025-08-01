@@ -614,9 +614,9 @@ export const useCallStore = defineStore("call", {
             this.cctvInfo = payload;
         },
     },
-    persist: {
-        key: "call-store",
-        storage: process.client ? sessionStorage : undefined,
-        paths: ["userData", "userDataAll"],
-    },
+    // persist: {
+    //     key: "call-store",
+    //     storage: process.client ? sessionStorage : undefined,
+    //     paths: ["userData", "userDataAll"],
+    // },
 });

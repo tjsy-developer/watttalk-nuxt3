@@ -27,7 +27,7 @@
 
                 <div class="column subMenu">
                     <div
-                        class="col-12 subMenuContainer"
+                        class="subMenuContainer"
                         v-for="(subMenu, subMenuKey) in tool.subMenu"
                         :key="subMenuKey"
                         @click.stop="subMenuClick(subMenu, tool)"
@@ -117,210 +117,174 @@ const callStore = useCallStore();
 const chattingStore = useChattingStore();
 const drawingStore = useDrawingCanvasStore();
 
+// 이미지 import
+import penImg from "@/assets/images/callAttachment/bt_1_pen.png";
+import penFixImg from "@/assets/images/callAttachment/bt_pen_fix.png";
+
+import lineImg from "@/assets/images/callAttachment/bt_2_line.png";
+import lineFixImg from "@/assets/images/callAttachment/bt_2_line_fix.png";
+
+import arrowImg from "@/assets/images/callAttachment/bt_3_arrow.png";
+import arrowFixImg from "@/assets/images/callAttachment/bt_3_arrow_fix.png";
+
+import squareImg from "@/assets/images/callAttachment/bt_4_square.png";
+import squareFixImg from "@/assets/images/callAttachment/bt_4_square_fix.png";
+
+import circleImg from "@/assets/images/callAttachment/bt_5_circle.png";
+import circleFixImg from "@/assets/images/callAttachment/ic_drawing_circle_fix.png";
+
+import textImg from "@/assets/images/callAttachment/bt_6_text.png";
+import textFixImg from "@/assets/images/callAttachment/bt_6_text_fix.png";
+
+import photoImg from "@/assets/images/callAttachment/bt_7_zoom.png";
+import photoFixImg from "@/assets/images/callAttachment/bt_7_zoom_fix.png";
+
+import pdfImg from "@/assets/images/callAttachment/bt_8_pdf.png";
+
+import undoImg from "@/assets/images/callAttachment/bt_9_undo.png";
+import undoFixImg from "@/assets/images/callAttachment/bt_11_back_fix.png";
+
+import redoImg from "@/assets/images/callAttachment/bt_10_redo.png";
+import redoFixImg from "@/assets/images/callAttachment/bt_11_forward_fix.png";
+
+import moveLayerImg from "@/assets/images/callAttachment/ic_layer_move_fix.png";
+
+import clearImg from "@/assets/images/callAttachment/ic_fresh_34.png";
+import clearFixImg from "@/assets/images/callAttachment/ic_fresh_34_2.png";
+
+import groupImg from "@/assets/images/callAttachment/ic_grouping.png";
+import groupFixImg from "@/assets/images/callAttachment/ic_grouping_2.png";
+
+import layerImg from "@/assets/images/callAttachment/ic_z-index.png";
+import layerFixImg from "@/assets/images/callAttachment/ic_z-index_fix.png";
+
+import bringToFrontImg from "@/assets/images/callAttachment/ic_bring_to_front.png";
+import bringForwardImg from "@/assets/images/callAttachment/ic_bring_forward.png";
+import sendBackwardImg from "@/assets/images/callAttachment/ic_send_backward.png";
+import sendToBackImg from "@/assets/images/callAttachment/ic_send_to_back.png";
+
+import downloadImg from "@/assets/images/callAttachment/ic_save_34.png";
+import downloadFixImg from "@/assets/images/callAttachment/ic_save_34_fix.png";
+
 const tools = ref([
-    {
-        type: "pen",
-        img: new URL("@/assets/images/callAttachment/bt_1_pen.png", import.meta.url).href,
-        fixImg: new URL("@/assets/images/callAttachment/bt_pen_fix.png", import.meta.url)
-            .href,
-        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
-        selected: 3,
-        tooltip: "연필",
-    },
-    {
-        type: "line",
-        img: new URL("@/assets/images/callAttachment/bt_2_line.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_2_line_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
-        selected: 3,
-        tooltip: "선",
-    },
-    {
-        type: "arrow",
-        img: new URL("@/assets/images/callAttachment/bt_3_arrow.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_3_arrow_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
-        selected: 3,
-        tooltip: "화살표",
-    },
-    {
-        type: "square",
-        img: new URL("@/assets/images/callAttachment/bt_4_square.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_4_square_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
-        selected: 3,
-        tooltip: "사각형",
-    },
-    {
-        type: "circle",
-        img: new URL("@/assets/images/callAttachment/bt_5_circle.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_drawing_circle_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
-        selected: 3,
-        tooltip: "원",
-    },
-    {
-        type: "text",
-        img: new URL("@/assets/images/callAttachment/bt_6_text.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_6_text_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [16, 32, 64, 128, 256, 512].map((v) => ({ text: v, value: v })),
-        selected: 32,
-        tooltip: "텍스트",
-    },
-    {
-        type: "photo",
-        img: new URL("@/assets/images/callAttachment/bt_7_zoom.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_7_zoom_fix.png",
-            import.meta.url,
-        ).href,
-        tooltip: "이미지 삽입",
-    },
-    {
-        type: "pdf",
-        img: new URL("@/assets/images/callAttachment/bt_8_pdf.png", import.meta.url).href,
-        fixImg: new URL("@/assets/images/callAttachment/bt_8_pdf.png", import.meta.url)
-            .href,
-        tooltip: "PDF 삽입",
-    },
-    {
-        type: "undo",
-        img: new URL("@/assets/images/callAttachment/bt_9_undo.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_11_back_fix.png",
-            import.meta.url,
-        ).href,
-        tooltip: "되돌리기",
-    },
-    {
-        type: "redo",
-        img: new URL("@/assets/images/callAttachment/bt_10_redo.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/bt_11_forward_fix.png",
-            import.meta.url,
-        ).href,
-        tooltip: "다시실행",
-    },
-    {
-        type: "moveLayer",
-        img: new URL(
-            "@/assets/images/callAttachment/ic_layer_move_fix.png",
-            import.meta.url,
-        ).href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_layer_move_fix.png",
-            import.meta.url,
-        ).href,
-        tooltip: "레이어 선택",
-    },
-    {
-        type: "clear",
-        img: new URL("@/assets/images/callAttachment/ic_fresh_34.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_fresh_34_2.png",
-            import.meta.url,
-        ).href,
-        tooltip: "캔버스 초기화",
-    },
-    {
-        type: "group",
-        img: new URL("@/assets/images/callAttachment/ic_grouping.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_grouping_2.png",
-            import.meta.url,
-        ).href,
-        tooltip: "레이어 그룹화",
-    },
-    {
-        type: "layer",
-        img: new URL("@/assets/images/callAttachment/ic_z-index.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_z-index_fix.png",
-            import.meta.url,
-        ).href,
-        subMenu: [
-            {
-                img: new URL(
-                    "@/assets/images/callAttachment/ic_bring_to_front.png",
-                    import.meta.url,
-                ).href,
-                value: "F",
-            },
-            {
-                img: new URL(
-                    "@/assets/images/callAttachment/ic_bring_forward.png",
-                    import.meta.url,
-                ).href,
-                value: "f",
-            },
-            {
-                img: new URL(
-                    "@/assets/images/callAttachment/ic_send_backward.png",
-                    import.meta.url,
-                ).href,
-                value: "B",
-            },
-            {
-                img: new URL(
-                    "@/assets/images/callAttachment/ic_send_to_back.png",
-                    import.meta.url,
-                ).href,
-                value: "b",
-            },
-        ],
-        selected: "F",
-        tooltip: "레이어 정돈",
-    },
-    {
-        type: "color",
-        subMenu: [
-            "#EE324A",
-            "#fe9a2f",
-            "#f8e644",
-            "#2ced66",
-            "#349ced",
-            "#ADB5BD",
-            "#000000",
-        ].map((color) => ({ color, value: color })),
-        selected: "#EE324A",
-        tooltip: "색상 변경",
-    },
-    {
-        type: "download",
-        img: new URL("@/assets/images/callAttachment/ic_save_34.png", import.meta.url)
-            .href,
-        fixImg: new URL(
-            "@/assets/images/callAttachment/ic_save_34_fix.png",
-            import.meta.url,
-        ).href,
-        tooltip: "캔버스 이미지 저장",
-    },
+  {
+    type: "pen",
+    img: penImg,
+    fixImg: penFixImg,
+    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
+    selected: 3,
+    tooltip: "연필",
+  },
+  {
+    type: "line",
+    img: lineImg,
+    fixImg: lineFixImg,
+    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
+    selected: 3,
+    tooltip: "선",
+  },
+  {
+    type: "arrow",
+    img: arrowImg,
+    fixImg: arrowFixImg,
+    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ square: v, value: v })),
+    selected: 3,
+    tooltip: "화살표",
+  },
+  {
+    type: "square",
+    img: squareImg,
+    fixImg: squareFixImg,
+    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ square: v, value: v })),
+    selected: 3,
+    tooltip: "사각형",
+  },
+  {
+    type: "circle",
+    img: circleImg,
+    fixImg: circleFixImg,
+    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
+    selected: 3,
+    tooltip: "원",
+  },
+  {
+    type: "text",
+    img: textImg,
+    fixImg: textFixImg,
+    subMenu: [16, 32, 64, 128, 256, 512].map(v => ({ text: v, value: v })),
+    selected: 32,
+    tooltip: "텍스트",
+  },
+  {
+    type: "photo",
+    img: photoImg,
+    fixImg: photoFixImg,
+    tooltip: "이미지 삽입",
+  },
+  {
+    type: "pdf",
+    img: pdfImg,
+    fixImg: pdfImg,
+    tooltip: "PDF 삽입",
+  },
+  {
+    type: "undo",
+    img: undoImg,
+    fixImg: undoFixImg,
+    tooltip: "되돌리기",
+  },
+  {
+    type: "redo",
+    img: redoImg,
+    fixImg: redoFixImg,
+    tooltip: "다시실행",
+  },
+  {
+    type: "moveLayer",
+    img: moveLayerImg,
+    fixImg: moveLayerImg,
+    tooltip: "레이어 선택",
+  },
+  {
+    type: "clear",
+    img: clearImg,
+    fixImg: clearFixImg,
+    tooltip: "캔버스 초기화",
+  },
+  {
+    type: "group",
+    img: groupImg,
+    fixImg: groupFixImg,
+    tooltip: "레이어 그룹화",
+  },
+  {
+    type: "layer",
+    img: layerImg,
+    fixImg: layerFixImg,
+    subMenu: [
+      { img: bringToFrontImg, value: "F" },
+      { img: bringForwardImg, value: "f" },
+      { img: sendBackwardImg, value: "B" },
+      { img: sendToBackImg, value: "b" },
+    ],
+    selected: "F",
+    tooltip: "레이어 정돈",
+  },
+  {
+    type: "color",
+    subMenu: [
+      "#EE324A", "#fe9a2f", "#f8e644", "#2ced66",
+      "#349ced", "#ADB5BD", "#000000"
+    ].map(color => ({ color, value: color })),
+    selected: "#EE324A",
+    tooltip: "색상 변경",
+  },
+  {
+    type: "download",
+    img: downloadImg,
+    fixImg: downloadFixImg,
+    tooltip: "캔버스 이미지 저장",
+  },
 ]);
 
 // Primitive values (or objects that will be fully replaced) use `ref`
@@ -494,8 +458,8 @@ onMounted(() => {
         window.addEventListener("resize", onResize);
 
         // Set initial canvas dimensions
-        canvas.value.setWidth(1280);
-        canvas.value.setHeight(720);
+        // canvas.value.setWidth(1280);
+        // canvas.value.setHeight(720);
         canvas.value.requestRenderAll();
 
         // Set initial free drawing brush properties (accessing computed 'tools' via store)
@@ -1851,70 +1815,70 @@ const canvasWidthHeightChange = () => {
             // 좌측정렬 사용자 리스트 길이 (window 클래스를 가진 16번째 요소를 가정)
             // `window` 클래스가 여러 개일 경우 인덱스 [15]는 불안정할 수 있으니 주의 필요.
             // 실제 프로젝트에서는 특정 ID나 더 견고한 셀렉터 사용을 권장합니다.
-            const rowWindowElement = document.getElementsByClassName("window")[15];
-            let rowWindowWidth = 0;
-            let rowWindowHeight = 0;
-            if (rowWindowElement) {
-                rowWindowWidth = rowWindowElement.clientWidth;
-                rowWindowHeight = rowWindowElement.clientHeight;
-            } else {
-                console.warn("Element with class 'window' at index 15 not found.");
-            }
+            // const rowWindowElement = document.getElementsByClassName("window")[15];
+            // let rowWindowWidth = 0;
+            // let rowWindowHeight = 0;
+            // if (rowWindowElement) {
+            //     rowWindowWidth = rowWindowElement.clientWidth;
+            //     rowWindowHeight = rowWindowElement.clientHeight;
+            // } else {
+            //     console.warn("Element with class 'window' at index 15 not found.");
+            // }
 
-            let thumbnailHeight = document.getElementsByClassName("thumbnail")[0]
-                ? document.getElementsByClassName("thumbnail")[0].clientHeight
-                : 0;
+            // let thumbnailHeight = document.getElementsByClassName("thumbnail")[0]
+            //     ? document.getElementsByClassName("thumbnail")[0].clientHeight
+            //     : 0;
 
-            // 영상이 off 인 경우 혹은 간헐적으로 썸네일 높이와 툴바 넓이를 못 가져오는 현상이 있다.
-            // 썸네일 높이와 툴바 넓이는 고정이므로 이 경우만 강제로 지정해준다.
-            if (thumbnailHeight === 0) {
-                thumbnailHeight = 94; // 강제 지정
-            }
-            if (drawingToolbarDom === 0) {
-                drawingToolbarDom = 72; // 강제 지정
-            }
+            // // 영상이 off 인 경우 혹은 간헐적으로 썸네일 높이와 툴바 넓이를 못 가져오는 현상이 있다.
+            // // 썸네일 높이와 툴바 넓이는 고정이므로 이 경우만 강제로 지정해준다.
+            // if (thumbnailHeight === 0) {
+            //     thumbnailHeight = 94; // 강제 지정
+            // }
+            // if (drawingToolbarDom === 0) {
+            //     drawingToolbarDom = 72; // 강제 지정
+            // }
 
-            // row.window 세로길이 - 캔버스 썸네일 Box
-            const cavasCalcHeight = rowWindowHeight - thumbnailHeight - 3;
+            // // row.window 세로길이 - 캔버스 썸네일 Box
+            // const cavasCalcHeight = rowWindowHeight - thumbnailHeight - 3;
 
-            // row.window 가로길이 - 툴바
-            const cavasCalcWidth = rowWindowWidth - drawingToolbarDom - 25;
+            // // row.window 가로길이 - 툴바
+            // const cavasCalcWidth = rowWindowWidth - drawingToolbarDom - 25;
 
-            // 캔버스 크기 설정
-            canvas.value.setDimensions(
-                {
-                    width: cavasCalcWidth + "px",
-                    height: cavasCalcHeight + "px",
-                },
-                {
-                    cssOnly: true,
-                },
-            );
+            // // 캔버스 크기 설정
+            // canvas.value.setDimensions(
+            //     {
+            //         width: cavasCalcWidth + "px",
+            //         height: cavasCalcHeight + "px",
+            //     },
+            //     {
+            //         cssOnly: true,
+            //     },
+            // );
 
-            // 캔버스 Width setting (외부 스토어/상태에 업데이트하는 함수 호출)
-            drawingStore.setCanvasWidth(cavasCalcWidth); // self.setCanvasWidth -> setCanvasWidth
+            // // 캔버스 Width setting (외부 스토어/상태에 업데이트하는 함수 호출)
+            // drawingStore.setCanvasWidth(cavasCalcWidth); // self.setCanvasWidth -> setCanvasWidth
 
             // 캔버스에 적용 (렌더링 요청)
             canvas.value.requestRenderAll();
         } else if (callingLayoutType.value == 4) {
             // 총 길이 - leftSidebar - chattingBar - drawingToolbar - 170
-            canvasWrapWidth.value =
-                allWidth.value - leftSidebarDom - chattingDom - drawingToolbarDom - 170;
+            // canvasWrapWidth.value =
+            //     allWidth.value - leftSidebarDom - chattingDom - drawingToolbarDom - 170;
 
-            if (allWidth.value > 1080) {
-                canvas.value.setWidth(canvasWrapWidth.value);
-                drawingStore.setCanvasWidth(canvasWrapWidth.value);
-            } else {
-                canvas.value.setWidth(520);
-                drawingStore.setCanvasWidth(520);
-            }
+            // if (allWidth.value > 1080) {
+            //     canvas.value.setWidth(canvasWrapWidth.value);
+            //     drawingStore.setCanvasWidth(canvasWrapWidth.value);
+            // } else {
+            //     canvas.value.setWidth(520);
+            //     drawingStore.setCanvasWidth(520);
+            // }
 
-            const height = allHeight.value - 279;
-            if (allHeight.value > 746) {
-                canvas.value.setHeight(height);
-            } else {
-                canvas.value.setHeight(510);
-            }
+            // const height = allHeight.value - 279;
+            // if (allHeight.value > 746) {
+            //     canvas.value.setHeight(height);
+            // } else {
+            //     canvas.value.setHeight(510);
+            // }
             canvas.value.calcOffset(); // 캔버스 내부 객체들의 위치 재계산
         }
     });
@@ -2506,6 +2470,7 @@ onBeforeUnmount(() => {
 
 .tool {
     border: 1px solid rgba(0, 0, 0, 0);
+    background-color: #3b3b3b;
     z-index: 1;
 
     &:nth-child(14) {
@@ -2516,19 +2481,26 @@ onBeforeUnmount(() => {
         margin-top: 10px;
     }
 
+    &:hover{
+        border: 1px solid #fff;
+    }
+
     &[name]:hover::before {
         content: attr(name);
         position: absolute;
-        right: 40px;
+        left: -40px;
         z-index: 50;
         width: max-content;
         padding: 5px 7px;
         border-radius: 3px;
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 1px solid #fff;
     }
 }
 
 // 변수
-$toolSize: 34px;
+$toolSize: 40px;
 $toolPaddingSize: 1px;
 
 .colorContainer {
@@ -2546,6 +2518,9 @@ $toolPaddingSize: 1px;
     position: absolute;
     left: $toolSize;
     height: $toolSize;
+    left: 40px;
+    height: 34px;
+    display: flex
 }
 
 .subMenuContainer {
@@ -2553,6 +2528,9 @@ $toolPaddingSize: 1px;
     height: 100%;
     padding-left: $toolPaddingSize;
     z-index: 2;
+    background-color: rgba(0,0,0, 0.7);
+    color: #fff;
+    padding: 0 3px;
 }
 
 .subMenuContents {
@@ -2575,8 +2553,8 @@ $toolPaddingSize: 1px;
 }
 
 .canvas {
-    height: 100%;
-    // padding: 30px 50px 10px 10px;
+    width: 100%;
+    height: auto;
     display: flex;
     justify-content: flex-start;
     z-index: 0;

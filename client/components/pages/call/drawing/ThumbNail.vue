@@ -1,7 +1,7 @@
 <template>
     <div
-        class="thumbnail row justify-start"
-        style="width: 100%; display: flex; justify-content: flex-end; right: 27px"
+        class="thumbnail"
+        style="width: 100%; display: flex; right: 27px"
     >
         <div id="thumbBody" class="thumbBody row items-center no-wrap">
             <div
@@ -142,10 +142,10 @@
             </div>
         </div>
 
-        <div class="clearThumb row items-center">
+        <div class="clearThumb">
             <div class="column thumbnailOptions">
                 <button
-                    class="column col-6 items-center justify-center addCanvas"
+                    class="addCanvas"
                     @click="newCanvasAdd"
                 >
                     <img
@@ -154,7 +154,7 @@
                     />
                 </button>
                 <button
-                    class="column col-6 items-center justify-center clearThumbnail"
+                    class="clearThumbnail"
                     @click="clearThumbnail"
                 >
                     <img
@@ -1293,3 +1293,197 @@ onUnmounted(() => {
     console.log("onUnmounted: Wheel event listener removed.");
 });
 </script>
+<style lang="scss" scoped>
+.thumbnail {
+  height: 94px;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 3px;
+  }
+}
+
+.thumbBody {
+    width: inherit;
+  height: 94px;
+  // margin-left: 93px;
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+  opacity: 0.9;
+  overflow-x: auto;
+      background: #3c3c3c 0 0 no-repeat padding-box;
+    border: 2px solid #3e3e3e;
+}
+
+.emptyFile {
+  width: 100%;
+  height: 100%;
+  font: normal normal bold 14px/16px NanumSquare;
+}
+
+.filesBox {
+  margin-left: 12px;
+
+  > div {
+    > button {
+      width: 132px;
+      height: 74px;
+      border-radius: 7px;
+      -moz-border-radius: 7px;
+      -khtml-border-radius: 7px;
+      -webkit-border-radius: 7px;
+    }
+  }
+}
+
+.filesList {
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -khtml-border-radius: 7px;
+  -webkit-border-radius: 7px;
+
+  .thumbnailImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    -webkit-border-radius: 7px;
+  }
+
+  .thumbnailType {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+  }
+}
+
+.canvasPageBtn {
+  height: 100%;
+  margin-right: 10px;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -khtml-border-radius: 7px;
+  -webkit-border-radius: 7px;
+}
+
+.thumbnailOptions {
+  height: 94px;
+}
+
+.clearThumb {
+    background: #4e4e4e;
+    border: 2px solid #3e3e3e;
+    display: flex    ;
+    flex-direction: column;
+    border-radius: 2px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+.clearThumbnail {
+  width: 32px;
+  border-bottom-right-radius: 7px;
+}
+
+.addCanvas {
+  width: 32px;
+  border-top-right-radius: 7px;
+}
+
+.pdfPagesNum {
+  position: absolute;
+  bottom: 3px;
+  left: 45px;
+  width: 37px;
+  height: 12px;
+  border-radius: 7px;
+  font: normal normal bold 10px/12px NanumSquare;
+}
+
+.eachDeleteBtn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.pdfCanvasPage {
+  height: 100%;
+  width: 32px;
+  height: 83.2px;
+  border-radius: 5px;
+
+  > img {
+    padding-left: 4px;
+    padding-right: 10px;
+    // width: 32px;
+  }
+
+  > button {
+    width: 132px;
+    height: 74px;
+  }
+}
+
+.pdfImg {
+  width: 132px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -khtml-border-radius: 7px;
+  -webkit-border-radius: 7px;
+}
+
+.pdfOpenClose {
+  width: 14px;
+  height: 40px;
+  border-top-right-radius: 250px 150px;
+  border-bottom-right-radius: 250px 150px;
+
+  > img {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.pdfList {
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -khtml-border-radius: 7px;
+  -webkit-border-radius: 7px;
+}
+
+.pdfPagesInfo {
+  width: 130px;
+  height: 23px;
+  bottom: 0px;
+  left: 1px;
+  position: absolute;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+
+  .pdfName {
+    display: inline-block;
+    padding-left: 8px;
+    width: 70%;
+    font: normal normal normal 14px/16px NanumSquare;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pdfPageNum {
+    padding-right: 7px;
+    font: normal normal bold 10px/12px NanumSquare;
+  }
+}
+
+.pdfCanvasWrap {
+  margin-right: 10px;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -khtml-border-radius: 7px;
+  -webkit-border-radius: 7px;
+}
+</style>

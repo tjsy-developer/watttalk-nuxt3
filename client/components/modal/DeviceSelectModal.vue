@@ -128,6 +128,7 @@ function close(type) {
     if (type != 1) {
         checkParameter();
     }
+    modalStore.closeModal("device");
 }
 
 function getMediaList() {

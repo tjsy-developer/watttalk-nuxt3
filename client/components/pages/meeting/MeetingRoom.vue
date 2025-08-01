@@ -856,7 +856,7 @@ watch(
 
 .window {
     width: 100%;
-    height: 282px !important;
+    height: inherit;
     overflow: hidden;
     // @media screen and (min-height: 460px) {
     //   height: 330px;

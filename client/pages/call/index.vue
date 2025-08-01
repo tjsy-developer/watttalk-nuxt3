@@ -9207,6 +9207,8 @@ function forceLogOutResult(reqSocketId, status) {
     console.log(json);
 }
 function createLoadingMask(type) {
+    // 여기인듯 
+    return
     document.getElementById("loader").classList.add("loader");
     document.getElementById("maskOverlay").classList.add("maskOverlay");
     document.getElementById("main").style.pointerEvents = "none";
@@ -10832,7 +10834,7 @@ const getAllMicMuteStatus = computed(() => callStore.allMicMuteStatus);
 const getVideoMainIndex = computed(() => callStore.videoMainIndex);
 const getIsDrawing = computed(() => commonStore.isDrawing);
 const getFileModalFlag = computed(() => commonStore.fileModalFlag);
-const getMeetingLeaveFlag = computed(() => meetingStore.meetingLeaveFlag);
+const getMeetingLeaveFlag = computed(() => meetingStore.setMeetingLeaveFlag);
 const getSendDMFlag = computed(() => directMessageStore.sendDMFlag);
 const getReadProcFlag = computed(() => directMessageStore.readProcFlag);
 const getCancelFileTransferFlag = computed(() => commonStore.cancelFileTransferFlag);
@@ -11674,7 +11676,7 @@ watch(getMeetingLeaveFlag, (newValue, oldValue) => {
         if (callStore.callingType == "meetingCall") {
             // console.log("회의실에서 입장한 사람입니다.")
             leaveMeeting();
-            meetingStore.meetingLeaveFlag(false);
+            meetingStore.setMeetingLeaveFlag(false);
         } else {
             // console.log("영상통화에서 입장한 사람입니다.")
         }

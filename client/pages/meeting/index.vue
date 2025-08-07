@@ -30,7 +30,7 @@
                         class="topCheckBox"
                     />
                     <label for="all"></label>
-                     <span>{{ t("viewAll") }}</span>
+                    <span>{{ t("viewAll") }}</span>
                     <button @click="makingBtnClick" class="makeMeetingBtn">
                         {{ t("createMeeting") }}
                     </button>
@@ -46,7 +46,6 @@
                             :compData="meetingList[windowKey]"
                             :index="windowKey"
                             :allView="true"
-                            :lang="m_lang"
                         ></MeetingRoom>
                     </div>
                 </template>
@@ -59,7 +58,6 @@
                             :compData="meetingList[windowKey]"
                             :index="windowKey"
                             :allView="true"
-                            :lang="m_lang"
                         ></MeetingRoom>
                     </div>
                 </template>
@@ -67,13 +65,11 @@
                     <div
                         v-for="(window, windowKey) in meetingList.length + 1"
                         :key="windowKey"
-
                     >
                         <MeetingRoom
                             :compData="meetingList[windowKey]"
                             :index="windowKey"
                             :allView="true"
-                            :lang="m_lang"
                         ></MeetingRoom>
                     </div>
                 </template>
@@ -135,15 +131,15 @@ const checkOptions = ref("");
 // 마운트될 때 실행할 작업
 onMounted(async () => {
     // Use `$signallingSocket` directly. No `this.` prefix needed.
-    sessionStorage.setItem("m_callWaiting", false)
-    sessionStorage.setItem("inRoomFlag", false)
-    sessionStorage.removeItem("m_inviting")
-    sessionStorage.removeItem("hostRequestFlag")
-    sessionStorage.removeItem("m_remote_nickname")
-    sessionStorage.removeItem("m_remote_devicetype")
-    sessionStorage.removeItem("m_remote_status")
-    sessionStorage.removeItem("m_remote_deviceid")
-    commonStore.makeUserListStatus()
+    sessionStorage.setItem("m_callWaiting", false);
+    sessionStorage.setItem("inRoomFlag", false);
+    sessionStorage.removeItem("m_inviting");
+    sessionStorage.removeItem("hostRequestFlag");
+    sessionStorage.removeItem("m_remote_nickname");
+    sessionStorage.removeItem("m_remote_devicetype");
+    sessionStorage.removeItem("m_remote_status");
+    sessionStorage.removeItem("m_remote_deviceid");
+    commonStore.makeUserListStatus();
     // Socket meetingList 받기
     $signallingSocket.on("meetingList", (response) => {
         console.log("*** socket.on: meetingList res ");
@@ -151,7 +147,7 @@ onMounted(async () => {
         console.log("*** socket.on: json = ", json);
 
         // 미팅 룸 비우기
-        meetingStore.meetingListEmpty();
+        meetingStore.setMeetingListEmpty();
         for (let i = 0; i < json.meetings.length; i++) {
             // UTC를 GMT로 바꿔주는 구문
             const startTimeSteamp = json.meetings[i].start_time * 1000;
@@ -203,14 +199,12 @@ onMounted(async () => {
             for (let j = 0; j < member_deviceid.length; j++) {
                 for (let k = 0; k < userList.value.length; k++) {
                     // Use .value for reactive ref
-                    if (
-                        member_deviceid[j] == sessionStorage.getItem("m_local_deviceid")
-                    ) {
+                    if (member_deviceid[j] == loginStore.m_local_deviceid) {
                         if (j == member_deviceid.length - 1) {
-                            members += sessionStorage.getItem("m_nickname");
+                            members += loginStore.nickname;
                             break;
                         } else {
-                            members += sessionStorage.getItem("m_nickname") + ", ";
+                            members += loginStore.nickname + ", ";
                             break;
                         }
                     } else if (
@@ -335,7 +329,7 @@ onMounted(async () => {
                 startDate,
                 endDate,
             };
-            meetingStore.meetingListAdd(save);
+            meetingStore.setMeetingListAdd(save);
         }
     });
 
@@ -345,7 +339,7 @@ onMounted(async () => {
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
 
-        meetingStore.meetingListEmpty();
+        meetingStore.setMeetingListEmpty();
 
         for (let i = 0; i < json.meetings.length; i++) {
             const startTimeSteamp = json.meetings[i].start_time * 1000;
@@ -369,7 +363,7 @@ onMounted(async () => {
                 },
                 dates,
             };
-            meetingStore.meetingListAdd(save);
+            meetingStore.setMeetingListAdd(save);
         }
 
         meetingStore.setMeetingListMonthFlag(false);
@@ -392,7 +386,7 @@ onMounted(async () => {
             // Or if using a global provide/inject pattern for modals
             // hideModal('modal') // Assuming a function `hideModal` is available
 
-            meetingStore.meetingListEmpty();
+            meetingStore.setMeetingListEmpty();
 
             if (calendar.value) {
                 // Use .value for reactive ref
@@ -426,7 +420,7 @@ onMounted(async () => {
             console.log("*** socket.on: 회의 수정 성공");
             // hideModal('modal') // Placeholder for modal hiding
 
-            meetingStore.meetingListEmpty();
+            meetingStore.setMeetingListEmpty();
 
             if (calendar.value) {
                 // Use .value for reactive ref
@@ -478,14 +472,14 @@ onMounted(async () => {
 
         console.log(
             "*** socket.on: openAndJoin = ",
-            openAndJoin.value, // Use .value for reactive ref
+            meetingStore.openAndJoin, // Use .value for reactive ref
         );
 
         callStore.setUniqueRoomid(json.unique_roomid);
         console.log("unique_roomid : " + json.unique_roomid);
         console.log("vuex unique_roomid : " + callStore.uniqueRoomid); // Direct access for store state inside function
 
-        if (openAndJoin.value == "open") {
+        if (meetingStore.openAndJoin == "open") {
             // Use .value for reactive ref
             console.log("*** socket.on: openAndJoin = open");
             openMeeting(json);
@@ -499,7 +493,7 @@ onMounted(async () => {
             } else {
                 meetingStore.setOpenMeetingData(null); // Assuming '' meant null or empty object
             }
-        } else if (openAndJoin.value == "join") {
+        } else if (meetingStore.openAndJoin == "join") {
             // Use .value for reactive ref
             console.log("*** socket.on: openAndJoin = join");
             joinMeeting(json);
@@ -522,7 +516,7 @@ onMounted(async () => {
         router.push("/call");
 
         // meetingStore.setMeetingSeq(null) // Uncomment if needed
-        meetingStore.setOpenMeetingFlag(false); // Assuming this is an action in meetingStore
+        meetingStore.setMeetingOpenFlag(false); // Assuming this is an action in meetingStore
 
         callStore.setCallingType("meetingCall");
     });
@@ -556,19 +550,6 @@ onMounted(async () => {
                     console.log("회의실이 삭제되어있다.");
                     commonStore.setNoneOverlayAlertStatus(8); // Call action from commonStore
                 }
-                const modalsContainerStyle =
-                    document.getElementById("modalsContainer").style;
-                modalsContainerStyle.display = "block";
-                modalsContainerStyle.backgroundColor = "rgba(0, 0, 0, 0.4)";
-
-                // You'll need to adapt this modal usage to your Vue 3 modal library
-                // Example with a hypothetical modal service:
-                // modalService.show(noneOverlayModal, { name: "noneOverlayModal", width: "350", height: "270" }, {
-                //   'before-close': () => {
-                //     modalsContainerStyle.display = "none"
-                //     meetingStore.setMeetingJoinFlag(false) // Assuming a setMeetingJoinFlag action exists
-                //   }
-                // })
 
                 if (calendar.value) {
                     // Use .value for reactive ref
@@ -1095,7 +1076,7 @@ const meetingCalendarList = () => {
         start_time: startTimestempUtc,
         end_time: endTimestempUtc,
         view_type: type, // 0: 내 회의실 목록, 1: 전체 회의실 목록
-        en_seq: store.state.login.sessionEnSeq,
+        en_seq: loginStore.sessionEnSeq,
     };
 
     const json = JSON.stringify(obj);
@@ -1133,7 +1114,8 @@ const createMeeting = () => {
     );
 
     const startDateTimeStempUTC = String(Math.round(startDate.getTime() / 1000));
-    const endDateTimeStempUTC = String(Math.round(endDate.getTime() / 1000));
+    const endDateTimeStempUTC = "";
+    // const endDateTimeStempUTC = String(Math.round(endDate.getTime() / 1000));
 
     const members = [];
     for (let i = 0; i < meetingInfo.memberIDs.length; i++) {
@@ -1159,10 +1141,9 @@ const createMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            en_seq: store.state.login.sessionEnSeq,
-            domain:
-                window.location.href.replace(window.location.pathname, "") + "/watttalk",
-            PMDomain: setPowerManageLink(window.location.hostname) + "/watttalk",
+            en_seq: loginStore.sessionEnSeq,
+            domain: "http://localhost:3000" + "/watttalk",
+            PMDomain: "http://localhost:8205",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1171,14 +1152,14 @@ const createMeeting = () => {
     } else {
         obj = {
             subject: meetingInfo.title,
-            start_time: startDateTimeStempUTC,
-            end_time: endDateTimeStempUTC,
+            start_time: "1754545440",
+            end_time: "1754552640",
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            en_seq: store.state.login.sessionEnSeq,
-            domain: window.location.href.replace(window.location.pathname, ""),
-            PMDomain: setPowerManageLink(window.location.hostname),
+            en_seq: loginStore.sessionEnSeq,
+            domain: "http://localhost:3000/watttalk",
+            PMDomain: "http://localhost:3000",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1194,7 +1175,7 @@ const createMeeting = () => {
 const modifyMeeting = () => {
     console.log("*** methods: modifyMeeting::");
     const meetingSeq = meetingStore.meetingSeq;
-    const meetingInfo = meetingStore.meetingModifyInfo;
+    const meetingInfo = meetingStore.setMeetingModifyInfo;
 
     const meetingStartDate = meetingInfo.startDate.split("-");
     const meetingEndDate = meetingInfo.endDate.split("-");
@@ -1245,9 +1226,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain:
-                window.location.href.replace(window.location.pathname, "") + "/watttalk",
-            PMDomain: setPowerManageLink(window.location.hostname) + "/watttalk",
+            domain: "http://localhost:3000" + "/watttalk",
+            PMDomain: "http://localhost:8205",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1262,8 +1242,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain: window.location.href.replace(window.location.pathname, ""),
-            PMDomain: setPowerManageLink(window.location.hostname),
+            domain: "http://localhost:3000/watttalk",
+            PMDomain: "http://localhost:3000",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1286,15 +1266,14 @@ const deleteMeeting = () => {
     if (process.env.renewal == "true") {
         obj = {
             meeting_seq: meetingSeq,
-            domain:
-                window.location.href.replace(window.location.pathname, "") + "/watttalk",
-            PMDomain: setPowerManageLink(window.location.hostname) + "/watttalk",
+            domain: "http://localhost:3000" + "/watttalk",
+            PMDomain: "http://localhost:8205",
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
-            domain: window.location.href.replace(window.location.pathname, ""),
-            PMDomain: setPowerManageLink(window.location.hostname),
+            domain: "http://localhost:3000/watttalk",
+            PMDomain: "http://localhost:3000",
         };
     }
     const json = JSON.stringify(obj);
@@ -1531,9 +1510,10 @@ watch(calendar, (newVal) => {
 
 // Watch for meeting save flag
 watch(getMeetingSaveFlag, (newVal) => {
+    alert(newVal);
     if (newVal) {
         createMeeting();
-        meetingStore.meetingSaveInfo(null); // Directly calling action
+        meetingStore.setMeetingSaveInfo(null); // Directly calling action
         meetingStore.setMeetingSaveFlag(false); // Directly calling action
     }
 });
@@ -1633,7 +1613,7 @@ watch(
                 remoteDeviceId: callingPopupResultData.deviceid,
                 roomID: callingPopupResultData.roomid,
                 institution: callingPopupResultData.institution,
-                nickname: callingPopupResultData.nickname
+                nickname: callingPopupResultData.nickname,
             });
 
             callStore.setUniqueRoomid("");
@@ -1649,7 +1629,6 @@ watch(
         callStore.setCallingResult("init");
     },
 );
-
 
 // Watch for send direct message flag
 watch(getSendDMFlag, (newVal) => {
@@ -1695,12 +1674,7 @@ watch(getReadProcFlag, (newVal) => {
 }
 .window {
     width: 100%;
-    @media screen and (min-height: 460px) {
-        height: 330px;
-    }
-    @media screen and (max-height: 479px) {
-        height: 200px;
-    }
+    border: 1px solid #4d4d4d;
     > button {
         width: 100%;
         height: 100%;
@@ -1716,20 +1690,16 @@ watch(getReadProcFlag, (newVal) => {
 .room-container {
     display: flex;
     flex-wrap: wrap; // 공간이 부족하면 다음 줄로 넘어감
-    gap: 10px; // 요소들 사이의 간격
-
-    >div {
-        // 기본적으로 각 아이템은 이 최소 너비를 가짐
-        min-width: 200px;
-        flex-grow: 1; // 남은 공간을 채우려고 확장 (가장 중요)
-        flex-basis: 0; // flex-grow와 함께 사용하면 효과적
-
-        // 한 줄에 하나만 들어갈 경우 100% 너비를 채움
-        // calc()를 사용하여 gap을 고려할 수 있음
-        width: calc((100% / 1) - 10px); // 한 줄에 하나의 아이템이 들어갈 때
-
-        // 이 부분은 미디어 쿼리로 제어하는 것이 더 명확하고 정확함.
-        // 아래 2번 예시를 참고하여 미디어 쿼리로 특정 breakpoint에서 100%로 설정
+    gap: 15px; // 요소들 사이의 간격
+    @media (min-width: 640px) {
+        > div {
+            width: calc(50% -  7.5px);
+        }
+    }
+    @media (min-width: 1280px) {
+        > div {
+            width: calc(33.333% - 10px);
+        }
     }
 }
 .font20 {

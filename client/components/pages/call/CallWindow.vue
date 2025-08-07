@@ -242,15 +242,7 @@
                     </div>
                     <div
                         v-if="drawingIframe"
-                        style="
-                            position: absolute;
-                            left: 0px !important;
-                            bottom: 0px !important;
-                            display: flex;
-                            width: 100%;
-                            justify-content: flex-end;
-                        "
-                        class="row"
+                        class="drawing-iframe"
                     >
                         <slot></slot>
                     </div>
@@ -492,12 +484,11 @@
         >
             <div
                 v-if="callingLayoutType == 1"
-                class="row justify-center content-center receiveBackground"
+                class="receiveBackground"
             >
                 <img src="@/assets/images/calling/ic_call-send-1.png" />
                 <div
-                    :style="{ paddingTop: props.compData == 1 ? '37px' : '20px' }"
-                    class="col-12 row justify-center buttonsLayout1"
+                    class="buttonsLayout1"
                 >
                     <button
                         @click="setMultiCalling(1)"
@@ -516,7 +507,7 @@
             </div>
             <div
                 v-else-if="callingLayoutType == 3 || callingLayoutType == 5"
-                class="row justify-center content-center receiveBackground slotLayout3"
+                class="receiveBackground slotLayout3"
             >
                 <div
                     v-if="callingLayoutType == 3"
@@ -552,7 +543,7 @@
                     </button>
                 </div>
             </div>
-            <div v-else class="row justify-center items-center receiveBackground">
+            <div v-else class="receiveBackground">
                 <img src="@/assets/images/calling/ic_receive-4.png" class="big" />
                 <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">
                     {{ t("accept") }}
@@ -711,7 +702,7 @@
         >
             <div
                 v-if="callingLayoutType == 1"
-                class="row justify-center items-center receiveBackground connectLayout1"
+                class="receiveBackground connectLayout1"
             >
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
@@ -720,7 +711,7 @@
             </div>
             <div
                 v-else-if="callingLayoutType == 5"
-                class="row justify-center items-center receiveBackground connectLayout5"
+                class="receiveBackground connectLayout5"
             >
                 <span class="sendingSpanCallingLayoutType3">{{
                     t("call Connecting")
@@ -729,7 +720,7 @@
             </div>
             <div
                 v-else
-                class="row justify-center items-center receiveBackground connectLayout3"
+                class="receiveBackground connectLayout3"
             >
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
@@ -850,7 +841,7 @@
             <div v-if="props.compData?.status == 2" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
-                    class="row justify-center content-center fileReceptionLayout1"
+                    class="fileReceptionLayout1"
                 >
                     <div class="row justify-center content-center">
                         <p style="font-size: 20px" class="requestText">
@@ -861,7 +852,7 @@
                     </div>
                     <div
                         :style="{ paddingTop: props.compData == 1 ? '37px' : '20px' }"
-                        class="col-12 row justify-center buttonsLayout1"
+                        class="buttonsLayout1"
                     >
                         <button
                             @click="fileReceiveAccept(props.compData.text)"
@@ -884,7 +875,7 @@
                     style="background: #151515; padding-bottom: 0"
                     class="row justify-center content-center fileReceptionLayout3"
                 >
-                    <div class="row col-12 justify-center buttonsLayout1">
+                    <div class="buttonsLayout1">
                         <div style="text-align: center" class="row">
                             <p
                                 style="font-size: 12px; margin: auto"
@@ -922,7 +913,7 @@
             <div v-else-if="props.compData?.status == 3" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
-                    class="row justify-center content-center fileReceptionLayout1"
+                    class="fileReceptionLayout1"
                 >
                     <div class="row col-12 justify-center">
                         <div style="margin-bottom: 15px" class="row col-5 prog">
@@ -937,7 +928,7 @@
                             ></div>
                         </div>
                     </div>
-                    <div class="row justify-center content-center buttonsLayout1">
+                    <div class="buttonsLayout1">
                         <p class="fileReceivingText">{{ t("receivingFile") }}</p>
                     </div>
                 </div>
@@ -945,7 +936,7 @@
                     v-else
                     class="row justify-center content-center fileReceptionLayout3"
                 >
-                    <div class="row col-12 justify-center buttonsLayout1">
+                    <div class="buttonsLayout1">
                         <div style="text-align: center" class="row">
                             <p class="col-12 fileReceivingText">
                                 {{ t("receivingFile") }}
@@ -970,7 +961,7 @@
             <div v-else-if="props.compData?.status == 5" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
-                    class="row justify-center content-center fileReceptionLayout1"
+                    class="fileReceptionLayout1"
                 >
                     <div class="row col-12 justify-center">
                         <img
@@ -1008,7 +999,7 @@
             <div v-else-if="props.compData?.status == 6" class="col-12 receiveStatus">
                 <div
                     v-if="callingLayoutType == 1"
-                    class="row justify-center content-center fileReceptionLayout1"
+                    class="fileReceptionLayout1"
                 >
                     <div class="row col-12 justify-center">
                         <img
@@ -1779,6 +1770,10 @@ padding-right: 1px;
 }
 
 .receiveBackground {
+    background: transparent linear-gradient(119deg, #C623D2 0%, #004CFF 100%) 0% 0% no-repeat padding-box
+}
+
+.sendingBackground {
 }
 
 .sendingBackground,
@@ -1790,6 +1785,11 @@ padding-right: 1px;
     max-width: inherit !important;
     max-height: inherit;
     padding-bottom: $windowInfoBarHeight;
+    display: flex;
+    flex: column;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
     > .sendingSpan,
     > .receiveSpan {
@@ -1810,6 +1810,8 @@ padding-right: 1px;
         margin-left: 5px;
         font-size: 14px;
         border-radius: 20px;
+        color: #fff;
+        background-color: #1C8EFF;
     }
 
     > .receiveBtnCallingLayoutType4 {
@@ -1818,6 +1820,8 @@ padding-right: 1px;
         margin-left: 10px;
         font-size: 14px;
         border-radius: 20px;
+        color: #fff;
+        background-color: #E600D7;
     }
 }
 
@@ -1861,6 +1865,13 @@ padding-right: 1px;
         border-radius: 20px;
         font-size: 14px;
         font-weight: bold;
+
+    }
+    button.receiveBtnCallingLayoutType3 {
+            background-color: #007bff;
+        }
+    button.receiveBtnCallingLayoutType4 {
+        background-color: #706c6c;
     }
 
     >button+button {
@@ -2147,11 +2158,15 @@ padding-right: 1px;
 .fileReceptionLayout1 {
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
     > p {
         font-size: 18px;
         margin: 0;
-        margin-top: 28px;
+        margin-top: 14px;
     }
 
     img.fileReceptionComplete {
@@ -2696,5 +2711,14 @@ padding-right: 1px;
     top: 10px;
     display: flex;
     gap: 8px;
+}
+
+.drawing-iframe {
+    position: absolute;
+    left: 72px !important;
+    /* bottom: 0px !important; */
+    display: flex;
+    width: calc(100% - 72px);
+    right: 0px;
 }
 </style>

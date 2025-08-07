@@ -19,120 +19,6 @@
                 :search="searchName"
                 :use-check-box="true"
             />
-            <!-- <div
-                class="col-12 row items-center memberContents cursor-pointer"
-                v-for="(encontents, encontentsKey) in en_list"
-                :key="encontentsKey"
-            >
-                <div class="memberContentsBreakLine"></div>
-                <div class="row memberEnList" style="width: 100%">
-                    <input
-                        type="checkbox"
-                        @click="getCheck($event)"
-                        :id="`enCheck${encontentsKey}`"
-                        :class="`enCheck${encontentsKey}`"
-                    />
-                    <label :for="`enCheck${encontentsKey}`" class="enMemberCheck"></label>
-                    <div
-                        @click="getHqList($event)"
-                        :class="`en${encontentsKey}`"
-                        v-show="true"
-                    >
-                        <span style="text-align: left">{{ encontents.en }}</span>
-                        <img src="@/assets/images/ic_dropdown.png" class="imgAbs" />
-                    </div>
-                    <div
-                        class="row memberHqList row items-center memberContents"
-                        v-for="(hqcontents, hqcontentsKey) in hq_list"
-                        :key="hqcontentsKey"
-                        v-show="false"
-                    >
-                        <input
-                            type="checkbox"
-                            @click="getCheck($event)"
-                            :id="`hqCheck${hqcontentsKey}`"
-                            :class="`hqCheck${hqcontentsKey} enCheck${encontentsKey}`"
-                        />
-                        <label
-                            :for="`hqCheck${hqcontentsKey}`"
-                            class="hqMemberCheck"
-                        ></label>
-                        <div
-                            @click="getBrList($event)"
-                            :class="`en${encontentsKey} hq${hqcontentsKey}`"
-                        >
-                            <span style="text-align: left">{{ hqcontents.hq }}</span>
-                            <img src="@/assets/images/ic_dropdown.png" class="imgAbs" />
-                        </div>
-                        <div
-                            class="row memberBrList row items-center memberContents"
-                            v-for="(brcontents, brcontentsKey) in br_list"
-                            :key="brcontentsKey"
-                            v-show="false"
-                        >
-                            <input
-                                type="checkbox"
-                                @click="getCheck($event)"
-                                :id="`brCheck${brcontentsKey}`"
-                                :class="`brCheck${brcontentsKey} hqCheck${hqcontentsKey} enCheck${encontentsKey}`"
-                            />
-                            <label
-                                :for="`brCheck${brcontentsKey}`"
-                                class="brMemberCheck"
-                            ></label>
-                            <div
-                                @click="getUserList($event)"
-                                :class="`en${encontentsKey} hq${hqcontentsKey} br${brcontentsKey}`"
-                            >
-                                <span style="text-align: left">{{ brcontents.br }}</span>
-                                <img
-                                    src="@/assets/images/ic_dropdown.png"
-                                    class="imgAbs"
-                                />
-                            </div>
-                            <div
-                                class="row memberUserList row items-center memberContents"
-                                v-show="false"
-                            >
-                                <div
-                                    class="row col-12 userContainer"
-                                    v-for="(uscontents, uscontentsKey) in userData"
-                                    :key="uscontentsKey"
-                                    v-show="false"
-                                >
-                                    <input
-                                        v-if="uscontents.devicetype != 4"
-                                        type="checkbox"
-                                        @click="getCheck($event)"
-                                        v-model="checkedValues"
-                                        :value="uscontents.nickname"
-                                        :id="`userCheck${uscontentsKey}`"
-                                        :class="`${uscontents.deviceid} brCheck${brcontentsKey} hqCheck${hqcontentsKey} enCheck${encontentsKey}`"
-                                    />
-                                    <label
-                                        v-if="uscontents.devicetype != 4"
-                                        :for="`userCheck${uscontentsKey}`"
-                                        class="userMemberCheck"
-                                    ></label>
-                                    <div v-if="uscontents.devicetype != 4">
-                                        <label
-                                            :for="`${uscontentsKey}`"
-                                            class="userMemberCheck"
-                                        >
-                                            <span>{{ uscontents.nickname }}</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="memberContentsBreakLine"
-                    v-if="en_list.length - 1 == encontentsKey"
-                ></div>
-            </div>
-            <div class="col-12" style="margin: 22px"></div> -->
         </div>
     </div>
 </template>
@@ -159,13 +45,13 @@ const dropdownImg = {
     dropdown: dropdownIcon,
     dropup: dropupIcon,
 };
+let userList = reactive([]);
 const en_list = ref([]);
 const hq_list = ref([]);
 const br_list = ref([]);
 const checkedValues = ref([]);
 const memberSearch = ref("");
 const enRef = ref(null); // Ref for the scrollingBox div
-const userList = reactive([]);
 
 // Access Vuex Store
 const callStore = useCallStore();
@@ -177,9 +63,40 @@ const userListStore = useUserListStore();
 const userData = computed(() => callStore.userData);
 
 // Watchers
-watch(checkedValues, (newVal) => {
+watch(userList, (newVal) => {
     // Emits the updated checked values to the parent component
-    emit("value", newVal);
+    console.log(userList);
+    const result = extractLeafData(userList)
+        function extractLeafData(treeData) {
+        const names = [];
+        const deviceIds = [];
+
+        function traverse(node) {
+            if (node.children && node.children.length > 0) {
+                node.children.forEach((child) => traverse(child));
+            } else {
+                // children 배열이 비어있으면 가장 깊은 노드(leaf node)입니다.
+                console.log(node)
+                if (node.name && node.checked) {
+                    names.push(node.name);
+                }
+                if (node.deviceId && node.checked) {
+                    deviceIds.push(node.deviceId);
+                }
+            }
+        }
+
+        // 🚨 수정된 부분: treeData가 배열이므로 각 노드에 대해 traverse 호출
+        if (Array.isArray(treeData)) {
+            treeData.forEach(node => traverse(node));
+        } else {
+            traverse(treeData);
+        }
+
+        return { names, deviceIds };
+    }
+    console.log(result);
+    emit("selectMember", result);
 });
 
 watch(memberSearch, (newVal) => {
@@ -191,11 +108,9 @@ const emit = defineEmits(["value"]);
 
 // Lifecycle Hook
 onMounted(() => {
-
-    userList[0] = {
-        name: userListStore.userListAll.institution[0],
-        children: userListStore.organizationList,
-    };
+    console.log(props.enterMember);
+    // userList = props.enterMember;
+    userList.splice(0, userList.length, ...props.enterMember);
     console.log(userList);
 });
 </script>
@@ -263,15 +178,13 @@ input[type="checkbox"] {
         &:before {
             content: " ";
             display: inline-block;
-            position: absolute;
-            left: 0px;
-            z-index: 2;
             width: 14px;
             height: 14px;
             line-height: 14px;
             text-align: center;
             vertical-align: middle;
             margin-right: 8px;
+            margin-bottom: 4px;
         }
     }
 

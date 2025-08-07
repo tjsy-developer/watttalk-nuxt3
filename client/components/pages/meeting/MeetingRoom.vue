@@ -1,17 +1,14 @@
 <template>
     <div class="window">
-        <div v-if="!compData" class="empty row column items-center justify-center">
+        <div v-if="!props.compData" class="empty row column items-center justify-center">
             <button @click="makingBtnClick" class="makeMeetingBtn">
                 + {{ t("createMeeting") }}
             </button>
         </div>
 
-        <div
-            v-else-if="compData.customData.status == 0"
-            class="nonplaying column justify-end"
-        >
-            <span class="font16">{{ t("beforeOpening") }}</span>
-            <span class="font22">{{ compData.customData.title }}</span>
+        <div v-else-if="props.compData.customData.status == 0" class="nonplaying">
+            <span class="room-status">{{ t("beforeOpening") }}</span>
+            <span class="font22">{{ props.compData.customData.title }}</span>
             <img
                 src="@/assets/images/conference/ic_hm_active.png"
                 alt="Icon"
@@ -19,12 +16,9 @@
             />
         </div>
 
-        <div
-            v-else-if="compData.customData.status == 1"
-            class="playing column justify-end"
-        >
-            <span class="font16">{{ t("ongoing") }}</span>
-            <span class="font22">{{ compData.customData.title }}</span>
+        <div v-else-if="props.compData.customData.status == 1" class="playing">
+            <span class="room-status">{{ t("ongoing") }}</span>
+            <span class="font22">{{ props.compData.customData.title }}</span>
             <img
                 src="@/assets/images/conference/ic_hm_active.png"
                 alt="Icon"
@@ -32,31 +26,26 @@
             />
         </div>
 
-        <div
-            v-else-if="compData.customData.status == 2"
-            class="closeMeeting column justify-end"
-        >
-            <span class="font16">{{ t("endMeeting") }}</span>
-            <span class="font22">{{ compData.customData.title }}</span>
+        <div v-else-if="props.compData.customData.status == 2" class="closeMeeting">
+            <span class="room-status">{{ t("endMeeting") }}</span>
+            <span class="font22">{{ props.compData.customData.title }}</span>
         </div>
 
-        <div v-if="compData" class="mtContent column col-12 justify-start">
+        <div v-if="props.compData" class="mtConten">
             <div class="contentBox column justify-start">
                 <div
                     v-if="
-                        compData.customData.type === 0 || compData.customData.type === 1
+                        props.compData.customData.type === 0 || props.compData.customData.type === 1
                     "
-                    class="contentView row items-center"
+                    class="contentView"
                 >
                     <img src="@/assets/images/conference/ic_date.png" alt="Date Icon" />
-                    <span class="row items-center spanTitle"
-                        >{{ t("meetingDate") }}:&nbsp;</span
-                    >
+                    <span class="spanTitle">{{ t("meetingDate") }}:&nbsp;</span>
                     <span class="col items-center spanContent timeOverFlow">{{
-                        format(compData.startDate)
+                        format(props.compData.startDate)
                     }}</span>
                 </div>
-                <div v-else class="contentView row items-center">
+                <div v-else class="contentView">
                     <img
                         v-if="displayMode == 'darkmode'"
                         src="@/assets/images/conference/ic_con_start.png"
@@ -71,16 +60,16 @@
                         >{{ t("meetingStartPeriod") }} :&nbsp;</span
                     >
                     <span class="col items-center spanContent timeOverFlow">
-                        {{ format(compData.startDate) }}
+                        {{ format(props.compData.startDate) }}
                         {{ time() ? time().split("-")[0] : "" }}
                     </span>
                 </div>
 
                 <div
                     v-if="
-                        compData.customData.type === 0 || compData.customData.type === 1
+                        props.compData.customData.type === 0 || props.compData.customData.type === 1
                     "
-                    class="contentView row items-center"
+                    class="contentView"
                 >
                     <img src="@/assets/images/conference/ic_time.png" alt="Time Icon" />
                     <span class="row items-center spanTitle"
@@ -90,7 +79,7 @@
                         time()
                     }}</span>
                 </div>
-                <div v-else class="contentView row items-center">
+                <div v-else class="contentView">
                     <img
                         v-if="displayMode == 'darkmode'"
                         src="@/assets/images/conference/ic_con_end.png"
@@ -106,15 +95,15 @@
                     >
                     <span class="col items-center spanContent timeOverFlow">
                         {{
-                            compData.customData.type === 3
+                            props.compData.customData.type === 3
                                 ? t("meeting validity period")
-                                : format(compData.endDate) +
+                                : format(props.compData.endDate) +
                                   (time() ? time().split("-")[1] : "")
                         }}
                     </span>
                 </div>
 
-                <div class="contentView row items-center">
+                <div class="contentView">
                     <img
                         src="@/assets/images/conference/ic_hm.png"
                         alt="Participants Icon"
@@ -124,18 +113,12 @@
                         >{{ t("meetingMember") }}:&nbsp;</span
                     >
                     <span
-                        v-if="lang == 'ko'"
-                        class="row items-center spanContent textEllipsisKo"
-                        >{{ compData.customData.member }}</span
-                    >
-                    <span
-                        v-if="lang == 'en'"
-                        class="row items-center spanContent textEllipsisEn"
-                        >{{ compData.customData.member }}</span
+                        class="spanContent textEllipsisKo"
+                        >{{ props.compData.customData.member }}</span
                     >
                 </div>
 
-                <div v-if="showCctvList" class="contentView row items-center">
+                <div v-if="showCctvList" class="contentView">
                     <img
                         src="@/assets/images/conference/ic_cctv_m.png"
                         alt="CCTV Icon"
@@ -150,8 +133,8 @@
                 <div
                     v-if="
                         checkDirectCall === 'True' &&
-                        compData.customData.type === 3 &&
-                        compData.customData.checkOptionTxt
+                        props.compData.customData.type === 3 &&
+                        props.compData.customData.checkOptionTxt
                     "
                     class="optionTxt row items-center"
                 >
@@ -159,27 +142,27 @@
                         >{{ t("meeting option text")[0] }}&nbsp;</span
                     >
                     <span class="row items-center spanContent textEllipsis">{{
-                        compData.customData.checkOptionTxt
+                        props.compData.customData.checkOptionTxt
                     }}</span>
                 </div>
             </div>
 
-            <div class="btnLocation row justify-end items-end">
+            <div class="btnLocation">
                 <div
                     v-if="
-                        compData.customData.master == device_id &&
-                        compData.customData.status == 0
+                        props.compData.customData.master == device_id &&
+                        props.compData.customData.status == 0
                     "
                     class="operation"
                 >
                     <button
-                        @click="roomModify(compData.customData.meeting_seq)"
+                        @click="roomModify(props.compData.customData.meeting_seq)"
                         class="modifyBtn"
                     >
                         {{ t("meetingModify") }}
                     </button>
                     <button
-                        @click="askingDeleteMeetingRoom(compData.customData.meeting_seq)"
+                        @click="askingDeleteMeetingRoom(props.compData.customData.meeting_seq)"
                         class="deleteMeetingBtn"
                     >
                         {{ t("meetingDelete") }}
@@ -188,17 +171,17 @@
 
                 <div
                     v-if="
-                        compData.customData.everyone_start_yn == 1 &&
-                        compData.customData.member_deviceid.includes(device_id)
+                        props.compData.customData.everyone_start_yn == 1 &&
+                        props.compData.customData.member_deviceid.includes(device_id)
                     "
-                    class="row justify-center items-center"
+                    class="button-container"
                 >
                     <button
-                        v-if="compData.customData.status == 0"
+                        v-if="props.compData.customData.status == 0"
                         @click="
                             checkMediaDevice(
                                 'openMeeting',
-                                compData.customData.meeting_seq,
+                                props.compData.customData.meeting_seq,
                             )
                         "
                         class="contentBtn"
@@ -210,11 +193,11 @@
                         {{ t("meetingStart") }}
                     </button>
                     <button
-                        v-else-if="compData.customData.status == 1"
+                        v-else-if="props.compData.customData.status == 1"
                         @click="
                             checkMediaDevice(
                                 'joinMeeting',
-                                compData.customData.meeting_seq,
+                                props.compData.customData.meeting_seq,
                             )
                         "
                         class="contentBtn"
@@ -225,18 +208,18 @@
                 </div>
 
                 <div
-                    v-if="compData.customData.everyone_start_yn == 0"
+                    v-if="props.compData.customData.everyone_start_yn == 0"
                     class="row justify-center items-center"
                 >
                     <button
                         v-if="
-                            compData.customData.master == device_id &&
-                            compData.customData.status == 0
+                            props.compData.customData.master == device_id &&
+                            props.compData.customData.status == 0
                         "
                         @click="
                             checkMediaDevice(
                                 'openOwnMeeting',
-                                compData.customData.meeting_seq,
+                                props.compData.customData.meeting_seq,
                             )
                         "
                         class="contentBtn"
@@ -249,13 +232,13 @@
                     </button>
                     <button
                         v-else-if="
-                            compData.customData.status == 1 &&
-                            compData.customData.member_deviceid.includes(device_id)
+                            props.compData.customData.status == 1 &&
+                            props.compData.customData.member_deviceid.includes(device_id)
                         "
                         @click="
                             checkMediaDevice(
                                 'joinMeeting',
-                                compData.customData.meeting_seq,
+                                props.compData.customData.meeting_seq,
                             )
                         "
                         class="contentBtn"
@@ -265,14 +248,14 @@
                     </button>
                     <button
                         v-else-if="
-                            compData.customData.master != device_id &&
-                            compData.customData.status == 0 &&
-                            compData.customData.member_deviceid.includes(device_id)
+                            props.compData.customData.master != device_id &&
+                            props.compData.customData.status == 0 &&
+                            props.compData.customData.member_deviceid.includes(device_id)
                         "
                         @click="
                             checkMediaDevice(
                                 'joinMeeting',
-                                compData.customData.meeting_seq,
+                                props.compData.customData.meeting_seq,
                             )
                         "
                         class="contentBtn"
@@ -313,6 +296,7 @@ const props = defineProps({
 const loginStore = useLoginStore();
 const meetingStore = useMeetingStore();
 const modalStore = useModalStore();
+const commonStore = useCommonStore();
 
 const device_id = ref("");
 const nickname = ref("");
@@ -338,6 +322,7 @@ const getModalsContainerStyle = () => {
 };
 
 const openMeetingCheck = (meetingSeq) => {
+    alert('여기안탔어?')
     const obj = { meeting_seq: meetingSeq };
     const json = JSON.stringify(obj);
 
@@ -349,22 +334,6 @@ const openMeetingCheck = (meetingSeq) => {
 
     // Ensure to remove previous listener to prevent multiple calls
     $signallingSocket.off("openMeetingChecking"); // Clear previous listener if any
-
-    $signallingSocket.on("openMeetingChecking", (response) => {
-        $signallingSocket.off("openMeetingChecking"); // Remove immediately after first response
-        const resJson = JSON.parse(response);
-
-        if (resJson.start_status === 0) {
-            console.log("openMeeting");
-            openMeeting(meetingSeq);
-        } else if (resJson.start_status === 1) {
-            console.log("joinMeeting");
-            joinMeeting(meetingSeq, 1);
-        } else if (resJson.start_status === 3) {
-            console.log("회의실이 삭제되어있다.");
-            commonStore.setNoneOverlayAlertStatus(8);
-        }
-    });
 };
 
 const openMeeting = (meetingSeq) => {
@@ -373,9 +342,9 @@ const openMeeting = (meetingSeq) => {
     };
     console.log("*** methods: openMeeting::");
     console.log("*** methods: openMeeting:: meetingSeq = ", meetingSeq);
-    meetingStore.openAndJoin("open");
-    meetingStore.meetingSeq(meetingSeq);
-    meetingStore.meetingOpenFlag(true);
+    meetingStore.setOpenAndJoin("open");
+    meetingStore.setMeetingSeq(meetingSeq);
+    meetingStore.setMeetingOpenFlag(true);
     meetingStore.setOpenMeetingData(openMeetingData);
 };
 
@@ -386,31 +355,28 @@ const joinMeeting = (meetingSeq, type) => {
     console.log("*** methods: joinMeeting::");
     console.log("*** methods: joinMeeting:: meetingSeq = ", meetingSeq);
 
-    meetingStore.openAndJoin("join");
-    meetingStore.meetingSeq(meetingSeq);
-    meetingStore.meetingJoinFlag(true);
+    meetingStore.setOpenAndJoin("join");
+    meetingStore.setMeetingSeq(meetingSeq);
+    meetingStore.setMeetingJoinFlag(true);
 };
 
 const makingBtnClick = async () => {
     console.log("*** methods: makingBtnClick");
-	const { open, close } = useModal({
+    const { open, close } = useModal({
         component: MeetingModal,
         styleValue: {
-            width: '650px',
-            height: '440px',
+            width: "650px",
+            height: "440px",
         },
         key: `meeting-modal`,
         attrs: {
             onClose: () => close(),
         },
-    })
-    open()
+    });
+    open();
 };
 
 const askingDeleteMeetingRoom = async (meetingSeq) => {
-    const modalsContainerStyle = getModalsContainerStyle();
-    if (modalsContainerStyle) modalsContainerStyle.display = "block";
-
     console.log("*** methods: askingDeleteMeetingRoom:: meetingSeq = ", meetingSeq);
     $modal.show(
         DeleteMeeting,
@@ -453,9 +419,9 @@ const time = () => {
         let amPm2 = "";
 
         if (Number(t1.slice(0, 2)) < 12) {
-            amPm1 = t("meetingAm");
+            amPm1 = "오전";
         } else {
-            amPm1 = t("meetingPm");
+            amPm1 = "오후";
             if (Number(t1.slice(0, 2)) !== 12) {
                 // Fix: use !== instead of !=
                 const tt1 = ("0" + (Number(t1.slice(0, 2)) - 12)).slice(-2);
@@ -464,9 +430,9 @@ const time = () => {
         }
 
         if (Number(t2.slice(0, 2)) < 12) {
-            amPm2 = t("meetingAm");
+            amPm2 = "오전";
         } else {
-            amPm2 = t("meetingPm");
+            amPm2 = "오후";
             if (Number(t2.slice(0, 2)) !== 12) {
                 // Fix: use !== instead of !=
                 const tt2 = ("0" + (Number(t2.slice(0, 2)) - 12)).slice(-2);
@@ -480,25 +446,25 @@ const time = () => {
 const roomModify = async (meetingSeq) => {
     console.log("*** methods: roomModify:: meetingSeq = ", meetingSeq);
     console.log("*** methods: roomModify:: modify this.compData = ", props.compData);
-    meetingStore.meetingSeq(meetingSeq);
-	const { open, close } = useModal({
+    meetingStore.setMeetingSeq(meetingSeq);
+    const { open, close } = useModal({
         component: MeetingModal,
         key: `meeting-edit-modal`,
         class: "modal-container meeting-modal",
-		attrs: {
-			compData: props.compData,
+        attrs: {
+            compData: props.compData,
             index: props.index,
             allView: props.allView,
-			onClose: () => {
-				close()
-				meetingStore.meetingMemberDeleteAll();
+            onClose: () => {
+                close();
+                meetingStore.meetingMemberDeleteAll();
                 meetingStore.meetingMemberIdAllDelete();
                 meetingStore.meetingMemberEmailDeleteAll();
                 meetingStore.emailDeleteAll();
-			}
+            },
         },
-    })
-    open()
+    });
+    open();
 };
 
 const onResize = () => {
@@ -506,18 +472,9 @@ const onResize = () => {
     windowHeight.value = window.innerHeight;
 };
 
-const checkMediaDevice = async (type, seq) => {
-    const result = await verifyToken();
-    if (!result) return;
-
-    if (getCookie("closeDeviceModalPermanant") === "true") {
-        deviceSettingFin(type, seq);
-    } else {
-        openDeviceModal(type, seq);
-    }
-};
 
 const deviceSettingFin = (type, seq) => {
+    alert('여기탓어?'+type)
     commonStore.setDeviceModifyState(false);
     if (type === "openOwnMeeting") {
         openMeeting(seq);
@@ -529,14 +486,21 @@ const deviceSettingFin = (type, seq) => {
 };
 
 const openDeviceModal = (meetingType, meetingSeq) => {
-    const modalsContainerStyle = getModalsContainerStyle();
-    if (modalsContainerStyle) modalsContainerStyle.display = "block";
-
+    alert("여기타는거아니야?")
+    console.log(deviceSettingFin)
     const modalsParameter = {
         type: meetingType,
-        func: deviceSettingFin(meetingType),
+        func: () =>deviceSettingFin(meetingType),
     };
-    modalStore.openModal("device", modalsParameter);
+    modalStore.openModal("device", modalsParameter)
+};
+
+const checkMediaDevice = async (type, seq) => {
+    if (getCookie("closeDeviceModalPermanant") === "true") {
+        deviceSettingFin(type, seq);
+    } else {
+        openDeviceModal(type, seq);
+    }
 };
 
 const setCctvList = () => {
@@ -574,6 +538,22 @@ onMounted(() => {
     if (sessionStorage.getItem("directCall")) {
         checkDirectCall.value = sessionStorage.getItem("directCall");
     }
+
+    $signallingSocket.on("openMeetingChecking", (response) => {
+        $signallingSocket.off("openMeetingChecking"); // Remove immediately after first response
+        const resJson = JSON.parse(response);
+        console.log(resJson)
+        if (resJson.start_status === 0) {
+            console.log("openMeeting");
+            openMeeting(meetingSeq);
+        } else if (resJson.start_status === 1) {
+            console.log("joinMeeting");
+            joinMeeting(meetingSeq, 1);
+        } else if (resJson.start_status === 3) {
+            console.log("회의실이 삭제되어있다.");
+            commonStore.setNoneOverlayAlertStatus(8);
+        }
+    });
 });
 
 onUnmounted(() => {
@@ -582,27 +562,27 @@ onUnmounted(() => {
 
     if ($signallingSocket) {
         console.log("*** onUnmounted: Socket Event Remove Started !!");
-        $signallingSocket.off("openMeetingChecking");
-        $signallingSocket.off("meetingList");
-        $signallingSocket.off("meetingCalendarList");
-        $signallingSocket.off("createMeeting");
-        $signallingSocket.off("modifyMeeting");
-        $signallingSocket.off("deleteMeeting");
-        $signallingSocket.off("openMeetingOnOff");
-        $signallingSocket.off("openMeeting");
-        $signallingSocket.off("joinMeeting");
-        $signallingSocket.off("leaveMeeting");
-        $signallingSocket.off("changedMeeting");
-        $signallingSocket.off("sendMeetingRoomID");
-        $signallingSocket.off("userListAll");
-        $signallingSocket.off("calling");
-        $signallingSocket.off("cancelCalling");
-        $signallingSocket.off("directMessageReadProcess");
-        $signallingSocket.off("directMessage");
-        $signallingSocket.off("getPreviousMessage");
-        $signallingSocket.off("environment");
-        $signallingSocket.off("forceLogoutRequest");
-        $signallingSocket.off("sendEntryNotification");
+        // $signallingSocket.off("openMeetingChecking");
+        // $signallingSocket.off("meetingList");
+        // $signallingSocket.off("meetingCalendarList");
+        // $signallingSocket.off("createMeeting");
+        // $signallingSocket.off("modifyMeeting");
+        // $signallingSocket.off("deleteMeeting");
+        // $signallingSocket.off("openMeetingOnOff");
+        // $signallingSocket.off("openMeeting");
+        // $signallingSocket.off("joinMeeting");
+        // $signallingSocket.off("leaveMeeting");
+        // $signallingSocket.off("changedMeeting");
+        // $signallingSocket.off("sendMeetingRoomID");
+        // $signallingSocket.off("userListAll");
+        // $signallingSocket.off("calling");
+        // $signallingSocket.off("cancelCalling");
+        // $signallingSocket.off("directMessageReadProcess");
+        // $signallingSocket.off("directMessage");
+        // $signallingSocket.off("getPreviousMessage");
+        // $signallingSocket.off("environment");
+        // $signallingSocket.off("forceLogoutRequest");
+        // $signallingSocket.off("sendEntryNotification");
         console.log("*** onUnmounted: All socket event listeners removed.");
         // $signallingSocket.disconnect(); // Only if this component is responsible for disconnecting
     }
@@ -631,67 +611,38 @@ watch(
 
 <style lang="scss">
 .textEllipsisKo {
-    display: block;
     white-space: nowrap;
-    // word-wrap: break-word;
-    // word-break: break-all;
-    width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
-    // max-width: 570px;
-    // max-width: calc(100% - 200px);
-    height: 20px;
+    height: 31px;
+    line-height: 31px;
+    margin-top: 3px;
     cursor: pointer;
-
-    @media screen and (min-height: 460px) {
-        &:hover {
-            font: normal normal normal 14px/16px NanumSquare;
-            position: absolute;
-            left: 110px;
-            top: -4px;
-            text-overflow: clip;
-            overflow: auto;
-            white-space: normal;
-            width: 300px;
-            max-height: 130px;
-            height: auto !important;
-            z-index: 999;
-            padding: 6px;
-            border-radius: 6px;
+    width: 69%;
+    &:hover {
+            /* 호버 시 확대 */
+            transform: scale(1.1);
+            z-index: 10; /* 다른 요소 위로 올라오도록 설정 */
+            overflow: visible; /* 잘린 텍스트가 보이도록 변경 */
+            white-space: normal; /* 줄 바꿈 허용 */
+            background-color: rgba(255, 255, 255, 0.9); /* 배경색 추가하여 겹치지 않게 함 */
+            color: #1f2937;
+            padding: 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            /* 호버 시 전체 텍스트가 보이도록 너비를 자동으로 설정 */
+            width: max-content;
         }
-    }
 }
 
 .textEllipsisEn {
-    display: block;
     white-space: nowrap;
-    // word-wrap: break-word;
-    // word-break: break-all;
-    width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
-    // max-width: 570px;
-    // max-width: calc(100% - 200px);
-    height: 20px;
+    height: 31px;
+    line-height: 31px;
+    margin-top: 3px;
     cursor: pointer;
-
-    @media screen and (min-height: 460px) {
-        &:hover {
-            font: normal normal normal 14px/16px NanumSquare;
-            position: absolute;
-            left: 120px;
-            top: -4px;
-            text-overflow: clip;
-            overflow: auto;
-            white-space: normal;
-            width: 300px;
-            max-height: 130px;
-            height: auto !important;
-            z-index: 999;
-            padding: 6px;
-            border-radius: 6px;
-        }
-    }
 }
 
 .timeOverFlow {
@@ -703,9 +654,18 @@ watch(
 }
 
 .btnLocation {
-    position: absolute;
-    right: 19px;
-    bottom: 12px;
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    min-height: 32px;
+    .operation {
+        display: flex;
+    }
+    button {
+        font-size: 1.5rem;
+        color: #fff;
+    }
 }
 
 .operation {
@@ -713,15 +673,6 @@ watch(
     height: 32px;
     display: flex;
     align-items: center;
-
-    .deleteMeetingBtn {
-        font: normal normal bold 16px/18px NanumSquare;
-        margin-left: 19px;
-    }
-
-    .modifyBtn {
-        font: normal normal bold 16px/18px NanumSquare;
-    }
 }
 
 .contentBtn {
@@ -732,17 +683,13 @@ watch(
 }
 
 .contentBox {
-    @media screen and (min-height: 460px) {
-        padding-top: 23px;
-    }
-    @media screen and (max-height: 459px) {
-        padding-top: 10px;
-    }
+    padding: 2rem 0;
 }
 
 .contentView {
+    display: flex;
     height: 31px;
-    padding-left: 25px;
+    padding-left: 2.5rem;
     padding-bottom: 7px;
 
     img {
@@ -782,6 +729,7 @@ watch(
     position: absolute;
     object-fit: cover;
     right: 0px;
+    height: 100%;
     @media screen and (min-height: 460px) {
         //
     }
@@ -798,72 +746,64 @@ watch(
     letter-spacing: 0px;
 }
 
-.font16 {
+.room-status {
     font: normal normal normal 16px/18px NanumSquare;
     letter-spacing: 0px;
-    @media screen and (min-height: 460px) {
-        padding-left: 31px;
-        padding-bottom: 10px;
-    }
-    @media screen and (max-height: 459px) {
-        padding-left: 31px;
-        padding-bottom: 10px;
-    }
+    color: #fff;
+    position: absolute;
+    left: 2rem;
+    top: 2rem;
 }
 
 .font22 {
     font: normal normal bold 22px/26px NanumSquare;
     letter-spacing: 0px;
-    @media screen and (min-height: 460px) {
-        padding-left: 31px;
-        padding-bottom: 20px;
-    }
-    @media screen and (max-height: 459px) {
-        padding-left: 31px;
-        padding-bottom: 20px;
-    }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 90%;
+    position: absolute;
+    left: 2rem;
+    top: 5rem;
 }
 
 .closeMeeting {
     width: 100%;
     height: 44%;
+    position: relative;
+    background: #4c4c4c 0 0 no-repeat padding-box;
 }
 
 .nonplaying {
     width: 100%;
     height: 97px;
+    position: relative;
+    background: #4c4c4c 0 0 no-repeat padding-box;
 }
 
 .playing {
     width: 100%;
     height: 97px;
+    position: relative;
+	background: #1068AC 0% 0% no-repeat padding-box
 }
 
 .empty {
     width: 100%;
-    height: 282px;
-	display: flex;
+    min-height: 274px;
+    display: flex;
     align-items: center;
     justify-content: center;
     font: normal normal bold 18px/21px NanumSquare;
     letter-spacing: 0px;
-	border: 1px dashed rgb(112, 112, 112);
+    border: 1px dashed rgb(112, 112, 112);
 }
 
 .window {
     width: 100%;
     height: inherit;
     overflow: hidden;
-    // @media screen and (min-height: 460px) {
-    //   height: 330px;
-    // }
-    // @media screen and (max-height: 459px) {
-    //   height: 100%;
-    // }
+    color: #fff;
 
     & > button {
         width: 100%;
@@ -882,7 +822,7 @@ watch(
     .imageLocation {
         width: 145px;
     }
-    .font16 {
+    .room-status {
         // Note: original SASS had a comma here, SCSS accepts it but it's redundant. Keeping for direct translation.
         font: normal normal normal 12px/16px NanumSquare !important;
     }
@@ -912,11 +852,8 @@ watch(
         padding-left: 10px;
     }
     .btnLocation {
-        // Note: original SASS had a comma here, SCSS accepts it but it's redundant. Keeping for direct translation.
-        font-size: 12px;
-        @media screen and (max-width: 370px) {
-            right: 7px;
-            bottom: 19px;
+        .operation {
+            display: flex;
         }
     }
     .makeMeetingBtn {
@@ -962,7 +899,7 @@ watch(
     .imageLocation {
         width: 145px;
     }
-    .font16 {
+    .room-status {
         font: normal normal normal 12px/16px NanumSquare !important;
     }
     .font22 {
@@ -1044,5 +981,9 @@ watch(
         // text-overflow: ellipsis;
         height: 20px;
     }
+}
+
+.button-container {
+    color: #fff;
 }
 </style>

@@ -533,7 +533,7 @@ select {
     /* 파일 이름 입력 필드 */
     .fileName {
         width: 100%;
-        height: 25px;
+        height: 33px;
         padding-left: 8px;
 		background-color: #343434;
 		color: #fff;

@@ -87,6 +87,7 @@ const props = defineProps({
     type: String,
     deviceId: String,
     requestCall: Function,
+    func: Function
 });
 
 let audioList = ref([]);
@@ -111,6 +112,7 @@ const modalStore = useModalStore();
 
 onMounted(() => {
     getMediaList();
+    console.log(props.func)
 });
 function close(type) {
     if (!type) {

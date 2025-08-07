@@ -123,7 +123,7 @@ export const useMeetingStore = defineStore("meeting", {
             this.emails = [];
         },
         // 회의 목록에 회의를 추가 하기 위함
-        meetingListAdd(payload) {
+        setMeetingListAdd(payload) {
             this.meetingList.push(payload);
         },
         // 회의 생성 - 멤버 선택 시 아이디 추가
@@ -161,7 +161,7 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingMemberEmail = [];
         },
         // 회의 목록을 초기화 하기 위함
-        meetingListEmpty() {
+        setMeetingListEmpty() {
             this.meetingList = [];
         },
         // 해당 월에 대한 정보를 넣어두는 vuex
@@ -169,15 +169,15 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingListMonthInfo = payload;
         },
         // 회의 월력 요청시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingListMonthFlag(payload) {
+        setMeetingListMonthFlag(payload) {
             this.meetingListMonthFlag = payload;
         },
         // 회의 저장 시 회의 정보를 담아 놓는 것
-        meetingSaveInfo(payload) {
+        setMeetingSaveInfo(payload) {
             this.meetingSaveInfo = payload;
         },
         // 회의 저장 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingSaveFlag(payload) {
+        setMeetingSaveFlag(payload) {
             this.meetingSaveFlag = payload;
         },
         // 회의실의 시퀀스를 저장해둔다.
@@ -189,11 +189,11 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingDeleteFlag = payload;
         },
         // 회의실 개설 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingOpenFlag(payload) {
+        setMeetingOpenFlag(payload) {
             this.meetingOpenFlag = payload;
         },
         // 회의실 참가 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingJoinFlag(payload) {
+        setMeetingJoinFlag(payload) {
             this.meetingJoinFlag = payload;
         },
         // 회의실 퇴장 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
@@ -201,13 +201,13 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingLeaveFlag = payload;
         },
         // createRoomId 를 호출 후 회의실 개설 함수를 실행할지, 참가 함수를 실행할지 결정하는 부분
-        openAndJoin(payload) {
+        setOpenAndJoin(payload) {
             this.openAndJoin = payload;
         },
-        meetingModifyFlag(payload) {
+        setMeetingModifyFlag(payload) {
             this.meetingModifyFlag = payload;
         },
-        meetingModifyInfo(payload) {
+        setMeetingModifyInfo(payload) {
             this.meetingModifyInfo = payload;
         },
         saveBtnClick(payload) {

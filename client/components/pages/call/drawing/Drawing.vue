@@ -1,17 +1,12 @@
 <template>
-    <div class="row content-start callAttachment">
+    <div class="callAttachment">
         <div class="col-auto column toolbar" id="drawingtoolbar">
             <div
                 class="tool row"
                 v-for="(tool, toolKey) in tools"
                 :name="tool.tooltip"
                 :style="{
-                    border:
-                        tool.type == nowTool && displayMode == 'darkmode'
-                            ? '1px solid #D6D6D6'
-                            : tool.type == nowTool && displayMode == 'lightmode'
-                              ? '1px solid #1C8EFF'
-                              : undefined,
+                    border: tool.type == nowTool ? '1px solid #D6D6D6' : undefined,
                 }"
                 :key="toolKey"
                 onmouseenter="this.childNodes[1].style.display = 'flex'; this.style.zIndex = '2';"
@@ -36,13 +31,9 @@
                             class="row justify-center content-center subMenuContents"
                             :style="{
                                 border:
-                                    subMenu.value == tool.selected &&
-                                    displayMode == 'darkmode'
+                                    subMenu.value == tool.selected
                                         ? '1px solid white'
-                                        : subMenu.value == tool.selected &&
-                                            displayMode == 'lightmode'
-                                          ? '1px solid #1C8EFF'
-                                          : undefined,
+                                        : undefined,
                                 padding: tool.type == 'color' ? '3px' : undefined,
                             }"
                         >
@@ -77,11 +68,11 @@
 
         <span class="zoomMagnification" id="mag">{{ `ZOOM ${magnification}%` }}</span>
 
-        <div class="col canvas">
+        <div class="canvas">
             <canvas ref="can" id="pt2Canvas"></canvas>
 
             <input
-                ref="imgFile"
+                ref="refImgFile"
                 id="imgFi"
                 type="file"
                 @change="drawingImageOnchangeEvent"
@@ -90,7 +81,7 @@
             />
 
             <input
-                ref="pdfFile"
+                ref="refPdfFile"
                 id="pdfFi"
                 type="file"
                 @change="drawingPdfOnchangeEvent"
@@ -167,124 +158,134 @@ import downloadImg from "@/assets/images/callAttachment/ic_save_34.png";
 import downloadFixImg from "@/assets/images/callAttachment/ic_save_34_fix.png";
 
 const tools = ref([
-  {
-    type: "pen",
-    img: penImg,
-    fixImg: penFixImg,
-    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
-    selected: 3,
-    tooltip: "연필",
-  },
-  {
-    type: "line",
-    img: lineImg,
-    fixImg: lineFixImg,
-    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
-    selected: 3,
-    tooltip: "선",
-  },
-  {
-    type: "arrow",
-    img: arrowImg,
-    fixImg: arrowFixImg,
-    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ square: v, value: v })),
-    selected: 3,
-    tooltip: "화살표",
-  },
-  {
-    type: "square",
-    img: squareImg,
-    fixImg: squareFixImg,
-    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ square: v, value: v })),
-    selected: 3,
-    tooltip: "사각형",
-  },
-  {
-    type: "circle",
-    img: circleImg,
-    fixImg: circleFixImg,
-    subMenu: [1, 3, 6, 10, 13, 16].map(v => ({ circle: v, value: v })),
-    selected: 3,
-    tooltip: "원",
-  },
-  {
-    type: "text",
-    img: textImg,
-    fixImg: textFixImg,
-    subMenu: [16, 32, 64, 128, 256, 512].map(v => ({ text: v, value: v })),
-    selected: 32,
-    tooltip: "텍스트",
-  },
-  {
-    type: "photo",
-    img: photoImg,
-    fixImg: photoFixImg,
-    tooltip: "이미지 삽입",
-  },
-  {
-    type: "pdf",
-    img: pdfImg,
-    fixImg: pdfImg,
-    tooltip: "PDF 삽입",
-  },
-  {
-    type: "undo",
-    img: undoImg,
-    fixImg: undoFixImg,
-    tooltip: "되돌리기",
-  },
-  {
-    type: "redo",
-    img: redoImg,
-    fixImg: redoFixImg,
-    tooltip: "다시실행",
-  },
-  {
-    type: "moveLayer",
-    img: moveLayerImg,
-    fixImg: moveLayerImg,
-    tooltip: "레이어 선택",
-  },
-  {
-    type: "clear",
-    img: clearImg,
-    fixImg: clearFixImg,
-    tooltip: "캔버스 초기화",
-  },
-  {
-    type: "group",
-    img: groupImg,
-    fixImg: groupFixImg,
-    tooltip: "레이어 그룹화",
-  },
-  {
-    type: "layer",
-    img: layerImg,
-    fixImg: layerFixImg,
-    subMenu: [
-      { img: bringToFrontImg, value: "F" },
-      { img: bringForwardImg, value: "f" },
-      { img: sendBackwardImg, value: "B" },
-      { img: sendToBackImg, value: "b" },
-    ],
-    selected: "F",
-    tooltip: "레이어 정돈",
-  },
-  {
-    type: "color",
-    subMenu: [
-      "#EE324A", "#fe9a2f", "#f8e644", "#2ced66",
-      "#349ced", "#ADB5BD", "#000000"
-    ].map(color => ({ color, value: color })),
-    selected: "#EE324A",
-    tooltip: "색상 변경",
-  },
-  {
-    type: "download",
-    img: downloadImg,
-    fixImg: downloadFixImg,
-    tooltip: "캔버스 이미지 저장",
-  },
+    {
+        type: "pen",
+        img: penImg,
+        fixImg: penFixImg,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
+        selected: 3,
+        tooltip: "연필",
+    },
+    {
+        type: "line",
+        img: lineImg,
+        fixImg: lineFixImg,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
+        selected: 3,
+        tooltip: "선",
+    },
+    {
+        type: "arrow",
+        img: arrowImg,
+        fixImg: arrowFixImg,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
+        selected: 3,
+        tooltip: "화살표",
+    },
+    {
+        type: "square",
+        img: squareImg,
+        fixImg: squareFixImg,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ square: v, value: v })),
+        selected: 3,
+        tooltip: "사각형",
+    },
+    {
+        type: "circle",
+        img: circleImg,
+        fixImg: circleFixImg,
+        subMenu: [1, 3, 6, 10, 13, 16].map((v) => ({ circle: v, value: v })),
+        selected: 3,
+        tooltip: "원",
+    },
+    {
+        type: "text",
+        img: textImg,
+        fixImg: textFixImg,
+        subMenu: [16, 32, 64, 128, 256, 512].map((v) => ({ text: v, value: v })),
+        selected: 32,
+        tooltip: "텍스트",
+        type: "layer",
+        img: layerImg,
+        fixImg: layerFixImg,
+        selected: "F",
+        tooltip: "레이어 정돈",
+    },
+    {
+        type: "photo",
+        img: photoImg,
+        fixImg: photoFixImg,
+        tooltip: "이미지 삽입",
+    },
+    {
+        type: "pdf",
+        img: pdfImg,
+        fixImg: pdfImg,
+        tooltip: "PDF 삽입",
+    },
+    {
+        type: "undo",
+        img: undoImg,
+        fixImg: undoFixImg,
+        tooltip: "되돌리기",
+    },
+    {
+        type: "redo",
+        img: redoImg,
+        fixImg: redoFixImg,
+        tooltip: "다시실행",
+    },
+    {
+        type: "moveLayer",
+        img: moveLayerImg,
+        fixImg: moveLayerImg,
+        tooltip: "레이어 선택",
+    },
+    {
+        type: "clear",
+        img: clearImg,
+        fixImg: clearFixImg,
+        tooltip: "캔버스 초기화",
+    },
+    {
+        type: "group",
+        img: groupImg,
+        fixImg: groupFixImg,
+        tooltip: "레이어 그룹화",
+    },
+    {
+        type: "layer",
+        img: layerImg,
+        fixImg: layerFixImg,
+        subMenu: [
+            { img: bringToFrontImg, value: "F" },
+            { img: bringForwardImg, value: "f" },
+            { img: sendBackwardImg, value: "B" },
+            { img: sendToBackImg, value: "b" },
+        ],
+        selected: "F",
+        tooltip: "레이어 정돈",
+    },
+    {
+        type: "color",
+        subMenu: [
+            "#EE324A",
+            "#fe9a2f",
+            "#f8e644",
+            "#2ced66",
+            "#349ced",
+            "#ADB5BD",
+            "#000000",
+        ].map((color) => ({ color, value: color })),
+        selected: "#EE324A",
+        tooltip: "색상 변경",
+    },
+    {
+        type: "download",
+        img: downloadImg,
+        fixImg: downloadFixImg,
+        tooltip: "캔버스 이미지 저장",
+    },
 ]);
 
 // Primitive values (or objects that will be fully replaced) use `ref`
@@ -315,7 +316,7 @@ const refPdfFile = ref(null);
 // `canvasHistory` is an object with nested properties, `reactive` is a good fit,
 // or a `ref` holding a plain object, which Vue automatically makes reactive.
 // Using `reactive` means you access properties directly without `.value` on `canvasHistory` itself.
-const canvasHistory = reactive({
+const canvasHistory = ref({
     state: [],
     currentStateIndex: -1,
     undoStatus: false,
@@ -338,30 +339,19 @@ const magnification = ref("100"); // Note: it's a string "100" in original data
 const fileSize = ref(null);
 const file = ref(null);
 const displayMode = ref("darkmode"); // Initial value 'darkmode' as per original
-
+let pdfjsLib = null;
 // Replaces `mounted()`
 onMounted(() => {
-    if (typeof window !== "undefined") {
-        // If you have a custom worker creation logic or a plugin providing `$worker`,
-        // you'll need to adapt it. Here's a generic example for a Web Worker.
-        // If you're using a specific library for workers, replace this with its API.
-        let worker;
-        try {
-            // Assuming 'worker-loader' or a similar setup for 'pdf.worker.js'
-            // Or if you're using Vite, you might do: new Worker(new URL('./pdf.worker.js', import.meta.url))
-            // For demonstration, let's assume a direct path if the worker is in public/
-            worker = new Worker("/pdf.worker.js"); // Adjust path as per your build setup
-            if (typeof pdfjsLib !== "undefined") {
-                pdfjsLib.GlobalWorkerOptions.workerPort = worker;
-            } else {
-                console.warn(
-                    "pdfjsLib is not defined. Ensure it's imported or globally available.",
-                );
-            }
-            worker.addEventListener("message", workerResponseHandler);
-            worker.postMessage("Message sent to worker from Vue 3 setup");
-        } catch (e) {
-            console.error("Failed to create Web Worker:", e);
+    // `process.client`는 이 코드가 브라우저(클라이언트)에서만 실행됨을 보장합니다.
+    if (process.client) {
+        const nuxtApp = useNuxtApp();
+        pdfjsLib = nuxtApp.$pdfjsLib; // 플러그인에서 provide한 pdfjsLib를 가져옵니다.
+
+        if (!pdfjsLib) {
+            console.error(
+                "PDF.js 라이브러리를 로드할 수 없습니다. `plugins/pdfjs.client.ts` 파일을 확인하세요.",
+            );
+            alert("PDF 기능을 사용할 수 없습니다. 관리자에게 문의하세요.");
         }
     }
     // Set display mode
@@ -370,10 +360,16 @@ onMounted(() => {
 
     if (can.value && fabric.Canvas) {
         // Ensure Fabric.js is loaded
+        const drawingWidth =
+            document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
+        const drawingHeight =
+            document.getElementsByClassName("screen-draw")[0].clientHeight;
         canvas.value = new fabric.Canvas(can.value, {
             isDrawingMode: true,
             preserveObjectStacking: true,
             backgroundColor: "#ffffff",
+            width: drawingWidth,
+            height: drawingHeight,
         });
 
         // Add initial white dot for history management
@@ -411,7 +407,7 @@ onMounted(() => {
                 thumbnailFileReceive.value
             ) {
                 updateHistory();
-                setThumbnailFileReceive(false); // Call Vuex mutation
+                drawingStore.setThumbnailFileReceive(false); // Call Vuex mutation
             }
         });
         canvas.value.on("object:selected", (e) => {
@@ -525,7 +521,7 @@ onMounted(() => {
         if (vxCanvasHistory.value.state.length === 0) {
             canvas.value.add(rect); // Add the initial white dot
         } else {
-            setLoadImageOnCanvasFinished(false); // Call Vuex mutation
+            drawingStore.setLoadImageOnCanvasFinished(false); // Call Vuex mutation
             const currentIndex = vxCanvasHistory.value.currentStateIndex;
             if (
                 typeof vxCanvasHistory.value.state[currentIndex] !== "undefined" &&
@@ -537,11 +533,12 @@ onMounted(() => {
             }
             canvas.value.loadFromJSON(vxCanvasHistory.value.state[currentIndex], () => {
                 canvas.value.renderAll.bind(canvas.value);
-                setLoadImageOnCanvasFinished(true); // Call Vuex mutation
+                drawingStore.setLoadImageOnCanvasFinished(true); // Call Vuex mutation
                 console.log("canvas renderAll finished in mounted");
             });
             console.log("this.canvas.renderAll.bind(this.canvas)");
         }
+        console.log("여기1");
         drawingStore.setCanvasHistory(vxCanvasHistory.value); // Set overall canvas history
         drawingStore.setIsGivenThumbnailTransfer(false); // Call Vuex mutation
     } else {
@@ -556,19 +553,16 @@ const commonToastMessage = (message) => {
 // Methods
 const enable = () => {
     isDrawing.value = true;
-    if (canvas.value) {
-        canvas.value.isDrawingMode = true;
-    }
+    canvas.value.isDrawingMode = true;
 };
 
 const disable = () => {
     isDrawing.value = false;
-    if (canvas.value) {
-        canvas.value.isDrawingMode = false;
-    }
+    canvas.value.isDrawingMode = false;
 };
 
 const drawingMode = () => {
+    console.log("여기를 탔니");
     if (nowTool.value === "pen") {
         enable();
     } else {
@@ -595,6 +589,7 @@ const selectionMode = (on) => {
 };
 
 const toolClick = (tool) => {
+    console.log(tool.type);
     nowTool.value = tool.type;
 
     if (tool.type === "layer") {
@@ -660,7 +655,7 @@ const toolClick = (tool) => {
         } else if (canvas.value.isDrawingMode === false && nowTool.value === "pen") {
             drawingMode();
         }
-        imgFile.value.click(); // Trigger file input click
+        refImgFile.value.click(); // Trigger file input click
         return;
     }
 
@@ -669,7 +664,7 @@ const toolClick = (tool) => {
             commonToastMessage("uploading PDF");
             return;
         }
-        resetPdfFileForm();
+        resetrefPdfFileForm();
         pdf.value = null;
         nowTool.value = beforeTool.value;
         if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
@@ -679,7 +674,7 @@ const toolClick = (tool) => {
         } else if (canvas.value.isDrawingMode === false && nowTool.value === "pen") {
             drawingMode();
         }
-        pdfFile.value.click(); // Trigger file input click
+        refPdfFile.value.click(); // Trigger file input click
         return;
     }
 
@@ -687,6 +682,7 @@ const toolClick = (tool) => {
         return clearCanvas();
     }
 
+    console.log(nowTool.value);
     if (
         nowTool.value === "line" ||
         nowTool.value === "arrow" ||
@@ -785,6 +781,7 @@ const drawPen = () => {
 };
 
 const drawLine = (e) => {
+    console.log(isDrawing.value);
     if (!canvas.value) return;
     selectionMode(false);
     if (isDrawing.value) {
@@ -812,6 +809,7 @@ const drawLine = (e) => {
             pointer.value.x,
             pointer.value.y,
         ];
+        console.log(points);
         line.value = new fabric.Line(points, {
             strokeWidth: tools.value[1].selected,
             stroke: tools.value[14].selected,
@@ -849,21 +847,28 @@ const drawArrow = (e) => {
     if (isDrawing.value) {
         if (e) {
             pointer.value = canvas.value.getPointer(e.e);
-            arrow.value.set({
-                x2: pointer.value.x,
-                y2: pointer.value.y,
-            });
-            triangle.value.set({
-                left: pointer.value.x + deltaX.value,
-                top: pointer.value.y + deltaY.value,
-                fill: tools.value[14].selected,
-                angle: fabricCalcArrowAngle(
-                    arrow.value.x1,
-                    arrow.value.y1,
-                    arrow.value.x2,
-                    arrow.value.y2,
-                ),
-            });
+            console.log(line.value, line.value instanceof fabric.Line);
+            if (arrow.value) {
+                arrow.value.set({
+                    x2: pointer.value.x,
+                    y2: pointer.value.y,
+                });
+            }
+
+            if (triangle.value) {
+                triangle.value.set({
+                    left: pointer.value.x + deltaX.value,
+                    top: pointer.value.y + deltaY.value,
+                    fill: tools.value[14].selected,
+                    angle: fabricCalcArrowAngle(
+                        arrow.value.x1,
+                        arrow.value.y1,
+                        arrow.value.x2,
+                        arrow.value.y2,
+                    ),
+                });
+            }
+
             canvas.value.renderAll();
         } else {
             disable();
@@ -914,22 +919,26 @@ const drawSquare = (e) => {
     if (isDrawing.value) {
         if (e) {
             pointer.value = canvas.value.getPointer(e.e);
-            if (origX.value > pointer.value.x) {
+            if (rect.value) {
+                if (origX.value > pointer.value.x) {
+                    rect.value.set({
+                        left: Math.abs(pointer.value.x),
+                    });
+                }
+                if (origY.value > pointer.value.y) {
+                    rect.value.set({
+                        left: Math.abs(pointer.value.y),
+                    });
+                }
+
                 rect.value.set({
-                    left: Math.abs(pointer.value.x),
+                    width: Math.abs(origX.value - pointer.value.x),
+                });
+                rect.value.set({
+                    width: Math.abs(origY.value - pointer.value.y),
                 });
             }
-            if (origY.value > pointer.value.y) {
-                rect.value.set({
-                    top: Math.abs(pointer.value.y),
-                });
-            }
-            rect.value.set({
-                width: Math.abs(origX.value - pointer.value.x),
-            });
-            rect.value.set({
-                height: Math.abs(origY.value - pointer.value.y),
-            });
+
             canvas.value.renderAll();
         } else {
             disable();
@@ -963,25 +972,29 @@ const drawCircle = (e) => {
     if (isDrawing.value) {
         if (e) {
             pointer.value = canvas.value.getPointer(e.e);
+
             ellipse.value.stroke = tools.value[14].selected;
             ellipse.value.strokeWidth = tools.value[4].selected;
-            if (origX.value > pointer.value.x) {
+            if (ellipse.value) {
+                if (origX.value > pointer.value.x) {
+                    ellipse.value.set({
+                        left: Math.abs(pointer.value.x),
+                    });
+                }
+                if (origY.value > pointer.value.y) {
+                    ellipse.value.set({
+                        top: Math.abs(pointer.value.y),
+                    });
+                }
                 ellipse.value.set({
-                    left: Math.abs(pointer.value.x),
+                    rx: Math.abs(origX.value - pointer.value.x) / 2,
                 });
-            }
-            if (origY.value > pointer.value.y) {
                 ellipse.value.set({
-                    top: Math.abs(pointer.value.y),
+                    ry: Math.abs(origY.value - pointer.value.y) / 2,
                 });
+                ellipse.value.setCoords();
             }
-            ellipse.value.set({
-                rx: Math.abs(origX.value - pointer.value.x) / 2,
-            });
-            ellipse.value.set({
-                ry: Math.abs(origY.value - pointer.value.y) / 2,
-            });
-            ellipse.value.setCoords();
+
             canvas.value.renderAll();
         } else {
             disable();
@@ -1036,7 +1049,7 @@ const drawingImageOnchangeEvent = (e) => {
         imgObj.src = event.target.result;
 
         callStore.setDrawingGetFileSrc(event.target.result);
-        callStore.setDrawingGetFileObject(imgFile.value.files);
+        callStore.setDrawingGetFileObject(refImgFile.value.files);
 
         imgObj.crossOrigin = "anonymous";
 
@@ -1089,7 +1102,7 @@ const drawingImageOnchangeEvent = (e) => {
 
 // ---
 const drawingPdfOnchangeEvent = async (e) => {
-    const file = event.target.files[0];
+    const file = e.target.files[0];
     const acceptFileType = ["pdf"];
     const fileType = file.name.split(".").pop().toLowerCase();
 
@@ -1098,93 +1111,120 @@ const drawingPdfOnchangeEvent = async (e) => {
         return;
     }
 
+    console.log(file);
     if (!file) return;
 
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-        pdfjsLib.disableWorker = true;
-        const loadingTask = pdfjsLib.getDocument(e.target.result);
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        // PDF.js를 사용하여 PDF 문서를 로드합니다.
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-        loadingTask.promise
-            .then(async (pdf) => {
-                drawingStore.setIsPdfUploading(true);
-                const uploadSrc = new Blob([e.target.result], {
-                    type: "application/pdf",
+        console.log("PDF 객체 로딩 완료:", pdf); // 여기가 이제 찍힐 겁니다! 🎉
+
+        // 스토어에 PDF 관련 정보 저장 (기존 로직 유지)
+        const uploadSrc = new Blob([arrayBuffer], { type: "application/pdf" });
+        callStore.setDrawingGetPDFUploadSrc(uploadSrc);
+        callStore.setDrawingGetPDFUploadObject(file); // FileList 대신 단일 File 객체 전달
+
+        drawingStore.setTotalPages(pdf.numPages);
+        drawingStore.setPdfGroup(pdf.numPages); // 이 함수가 어떤 역할을 하는지 확인 필요
+
+        // 각 페이지를 순회하며 렌더링합니다.
+        const pageNums = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
+
+        // 기존의 .reduce() 비동기 루프를 async/await for...of 루프로 변경
+        for (const pageNum of pageNums) {
+            // isDrawingPage 상태에 따라 로직 실행
+            // self.isDrawingPage는 drawingStore.isDrawingPage로 매핑
+            if (commonStore.isDrawing) {
+                await new Promise((resolve) => setTimeout(resolve, 200)); // 짧은 딜레이
+
+                const page = await pdf.getPage(pageNum);
+                const scale = 1.0;
+                const viewport = page.getViewport({ scale });
+
+                // PDF 렌더링용 임시 캔버스 생성 및 렌더링
+                const renderCanvas = document.createElement("canvas");
+                renderCanvas.width = viewport.width;
+                renderCanvas.height = viewport.height;
+                const context = renderCanvas.getContext("2d");
+                // await page.render({
+                //     canvasContext: context,
+                //     viewport,
+                // }).promise;
+
+                const imageData = renderCanvas.toDataURL("image/png");
+
+                // Fabric.js 캔버스 생성 및 DOM에 추가
+                const fabricCanvasId = `fabric-canvas-${pageNum}`;
+                const fabricCanvasEl = document.createElement("canvas");
+                fabricCanvasEl.id = fabricCanvasId;
+                can.value.nextSibling.appendChild(fabricCanvasEl);
+
+                const fCanvas = new fabric.Canvas(fabricCanvasId);
+                fCanvas.setDimensions({
+                    width: viewport.width,
+                    height: viewport.height,
                 });
-
-                // 업로드용 저장 로직 연결 필요
-                callStore.setDrawingGetPDFUploadSrc(uploadSrc);
-                callStore.setDrawingGetPDFUploadObject(pdfFile.value.files);
-
-                drawingStore.canvassetTotalPages(pdf.numPages);
-
-                const pageNums = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
-
-                for (const pageNum of pageNums) {
-                    await new Promise((resolve) => setTimeout(resolve, 200));
-                    const page = await pdf.getPage(pageNum);
-
-                    const scale = 1.0;
-                    const viewport = page.getViewport({ scale });
-
-                    const canvas = document.createElement("canvas");
-                    canvasWrapper.value.appendChild(canvas);
-
-                    const fCanvas = new fabric.Canvas(canvas);
-                    const canvasContext = fCanvas.contextTop;
-
-                    fCanvas.setDimensions({
-                        width: viewport.width,
-                        height: viewport.height,
-                    });
-
-                    const renderContext = { canvasContext, viewport };
-                    await page.render(renderContext).promise;
-
-                    const imageData = fCanvas.upperCanvasEl.toDataURL("image/png");
-                    fabric.Image.fromURL(imageData, (img) => {
-                        img.scaleToHeight(page.view[3]);
-                        fCanvas.setHeight(page.view[3]);
-                        fCanvas.setWidth(page.view[2]);
-                        setSrc({ type: "pdf", src: imageData, name: file.name });
-                    });
-
-                    fCanvas.renderAll();
+                const renderContext = {
+                    canvasContext: context,
+                    viewport
                 }
+                const task = page.render(renderContext)
+                    task.promise.then(() => {
+                        const imageData = fCanvas.upperCanvasEl.toDataURL({
+                            format: "png"
+                        })
+                        fabric.Image.fromURL(imageData, img => {
+                            img.scaleToHeight(page.view[3])
+                            fCanvas.setHeight(page.view[3])
+                            fCanvas.setWidth(page.view[2])
+                            drawingStore.setSrc({
+                                type: "pdf",
+                                src: imageData,
+                                name: file.name
+                            })
+                        })
+                    })
+                canvas.value.renderAll()
+            } else if (!drawingStore.escapeDrawingPage) {
+                // self.escapeDrawingPage == false -> !drawingStore.escapeDrawingPage
+                drawingStore.setEscapeDrawingPage(true);
+            }
+        }
+    } catch (err) {
+        console.log(err);
+    }
 
-                drawingStore.clearPdfNum();
-            })
-            .catch((error) => {
-                console.error(error);
-                drawingStore.setIsPdfUploading(false);
-
-                if (error.code === 1) {
-                    alert("PDF 비밀번호가 필요합니다.");
-                }
-            });
-    };
-
-    reader.readAsArrayBuffer(file);
+    drawingStore.clearPdfNum();
 };
 
 const resetDrawingFileForm = () => {
-    // Assuming 'refImgFile' is now 'imgFileInput.value'
-    const parent = imgFileInput.value.parentNode;
-    const next = imgFileInput.value.nextSibling;
+    const el = refImgFile.value;
+    if (!el || !el.parentNode) return;
+
+    const parent = el.parentNode;
+    const next = el.nextSibling;
+
     const tmp = document.createElement("form");
-    tmp.appendChild(imgFileInput.value);
-    tmp.reset();
-    parent.insertBefore(imgFileInput.value, next);
+    tmp.appendChild(el); // 임시 폼에 넣고
+    tmp.reset(); // 폼 리셋
+    parent.insertBefore(el, next); // 다시 원래 위치에 삽입
 };
 
-const resetPdfFileForm = () => {
-    const parent = pdfFileInput.value.parentNode;
-    const next = pdfFileInput.value.nextSibling;
+const resetrefPdfFileForm = () => {
+    const el = refPdfFile.value;
+    if (!el || !el.parentNode) return;
+
+    const parent = el.parentNode;
+    const next = el.nextSibling;
+
     const tmp = document.createElement("form");
-    tmp.appendChild(pdfFileInput.value);
-    tmp.reset();
-    parent.insertBefore(pdfFileInput.value, next);
+    tmp.appendChild(el); // 임시 폼에 넣고
+    tmp.reset(); // 폼 리셋
+    parent.insertBefore(el, next); // 다시 원래 위치에 삽입
 };
 
 const deleteSelectedObjectFromCanvas = () => {
@@ -1219,7 +1259,7 @@ const groupActiveObjects = () => {
         canvas.value.getActiveObject().toGroup();
         canvas.value.requestRenderAll();
     }
-    toolClick(tools[10]); // Assuming tools[10] is the select/move tool
+    toolClick(tools.value[10]); // Assuming tools.value[10] is the select/move tool
 };
 
 const copyObjects = () => {
@@ -1348,7 +1388,7 @@ const multiSelect = () => {
     canvas.value.setActiveObject(sel);
     canvas.value.requestRenderAll();
     // Assuming toolClick updates nowTool based on tool[10] which might be the selection tool
-    toolClick(tools[10]);
+    toolClick(tools.value[10]);
 };
 
 const updateHistory = (type) => {
@@ -1435,19 +1475,19 @@ const undo = () => {
         drawingMode();
         canvas.value.defaultCursor = "crosshair";
         if (nowTool.value == "line") {
-            toolClick(tools[1]);
+            toolClick(tools.value[1]);
         }
         if (nowTool.value == "arrow") {
-            toolClick(tools[2]);
+            toolClick(tools.value[2]);
         }
         if (nowTool.value == "square") {
-            toolClick(tools[3]);
+            toolClick(tools.value[3]);
         }
         if (nowTool.value == "circle") {
-            toolClick(tools[4]);
+            toolClick(tools.value[4]);
         }
         if (nowTool.value == "text") {
-            toolClick(tools[5]);
+            toolClick(tools.value[5]);
         }
     }
 };
@@ -1500,19 +1540,19 @@ const redo = () => {
         drawingMode();
         canvas.value.defaultCursor = "crosshair";
         if (nowTool.value == "line") {
-            toolClick(tools[1]);
+            toolClick(tools.value[1]);
         }
         if (nowTool.value == "arrow") {
-            toolClick(tools[2]);
+            toolClick(tools.value[2]);
         }
         if (nowTool.value == "square") {
-            toolClick(tools[3]);
+            toolClick(tools.value[3]);
         }
         if (nowTool.value == "circle") {
-            toolClick(tools[4]);
+            toolClick(tools.value[4]);
         }
         if (nowTool.value == "text") {
-            toolClick(tools[5]);
+            toolClick(tools.value[5]);
         }
     }
 };
@@ -1536,31 +1576,31 @@ const canvasKeyCode = (e) => {
     if (e.altKey && !e.shiftKey && !e.ctrlKey) {
         e.preventDefault(); // Prevent default browser behavior
         if (e.code === "Backquote") {
-            return toolClick(tools[10]);
+            return toolClick(tools.value[10]);
         }
         if (e.code === "Digit1") {
-            return toolClick(tools[0]);
+            return toolClick(tools.value[0]);
         }
         if (e.code === "Digit2") {
-            return toolClick(tools[1]);
+            return toolClick(tools.value[1]);
         }
         if (e.code === "Digit3") {
-            return toolClick(tools[2]);
+            return toolClick(tools.value[2]);
         }
         if (e.code === "Digit4") {
-            return toolClick(tools[3]);
+            return toolClick(tools.value[3]);
         }
         if (e.code === "Digit5") {
-            return toolClick(tools[4]);
+            return toolClick(tools.value[4]);
         }
         if (e.code === "Digit6") {
-            return toolClick(tools[5]);
+            return toolClick(tools.value[5]);
         }
         if (e.code === "Digit0") {
             return groupActiveObjects();
         }
         if (e.key === "a" || e.key === "A") {
-            toolClick(tools[10]);
+            toolClick(tools.value[10]);
             return multiSelect();
         }
     }
@@ -1591,6 +1631,7 @@ const canvasKeyCode = (e) => {
 // Drawing Interaction
 // ---
 const beginDrawing = (e) => {
+    console.log("드로잉 시작");
     if (!canvas.value) return;
 
     if (e && e.e && e.e.ctrlKey === true) {
@@ -1603,7 +1644,7 @@ const beginDrawing = (e) => {
         lastPosY.value = e.e.clientY;
         return;
     }
-    isDrawing.value = true; // Set drawing flag to true
+    isDrawing.value = false; // Set drawing flag to true
 
     if (nowTool.value === "pen") {
         drawPen();
@@ -1618,9 +1659,11 @@ const beginDrawing = (e) => {
     } else if (nowTool.value === "text") {
         drawText(e);
     }
+    isDrawing.value = true;
 };
 
 const keepDrawing = (e) => {
+    console.log("여기타야지");
     if (!canvas.value) return;
 
     if (isDragging.value) {
@@ -1659,6 +1702,7 @@ const keepDrawing = (e) => {
 };
 
 const stopDrawing = (e) => {
+    console.log("stopDrawing");
     if (!canvas.value) return;
 
     if (isDragging.value) {
@@ -1844,20 +1888,23 @@ const canvasWidthHeightChange = () => {
             // // row.window 가로길이 - 툴바
             // const cavasCalcWidth = rowWindowWidth - drawingToolbarDom - 25;
 
+            const drawingWidth =
+                document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
+            const drawingHeight =
+                document.getElementsByClassName("screen-draw")[0].clientHeight;
             // // 캔버스 크기 설정
-            // canvas.value.setDimensions(
-            //     {
-            //         width: cavasCalcWidth + "px",
-            //         height: cavasCalcHeight + "px",
-            //     },
-            //     {
-            //         cssOnly: true,
-            //     },
-            // );
+            canvas.value.setDimensions(
+                {
+                    width: drawingWidth + "px",
+                    height: drawingHeight + "px",
+                },
+                {
+                    cssOnly: true,
+                },
+            );
 
             // // 캔버스 Width setting (외부 스토어/상태에 업데이트하는 함수 호출)
-            // drawingStore.setCanvasWidth(cavasCalcWidth); // self.setCanvasWidth -> setCanvasWidth
-
+            drawingStore.setCanvasWidth(drawingWidth); // self.setCanvasWidth -> setCanvasWidth
             // 캔버스에 적용 (렌더링 요청)
             canvas.value.requestRenderAll();
         } else if (callingLayoutType.value == 4) {
@@ -1882,6 +1929,16 @@ const canvasWidthHeightChange = () => {
             canvas.value.calcOffset(); // 캔버스 내부 객체들의 위치 재계산
         }
     });
+};
+
+const handleKeyUp = (e) => {
+    // console.log(e, "keyup")
+    if (e.key === "Control") {
+        this.canvas.defaultCursor = "default";
+        if (this.nowTool === "pen") {
+            this.enable();
+        }
+    }
 };
 
 const onResize = () => {
@@ -2322,9 +2379,9 @@ watch(vxCanvasHistory, (newVal) => {
 // Watch for 'update' changes (from Vuex)
 watch(update, (newVal) => {
     console.log("update Start", newVal);
-    if (newVal) {
-        updateHistory(2); // Call helper function
-        drawingStore.setUpdate(false); // Call helper function (likely a Vuex action/mutation)
+    if (newVal === true) {
+        updateHistory(2);
+        drawingStore.setUpdate(false); // false로 되돌리기
     }
 });
 
@@ -2384,7 +2441,16 @@ onBeforeUnmount(() => {
     // 1. 전역 이벤트 리스너 제거
     // 주의: addEventListener와 removeEventListener는 정확히 동일한 함수 참조를 사용해야 합니다.
     // 익명 함수를 사용하면 제거가 불가능합니다. 따라서, 별도의 명명된 함수로 추출했습니다.
-    window.removeEventListener("keydown", canvasKeyCode);
+    window.removeEventListener("keydown", (e) => {
+        canvasKeyCode(e);
+        if (e.ctrlKey == true) {
+            canvas.value.defaultCursor = "grab";
+            canvas.value.hoverCursor = "grab";
+            if (nowTool.value == "pen") {
+                disable();
+            }
+        }
+    });
     window.removeEventListener("keyup", handleKeyUp);
     window.removeEventListener("resize", onResize);
 
@@ -2447,11 +2513,14 @@ onBeforeUnmount(() => {
 .callAttachment {
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
     // height: $contentsContainerHeight;
     // max-height: calc(100vh - $contentsContainerHeight);
 }
 
 .toolbar {
+    align-self: flex-start;
     padding: 0px 24px 0px 12px;
     z-index: 2;
     max-height: calc(100vh - 80px);
@@ -2472,6 +2541,7 @@ onBeforeUnmount(() => {
     border: 1px solid rgba(0, 0, 0, 0);
     background-color: #3b3b3b;
     z-index: 1;
+    position: relative;
 
     &:nth-child(14) {
         margin-top: 25px;
@@ -2481,14 +2551,14 @@ onBeforeUnmount(() => {
         margin-top: 10px;
     }
 
-    &:hover{
+    &:hover {
         border: 1px solid #fff;
     }
 
     &[name]:hover::before {
         content: attr(name);
         position: absolute;
-        left: -40px;
+        right: 40px;
         z-index: 50;
         width: max-content;
         padding: 5px 7px;
@@ -2500,11 +2570,11 @@ onBeforeUnmount(() => {
 }
 
 // 변수
-$toolSize: 40px;
+$toolSize: 36px;
 $toolPaddingSize: 1px;
 
 .colorContainer {
-    height: $toolSize;
+    height: 33px;
     padding: 3px;
 }
 
@@ -2516,21 +2586,21 @@ $toolPaddingSize: 1px;
 .subMenu {
     display: none;
     position: absolute;
-    left: $toolSize;
+    left: $toolSize + 12;
     height: $toolSize;
-    left: 40px;
-    height: 34px;
-    display: flex
+    display: none;
 }
 
 .subMenuContainer {
-    width: calc($toolSize + $toolPaddingSize);
+    width: $toolSize;
     height: 100%;
     padding-left: $toolPaddingSize;
     z-index: 2;
-    background-color: rgba(0,0,0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
     color: #fff;
-    padding: 0 3px;
+    > div > div {
+        background-color: #fff;
+    }
 }
 
 .subMenuContents {
@@ -2553,11 +2623,8 @@ $toolPaddingSize: 1px;
 }
 
 .canvas {
-    width: 100%;
-    height: auto;
-    display: flex;
-    justify-content: flex-start;
-    z-index: 0;
+    width: calc(100% - 72px);
+    height: 100%;
 
     > img {
         width: 100%;

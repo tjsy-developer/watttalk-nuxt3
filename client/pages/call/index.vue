@@ -1381,13 +1381,6 @@ onMounted(() => {
 
                 // 호스트 팝업 세션 삭제
                 sessionStorage.removeItem("hostRequestFlag");
-
-                // 다른 모달이 떠있는지 체크한다.
-                if (document.getElementById("modalsContainer").children.length > 1) {
-                    const modalsContainerStyle =
-                        document.getElementById("modalsContainer").style;
-                    modalsContainerStyle.display = "block";
-                }
             }
         } catch (e) {
             console.error(`${e}`);
@@ -2331,7 +2324,7 @@ onMounted(() => {
         drawingStore.initDrawing();
         drawingStore.setChangedHost(true);
         const json = JSON.parse(response);
-        drawingStore.setbeforeHostIndex(json.selectedFileIndex);
+        drawingStore.setBeforeHostIndex(json.selectedFileIndex);
         drawingStore.setIsGivenThumbnailTransfer(true);
         drawingStore.setIndexes({
             group: json.lastGroup,
@@ -2360,6 +2353,7 @@ onMounted(() => {
         setTimeout(() => {
             // ksy:: 렌더링 해줄 canvas 정보를 셋팅한다(type == img, canvas)
             if (drawingStore.files[json.selectedFileIndex].type !== "pdf") {
+                console.log('여기7')
                 drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].history,
                 );
@@ -2370,6 +2364,7 @@ onMounted(() => {
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
                 );
+                console.log('여기8')
                drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
@@ -6786,13 +6781,11 @@ function canvasSaveVideoInfo(boolFlag) {
         commonStore.changeLayoutType(3);
 
         const beforeMainIndex = callStore.videoMainIndex;
-        setTimeout(function () {
-            // 드로잉 show !
-            callStore.setDrawingIframe(boolFlag);
+        // 드로잉 show !
+        callStore.setDrawingIframe(boolFlag);
 
-            // main Index 변경
-            callStore.setVideoMainIndex(0);
-        }, 1000);
+        // main Index 변경
+        callStore.setVideoMainIndex(0);
 
         // main 화면 변경
         setTimeout(function () {
@@ -7126,13 +7119,7 @@ function videoCallHostCheck(roomid, localdeviceid) {
 // callingWindow 왕관표시 제거 및 추가
 function setHostIcon(index, hostIcon) {
     // console.log("*** methods: setHostIcon")
-    commonStore.setUserOne({
-        index: index,
-        newObj: {
-            ...commonStore.userListStatus[index],
-            hostIcon: hostIcon,
-        },
-    });
+    commonStore.userListStatus[index].hostIcon = hostIcon;
 }
 // deviceid로 feeds의 index 구하기
 function findFeedsIndexDeviceid(deviceid) {
@@ -8066,16 +8053,17 @@ function inviteNonMember(nonMemberEmail) {
             meeting_seq: meetingSeq,
             email: nonMemberEmail,
             domain:
-                window.location.href.replace(window.location.pathname, "") + "/watttalk",
-            PMDomain: setPowerManageLink(window.location.hostname) + "/wattalk", // 파워매니저 URL - 20210923 추가
+                "http://localhost:3000/watttalk",
+                // 'http://localhost:3000' + "/watttalk",
+            PMDomain: "http://localhost:8205", // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
             email: nonMemberEmail,
-            domain: window.location.href.replace(window.location.pathname, ""),
-            PMDomain: setPowerManageLink(window.location.hostname), // 파워매니저 URL - 20210923 추가
+            domain: "http://localhost:3000/watttalk",
+            PMDomain: "http://localhost:8205", // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     }
@@ -9639,7 +9627,7 @@ function sayHello() {
         getQueryStringValue("subscriber-mode") === "true";
 
     // -> kyj
-    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}/watttalk/photos/`
+    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}/storage/watttalk/photos/`
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";

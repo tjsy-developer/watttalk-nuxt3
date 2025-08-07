@@ -130,10 +130,6 @@ const callingType = computed(() => callStore.callingType);
 const accessDeviceCheck = computed(() => commonStore.accessDeviceCheck);
 
 onMounted(() => {
-    const modalsContainer = document.getElementById("modalsContainer");
-    if (modalsContainer) {
-        modalsContainer.style.display = "none";
-    }
 
     const scrollElement = document.getElementById("chattingBarMessageBoxScroll");
     if (scrollElement) {

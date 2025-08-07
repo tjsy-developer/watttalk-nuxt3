@@ -18,6 +18,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const tokenStore = useTokenStore();
     const { decodeToken, verifyToken, encryptData } = useAuth();
 
+    
     const route = useRoute();
     if (route.name === "login") {
         const accessToken = route.query.jwt_token;
@@ -25,8 +26,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         const lang = route.query.lang;
         const rToken = route.query.rToken;
         const reservId = route.query.reservId;
-
-        console.log("여기", accessToken, loginType, lang, rToken, reservId);
 
         if (!accessToken || !rToken) {
             console.log("파워매니저로 돌아가세요");
@@ -48,24 +47,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             route.name == "meeting" ||
             route.name == "login"
         ) {
-            const { $axios } = useNuxtApp();
-            const res = await $axios.post("/homeRest/tokenCheck", {
-                jwt: tokenStore.accessToken,
+            // const { $axios } = useNuxtApp();
+            const res = await $fetch("homeRest/tokenCheck", {
+                baseURL: "https://hdcardev.watttalk.kr/wattmanager-server",
+                method: "POST",
+                body: {
+                    jwt: tokenStore.accessToken,
+                },
             });
 
-            if (res.data) {
+            if (res) {
                 loginStore.setTokenResult(0);
                 loginStore.decodeToken(tokenStore.accessToken);
                 const tokenDecodeResult = loginStore.tokenDecodeResult;
                 // 복호화 실패일 경우
                 if (tokenDecodeResult == 1) {
                     alert("복호화 실패");
-                    window.location.href = "http://localhost:8223";
+                    window.location.href = "http://localhost:8205";
                 }
-            } else {
-                loginStore.setTokenResult(2);
-                alert("토큰 체크 에러");
-                window.location.href = "http://localhost:8223";
             }
         }
 

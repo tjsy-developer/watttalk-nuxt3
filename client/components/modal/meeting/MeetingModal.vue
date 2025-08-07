@@ -35,7 +35,11 @@
                 </div>
                 <div class="items-center">
                     <div class="periodSelectBox" @click="dropdown = !dropdown">
-                        <select class="selected-opt" @change="periodType">
+                        <select
+                            class="selected-opt"
+                            @change="periodType"
+                            v-model="defaultPeriodType"
+                        >
                             <button
                                 class="memberBtn"
                                 :style="{
@@ -104,20 +108,20 @@
                 <div class="label-box">
                     <span class="label" v-show="defaultPeriodType != ''">
                         <span>{{
-                            defaultPeriodType == "0" || defaultPeriodType == "1"
+                            defaultPeriodType == 0 || defaultPeriodType == 1
                                 ? t("meetingDate")
                                 : t("meetingStartDate")
                         }}</span>
                     </span>
                     <span
                         class="invalidDate"
-                        v-if="defaultPeriodType == '1'"
+                        v-if="defaultPeriodType == 1"
                         v-show="defaultPeriodType != ''"
                         >{{ errors.startDate }}</span
                     >
                     <span
                         class="invalidDate"
-                        v-else-if="defaultPeriodType !== '0' && defaultPeriodType !== '1'"
+                        v-else-if="defaultPeriodType !== 0 && defaultPeriodType !== 1"
                         v-show="defaultPeriodType != ''"
                         >{{ errors.startDate || errors.startTime }}</span
                     >
@@ -125,10 +129,10 @@
 
                 <div
                     class="input-time-box"
-                    v-if="defaultPeriodType == '0' || defaultPeriodType == '1'"
+                    v-if="defaultPeriodType == 0 || defaultPeriodType == 1"
                 >
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="startDate"
                         format="yyyy-MM-dd"
@@ -142,7 +146,7 @@
 
                 <div class="input-time-box" v-else v-show="defaultPeriodType != ''">
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="startDate"
                         format="yyyy-MM-dd"
@@ -152,7 +156,7 @@
                         :placeholder="t('날짜를 선택해주세요')"
                     ></VueDatePicker>
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="startTime"
                         time-picker
@@ -172,20 +176,20 @@
                 <div class="label-box">
                     <span class="label" v-show="defaultPeriodType != ''">
                         <span>{{
-                            defaultPeriodType == "0" || defaultPeriodType == "1"
+                            defaultPeriodType == 0 || defaultPeriodType == 1
                                 ? t("회의시간")
                                 : t("회의 종료일")
                         }}</span>
                     </span>
                     <span
                         class="invalidDate"
-                        v-if="defaultPeriodType == '1'"
+                        v-if="defaultPeriodType == 1"
                         v-show="defaultPeriodType != ''"
                         >{{ errors.startTime || errors.endTime }}</span
                     >
                     <span
                         class="invalidDate"
-                        v-else-if="defaultPeriodType == '2'"
+                        v-else-if="defaultPeriodType == 2"
                         v-show="defaultPeriodType != ''"
                         >{{ errors.endDate || errors.endTime }}</span
                     >
@@ -193,10 +197,10 @@
 
                 <div
                     class="input-time-box"
-                    v-if="defaultPeriodType == '0' || defaultPeriodType == '1'"
+                    v-if="defaultPeriodType == 0 || defaultPeriodType == 1"
                 >
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="startTime"
                         class="customTime"
@@ -205,14 +209,15 @@
                         :cancel-text="t('취소')"
                         :select-text="t('확인')"
                         :placeholder="t('시작 시간')"
-                        :disabled="defaultPeriodType == '0'"
+                        :disabled="defaultPeriodType == 0"
+                        :hide-input-icon="true"
                     >
                         <template #am-pm-button="{ toggle, value }">
                             <button @click="toggle">{{ value }}</button>
                         </template>
                     </VueDatePicker>
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="endTime"
                         class="customTime"
@@ -221,7 +226,7 @@
                         :cancel-text="t('취소')"
                         :select-text="t('확인')"
                         :placeholder="t('종료 시간')"
-                        :disabled="defaultPeriodType == '0'"
+                        :disabled="defaultPeriodType == 0"
                         :hide-input-icon="true"
                     >
                         <template #am-pm-button="{ toggle, value }">
@@ -230,9 +235,9 @@
                     </VueDatePicker>
                 </div>
 
-                <div class="input-time-box" v-if="defaultPeriodType == '2'">
+                <div class="input-time-box" v-if="defaultPeriodType == 2">
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="endDate"
                         format="yyyy-MM-dd"
@@ -242,7 +247,7 @@
                         :placeholder="t('날짜를 선택해주세요')"
                     ></VueDatePicker>
                     <VueDatePicker
-                        :locale="ko"
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="endTime"
                         class="customTime col"
@@ -258,8 +263,9 @@
                     </VueDatePicker>
                 </div>
 
-                <div class="input-time-box" v-if="defaultPeriodType == '3'">
+                <div class="input-time-box" v-if="defaultPeriodType == 3">
                     <VueDatePicker
+                        locale="ko"
                         :dark="datePickerMode"
                         v-model="endDate"
                         format="yyyy-MM-dd"
@@ -280,17 +286,12 @@
                             id="meetingMember"
                             :placeholder="t('chooseMember')"
                             readonly
+                            v-for="(memberValue, memberValuesKey) in selectedMember"
+                            :key="memberValuesKey"
                         >
-                            <span
-                                class="membersValue"
-                                v-for="(memberValue, memberValuesKey) in meetingMember"
-                                :key="memberValuesKey"
-                                >{{
-                                    memberValuesKey === 0
-                                        ? memberValue
-                                        : `,  ${memberValue}`
-                                }}</span
-                            >
+                            <span class="membersValue">{{
+                                `${memberValue}${memberValuesKey !== selectedMember.length - 1 ? "," : ""}`
+                            }}</span>
                         </div>
                         <button class="memberBtn" v-if="!openMember" @click="memberClick">
                             &#x25BC;
@@ -308,6 +309,7 @@
                     <div class="memberBox" v-if="openMember">
                         <MeetingMember
                             @value="memberUpdate"
+                            @selectMember="selectMember"
                             :enterMember="meetingMember"
                         ></MeetingMember>
                     </div>
@@ -330,7 +332,9 @@
                     </button>
                 </div>
 
-                <span class="label-box"  v-if="showMoreOptions">{{ t("meetingGuest") }}</span>
+                <span class="label-box" v-if="showMoreOptions">{{
+                    t("meetingGuest")
+                }}</span>
                 <div class="column column-gap10" v-if="showMoreOptions">
                     <div class="form-box">
                         <input
@@ -443,11 +447,13 @@ import { getCookie } from "@/utils/common";
 import { useForm } from "vee-validate";
 import { VueFinalModal } from "vue-final-modal";
 import MeetingMember from "@/components/pages/meeting/MeetingMember.vue";
+import { useUserListStore } from "@/stores/userList";
 const { t } = useI18n();
 
 const meetingStore = useMeetingStore();
 const callStore = useCallStore();
 const loginStore = useLoginStore();
+const userListStore = useUserListStore();
 
 const type = ref("0");
 const idNum = ref(0);
@@ -472,13 +478,13 @@ const typeChangeState = ref(false);
 const datePickerMode = ref("dark");
 
 const MTG_periodOption = ref([
-    { text: t("즉시"), value: "0" },
-    { text: t("1일"), value: "1" },
-    { text: t("연일"), value: "2" },
-    { text: t("상시"), value: "3" },
+    { text: t("즉시"), value: 0 },
+    { text: t("1일"), value: 1 },
+    { text: t("연일"), value: 2 },
+    { text: t("상시"), value: 3 },
 ]);
 
-const defaultPeriodType = ref('0');
+const defaultPeriodType = ref(0);
 const disabledState = ref(true);
 const checkStartDate = ref("");
 const checkEndDate = ref("");
@@ -493,6 +499,8 @@ const cctvUrl = ref("");
 const cctvs = ref([]);
 const showCctv = ref(false);
 const showMoreOptions = ref(false);
+const userList = reactive([]);
+const selectedMember = ref([]);
 
 // Yup 스키마로 유효성 검사 규칙 정의
 const validationSchema = object({
@@ -507,12 +515,12 @@ const validationSchema = object({
 const { errors, handleSubmit, defineInputBinds, setFieldValue } = useForm({
     validationSchema,
     initialValues: {
-        meetingTitle: meetingTitle.value,
-        defaultPeriodType: defaultPeriodType.value,
-        startDate: startDate.value,
-        startTime: startTime.value,
-        endDate: endDate.value,
-        endTime: endTime.value,
+        meetingTitle: "",
+        defaultPeriodType: 0,
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
     },
 });
 const props = defineProps({
@@ -520,6 +528,7 @@ const props = defineProps({
     index: Number,
     allView: Boolean,
 });
+
 const emit = defineEmits(["close"]);
 
 onMounted(() => {
@@ -569,7 +578,7 @@ onMounted(() => {
         console.log(props.compData, "===============================");
         edit.value = true;
         meetingTitle.value = props.compData.customData.title;
-        type.value = props.compData.customData.type;
+        defaultPeriodType.value = props.compData.customData.type;
 
         checkDirectCall.value = props.compData.customData.direct_call_yn == 1;
         checkEveryoneStart.value = props.compData.customData.everyone_start_yn == 1;
@@ -594,7 +603,7 @@ onMounted(() => {
         if (mtgPeriodTag) {
             mtgPeriodTag.style.color = "#ffffff";
         }
-        type.value = pe[0].value;
+        defaultPeriodType.value = pe[0].value;
         defaultPeriodType.value = pe[0].text;
         console.log(defaultPeriodType.value);
 
@@ -606,7 +615,7 @@ onMounted(() => {
         startDate.value = new Date(mtgStartDate).toISOString();
         startTime.value = new Date(`${mtgStartDate} ${tt[0]}`).toISOString();
 
-        if (type.value == 3) {
+        if (defaultPeriodType.value == 3) {
             endTime.value = t("meeting validity period"); // Use t for translation
         } else {
             endDate.value = new Date(mtgEndDate).toISOString();
@@ -635,23 +644,19 @@ onMounted(() => {
 
         member_deviceid.value = filteredMembersDeviceId;
         meetingMember.value = filteredMemberSplit;
+        console.log("여기 확인 해줘", meetingMember);
 
         const exptext = /^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\.[A-Za-z0-9\\-]+/;
         let emailNum = 0;
         // Iterate backwards when modifying an array during iteration
         for (let i = meetingMember.value.length - 1; i >= 0; i--) {
             if (exptext.test(meetingMember.value[i])) {
-                const [fullEmail] = meetingMember.value.splice(i, 1); // Splice modifies the array in place
+                const [fullEmail] = meetingMember.value.splice(i, 1);
                 const spliceEmail = {
                     fullEmail: fullEmail,
                     emailNum: emailNum++,
                 };
                 meetingStore.emailAdd(spliceEmail);
-                // Corresponding device ID might not be at the same index if nicknames were not unique
-                // The original logic for `membersDeviceId.splice(i, 1)` here is problematic if membersDeviceId and memberSplit
-                // are not perfectly aligned by index after initial filtering by `myDeviceId` and `myNickname`.
-                // A more robust approach would be to match by email if possible or ensure initial arrays are parallel.
-                // For now, mimicking original behavior, but be aware of potential issues.
                 if (member_deviceid.value[i]) {
                     // Check if index exists before splicing
                     member_deviceid.value.splice(i, 1);
@@ -668,7 +673,14 @@ onMounted(() => {
             meetingStore.meetingMemberAdd(meetingMember.value);
         }
     } else {
-        typeChangeState.value = false;
+        selectedMember.value = [];
+        defaultPeriodType.value = 0;
+        let memberList = [];
+        memberList[0] = {
+            name: userListStore.userListAll.institution[0],
+            children: userListStore.organizationList,
+        };
+        meetingMember.value = memberList;
     }
 });
 const leadZero = (value) => {
@@ -713,10 +725,10 @@ const periodType = (e) => {
         mtgPeriodTag.style.color = "#ffffff";
     }
     typeChangeState.value = true;
-    startDate.value = '';
-    endDate.value = ''
-    startTime.value = ''
-    endTime.value = ''
+    startDate.value = "";
+    endDate.value = "";
+    startTime.value = "";
+    endTime.value = "";
 };
 
 const close = () => {
@@ -740,7 +752,7 @@ const guestEmailAdd = () => {
     };
 
     // Assuming userListGetEmail is a globally injected method
-    const checkEmail = $userListGetEmail(c.fullEmail);
+    const checkEmail = userListGetEmail(c.fullEmail);
 
     // 자신 이메일 체크
     if (checkEmail === -1) {
@@ -818,12 +830,18 @@ const saveMeeting = async (modifyOnOff) => {
     let directCallYN = checkDirectCall.value ? 1 : 0;
     let everyoneStartYN = checkEveryoneStart.value ? 1 : 0;
 
+    function formatToKoreanTime(time) {
+        const hours = String(time.hours).padStart(2, "0");
+        const minutes = String(time.minutes).padStart(2, "0");
+        return `${hours}:${minutes}`;
+    }
+    console.log(startTime.value, endTime.value);
     const titleVal = meetingTitle.value;
     let currentStartDate = startDate.value;
     let currentEndDate = endDate.value;
-    let currentStartTime = startTime.value;
-    let currentEndTime = endTime.value;
-    let currentType = type.value; // Use current value of type ref
+    let currentStartTime = formatToKoreanTime(startTime.value);
+    let currentEndTime = formatToKoreanTime(endTime.value);
+    let currentType = defaultPeriodType.value; // Use current value of type ref
 
     let date = new Date();
     const yyyy = date.getFullYear();
@@ -837,7 +855,7 @@ const saveMeeting = async (modifyOnOff) => {
     console.log("meeting period type:", currentType);
 
     // 회의기간타입이 0일 경우
-    if (currentType === "0") {
+    if (currentType === 0) {
         currentStartDate = `${yyyy}-${MM}-${dd}`;
         currentStartTime = `${yyyy}-${MM}-${dd} ${hh}:${mm}`;
 
@@ -855,10 +873,10 @@ const saveMeeting = async (modifyOnOff) => {
             currentEndDate = `${yyyy}-${MM}-${dd}`;
             currentEndTime = `${yyyy}-${MM}-${dd} ${hh + 2}:${mm}`;
         }
-    } else if (currentType === "1") {
+    } else if (currentType === 1) {
         // 회의기간타입이 1일(1) 일경우 >> 시작날짜 == 종료날짜
         currentEndDate = currentStartDate;
-    } else if (currentType === "3") {
+    } else if (currentType === 3) {
         // 회의기간타입이 상시(3) 종료일을 임의로 2100년으로 설정
         currentEndDate = new Date("2100-01-01").toISOString();
         currentEndTime = new Date("2100-01-01 00:00").toISOString();
@@ -869,8 +887,8 @@ const saveMeeting = async (modifyOnOff) => {
     currentEndDate = extractDate(currentEndDate, currentType);
 
     // 시간을 추출하여 변수에 넣어준다.
-    currentStartTime = extractTime(currentStartTime, currentType);
-    currentEndTime = extractTime(currentEndTime, currentType);
+    // currentStartTime = extractTime(currentStartTime, currentType);
+    // currentEndTime = extractTime(currentEndTime, currentType);
 
     console.log(
         "startDate:",
@@ -906,11 +924,9 @@ const saveMeeting = async (modifyOnOff) => {
         // Check length for array
         member.push(sessionStorage.getItem("m_nickname"));
         memberId.push(sessionStorage.getItem("m_local_deviceid"));
-        memberEmail.push("본인의 이메일을 넣어라."); // Placeholder for actual email
     } else {
         member.unshift(sessionStorage.getItem("m_nickname"));
         memberId.unshift(sessionStorage.getItem("m_local_deviceid"));
-        memberEmail.unshift("본인의 이메일을 넣어라."); // Placeholder for actual email
     }
 
     const guestEmail = [];
@@ -956,75 +972,44 @@ const saveMeeting = async (modifyOnOff) => {
     checkStartTime.value = currentStartTime.includes("NaN") ? "" : currentStartTime;
     checkEndDate.value = currentEndDate.includes("NaN") ? "" : currentEndDate;
     checkEndTime.value = currentEndTime.includes("NaN") ? "" : currentEndTime;
-    type.value = currentType; // Re-assigning to ref is fine, though already `currentType`
+    defaultPeriodType.value = currentType; // Re-assigning to ref is fine, though already `currentType`
 
-    // --- Handling this.$validate() ---
-    // If this.$validate() comes from VeeValidate 4+, it's typically a function
-    // returned by `useForm` or similar. If it's a custom injection, you'll need to know its API.
-    // For now, I'm assuming it's still accessible via `useNuxtApp()` context if globally injected.
-    // If it's VeeValidate 4+, the typical pattern is:
-    // const { validate } = useForm();
-    // validate().then(...)
-    const $validate = useNuxtApp().$validate; // Example: Assuming it's injected.
+    const meetingInfo = {
+        title: titleVal, // Use the extracted title
+        startDate: checkStartDate.value,
+        startTime: checkStartTime.value,
+        endDate: checkEndDate.value,
+        endTime: checkEndTime.value,
+        type: currentType,
+        maker: loginStore.m_local_deviceid,
+        members: [],
+        memberIDs: [],
+        memberEmails: [],
+        guestEmails: [],
+        entry_notification_yn: entryNotificationYN,
+        direct_call_yn: directCallYN,
+        everyone_start_yn: everyoneStartYN,
+        cctv_list: cctvList,
+    };
+    console.log("*******************meetineInfo 유효성 검사후*******************");
+    console.log("*** methods: saveMeeting:: meetingInfo = ", meetingInfo);
 
-    if (typeof $validate === "function") {
-        $validate().then(function (success) {
-            if (success) {
-                meetingStore.saveBtnClick(false);
-                modify.value = success; // Update reactive ref
-                console.log("*** methods: saveMeeting:: success = ", success);
-
-                const meetingInfo = {
-                    title: titleVal, // Use the extracted title
-                    startDate: currentStartDate,
-                    startTime: currentStartTime,
-                    endDate: currentEndDate,
-                    endTime: currentEndTime,
-                    type: currentType,
-                    maker: sessionStorage.getItem("m_local_deviceid"),
-                    members: member,
-                    memberIDs: memberId,
-                    memberEmails: memberEmail,
-                    guestEmails: guestEmail,
-                    entry_notification_yn: entryNotificationYN,
-                    direct_call_yn: directCallYN,
-                    everyone_start_yn: everyoneStartYN,
-                    cctv_list: cctvList,
-                };
-                console.log(
-                    "*******************meetineInfo 유효성 검사후*******************",
-                );
-                console.log("*** methods: saveMeeting:: meetingInfo = ", meetingInfo);
-
-                if (modifyOnOff === true) {
-                    console.log("*** methods: saveMeeting:: 회의를 수정합니다.");
-                    console.log("*** methods: saveMeeting:: " + modifyOnOff);
-                    console.log(
-                        "*** methods: saveMeeting:: " + meetingInfo,
-                        "meetingInfo",
-                    );
-                    meetingStore.meetingModifyInfo(meetingInfo);
-                    meetingStore.meetingModifyFlag(true);
-                } else {
-                    meetingStore.meetingSaveInfo(meetingInfo);
-                    meetingStore.meetingSaveFlag(true);
-                }
-
-                meetingStore.meetingMemberDeleteAll();
-                meetingStore.meetingMemberIdAllDelete();
-                meetingStore.meetingMemberEmailDeleteAll();
-                meetingStore.emailDeleteAll();
-                meetingStore.saveBtnClick(false);
-            } else {
-                console.log("실패");
-            }
-        });
+    if (modifyOnOff === true) {
+        console.log("*** methods: saveMeeting:: 회의를 수정합니다.");
+        console.log("*** methods: saveMeeting:: " + modifyOnOff);
+        console.log("*** methods: saveMeeting:: " + meetingInfo, "meetingInfo");
+        meetingStore.setMeetingModifyInfo(meetingInfo);
+        meetingStore.setMeetingModifyFlag(true);
     } else {
-        // Fallback if $validate is not available or not a function
-        console.warn("Validation function ($validate) not found or not callable.");
-        // Implement direct validation logic here if $validate is custom or missing,
-        // or provide an alternative error handling.
+        meetingStore.setMeetingSaveInfo(meetingInfo);
+        meetingStore.setMeetingSaveFlag(true);
     }
+
+    meetingStore.meetingMemberDeleteAll();
+    meetingStore.meetingMemberIdAllDelete();
+    meetingStore.meetingMemberEmailDeleteAll();
+    meetingStore.emailDeleteAll();
+    meetingStore.saveBtnClick(false);
 };
 
 const modifyMeeting = () => {
@@ -1048,9 +1033,17 @@ const memberClick = () => {
 };
 
 const memberUpdate = (value) => {
+    console.log(value);
     meetingMember.value = value;
 };
 
+const selectMember = (obj) => {
+    console.log(obj.names);
+    selectedMember.value = [];
+    selectedMember.value = obj.names;
+    console.log(selectedMember.value);
+    console.log(obj.names, obj.deviceIds);
+};
 const memberSubmitBtn = () => {
     const mm = meetingMember.value;
     meetingStore.meetingMemberAdd(mm);
@@ -1062,7 +1055,7 @@ const userData = computed(() => store.state.call.userData);
 
 watch(type, (newVal, oldVal) => {
     // 회의기간 타입이 변경될경우 날짜, 시간 설정값을 초기화한다.
-    if (typeChangeState.value) {
+    if (defaultPeriodType.value) {
         // Access ref with .value
         console.log("변경");
         startDate.value = "";
@@ -1074,7 +1067,7 @@ watch(type, (newVal, oldVal) => {
     console.log("*** watch: type --> before Value", oldVal);
     console.log("*** watch: type --> current Value", newVal);
 
-    if (newVal === "0" || newVal === "3") {
+    if (newVal === 0 || newVal === 3) {
         disabledState.value = true;
     } else {
         disabledState.value = false;
@@ -1090,20 +1083,20 @@ watch(startDate, (value) => {
     }
 
     // startDate 날짜 변경 시 시간 초기화
-    setTimeout(() => {
-        // Access refs with .value
-        if (!modify.value && !typeChangeState.value) {
-            // Do nothing as per original logic if not modify and not typeChangeState
-        } else if (type.value == 1 || type.value == 3) {
-            startTime.value = "";
-            endTime.value = "";
-        } else {
-            startTime.value = "";
-        }
-    }, 0);
+    // setTimeout(() => {
+    //     // Access refs with .value
+    //     if (!modify.value && !defaultPeriodType.value) {
+    //         // Do nothing as per original logic if not modify and not defaultPeriodType
+    //     } else if (defaultPeriodType.value == 1 || defaultPeriodType.value == 3) {
+    //         startTime.value = "";
+    //         endTime.value = "";
+    //     } else {
+    //         startTime.value = "";
+    //     }
+    // }, 0);
 
     // 회의기간 타입(2) 일 경우 시작날짜 < 종료날짜 조건 체크
-    if (type.value == 2) {
+    if (defaultPeriodType.value == 2) {
         if (endDate.value !== "" && endDate.value <= value) {
             // Compare ref values
             commonToastMessage(t("Check the meeting start date")); // Use injected function
@@ -1124,7 +1117,7 @@ watch(endDate, (value) => {
 
     // 회의종료날짜 재선택 시 종료시간 초기화
     setTimeout(() => {
-        if (!modify.value && !typeChangeState.value) {
+        if (!modify.value && !defaultPeriodType.value) {
             // Do nothing
         } else {
             endTime.value = "";
@@ -1132,7 +1125,7 @@ watch(endDate, (value) => {
     }, 0);
 
     // 회의기간타입이 연일(2) 일경우 시작날짜 < 종료날짜 체크
-    if (type.value == 2 && value !== "") {
+    if (defaultPeriodType.value == 2 && value !== "") {
         if (startDate.value !== "" && startDate.value >= value) {
             commonToastMessage(t("Check the meeting end date"));
             setTimeout(() => {
@@ -1159,7 +1152,7 @@ watch(startTime, (value) => {
     const setValue = new Date(`${today.value} ${extractTime(value)}`); // Use today.value and extractTime
 
     // 시작시간 > 종료시간 조건 체크
-    if (type.value == 1) {
+    if (defaultPeriodType.value == 1) {
         if (endTime.value !== "" && endTime.value <= value) {
             commonToastMessage(t("Start time check")[0]);
             setTimeout(() => {
@@ -1211,14 +1204,15 @@ watch(endTime, (value) => {
         return;
     }
     // 1일 일경우 시작시간< 종료시간 조건 체크
-    if (type.value == 1) {
-        if (startTime.value !== "" && startTime.value >= value) {
-            commonToastMessage(t("End time check")[0]);
-            setTimeout(() => {
-                endTime.value = "";
-            }, 0);
-        }
-    }
+    // if (defaultPeriodType.value == 1) {
+    //     if (startTime.value !== "" && startTime.value >= value) {
+    //         alert("여기지?")
+    //         commonToastMessage(t("End time check")[0]);
+    //         setTimeout(() => {
+    //             endTime.value = "";
+    //         }, 0);
+    //     }
+    // }
 });
 </script>
 <style lang="scss">
@@ -1278,7 +1272,7 @@ select,
     align-items: end;
     justify-content: space-between;
     border-bottom: 2px solid #343434;
-    >.modalFont22 {
+    > .modalFont22 {
         margin-bottom: 12px;
     }
 }
@@ -1438,7 +1432,6 @@ select,
 }
 
 .memberInput {
-    width: 100%;
     font: normal normal normal 14px/16px NanumSquare;
     overflow: auto;
 
@@ -1450,6 +1443,8 @@ select,
 
 .memberBtn {
     color: #8c8c8c;
+    position: absolute;
+    right: 5px;
 }
 
 .memberBox {
@@ -1963,15 +1958,16 @@ select,
 }
 
 .selected-opt {
+    position: relative;
     width: 100%;
     display: flex;
-    justify-content: space-between;
     background: #323232 0 0 no-repeat padding-box;
     padding: 10px;
     color: #fff;
 }
 
-.form-box,.button-box {
+.form-box,
+.button-box {
     display: flex;
     align-items: center;
     justify-content: center;

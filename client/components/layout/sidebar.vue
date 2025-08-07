@@ -24,7 +24,7 @@ const { menuImages } = useImageAssets();
             <img :src="menuImages.cloud" />
             <label class="icon-label">gg</label>
         </a>
-        <a :href="'http://localhost:8223/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
+        <a :href="'http://localhost:8205/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
             <img :src="menuImages.cloud" />
             <label class="icon-label">클라우드</label>
         </a>

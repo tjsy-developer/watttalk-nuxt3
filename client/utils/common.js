@@ -3,7 +3,7 @@ import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useTokenStore } from "@/stores/token";
 import { useNuxtApp } from "nuxt/app";
-
+import _ from "lodash"
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
     const date = new Date();
@@ -329,21 +329,25 @@ export function setRemoveDuplicates(objToChange) {
 }
 
 export async function convertImageToBlob(src) {
-    const { $axios } = useNuxtApp();
     const tokenStore = useTokenStore();
     if (!src) return "";
-
     try {
-        const url = src + `?token=${tokenStore.accessToken}`;
-        const result = await $axios.get(url, {
-            responseType: "blob",
+        // fetch-plugin.js에서 이미 jwt 토큰을 헤더에 추가하므로 URL에 토큰을 추가할 필요가 없습니다.
+        const response = await $fetch.raw(src+'?token='+tokenStore.accessToken, {
+            // .raw()를 사용하여 response 객체 전체를 받습니다.
+            method: "GET",
+            responseType: "blob", // ✅ 바이너리 데이터를 Blob으로 받도록 설정
             timeout: 4000,
         });
-        if (result.status === 200) {
-            return URL.createObjectURL(result.data);
+        console.log(response)
+        if (response.status === 200) {
+            const blob = response._data; // ✅ `ofetch`는 바이너리 데이터를 `_data` 속성에 담습니다.
+            return URL.createObjectURL(blob);
         }
+
         return "";
     } catch (err) {
+        console.error("이미지 변환 중 오류 발생:", err);
         return "";
     }
 }

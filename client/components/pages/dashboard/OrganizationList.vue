@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import TreeNode from "@/components/pages/dashboard/TreeNode.vue";
 
 interface OrgNode {
@@ -62,7 +62,7 @@ watch(() => props.search as any, (newName) => {
 
 const filteredData = computed(() => {
     if (!props.search) return props.data;
-
+    console.log('여기는 타면안되어')
     function filterNodes(nodes: OrgNode[]): OrgNode[] {
         const result: OrgNode[] = [];
 
@@ -84,6 +84,10 @@ const filteredData = computed(() => {
 
     return filterNodes(props.data);
 });
+
+onMounted(() => {
+    console.log(props.data)
+})
 </script>
 
 <style scoped>

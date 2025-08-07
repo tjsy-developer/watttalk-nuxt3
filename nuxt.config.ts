@@ -9,6 +9,7 @@ export default defineNuxtConfig({
         dirs: ["utils"], // 또는 'composables', 'stores', 'utils' 등
     },
     app: {
+        baseURL: "/watttalk",
         head: {
             title: process.env.NUXT_PUBLIC_HEAD_TITLE,
             meta: [
@@ -58,6 +59,7 @@ export default defineNuxtConfig({
         "@/plugins/piniaPersist.client",
         "@/plugins/vue-final-modal",
         "@/plugins/i18n",
+        "@/plugins/pdfjs.client",
     ],
     modules: [
         "@nuxt/devtools",
@@ -73,7 +75,7 @@ export default defineNuxtConfig({
         // ["@nuxtjs/i18n", require("./i18n.config")],
     ],
     vite: {
-        assetsInclude: ["**/*.svg"],
+        assetsInclude: ["**/*.svg", "**/*.worker.js"],
         optimizeDeps: {
             include: ["quasar"],
         },
@@ -84,6 +86,15 @@ export default defineNuxtConfig({
                         @use "@/assets/styles/scss/_variables.scss" as *;
                         @use "@/assets/styles/scss/_utils.scss" as *;
                     `,
+                },
+            },
+        },
+        server: {
+            proxy: {
+                "/image-proxy": {
+                    target: "https://hdcardev.watttalk.kr",
+                    changeOrigin: true,
+                    rewrite: (path) => path.replace(/^\/image-proxy/, ""),
                 },
             },
         },
@@ -99,11 +110,11 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_URL: process.env.NUXT_PUBLIC_ICE_SERVER_URL,
         },
     },
-    // devServer: {
-    //     https: {
-    //         key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
-    //         cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
-    //     },
-    //     host: "0.0.0.0",
-    // },
+    devServer: {
+        https: {
+            key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
+            cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
+        },
+        // host: "0.0.0.0",
+    },
 });

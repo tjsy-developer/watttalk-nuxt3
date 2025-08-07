@@ -232,8 +232,8 @@ export function bindSocketEvents(socket) {
     //     //         directCallStore.clearDirectCallInfo();
 
     //     //         requestCreateRoomID()
-    //     //         meetingStore.openAndJoin("open");
-    //     //         meetingStore.meetingSeq(json.unique_roomid);
+    //     //         meetingStore.setOpenAndJoin("open");
+    //     //         meetingStore.setMeetingSeq(json.unique_roomid);
     //     //         meetingStore.meetingOpenFlag(true);
     //     //     } else {
     //     //         noneOverlayModal(6);
@@ -245,8 +245,8 @@ export function bindSocketEvents(socket) {
     //     //     console.log("*** methods: joinMeeting::");
     //     //     console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
             
-    //     //     meetingStore.openAndJoin("join");
-    //     //     meetingStore.meetingSeq(json.unique_roomid);
+    //     //     meetingStore.setOpenAndJoin("join");
+    //     //     meetingStore.setMeetingSeq(json.unique_roomid);
     //     //     meetingStore.meetingJoinFlag(true);
     //     // } else if (json.start_status == 3) {
     //     //     console.log("회의실이 삭제되어있다.");

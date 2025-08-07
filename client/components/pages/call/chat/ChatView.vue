@@ -73,18 +73,20 @@
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'; // Assuming you use vue-i18n for translations
 
+const { t } = useI18n();
 import { useChattingStore } from "@/stores/chatting";
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 
+
+const callStore = useCallStore();
+const commonStore = useCommonStore();
 const props = defineProps({
   compData: {
     type: Object,
     required: true
   }
 });
-
-const { t } = useI18n(); // Access translation function and locale
 
 // Reactive data (formerly 'data()' in Options API)
 const emergencyIcons = ref([

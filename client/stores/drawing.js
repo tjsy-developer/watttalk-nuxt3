@@ -487,7 +487,7 @@ export const useDrawingCanvasStore = defineStore('drawingCanvas', {
       this.beforeHostIndex = 0;
       this.readyStatus = false;
     },
-    setbeforeHostIndex(payload) {
+    setBeforeHostIndex(payload) {
       this.beforeHostIndex = payload;
     },
     setReadyStatus(payload) {

@@ -173,6 +173,7 @@ import { useCallStore } from "@/stores/call";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import lodash from "lodash"
 
 const drawingStore = useDrawingCanvasStore();
 const callStore = useCallStore();
@@ -270,14 +271,13 @@ const fileClick = (e, type) => {
         history: canvasHistory.value,
     });
 
-    superIndex.value = files.value[e].index;
-    const lodash = require("lodash"); // You might use an ES module import like `import lodash from 'lodash';` in a modern setup
+    superIndex.value = files.value[e].index; // You might use an ES module import like `import lodash from 'lodash';` in a modern setup
     const cloneFileHistory = lodash.cloneDeep(files.value);
     // 최종 console.log("fileClick canvasHistory.currentStateIndex = ", canvasHistory.value.currentStateIndex)
     // console.log("files.value History", canvasHistory.value.currentStateIndex)
     if (files.value[e].type == "img") {
         console.log("fileClick start, file.type == img");
-
+        console.log('여기2')
         drawingStore.setCanvasHistory(files.value[e].history);
 
         if (canvasHistory.value.state.length > 0) {
@@ -322,7 +322,7 @@ const fileClick = (e, type) => {
             drawingStore.setHistorySplice(e);
         }
         // <-
-
+        console.log('여기3')
         drawingStore.setCanvasHistory(files.value[e].history);
         // 최종 console.log("fileClick drawingStore.setCanvasHistory = ", files.value[e].history)
 
@@ -330,7 +330,7 @@ const fileClick = (e, type) => {
         // console.log("*******##** fileClick Test: #8")
     } else if (files.value[e].type == "canvas") {
         // 최종 console.log("fileClick quarter file.type == canvas")
-
+        console.log('여기4')
         drawingStore.setCanvasHistory(files.value[e].history);
         if (canvasHistory.value.state.length > 0) {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
@@ -481,6 +481,7 @@ const pdfClick = (fileKey, pdfKey) => {
                 firstState: canvasAsJson,
             });
             // console.log("pdfClick if 문", files.value[fileKey].pdf[pdfKey].history)
+            console.log('여기5')
             drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
                 setRemoveDuplicates(
@@ -498,6 +499,7 @@ const pdfClick = (fileKey, pdfKey) => {
     } else {
         // console.log("pdfClick else 문", files.value[fileKey].pdf[pdfKey].history, canvasHistory.value.currentStateIndex)
         // console.log(files.value[fileKey].pdf[pdfKey].history)
+        console.log('여기6')
         drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
         // console.log(canvasHistory.value.state[canvasHistory.value.currentStateIndex])
         canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
@@ -564,6 +566,7 @@ const canvasImgChange = (num, beforeSuperIndex, type) => {
 const eachCanvasDelete = (e, pdfKey, group) => {
     if (!isPdfUploading.value) {
         if (files.value[e - 1].type != "pdf") {
+            console.log('fileClick 1')
             fileClick(e - 1);
             isDelete.value = true;
             let deleteIndex = null;
@@ -626,13 +629,13 @@ const eachCanvasDelete = (e, pdfKey, group) => {
 
 const clearThumbnail = () => {
     if (!isPdfUploading.value) {
-        clearFiles();
+        drawingStore.clearFiles();
         drawingStore.setSuperIndex(1);
         canvas.value.loadFromJSON(
             canvasHistory.value.state[0],
             canvas.value.renderAll.bind(canvas.value),
         );
-        canvasImgChange(0, beforeSuperIndex.value, files.value[0].type);
+        canvasImgChange(0, beforeSuperIndex.value, "canvas");
         drawingStore.setSelectedFileIndex(0);
         beforeSuperIndex.value = 0;
         drawingStore.setCanvasJson(null);
@@ -834,12 +837,12 @@ const getLastCanvasInfo = computed(() => {
 });
 
 // canvasWidth 감시
-watch(canvasWidth, (newVal) => {
-    const thumbBody = document.getElementById("thumbBody");
-    if (thumbBody) {
-        thumbBody.style.width = newVal - 30 + "px";
-    }
-});
+// watch(canvasWidth, (newVal) => {
+//     const thumbBody = document.getElementById("thumbBody");
+//     if (thumbBody) {
+//         thumbBody.style.width = newVal - 30 + "px";
+//     }
+// });
 
 // files 감시 (배열 전체 변경 감지)
 watch(
@@ -855,7 +858,7 @@ watch(
 
         for (let i = 0; i < newFiles.length; i++) {
             // superIndex는 drawingStore.index로 가정합니다.
-            if (index.value == newFiles[i].index) {
+            if (index.value - 1 == newFiles[i].index) {
                 // ref 접근 시 .value
                 drawingStore.setSelectedFileIndex(i);
                 break;
@@ -877,6 +880,7 @@ watch(
                 drawingStore.setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
                 if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
                     // ref 접근 시 .value
+                     console.log('fileClick 2')
                     fileClick(newFiles.length - 1);
                 }
                 const scrollElement = document.getElementById("thumbBody");
@@ -898,8 +902,7 @@ watch(
                 });
             }
         }
-    },
-    { deep: true },
+    }
 ); // files 배열 내부의 변경도 감지하기 위해 deep 옵션 추가
 
 // src 감시
@@ -1095,6 +1098,7 @@ watch(isDrawing, (newVal) => {
             console.log("beforeSelectedState:", beforeSelectedState.value); // ref 접근 시 .value
             if (beforeSelectedState.value) {
                 // ref 접근 시 .value
+                 console.log('fileClick 3')
                 fileClick(selectedFileIndex.value); // ref 접근 시 .value
                 console.log(
                     "this.fileClick(this.selectedFileIndex) - isDrawing type image",
@@ -1128,6 +1132,7 @@ watch(beforeThumbnailTransfer, async (newVal) => {
             // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
+                 console.log('fileClick 4')
                 await fileClick(selectedFileIndex.value); // ref 접근 시 .value
                 drawingStore.setBeforeThumbnailTransfer(false);
             } else {
@@ -1147,6 +1152,7 @@ watch(beforeCloseCanvas, (newVal) => {
             drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
+                 console.log('fileClick 5')
                 fileClick(selectedFileIndex.value); // ref 접근 시 .value
             } else {
                 pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
@@ -1186,8 +1192,8 @@ watch(lastCanvasSeted, async (res) => {
     // computed의 getLastCanvasInfo가 아닌, state의 lastCanvasSeted를 직접 감시하는 것으로 가정
     if (res) {
         drawingStore.setCanvasHistoryFin(false);
+         console.log('fileClick 6')
         await fileClick(selectedFileIndex.value); // ref 접근 시 .value
-        await fileClick(selectedFileIndex.value); // 두 번 호출되는 이유가 명확하지 않으나, 기존 로직 유지
     }
 });
 
@@ -1205,11 +1211,11 @@ onMounted(() => {
     displayMode.value = sessionStorage.getItem("displayMode") || "default"; // 기본값 설정
 
     // 3. thumbBody 너비 설정
-    const thumbBody = document.getElementById("thumbBody");
-    if (thumbBody) {
-        // null 체크
-        thumbBody.style.width = canvasWidth.value - 32 + "px"; // .value로 접근
-    }
+    // const thumbBody = document.getElementById("thumbBody");
+    // if (thumbBody) {
+    //     // null 체크
+    //     thumbBody.style.width = canvasWidth.value - 32 + "px"; // .value로 접근
+    // }
 
     // 4. PDF 관련 초기화 로직
     let pdfN = 0;
@@ -1326,12 +1332,13 @@ onUnmounted(() => {
 
   > div {
     > button {
-      width: 132px;
+      /* width: 132px; */
       height: 74px;
       border-radius: 7px;
       -moz-border-radius: 7px;
       -khtml-border-radius: 7px;
       -webkit-border-radius: 7px;
+      padding: 0;
     }
   }
 }
@@ -1388,6 +1395,7 @@ onUnmounted(() => {
 
 .addCanvas {
   width: 32px;
+  height: 50px;
   border-top-right-radius: 7px;
 }
 
@@ -1485,5 +1493,9 @@ onUnmounted(() => {
   -moz-border-radius: 7px;
   -khtml-border-radius: 7px;
   -webkit-border-radius: 7px;
+}
+
+.selectedThumbnail {
+    position: relative;
 }
 </style>

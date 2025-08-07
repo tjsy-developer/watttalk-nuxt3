@@ -414,6 +414,7 @@ onMounted(() => {
             if (json.canReceiveCall == 0) {
                 console.log("*** socket: groupRoom >> 전화 걸기 불가능");
 
+                alert("여기12")
                 // 거절 팝업창 표시
                 commonStore.setAlert(3);
                 sessionStorage.setItem("m_callWaiting", "false");
@@ -481,7 +482,7 @@ onMounted(() => {
     $signallingSocket.on("multiRefuseCalling", function(response) {
         console.log("*** socket: multiRefuseCalling response")
         console.log(response)
-
+        alert("여기13")
         // 통화 발신창 닫기 --> 통화 거절 팝업
         commonStore.setAlert(3)
         sessionStorage.setItem("m_callWaiting", "false")

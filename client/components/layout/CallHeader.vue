@@ -13,6 +13,7 @@ import { useMeetingStore } from "@/stores/meeting";
 import { useChattingStore } from "@/stores/chatting";
 import { useCommonStore } from "@/stores";
 import { commonToastMessage } from "@/composables/common";
+import ContactList from "../pages/dashboard/ContactList.vue";
 
 const loginStore = useLoginStore();
 const callStore = useCallStore();
@@ -29,17 +30,22 @@ const videoStream = ref([]);
 const curLang = ref("");
 const chatBarStatus = ref(false); // chatBarStatus는 컴포넌트 내부에 정의되어 있다고 가정
 const checked = ref(false); // sendDurationEnable과 연동될 checked 상태
+const showContactList = ref(false);
 
 const { t } = useI18n();
 
 function handleChangeLayoutType(layoutType) {
-    console.log("*** methods: switchCallingLayoutType", callingLayoutType.value, layoutType);
+    console.log(
+        "*** methods: switchCallingLayoutType",
+        callingLayoutType.value,
+        layoutType,
+    );
 
     // 변경되는 레이아웃이 현재 레이아웃과 동일하면 return
     if (callingLayoutType.value == layoutType) {
         return;
     }
-    console.log("여기는")
+    console.log("여기는");
     const videoMainIndex = callStore.videoMainIndex;
     if (callingLayoutType.value == 1 && layoutType !== 1) {
         if (videoMainIndex == 0) {
@@ -58,24 +64,24 @@ function handleChangeLayoutType(layoutType) {
                 commonStore.userListStatus[videoMainIndex].zoomLevel;
         }
     }
-    console.log(commonStore.isDrawing)
+    console.log(commonStore.isDrawing);
     // 드로잉일 경우 레이아웃 변경 금지 : 변경 시 그림을 그려도 상대방에게 영상이 전송되지 않아서.
     if (commonStore.isDrawing) {
         commonToastMessage(t("toastMessage Drawing NoChangeLayout"));
-        console.log('1')
+        console.log("1");
         return;
     }
 
     // 낙하 모션 알람이 발생한 경우 레이아웃 변경 금지
     if (callStore.motionFallFlag) {
         commonToastMessage(t("toastMessage motionFall NoChangeLayout"));
-        console.log('2')
+        console.log("2");
         return;
     }
 
     // 움직임 없음 모션 알람이 발생한 경우 레이아웃 변경 금지
     if (callStore.motionNoMoveFlag) {
-        console.log('3')
+        console.log("3");
         commonToastMessage(t("toastMessage motionNoMove NoChangeLayout"));
         return;
     }
@@ -85,7 +91,7 @@ function handleChangeLayoutType(layoutType) {
         callStore.setLaserPointerShow(false);
     }
 
-    console.log("여기탔어?>")
+    console.log("여기탔어?>");
     // 변경될 때 마다 로컬 스토리지에 등록한다.
     localStorage.setItem("callingLayoutType", layoutType);
 
@@ -104,7 +110,9 @@ function handleChangeLayoutType(layoutType) {
         } else {
             const remoteElement = document.getElementById("remotevideo" + i);
             if (remoteElement != null && remoteElement.srcObject != null) {
-                videoArray.value[i] = document.getElementById("panel-inner" + i).outerHTML;
+                videoArray.value[i] = document.getElementById(
+                    "panel-inner" + i,
+                ).outerHTML;
                 videoStream.value[i] = document.getElementById(
                     "remotevideo" + i,
                 ).srcObject;
@@ -174,11 +182,15 @@ watch(sendDurationEnable, (newVal) => {
 });
 
 function handleChangeDrawingOnOff() {
-    commonStore.setIsDrawing()
+    commonStore.setIsDrawing();
 }
 
 function handleChangeShareOnOff() {
-    commonStore.setIsShare()
+    commonStore.setIsShare();
+}
+
+function toggleContactList() {
+  showContactList.value = !showContactList.value
 }
 </script>
 
@@ -200,30 +212,29 @@ function handleChangeShareOnOff() {
             </div>
         </div>
         <div class="func-butttons">
-            <button
-                v-if="isDrawing"
-                @click="handleChangeDrawingOnOff"    
-            >
+            <button v-if="isDrawing" @click="handleChangeDrawingOnOff">
                 <img
                     src="@/assets/images/attachment_header/ic_drawing.svg"
                     class="icon"
                 />
                 <span>{{ t("드로잉 종료") }}</span>
             </button>
-            <button 
-                v-if="isShare"
-                @click="handleChangeShareOnOff">
-                <img
-                     
-                    src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
+            <button v-if="isShare" @click="handleChangeShareOnOff">
+                <img src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
                 <span>{{ t("화면공유 종료") }}</span>
             </button>
         </div>
         <div class="layout-butttons">
             <div>
-                <button :class="callingLayoutType == 1 ? 'clicked' : 'un-clicked'">
-                    <img src="@/assets/images/header/ic_callbox_w.png" />
+                <button
+                    :class="callingLayoutType == 1 ? 'clicked' : 'un-clicked'"
+                    @click="toggleContactList"
+                >
+                    <img src="@/assets/images/header/ic_callbox_w.png"/>
                 </button>
+                <section class="right-panel" v-if="showContactList">
+                    <ContactList></ContactList>
+                </section>
             </div>
             <div>
                 <button
@@ -233,13 +244,15 @@ function handleChangeShareOnOff() {
                     <img src="@/assets/images/header/ic_4.png" />
                 </button>
                 <button
-                    @click="handleChangeLayoutType(3)" 
-                    :class="callingLayoutType == 3 ? 'active' : 'inactive'">
+                    @click="handleChangeLayoutType(3)"
+                    :class="callingLayoutType == 3 ? 'active' : 'inactive'"
+                >
                     <img src="@/assets/images/header/ic_5.png" />
                 </button>
                 <button
                     @click="handleChangeLayoutType(4)"
-                    :class="callingLayoutType == 4 ? 'active' : 'inactive'">
+                    :class="callingLayoutType == 4 ? 'active' : 'inactive'"
+                >
                     <img src="@/assets/images/header/ic_6.png" />
                 </button>
             </div>
@@ -315,6 +328,7 @@ header {
 .layout-butttons {
     display: flex;
     height: 100%;
+    position: relative;
     > button {
         box-sizing: inherit;
     }
@@ -322,9 +336,9 @@ header {
         display: flex;
         align-items: center;
     }
-    *:not(.active, .inactive) {
+    /* *:not(.active, .inactive) {
         height: inherit;
-    }
+    } */
     .clicked,
     .un-clicked {
         padding: 0;
@@ -338,5 +352,25 @@ header {
             opacity: 0.7;
         }
     }
+}
+
+.right-panel {
+    width: 100%;
+    max-width: 616px;
+    height: 100%;
+    max-height: 753px;
+    padding: 41px 38px 8px 42px;
+    z-index: 1;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    overflow-y: auto;
+    position: absolute;
+    right: 230px;
+    bottom: 0;
+    box-sizing: border-box;
+    position: fixed;
+    top: 50px;
+    right: 46px;
+    @include tc(background-color, "component-bg-color");
 }
 </style>

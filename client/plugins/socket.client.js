@@ -9,15 +9,12 @@ import { io } from "socket.io-client";
 import { bindSocketEvents } from "@/composables/socket/useSocketListen";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useRoute } from "vue-router";
-
-let signallingSocket = null;
-let transferSocket = null;
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 export default defineNuxtPlugin(async (nuxtApp) => {
     const loginStore = useLoginStore();
     const tokenStore = useTokenStore();
     const { decodeToken, verifyToken, encryptData } = useAuth();
-
     
     const route = useRoute();
     if (route.name === "login") {
@@ -40,61 +37,52 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
 
     if (process.client) {
+        const { signallingSocket, transferSocket } = useSignallingSocket();
+
         const route = useRoute();
         const config = useRuntimeConfig();
+        
+        try {
+            if (
+                route.name == "dashboard" ||
+                route.name == "meeting" ||
+                route.name == "login"
+            ) {
+                const { $axios } = useNuxtApp();
+                const res = await $axios.post("homeRest/tokenCheck", {
+                    jwt: tokenStore.accessToken,
+                });
 
-        if (
-            route.name == "dashboard" ||
-            route.name == "meeting" ||
-            route.name == "login"
-        ) {
-            const { $axios } = useNuxtApp();
-            const res = await $axios.post("homeRest/tokenCheck", {
-                jwt: tokenStore.accessToken,
-            });
-
-            if (res) {
-                loginStore.setTokenResult(0);
-                loginStore.decodeToken(tokenStore.accessToken);
-                const tokenDecodeResult = loginStore.tokenDecodeResult;
-                // 복호화 실패일 경우
-                if (tokenDecodeResult == 1) {
-                    alert("복호화 실패");
-                    window.location.href = "http://localhost:8205";
+                if (res) {
+                    loginStore.setTokenResult(0);
+                    loginStore.decodeToken(tokenStore.accessToken);
+                    const tokenDecodeResult = loginStore.tokenDecodeResult;
+                    // 복호화 실패일 경우
+                    if (tokenDecodeResult == 1) {
+                        alert("복호화 실패");
+                        window.location.href = "http://localhost:8205";
+                    }
                 }
             }
+        } catch (err) {
+            console.log(err)
         }
-
-        signallingSocket = io(config.public.NUXT_PUBLIC_SIGNALLING_URL, {
-            transports: ["websocket"], // WebSocket 전송 방식 강제
-            reconnection: true,
-        });
-        transferSocket = io(config.public.NUXT_PUBLIC_TRANSFER_URL, {
-            transports: ["websocket"],
-            reconnection: true,
-        });
+        
+        nuxtApp.provide("signallingSocket", signallingSocket);
+        nuxtApp.provide("transferSocket", transferSocket);
         // 선택 사항: 소켓 연결 상태 로깅 (디버깅용)
         signallingSocket.on("connect", async () => {
             if (!nuxtApp.vueApp.config.globalProperties.$signallingSocket) {
-                nuxtApp.provide("signallingSocket", signallingSocket);
+                
                 console.log("signallingSocket provided.");
             } else {
                 console.warn(
                     "signallingSocket is already provided. Skipping re-provision.",
                 );
             }
-
-            if (!nuxtApp.vueApp.config.globalProperties.$transferSocket) {
-                nuxtApp.provide("transferSocket", transferSocket);
-                console.log("transferSocket provided.");
-            } else {
-                console.warn(
-                    "transferSocket is already provided. Skipping re-provision.",
-                );
-            }
-            // ✅ 여기서 이벤트 바인딩 실행
-            bindSocketEvents(signallingSocket);
-            useSocketEmitEvents(signallingSocket);
+            // // ✅ 여기서 이벤트 바인딩 실행
+            bindSocketEvents();
+            useSocketEmitEvents();
             const {
                 loginRequest,
                 listenLoginEvent,
@@ -121,7 +109,16 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             console.error("Signalling Socket Connect Error:", err.message),
         );
 
-        transferSocket.on("connect", () => console.log("Transfer Socket Connected!"));
+        transferSocket.on("connect", () => {
+            console.log("Transfer Socket Connected!")
+            if (!nuxtApp.vueApp.config.globalProperties.$transferSocket) {
+                console.log("transferSocket provided.");
+            } else {
+                console.warn(
+                    "transferSocket is already provided. Skipping re-provision.",
+                );
+            }
+        });
         transferSocket.on("disconnect", () =>
             console.log("Transfer Socket Disconnected!"),
         );

@@ -51,6 +51,7 @@ export default function useSocketEmitEvents(signallingSocket) {
             en_seq: loginStore.sessionEnSeq,
             language: preperenceStore.lang,
         };
+        console.log(json)
         $signallingSocket.emit("userListAll", JSON.stringify(json));
     };
 

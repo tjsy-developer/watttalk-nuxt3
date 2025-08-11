@@ -133,18 +133,31 @@ export function useLoginEvents() {
                 appJson = JSON.parse(json[key]);
                 break;
             }
-
-            function toBoolean(value) {
-                return value.toLowerCase() === 'true';
+            
+            function convertStringBooleansExtended(obj) {
+                const result = {}
+            
+                for (const key in obj) {
+                const val = obj[key]
+            
+                if (val === "True") result[key] = true
+                else if (val === "False") result[key] = false
+                else if (val === "1") result[key] = true
+                else if (val === "0") result[key] = false
+                else result[key] = val
+                }
+            
+                return result
             }
+            const transAppInfo = convertStringBooleansExtended(appJson);
             preferenceStore.setEnviroment({
-                useAutoPictureAccept: toBoolean(appJson.autoPictureAccept),
-                useAutoDiscalling: toBoolean(appJson.autoDiscalling),
-                useDirectCall: toBoolean(appJson.directCall),
-                autoCallAcceptTime: appJson.autoCallAcceptTime,
-                onlyVoiceCallId: appJson.onlyVoiceCallID.split(",") || [],
-                videoRecording: appJson.useVideoRecording,
-                roomNumber: appJson.roomNumber,
+                useAutoPictureAccept: transAppInfo.autoPictureAccept,
+                useAutoDiscalling: transAppInfo.autoDiscalling,
+                useDirectCall: transAppInfo.directCall,
+                autoCallAcceptTime: transAppInfo.autoCallAcceptTime,
+                onlyVoiceCallId: transAppInfo.onlyVoiceCallID.split(",") || [],
+                videoRecording: transAppInfo.useVideoRecording,
+                roomNumber: transAppInfo.roomNumber,
             });
             console.log("environment", json);
         });

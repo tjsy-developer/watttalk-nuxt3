@@ -1215,7 +1215,7 @@ watch(endTime, (value) => {
     // }
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 input,
 select,
 .emailInput {

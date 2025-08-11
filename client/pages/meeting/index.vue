@@ -80,6 +80,7 @@
 
 <script setup>
 const { $signallingSocket, transferSocket } = useNuxtApp();
+import MeetingModal from "@/components/modal/meeting/MeetingModal.vue";
 import MeetingRoom from "@/components/pages/meeting/MeetingRoom.vue";
 import { useDirectCallStore } from "@/stores/directCall";
 import { useLoginStore } from "@/stores/login";
@@ -92,7 +93,7 @@ import { ref, onMounted, onUpdated, onBeforeUnmount, computed } from "vue";
 import { useI18n } from "vue-i18n";
 const router = useRouter();
 const { t } = useI18n();
-
+import { useModal } from "vue-final-modal";
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
@@ -989,35 +990,19 @@ const loginUserInfoRequest = () => {
 };
 
 const makingBtnClick = async () => {
-    // Use `open` from `useModal` hook
-    // open(
-    //     meetingModal,
-    //     {},
-    //     {
-    //         name: "modal",
-    //         width: 440,
-    //         height: 790,
-    //         clickToClose: false,
-    //         scrollable: true,
-    //         adaptive: true,
-    //         classes: "meetingModal",
-    //     },
-    //     {
-    //         "before-close": () => {
-    //             if (modalsContainer) {
-    //                 modalsContainer.style.display = "none";
-    //             }
-    //             console.log("*** methods: makingBtnClick:: before-close!!!");
-    //         },
-    //         closed: () => {
-    //             meetingStore.meetingMemberDeleteAll();
-    //             meetingStore.meetingMemberIdAllDelete();
-    //             meetingStore.meetingMemberEmailDeleteAll();
-    //             meetingStore.emailDeleteAll();
-    //             console.log("*** methods: makingBtnClick:: close!!! ");
-    //         },
-    //     },
-    // );
+    console.log("*** methods: makingBtnClick");
+    const { open, close } = useModal({
+        component: MeetingModal,
+        styleValue: {
+            width: "650px",
+            height: "440px",
+        },
+        key: `meeting-modal`,
+        attrs: {
+            onClose: () => close(),
+        },
+    });
+    open();
 };
 
 // 시그널링 회의실 목록 요청 (meetingList 명을 이미 사용 중이므로 getMeeingList 로 지정)

@@ -89,6 +89,7 @@ import CallLayout from "@/components/pages/call/CallLayout.vue";
 import { checkMainVideo, userListGetNickname } from "@/utils/userList";
 import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 import { useModal } from "vue-final-modal";
+import LoadingModal from "@/components/modal/LoadingModal.vue";
 const { $signallingSocket, $transferSocket } = useNuxtApp();
 const { t } = useI18n();
 const {
@@ -211,6 +212,7 @@ onMounted(() => {
     nextTick(() => {
         const { $Janus } = useNuxtApp();
         Janus = $Janus;
+        createLoadingMask("prepairVideoCall")
         sayHello();
     });
 
@@ -9194,33 +9196,34 @@ function forceLogOutResult(reqSocketId, status) {
     console.log("*** socket: emit forceLogoutResult");
     console.log(json);
 }
-function createLoadingMask(type) {
-    // 여기인듯 
-    return
-    document.getElementById("loader").classList.add("loader");
-    document.getElementById("maskOverlay").classList.add("maskOverlay");
-    document.getElementById("main").style.pointerEvents = "none";
-    maskLoading.value = true;
-    maskLoadingType = type;
+let loadingModal = null;
+
+function initLoadingModal(type) {
+  if (!loadingModal) {
+    loadingModal = useModal({
+      component: LoadingModal,
+      key: `loading-modal`,
+      attrs: {
+        maskLoadingType: type,
+      },
+    });
+  }
+  return loadingModal;
+}
+
+function createLoadingMask(type, status = 'open') {
+  const { open: loadingOpen, close: loadingClose } = initLoadingModal(type);
+
+  if (status === 'open') {
+    loadingOpen();
+  } else if (status === 'close') {
+    loadingClose();
+  }
 }
 /* resultSettingInRoomResult & onlocalStreamSuccess 일 경우 로딩 마스크 제거 */
 function loadingMaskDelete() {
-    // if (callStore.onlocalStreamSuccess) {
-    //     // console.log("*** methods: loadingMaskDelete")
-    //     /* 최초 입장 시 로딩 지우는 소스 */
-    //     document.getElementById("loader").classList.remove("loader");
-    //     if (accessDeviceCheck.value == "Mobile") {
-    //         if (window.matchMedia("(orientation: landscape)").matches) {
-    //             document.getElementById("maskOverlay").classList.remove("maskOverlay");
-    //         }
-    //     } else {
-    //         document.getElementById("maskOverlay").classList.remove("maskOverlay");
-    //     }
-    //     document.getElementById("main").style.pointerEvents = "auto";
-    //     maskLoading.value = false;
-    //     /* vuex 초기화 */
-    //     callStore.setOnlocalStreamSuccess(false);
-    // }
+    createLoadingMask('', 'close')
+    callStore.setOnlocalStreamSuccess(false);
 }
 function prepareStreamMode(type) {
     // mainIndex 조회
@@ -10543,6 +10546,7 @@ function sayHello() {
                                 main_stream_check();
                             }, 1000);
 
+                            console.log('setOnlocalStreamSuccess')
                             /* onlocalStream 진행 후 onlocalStreamSuccess True 변경 */
                             callStore.setOnlocalStreamSuccess(true);
 
@@ -10803,9 +10807,9 @@ const globalAudioSend = computed(() => callStore.globalAudioSend);
 const curBeforeDataModal = computed(() => directMessageStore.previousMessageInfo);
 const accessDeviceCheck = computed(() => commonStore.accessDeviceCheck);
 const accessDeviceOS = computed(() => commonStore.accessDeviceOS);
-const autoCallAcceptTime = computed(() => callStore.autoCallAcceptTime);
-const autoPictureAccept = computed(() => callStore.autoPictureAccept);
-const autoDiscalling = computed(() => callStore.autoDiscalling);
+const autoCallAcceptTime = computed(() => preferenceStore.autoCallAcceptTime);
+const autoPictureAccept = computed(() => preferenceStore.useAutoPictureAccept);
+const autoDiscalling = computed(() => preferenceStore.useAutoDiscalling);
 const gpsClickInfo = computed(() => callStore.gpsClickInfo);
 const gpsListEvent = computed(() => callStore.gpsListEvent);
 const sendDurationEnable = computed(() => callStore.sendDurationEnable);

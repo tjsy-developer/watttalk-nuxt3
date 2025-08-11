@@ -14,6 +14,7 @@ import { useMeetingStore } from "@/stores/meeting";
 import { useDirectCallStore } from "@/stores/directCall";
 import { userListAdd } from "@/utils/userList";
 import { useLoginEvents } from "./useLoginEvents";
+import { useSignallingSocket } from "./useSignallingSocket";
 
 
 // environment, joinMeeting  > 연락처, 회의실, 회원대기실
@@ -28,7 +29,8 @@ import { useLoginEvents } from "./useLoginEvents";
 // openMeetingChecking, sendEntryNotification > 연락처, 회의실
 
 
-export function bindSocketEvents(socket) {
+export function bindSocketEvents() {
+    const { $signallingSocket } = useNuxtApp();
     const router = useRouter();
     const loginStore = useLoginStore();
     const preperenceStore = useUserPreferenceStore();
@@ -49,8 +51,7 @@ export function bindSocketEvents(socket) {
     } = useSocketEmitEvents();
 
     const { loginRequest } = useLoginEvents();
-    socket.off("userListAll");
-    socket.on("userListAll", (response) => {
+    $signallingSocket.on("userListAll", (response) => {
         const json = JSON.parse(response);
         
         console.log("왜 안들어와", json.users)
@@ -66,8 +67,7 @@ export function bindSocketEvents(socket) {
         userListStore.setOrganizationList(result);
     });
 
-    socket.off("lastCallTime");
-    socket.on("lastCallTime", (response) => {
+    $signallingSocket.on("lastCallTime", (response) => {
         const json = JSON.parse(response);
         console.log
         userListStore.init();
@@ -81,8 +81,7 @@ export function bindSocketEvents(socket) {
         userListStore.setRecentCallList(result);
     });
 
-    socket.off("callReadyStatus");
-    socket.on("callReadyStatus", (response) => {
+    $signallingSocket.on("callReadyStatus", (response) => {
         const json = JSON.parse(response);
         console.log(json)
         const userIdx = userDataGetIndex(json.deviceid)
@@ -107,8 +106,7 @@ export function bindSocketEvents(socket) {
         userListStore.setOrganizationList(updateOrgCallList);
     });
 
-    socket.off("userStatus");
-    socket.on("userStatus", (response) => {
+    $signallingSocket.on("userStatus", (response) => {
         const json = JSON.parse(response);
         const remoteInfo = userDataGetInfo(json.deviceid);
         
@@ -117,7 +115,7 @@ export function bindSocketEvents(socket) {
         sessionStorage.setItem("m_remote_devicetype", remoteInfo.deviceType);
         sessionStorage.setItem("m_remote_status", remoteInfo.status);
 
-        // console.log("*** socket: userStatus sessionStorage.setItem(inRoomFlag):", sessionStorage.getItem("inRoomFlag"))
+        // console.log("*** $signallingSocket: userStatus sessionStorage.setItem(inRoomFlag):", sessionStorage.getItem("inRoomFlag"))
 
         // 자신이 통화중인 경우 상대방 초대하기
         alert(sessionStorage.getItem("inRoomFlag"));
@@ -153,9 +151,7 @@ export function bindSocketEvents(socket) {
 
         }
     });
-
-    socket.off("forceLogoutResult");
-    socket.on("forceLogoutResult", (response) => {
+    $signallingSocket.on("forceLogoutResult", (response) => {
         console.log("*** socket: on forceLogoutResult");
         const json = JSON.parse(response);
         console.log(json);
@@ -175,8 +171,7 @@ export function bindSocketEvents(socket) {
         }
     });
 
-    socket.off("forceLogoutRequest");
-    socket.on("forceLogoutRequest", (response) => {
+    $signallingSocket.on("forceLogoutRequest", (response) => {
         const json = JSON.parse(response);
         loginStore.setForceLogoutUserId(json.requestSocketid);
 

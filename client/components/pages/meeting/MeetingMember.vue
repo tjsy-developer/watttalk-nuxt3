@@ -115,7 +115,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 /* You can define variables here if you have common values
    For example:
    $primary-color: #007bff;

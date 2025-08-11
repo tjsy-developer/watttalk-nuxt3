@@ -35,7 +35,6 @@
 import MainModal from "@/components/modal/MainModal";
 import OrganizationList from "@/components/pages/dashboard/OrganizationList.vue";
 import RecentCallList from "@/components/pages/dashboard//RecentCallList.vue";
-
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 
 import { useCommonStore } from "@/stores";
@@ -46,6 +45,7 @@ import { useModal } from "vue-final-modal";
 import { ref } from "vue";
 import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 import { useVfm } from 'vue-final-modal';
+import LoadingModal from "@/components/modal/LoadingModal.vue";
 
 const vfm = useVfm();
 const userListStore = useUserListStore();

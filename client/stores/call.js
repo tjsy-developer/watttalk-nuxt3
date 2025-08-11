@@ -522,6 +522,7 @@ export const useCallStore = defineStore("call", {
             this.motionNoMoveClickIndex = payload;
         },
         setOnlocalStreamSuccess(payload) {
+            console.log("setOnlocalStreamSuccess", payload);
             this.onlocalStreamSuccess = payload;
         },
         setGpsClickInfo(payload) {

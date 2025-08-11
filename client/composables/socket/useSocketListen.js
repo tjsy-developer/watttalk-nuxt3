@@ -13,6 +13,7 @@ import { useRouter } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
 import { useDirectCallStore } from "@/stores/directCall";
 import { userListAdd } from "@/utils/userList";
+import { useLoginEvents } from "./useLoginEvents";
 
 
 // environment, joinMeeting  > 연락처, 회의실, 회원대기실
@@ -43,9 +44,11 @@ export function bindSocketEvents(socket) {
         requestGroupRoom,
         reeuqestCreateFixRoomID,
         requestCreateRoomID,
-        requestJoinMeeting
+        requestJoinMeeting,
+        requestForceLogoutResult,
     } = useSocketEmitEvents();
 
+    const { loginRequest } = useLoginEvents();
     socket.off("userListAll");
     socket.on("userListAll", (response) => {
         const json = JSON.parse(response);
@@ -148,6 +151,48 @@ export function bindSocketEvents(socket) {
                 nickname: remoteInfo.nickName,
             });
 
+        }
+    });
+
+    socket.off("forceLogoutResult");
+    socket.on("forceLogoutResult", (response) => {
+        console.log("*** socket: on forceLogoutResult");
+        const json = JSON.parse(response);
+        console.log(json);
+
+        /* 1: 성공 - login시도 , 0: 실패 - 다른 기기 통화중 */
+        if (json.status == 1) {
+            loginRequest(loginStore.m_local_deviceid);
+        } else {
+            setTimeout(() => {
+                commonStore.setNoneOverlayAlertStatus(22);
+            }, 500);
+            setTimeout(() => {
+                loginStore.setLoginType({
+                    logintype: 3,
+                });
+            }, 3000);
+        }
+    });
+
+    socket.off("forceLogoutRequest");
+    socket.on("forceLogoutRequest", (response) => {
+        const json = JSON.parse(response);
+        loginStore.setForceLogoutUserId(json.requestSocketid);
+
+        /* contentsViewType == 2 : 영상 통화중이라서 강제로그아웃(요청) 거절 */
+        if (commonStore.contentsViewType === 2) {
+            requestForceLogoutResult(json.requestSocketid, 0);
+            /* contentsViewType !== 2 : 영상통화중이 아님 강제로그아웃(요청) 수락 */
+        } else {
+            commonStore.setNoneOverlayAlertStatus(21);
+            sessionStorage.setItem("forcedLogout", true);
+            setTimeout(() => {
+                requestForceLogoutResult(json.requestSocketid, 1);
+                loginStore.setLoginType({
+                    logintype: 3,
+                });
+            }, 5000);
         }
     });
 

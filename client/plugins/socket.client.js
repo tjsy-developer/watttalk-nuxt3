@@ -26,16 +26,17 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         const lang = route.query.lang;
         const rToken = route.query.rToken;
         const reservId = route.query.reservId;
-
+        alert(reservId);
         if (!accessToken || !rToken) {
             console.log("파워매니저로 돌아가세요");
             return;
         }
-
+        
         const encryptRefreshToken = encryptData(rToken);
         tokenStore.setRToken(encryptRefreshToken);
         tokenStore.setAccessToken(accessToken);
         loginStore.setLoginType(loginType);
+        sessionStorage.setItem("isInvited", reservId ? true : false);
     }
 
     if (process.client) {
@@ -47,13 +48,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             route.name == "meeting" ||
             route.name == "login"
         ) {
-            // const { $axios } = useNuxtApp();
-            const res = await $fetch("homeRest/tokenCheck", {
-                baseURL: "https://hdcardev.watttalk.kr/wattmanager-server",
-                method: "POST",
-                body: {
-                    jwt: tokenStore.accessToken,
-                },
+            const { $axios } = useNuxtApp();
+            const res = await $axios.post("homeRest/tokenCheck", {
+                jwt: tokenStore.accessToken,
             });
 
             if (res) {

@@ -1,5 +1,7 @@
 import { useNuxtApp, useRouter } from "nuxt/app";
 import { useLoginStore } from "@/stores/login";
+import { useCommonStore } from "@/stores";
+import { useModalStore } from "@/stores/modal";
 
 const statusCode = {
     Unauthorized: 0,
@@ -12,10 +14,13 @@ const statusCode = {
 export function useLoginEvents() {
     const { $signallingSocket } = useNuxtApp();
     const loginStore = useLoginStore();
+    const commonStore = useCommonStore();
+    const modalStore = useModalStore();
     const preferenceStore = useUserPreferenceStore();
     const router = useRouter();
 
     const loginRequest = (deviceId) => {
+        if (!deviceId) return;
         const payload = {
             deviceid: deviceId,
             connectStatus: 0,
@@ -41,18 +46,19 @@ export function useLoginEvents() {
 
         if (data.errcode === statusCode.Unauthorized) {
             alert("loginStatus Unauthorized");
-            loginStore.loginType(3);
+            loginStore.setLoginType(3);
             return;
         }
 
         if (data.errcode === statusCode.Not_Registered) {
             alert("loginStatus NoneRegister");
-            loginStore.loginType(3);
+            loginStore.setLoginType(3);
             return;
         }
 
         if (data.errcode === status.Duplicate) {
-            // noneOverlayModal(20);
+            commonStore.setNoneOverlayAlertStatus(20);
+            return;
         }
 
         // 정상 로그인 처리
@@ -97,8 +103,10 @@ export function useLoginEvents() {
             sessionStorage.setItem("m_nickname", userInfo.nickname);
 
 
-            if (!loginStore.isInvited) {
+            const isInvited = sessionStorage.getItem("isInvited")
+            if (isInvited == 'false') {
                 router.push("/dashboard");
+                modalStore.closeModal("noneOverlayModal");
             } else {
                 router.push(
                     `/meetingRoom/memberMeetingOnOff?reservId=${loginStore.reservId}`,
@@ -116,7 +124,7 @@ export function useLoginEvents() {
 
             if (json.status == 0) {
                 alert("환경설정 정보가 등록되지않았습니다")
-                loginStore.loginType(3);
+                loginStore.setLoginType(3);
                 return
             }
 
@@ -153,7 +161,7 @@ export function useLoginEvents() {
                 // 다른기기 로그아웃 발생하는거 시켜야됨
                 self.noneOverlayModal(22);
                 setTimeout(() => {
-                    loginStore.loginType(3);
+                    loginStore.setLoginType(3);
                 }, 3000);
             }
         });

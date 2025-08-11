@@ -93,29 +93,16 @@ export const useLoginStore = defineStore("login", {
             //     }
             // }
 
-            // // 로그인 시 UserInfo 등록
-            // if (payload.logintype == 1) {
-            //     this.loginType = payload.logintype;
-            // } else if (payload.logintype == 2) {
-            //     this.loginType = payload.logintype;
-            // } else if (payload.logintype == 3) {
-            //     this.loginType = payload.logintype;
-
-            //     if (process.env.renewal === "true") {
-            //         window.location.href =
-            //             "https://safetymanager.hanil.com/watttalk/loginAlert";
-            //         sessionStorage.setItem("languageCode", lang);
-            //     } else {
-            //         // Both `if` and `else` branches in the original code pointed to the same URL logic
-            //         // So, simplified it.
-            //         location.href =
-            //             this.powerManageLink +
-            //             "logout/" +
-            //             lang +
-            //             "?forcedLogout=" +
-            //             checkForcedLogout;
-            //     }
-            // }
+            // 로그인 시 UserInfo 등록
+            if (payload.logintype == 1) {
+                this.loginType = payload.logintype;
+            } else if (payload.logintype == 2) {
+                this.loginType = payload.logintype;
+            } else if (payload.logintype == 3) {
+                this.loginType = payload.logintype;
+                sessionStorage.clear();
+                location.href= "http://localhost:8205"
+            }
         },
         setLang(payload) {
             this.lang = payload;

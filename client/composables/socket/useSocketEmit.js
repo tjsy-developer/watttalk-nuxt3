@@ -250,6 +250,14 @@ export default function useSocketEmitEvents(signallingSocket) {
         $signallingSocket.emit("forceLeave", JSON.stringify(json));
     };
 
+    const requestForceLogoutResult = (socketId, status) => {
+        const json = {
+            requestSocketid: socketId,
+            status: status,
+        };
+        $signallingSocket.emit("forceLogoutResult", JSON.stringify(json));
+    };
+
     return {
         requestCreateFixRoomID,
         requestRefuseCalling,
@@ -273,5 +281,6 @@ export default function useSocketEmitEvents(signallingSocket) {
         requestMultiRefuseCalling,
         requestScreenSharing,
         requestForceLeave,
+        requestForceLogoutResult,
     };
 }

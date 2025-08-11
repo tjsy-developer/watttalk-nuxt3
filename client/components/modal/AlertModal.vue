@@ -437,7 +437,7 @@
 							{{ t("다른 기기에서 로그인 요청으로") }}
 						</p>
 						<p class="msg alertText">
-							{{ t("자동으로 로그아웃됩니다")[1] }}
+							{{ t("자동으로 로그아웃됩니다") }}
 						</p>
 					</div>
 				</div>
@@ -655,9 +655,9 @@ const captureSave = (result) => {
 // 강제 로그아웃
 const forceLogout = (result) => {
     if (result) {
-        loginStore.forcedLogout(result);
+        loginStore.setForcedLogout(result);
     } else {
-        loginStore.forcedLogout(result);
+        loginStore.setForcedLogout(result);
         modalStore.closeModal("noneOverlayModal");
     }
 };

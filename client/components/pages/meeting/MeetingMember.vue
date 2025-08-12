@@ -5,7 +5,6 @@
                 type="text"
                 id="memberSearchInput"
                 v-model="memberSearch"
-                v-on:input="memberSearch = $event.target.value"
                 :placeholder="$t('search')"
                 class="row justify-end items-center memberSearchText"
             />
@@ -16,7 +15,7 @@
         <div class="scrollingBox" ref="enRef">
             <OrganizationList
                 :data="userList"
-                :search="searchName"
+                :search="memberSearch"
                 :use-check-box="true"
             />
         </div>
@@ -98,11 +97,6 @@ watch(userList, (newVal) => {
     console.log(result);
     emit("selectMember", result);
 });
-
-watch(memberSearch, (newVal) => {
-    searchMemberList(newVal);
-});
-
 // Emits
 const emit = defineEmits(["value"]);
 

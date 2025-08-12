@@ -20,10 +20,6 @@ const { menuImages } = useImageAssets();
             <img :src="menuImages.meetingRoom" />
             <label class="icon-label">회의실</label>
         </router-link>
-        <a :href="'http://localhost:3000/dashboard'" target="_self" class="icon-btn" title="클라우드">
-            <img :src="menuImages.cloud" />
-            <label class="icon-label">gg</label>
-        </a>
         <a :href="'http://localhost:8205/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
             <img :src="menuImages.cloud" />
             <label class="icon-label">클라우드</label>

@@ -8057,15 +8057,15 @@ function inviteNonMember(nonMemberEmail) {
             domain:
                 "http://localhost:3000/watttalk",
                 // 'http://localhost:3000' + "/watttalk",
-            PMDomain: "http://localhost:8205", // 파워매니저 URL - 20210923 추가
+            PMDomain: "https://hdcardev.watttalk.kr", // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
             email: nonMemberEmail,
-            domain: "http://localhost:3000/watttalk",
-            PMDomain: "http://localhost:8205", // 파워매니저 URL - 20210923 추가
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr", // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     }

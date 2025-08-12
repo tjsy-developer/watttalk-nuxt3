@@ -46,16 +46,16 @@ export default defineNuxtPlugin((nuxtApp) => {
                         config.headers.jwt = newAccessToken;
                     } catch (e) {
                         alert("만료된 토큰입니다 다시 로그인해주세요");
-                        if (typeof window !== "undefined") {
-                            window.location.href = "http://localhost:8205";
-                        }
-                        return Promise.reject(e);
+                        // if (typeof window !== "undefined") {
+                        //     window.location.href = "http://localhost:8205";
+                        // }
+                        // return Promise.reject(e);
                     }
                 } else {
                     config.headers.jwt = accessToken;
                 }
             }
-
+            config.headers.jwt = accessToken;
             return config;
         },
         (error) => {
@@ -69,16 +69,16 @@ export default defineNuxtPlugin((nuxtApp) => {
             return response;
         },
         (error) => {
-            console.log("[Axios Plugin] onResponseError", error);
-            if (error.response?.status === 401) {
-                alert("인증 실패 - 로그인 다시 해주세요");
-                if (typeof window !== "undefined") {
-                    window.location.href = "http://localhost:8205";
-                }
-            } else {
-                console.log("일반 에러");
-            }
-            return Promise.reject(error);
+            // console.log("[Axios Plugin] onResponseError", error);
+            // if (error.response?.status === 401) {
+            //     alert("인증 실패 - 로그인 다시 해주세요");
+            //     if (typeof window !== "undefined") {
+            //         window.location.href = "http://localhost:8205";
+            //     }
+            // } else {
+            //     console.log("일반 에러");
+            // }
+            // return Promise.reject(error);
         },
     );
 

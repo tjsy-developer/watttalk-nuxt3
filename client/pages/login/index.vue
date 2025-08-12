@@ -23,9 +23,9 @@ import imgConfirmEn from "@/assets/images/2_confirm_en.png";
 import imgLogoutKo from "@/assets/images/3_logout.png";
 import imgLogoutEn from "@/assets/images/3_logout_en.png";
 
-definePageMeta({
-  layout: false
-})
+// definePageMeta({
+//   layout: false
+// })
 
 onMounted(() => {
   const loginType = loginStore.loginType;

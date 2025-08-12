@@ -51,6 +51,7 @@ export function bindSocketEvents() {
     } = useSocketEmitEvents();
 
     const { loginRequest } = useLoginEvents();
+    $signallingSocket.off("userListAll");
     $signallingSocket.on("userListAll", (response) => {
         const json = JSON.parse(response);
         
@@ -67,9 +68,10 @@ export function bindSocketEvents() {
         userListStore.setOrganizationList(result);
     });
 
+    $signallingSocket.off("lastCallTime");
     $signallingSocket.on("lastCallTime", (response) => {
         const json = JSON.parse(response);
-        console.log
+        console.log(response)
         userListStore.init();
         callStore.setRecentData([]);
         callStore.setRecentDataAll([]);
@@ -77,13 +79,13 @@ export function bindSocketEvents() {
         const sortOrgList = json.users.sort((a, b) => b.status - a.status);
         callStore.setRecentData(sortOrgList);
         callStore.setRecentDataAll(json.users);
-        const result = buildTree(sortOrgList);
-        userListStore.setRecentCallList(result);
+        userListStore.setRecentCallList(sortOrgList);
     });
 
+    $signallingSocket.off("callReadyStatus");
     $signallingSocket.on("callReadyStatus", (response) => {
         const json = JSON.parse(response);
-        console.log(json)
+        console.log('callReadyStatus',json)
         const userIdx = userDataGetIndex(json.deviceid)
         callStore.setUserDataStatusAtIndex({
             index: userIdx,
@@ -106,6 +108,7 @@ export function bindSocketEvents() {
         userListStore.setOrganizationList(updateOrgCallList);
     });
 
+    $signallingSocket.off("userStatus");
     $signallingSocket.on("userStatus", (response) => {
         const json = JSON.parse(response);
         const remoteInfo = userDataGetInfo(json.deviceid);
@@ -151,6 +154,8 @@ export function bindSocketEvents() {
 
         }
     });
+
+    $signallingSocket.off("forceLogoutResult");
     $signallingSocket.on("forceLogoutResult", (response) => {
         console.log("*** socket: on forceLogoutResult");
         const json = JSON.parse(response);
@@ -171,6 +176,7 @@ export function bindSocketEvents() {
         }
     });
 
+    $signallingSocket.off("forceLogoutRequest");
     $signallingSocket.on("forceLogoutRequest", (response) => {
         const json = JSON.parse(response);
         loginStore.setForceLogoutUserId(json.requestSocketid);

@@ -198,7 +198,7 @@ function toggleContactList() {
     <header>
         <div class="header-box">
             <div class="logo">
-                {{ "여기 회의실 이름 넣기" }}
+                {{ meetingStore.currentMeetingSubject }}
                 <!-- <img :src="headerImages.logo" alt="Hyundai" style="height: 24px" /> -->
             </div>
             <div class="call-timer">

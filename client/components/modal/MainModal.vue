@@ -346,14 +346,14 @@ function setInviteCancelCalling() {
 
 function directCallResult(type) {
     const meetingSeq = directcallSeq.value;
-	alert(type)
     if (type == 1) {
 		requestOpenMeetingChecking(meetingSeq);
 		meetingStore.setOpenMeetingCheck(true)
 		meetingStore.setMeetingSeq(meetingSeq);
         directCallStore.resetDirectCallInfo();
         close();
-    } else {
+	} else {
+		alert(directCallStore.directcallList.length)
         if (directCallStore.directcallList.length > 1) {
             directCallStore.clearDirectCallInfo();
         } else if (directCallStore.directcallList.length == 1) {
@@ -366,11 +366,11 @@ function directCallResult(type) {
 function firstEntry() {
     const res = directCallStore.directcallList;
     const index = res.length - 1;
-    directcallTxt =
+    directcallTxt.value =
         res[index].member_name +
-        t("direct call")[0] +
+        t("님이") +
         res[index].subject +
-        t("direct call")[1];
+        t("회의를 시작했습니다");
     directcallSeq.value = res[index].meeting_seq;
 }
 
@@ -404,7 +404,7 @@ const setDirectCallInfo = computed(() => directCallStore.directcallList);
 watch(setDirectCallInfo, (newVal) => {
     if (newVal.length > 1) {
         const last = newVal[newVal.length - 1];
-        directcallTxt.value = `${last.member_name}${t("direct call")[0]}${last.subject}${t("direct call")[1]}`;
+        directcallTxt.value = `${last.member_name}${t("님이")}${last.subject}${t("회의를 시작했습니다")}`;
         directcallSeq.value = last.meeting_seq;
     }
 });
@@ -414,7 +414,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .main-container {
 	width: inherit;
 	height: inherit;

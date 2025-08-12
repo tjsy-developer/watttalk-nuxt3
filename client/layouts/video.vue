@@ -161,4 +161,54 @@ onMounted(() => {
     max-height: calc(100vh - $header-height);
     @include tc(background-color, "bg-color");
 }
+
+%toast-base {
+    width: fit-content;
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    padding: 12px 30px;
+    transform: translate(-50%, 10px);
+    border-radius: 30px;
+    overflow: hidden;
+    font-size: 19px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s, visibility 0.5s, transform 0.5s;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    background-color: #595959;
+}
+
+%toast-reveal {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+#toast {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
+}
+
+#toast_signalling {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
+}
+
+#toast_common_message {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
+}
 </style>

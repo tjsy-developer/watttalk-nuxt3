@@ -49,16 +49,16 @@
     </div>
     <sidebar></sidebar>
     <div id="toast">
-		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
-		<span></span>
+        <img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px" />
+        <span></span>
     </div>
     <div id="toast_signalling">
-		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
-		<span></span>
+        <img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px" />
+        <span></span>
     </div>
     <div id="toast_common_message">
-		<img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px">
-		<span></span>
+        <img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px" />
+        <span></span>
     </div>
 </template>
 
@@ -73,7 +73,7 @@ import DeviceSelectModal from "@/components/modal/DeviceSelectModal.vue";
 import MessageModal from "@/components/modal/MessageModal.vue";
 import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
-import AlertModal from "@/components/modal/AlertModal.vue"
+import AlertModal from "@/components/modal/AlertModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -142,5 +142,55 @@ onMounted(() => {
     width: -webkit-fill-available;
     height: 100vh;
     @include tc(background-color, "bg-color");
+}
+
+%toast-base {
+    width: fit-content;
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    padding: 12px 30px;
+    transform: translate(-50%, 10px);
+    border-radius: 30px;
+    overflow: hidden;
+    font-size: 19px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s, visibility 0.5s, transform 0.5s;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    background-color: #595959;
+}
+
+%toast-reveal {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+#toast {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
+}
+
+#toast_signalling {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
+}
+
+#toast_common_message {
+    @extend %toast-base;
+
+    &.reveal {
+        @extend %toast-reveal;
+    }
 }
 </style>

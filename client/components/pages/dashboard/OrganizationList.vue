@@ -2,8 +2,8 @@
     <div>
         <ul class="org-tree">
             <TreeNode
-                v-for="(node, index) in filteredData"
-                :key="index"
+                v-for="(node) in filteredData"
+                :key="`${node.name}`"
                 :node="node"
                 :openNodes="openNodes"
                 :parentPath="[]"

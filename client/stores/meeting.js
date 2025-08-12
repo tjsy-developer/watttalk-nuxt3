@@ -185,7 +185,7 @@ export const useMeetingStore = defineStore("meeting", {
             this.meetingSeq = payload;
         },
         // 회의실 삭제 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성
-        meetingDeleteFlag(payload) {
+        setMeetingDeleteFlag(payload) {
             this.meetingDeleteFlag = payload;
         },
         // 회의실 개설 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성

@@ -94,6 +94,7 @@ import { useI18n } from "vue-i18n";
 const router = useRouter();
 const { t } = useI18n();
 import { useModal } from "vue-final-modal";
+import { useUserPreferenceStore } from "@/stores/common";
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
@@ -103,6 +104,7 @@ const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const directCallStore = useDirectCallStore();
 const loginStore = useLoginStore();
+const preferenceStore = useUserPreferenceStore();
 
 // 전체보기 or 내 것만 보기
 const allView = ref(false);
@@ -271,7 +273,7 @@ onMounted(async () => {
 
             // Using the `t` function from useI18n
             if (entryNotificationYN == 1) {
-                optionTxt = optionTxt + " " + t("meeting option text")[1];
+                optionTxt = optionTxt + " " + t("회의 초대 알림 발송");
             }
             if (directCallYN == 1) {
                 if (entryNotificationYN == 1) {
@@ -279,12 +281,12 @@ onMounted(async () => {
                         optionTxt =
                             optionTxt +
                             "                     " +
-                            t("meeting option text")[2];
+                            t("스마트글라스 다이렉트콜 입장");
                     } else {
-                        optionTxt = optionTxt + "   " + t("meeting option text")[2];
+                        optionTxt = optionTxt + "   " + t("스마트글라스 다이렉트콜 입장");
                     }
                 } else {
-                    optionTxt = optionTxt + " " + t("meeting option text")[2];
+                    optionTxt = optionTxt + " " +  t("스마트글라스 다이렉트콜 입장");
                 }
             }
             if (everyoneStartYN == 1) {
@@ -293,21 +295,21 @@ onMounted(async () => {
                         optionTxt =
                             optionTxt +
                             "                       " +
-                            t("meeting option text")[3];
+                            t("누구나 회의 시작 가능");
                     } else {
-                        optionTxt = optionTxt + "         " + t("meeting option text")[3];
+                        optionTxt = optionTxt + "         " + t("누구나 회의 시작 가능");
                     }
                 } else if (entryNotificationYN == 1) {
                     if (sessionStorage.getItem("languageCode") == "ko") {
                         optionTxt =
                             optionTxt +
                             "                     " +
-                            t("meeting option text")[3];
+                            t("누구나 회의 시작 가능");
                     } else {
-                        optionTxt = optionTxt + "   " + t("meeting option text")[3];
+                        optionTxt = optionTxt + "   " + t("누구나 회의 시작 가능");
                     }
                 } else {
-                    optionTxt = optionTxt + " " + t("meeting option text")[3];
+                    optionTxt = optionTxt + " " + t("누구나 회의 시작 가능");
                 }
             }
 
@@ -386,7 +388,7 @@ onMounted(async () => {
             // If you have a ref to the modal, you could use: modalRef.value.hide()
             // Or if using a global provide/inject pattern for modals
             // hideModal('modal') // Assuming a function `hideModal` is available
-
+            close();
             meetingStore.setMeetingListEmpty();
 
             if (calendar.value) {
@@ -906,7 +908,7 @@ onMounted(async () => {
     });
 
     $signallingSocket.on("sendEntryNotification", (response) => {
-        if (sessionStorage.getItem("directCall") === "True") {
+        if (preferenceStore.enviroment.useDirectCall) {
             console.log("socket.on sendEntryNotification::", response);
             const json = JSON.parse(response);
             console.log(json);
@@ -989,8 +991,7 @@ const loginUserInfoRequest = () => {
     console.log("*** socket.emit: loginUserInfo request:" + json);
 };
 
-const makingBtnClick = async () => {
-    console.log("*** methods: makingBtnClick");
+const setupMeetingModal = () => {
     const { open, close } = useModal({
         component: MeetingModal,
         styleValue: {
@@ -1002,6 +1003,12 @@ const makingBtnClick = async () => {
             onClose: () => close(),
         },
     });
+    return { open, close };
+}
+const { open, close } = setupMeetingModal();
+
+const makingBtnClick = async () => {
+    console.log("*** methods: makingBtnClick");
     open();
 };
 
@@ -1076,10 +1083,10 @@ const createMeeting = () => {
     const meetingInfo = meetingStore.meetingSaveInfo;
 
     console.log("*** methods: createMeeting:: meetingInfo = ", meetingInfo);
-    const meetingStartDate = meetingInfo.startDate.split("-");
-    const meetingEndDate = meetingInfo.endDate.split("-");
-    const startTime = meetingInfo.startTime.split(":");
-    const endTime = meetingInfo.endTime.split(":");
+    const meetingStartDate = meetingInfo.startDate.split("-").map(Number);
+    const startTime = meetingInfo.startTime.split(":").map(Number);
+    const meetingEndDate = meetingInfo.endDate.split("-").map(Number);
+    const endTime = meetingInfo.endTime.split(":").map(Number);
 
     const startDate = new Date(
         meetingStartDate[0],
@@ -1099,9 +1106,12 @@ const createMeeting = () => {
     );
 
     const startDateTimeStempUTC = String(Math.round(startDate.getTime() / 1000));
-    const endDateTimeStempUTC = "";
-    // const endDateTimeStempUTC = String(Math.round(endDate.getTime() / 1000));
+    const endDateTimeStempUTC = String(Math.round(endDate.getTime() / 1000));
 
+        console.log("시작 날짜 객체:", startDate);
+    console.log("종료 날짜 객체:", endDate);
+    console.log("시작 타임스탬프(초):", startDateTimeStempUTC);
+    console.log("종료 타임스탬프(초):", endDateTimeStempUTC);
     const members = [];
     for (let i = 0; i < meetingInfo.memberIDs.length; i++) {
         members.push({ member: meetingInfo.memberIDs[i] });
@@ -1127,8 +1137,8 @@ const createMeeting = () => {
             maker: meetingInfo.maker,
             members,
             en_seq: loginStore.sessionEnSeq,
-            domain: "http://localhost:3000" + "/watttalk",
-            PMDomain: "http://localhost:8205",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1137,14 +1147,14 @@ const createMeeting = () => {
     } else {
         obj = {
             subject: meetingInfo.title,
-            start_time: "1754545440",
-            end_time: "1754552640",
+            start_time: startDateTimeStempUTC,
+            end_time: endDateTimeStempUTC,
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
             en_seq: loginStore.sessionEnSeq,
-            domain: "http://localhost:3000/watttalk",
-            PMDomain: "http://localhost:3000",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1160,12 +1170,12 @@ const createMeeting = () => {
 const modifyMeeting = () => {
     console.log("*** methods: modifyMeeting::");
     const meetingSeq = meetingStore.meetingSeq;
-    const meetingInfo = meetingStore.setMeetingModifyInfo;
+    const meetingInfo = meetingStore.meetingModifyInfo;
 
-    const meetingStartDate = meetingInfo.startDate.split("-");
-    const meetingEndDate = meetingInfo.endDate.split("-");
-    const startTime = meetingInfo.startTime.split(":");
-    const endTime = meetingInfo.endTime.split(":");
+    const meetingStartDate = meetingInfo.startDate.split("-").map(Number);
+    const startTime = meetingInfo.startTime.split(":").map(Number);
+    const meetingEndDate = meetingInfo.endDate.split("-").map(Number);
+    const endTime = meetingInfo.endTime.split(":").map(Number);
 
     const startDate = new Date(
         meetingStartDate[0],
@@ -1211,8 +1221,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain: "http://localhost:3000" + "/watttalk",
-            PMDomain: "http://localhost:8205",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1227,8 +1237,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain: "http://localhost:3000/watttalk",
-            PMDomain: "http://localhost:3000",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1251,14 +1261,14 @@ const deleteMeeting = () => {
     if (process.env.renewal == "true") {
         obj = {
             meeting_seq: meetingSeq,
-            domain: "http://localhost:3000" + "/watttalk",
-            PMDomain: "http://localhost:8205",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
-            domain: "http://localhost:3000/watttalk",
-            PMDomain: "http://localhost:3000",
+            domain: "https://hdcardev.watttalk.kr/watttalk",
+            PMDomain: "https://hdcardev.watttalk.kr",
         };
     }
     const json = JSON.stringify(obj);
@@ -1453,7 +1463,6 @@ const {
     meetingList,
     meetingSaveFlag: getMeetingSaveFlag,
     meetingDeleteFlag: getMeetingDeleteFlag,
-    meetingOpenFlag: getMeetingOpenFlag,
     meetingJoinFlag: getMeetingJoinFlag,
     meetingListMonthFlag: getMeetingListMonthFlag,
     meetingModifyFlag: getMeetingModifyFlag,
@@ -1472,6 +1481,7 @@ const {
     sendDurationEnable: getSendDurationEnable,
 } = storeToRefs(callStore);
 
+const getMeetingOpenFlag = computed(() =>  meetingStore.meetingOpenFlag)
 // Watch for allView checkbox changes
 watch(allView, (newVal) => {
     console.log("*** watch: allView():: newVal = ", newVal);
@@ -1514,6 +1524,7 @@ watch(getMeetingDeleteFlag, (newVal) => {
 
 // Watch for meeting open flag
 watch(getMeetingOpenFlag, (newVal) => {
+    alert(newVal)
     if (newVal) {
         createRoomID();
     }
@@ -1741,7 +1752,7 @@ watch(getReadProcFlag, (newVal) => {
 .roomMain {
     width: 100%;
     height: 100%;
-    padding-top: 4.25rem;
+    margin-top: 4.25rem;
     padding-right: 1.5rem;
     padding-left: 1.5rem;
     .makeMeetingBtn {

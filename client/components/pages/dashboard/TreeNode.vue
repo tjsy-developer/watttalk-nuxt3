@@ -1,7 +1,13 @@
 <template>
     <li :class="`tree-node`">
         <div class="node-label" @click.stop="toggle">
-            <input type="checkbox" class="checkbox" :checked="node.checked" />
+            <input
+                type="checkbox"
+                v-if="props.useCheckBox"
+                class="checkbox"
+                :checked="node.checked"
+                @click="handleClickCheck(node)"
+            />
             <label
                 for="checkbox"
                 class="checkbox-label"
@@ -9,54 +15,54 @@
                 @click.stop="handleClickCheck(node)"
             ></label>
             <img
-                v-if="node.deviceType == 1 && node.status == 1"
+                v-if="node.deviceType == 1 && node.status == 1 && !props.useCheckBox"
                 :src="commonImages.logOnMobile"
             />
             <img
-                v-if="node.deviceType == 1 && node.status == 0"
+                v-if="node.deviceType == 1 && node.status == 0 && !props.useCheckBox"
                 :src="commonImages.logOffMobile"
             />
             <img
-                v-if="node.deviceType == 2 && node.status == 1"
+                v-if="node.deviceType == 2 && node.status == 1 && !props.useCheckBox"
                 :src="commonImages.logOnGlass"
             />
             <img
-                v-if="node.deviceType == 2 && node.status == 0"
+                v-if="node.deviceType == 2 && node.status == 0 && !props.useCheckBox"
                 :src="commonImages.logOffGlass"
             />
             <img
-                v-if="node.deviceType == 3 && node.status == 1"
+                v-if="node.deviceType == 3 && node.status == 1 && !props.useCheckBox"
                 :src="commonImages.logOnDesktop"
             />
             <img
-                v-if="node.deviceType == 3 && node.status == 0"
+                v-if="node.deviceType == 3 && node.status == 0 && !props.useCheckBox"
                 :src="commonImages.logOffDesktop"
             />
-            <div v-if="!hasChildren" class="status">
+            <div v-if="!hasChildren && !props.useCheckBox" class="status">
                 <img :src="iconLogOffUser" />
                 <div v-if="node.status == 1" class="user-status"></div>
             </div>
             <span>{{ node.name }}</span>
             <div v-if="!hasChildren" class="button-box">
                 <img
-                    v-if="node.status == 1"
+                    v-if="node.status == 1 && !props.useCheckBox"
                     :src="commonImages.useCall"
                     @click="requestCall(node.deviceId)"
                 />
                 <img
-                    v-if="node.status == 0"
+                    v-if="node.status == 0 && !props.useCheckBox"
                     :src="commonImages.useNotCall"
                     @click="requestCall(node.deviceId)"
                     @mouseover="handleMouseCallOver"
                     @mouseleave="handleMouseCallLeave"
                 />
                 <img
-                    v-if="node.status == 1"
+                    v-if="node.status == 1 && !props.useCheckBox"
                     :src="commonImages.useChat"
                     @click="requestChat(node.deviceId)"
                 />
                 <img
-                    v-if="node.status == 0"
+                    v-if="node.status == 0 && !props.useCheckBox"
                     :src="commonImages.useNotChat"
                     @click="requestChat(node.deviceId)"
                     @mouseover="handleMouseChatOver"
@@ -72,8 +78,8 @@
 
         <ul v-if="isOpen && hasChildren" class="children">
             <TreeNode
-                v-for="(child, index) in node.children"
-                :key="index"
+                v-for="child in node.children"
+                :key="`${child.name}_${child.deviceId}`"
                 :node="child"
                 :openNodes="openNodes"
                 :parentPath="currentPath"
@@ -132,7 +138,22 @@ const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
 function getNodeKey(path: string[]) {
     return path.join(">");
 }
-function toggle() {
+
+function toggle(e: Event) {
+
+    function isCheckboxInput(target: EventTarget | null): target is HTMLInputElement {
+        return (
+            target !== null &&
+            target instanceof HTMLInputElement &&
+            target.type === 'checkbox'
+        );
+    }
+
+    if (isCheckboxInput(e.target)) {
+        console.log('Checkbox checked:', e.target.checked);
+        return;
+    }
+
     if (!hasChildren.value) return;
     const key = getNodeKey(currentPath);
 
@@ -190,51 +211,42 @@ function requestCall(remoteDeviceId: string | undefined) {
 
 function requestChat(remoteDeviceId: string | undefined) {}
 
-function handleClickCheck (rootNode: any) {
-    checkAllChildren(rootNode); // 1. 모든 하위 checked = true
+function handleClickCheck(node: any) {
+    const newCheckedState = !node.checked;
 
-    const deviceIds = collectLeafInfo(rootNode); // 2. 최하위 deviceid 수집
-
-    console.log(deviceIds); // ['dev-002']
+    setCheckedStateRecursive(node, newCheckedState);
+    updateParentCheckStatus(node);
 }
 
-function checkAllChildren(node: any) {
-    if (node.checked) {
-        node.checked = false;
-    } else {
-        node.checked = true;
-    }
+function setCheckedStateRecursive(node: any, checked: boolean) {
+    node.checked = checked;
     if (node.children && node.children.length > 0) {
-        for (const child of node.children) {
-            checkAllChildren(child);
-        }
+        node.children.forEach((child: any) => setCheckedStateRecursive(child, checked));
     }
 }
 
-function collectLeafInfo(node: any): { name: string, deviceid: string }[] {
-    if (!node.children || node.children.length === 0) {
-    return [{ name: node.name, deviceid: node.deviceId }];
-  }
+function updateParentCheckStatus(node: any) {
+    const parent = node.parent;
+    if (!parent) return;
 
-  let result: { name: string, deviceid: string }[] = [];
-  for (const child of node.children) {
-    result = result.concat(collectLeafInfo(child));
-  }
-  return result;
+    parent.checked = parent.children.every((child: any) => child.checked);
+
+    updateParentCheckStatus(parent);
 }
+
 onMounted(() => {});
 </script>
 
 <style lang="scss">
 .tree-node {
-    margin-left: 1rem;
+    padding-left: 2rem;
     li {
         list-style: none;
     }
 
     > .children > .tree-node > .children > .tree-node > .node-label {
         > img {
-            flex: 0 0 24px;
+            /* flex: 0 0 24px; */
         }
         > .status {
             flex: 0 0 70px; /* 고정 너비 150px */
@@ -257,10 +269,6 @@ onMounted(() => {});
     /* justify-content: space-between; */
     padding-right: 25px;
     @include tc(color, "text-color");
-
-    .checkbox {
-        display: none;
-    }
     .checkbox-label {
         margin-right: 10px;
     }

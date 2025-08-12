@@ -35,7 +35,8 @@
             <div class="contentBox column justify-start">
                 <div
                     v-if="
-                        props.compData.customData.type === 0 || props.compData.customData.type === 1
+                        props.compData.customData.type === 0 ||
+                        props.compData.customData.type === 1
                     "
                     class="contentView"
                 >
@@ -67,7 +68,8 @@
 
                 <div
                     v-if="
-                        props.compData.customData.type === 0 || props.compData.customData.type === 1
+                        props.compData.customData.type === 0 ||
+                        props.compData.customData.type === 1
                     "
                     class="contentView"
                 >
@@ -112,10 +114,9 @@
                     <span class="row items-center participantsTitle"
                         >{{ t("meetingMember") }}:&nbsp;</span
                     >
-                    <span
-                        class="spanContent textEllipsisKo"
-                        >{{ props.compData.customData.member }}</span
-                    >
+                    <span class="spanContent textEllipsisKo">{{
+                        props.compData.customData.member
+                    }}</span>
                 </div>
 
                 <div v-if="showCctvList" class="contentView">
@@ -132,18 +133,20 @@
 
                 <div
                     v-if="
-                        checkDirectCall === 'True' &&
+                        preprenceStore.enviroment.useDirectCall &&
                         props.compData.customData.type === 3 &&
                         props.compData.customData.checkOptionTxt
                     "
-                    class="optionTxt row items-center"
+                    class="optionTxt"
                 >
                     <span class="row items-center participantsTitle"
-                        >{{ t("meeting option text")[0] }}&nbsp;</span
+                        >{{ t("추가 기능") }}:&nbsp;</span
                     >
-                    <span class="row items-center spanContent textEllipsis">{{
-                        props.compData.customData.checkOptionTxt
-                    }}</span>
+                    <div>
+                        <span v-if="props.compData.customData.entry_notification_yn">{{  t('회의 초대 알림 발송') }}</span>
+                        <span v-if="props.compData.customData.direct_call_yn">{{  t('스마트글라스 다이렉트콜 입장') }}</span>
+                        <span v-if="props.compData.customData.everyone_start_yn">{{  t('누구나 회의 시작 가능') }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -162,7 +165,9 @@
                         {{ t("meetingModify") }}
                     </button>
                     <button
-                        @click="askingDeleteMeetingRoom(props.compData.customData.meeting_seq)"
+                        @click="
+                            askingDeleteMeetingRoom(props.compData.customData.meeting_seq)
+                        "
                         class="deleteMeetingBtn"
                     >
                         {{ t("meetingDelete") }}
@@ -285,6 +290,9 @@ import { useCallStore } from "@/stores/call";
 import { useModalStore } from "@/stores/modal";
 import { useModal } from "vue-final-modal";
 import MeetingModal from "@/components/modal/meeting/MeetingModal.vue";
+import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
+import { useUserPreferenceStore } from "@/stores/common";
+import DeleteMeetingModal from "@/components/modal/meeting/DeleteMeetingModal.vue";
 
 const props = defineProps({
     compData: Object,
@@ -297,6 +305,7 @@ const loginStore = useLoginStore();
 const meetingStore = useMeetingStore();
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
+const preprenceStore = useUserPreferenceStore();
 
 const device_id = ref("");
 const nickname = ref("");
@@ -322,7 +331,7 @@ const getModalsContainerStyle = () => {
 };
 
 const openMeetingCheck = (meetingSeq) => {
-    alert('여기안탔어?')
+    alert("여기안탔어?");
     const obj = { meeting_seq: meetingSeq };
     const json = JSON.stringify(obj);
 
@@ -330,10 +339,22 @@ const openMeetingCheck = (meetingSeq) => {
     meetingStore.setOpenMeetingCheck(true);
 
     $signallingSocket.emit("openMeetingChecking", json);
-    console.log("*** socket.on:: openMeetingChecking");
+    $signallingSocket.on("openMeetingChecking", (response) => {
 
-    // Ensure to remove previous listener to prevent multiple calls
-    $signallingSocket.off("openMeetingChecking"); // Clear previous listener if any
+    const resJson = JSON.parse(response);
+    console.log(resJson);
+    if (resJson.start_status === 0) {
+        console.log("openMeeting");
+        openMeeting(meetingSeq);
+    } else if (resJson.start_status === 1) {
+        console.log("joinMeeting");
+        joinMeeting(meetingSeq, 1);
+    } else if (resJson.start_status === 3) {
+        console.log("회의실이 삭제되어있다.");
+        commonStore.setNoneOverlayAlertStatus(8);
+    }
+});
+
 };
 
 const openMeeting = (meetingSeq) => {
@@ -378,21 +399,15 @@ const makingBtnClick = async () => {
 
 const askingDeleteMeetingRoom = async (meetingSeq) => {
     console.log("*** methods: askingDeleteMeetingRoom:: meetingSeq = ", meetingSeq);
-    $modal.show(
-        DeleteMeeting,
-        { seq: meetingSeq },
-        {
-            name: "modal",
-            width: window.innerWidth <= 500 ? 430 : 430, // Use window.innerWidth directly here
-            height: 336,
-            // clickToClose: false
+    const { open: deleteModalOpen, close } = useModal({
+        component: DeleteMeetingModal,
+        key: `meeting-modal`,
+        attrs: {
+            seq: meetingSeq,
+            onClose: () => close(),
         },
-        {
-            "before-close": () => {
-                if (modalsContainerStyle) modalsContainerStyle.display = "none";
-            },
-        },
-    );
+    });
+    deleteModalOpen();
 };
 
 const format = (date) => {
@@ -472,9 +487,8 @@ const onResize = () => {
     windowHeight.value = window.innerHeight;
 };
 
-
 const deviceSettingFin = (type, seq) => {
-    alert('여기탓어?'+type)
+    alert("여기탓어?" + type);
     commonStore.setDeviceModifyState(false);
     if (type === "openOwnMeeting") {
         openMeeting(seq);
@@ -486,16 +500,17 @@ const deviceSettingFin = (type, seq) => {
 };
 
 const openDeviceModal = (meetingType, meetingSeq) => {
-    alert("여기타는거아니야?")
-    console.log(deviceSettingFin)
+    alert("여기타는거아니야?");
+    console.log(deviceSettingFin);
     const modalsParameter = {
         type: meetingType,
-        func: () =>deviceSettingFin(meetingType),
+        func: () => deviceSettingFin(meetingType, meetingSeq),
     };
-    modalStore.openModal("device", modalsParameter)
+    modalStore.openModal("device", modalsParameter);
 };
 
 const checkMediaDevice = async (type, seq) => {
+    alert(seq)
     if (getCookie("closeDeviceModalPermanant") === "true") {
         deviceSettingFin(type, seq);
     } else {
@@ -524,9 +539,11 @@ const setCctvList = () => {
     });
     cctvList.value = list; // Assign to ref once
 };
-
+const { requestUserListAll, requestLastCallTime } = useSocketEmitEvents();
 // --- Lifecycle Hooks ---
 onMounted(() => {
+    requestLastCallTime();
+    requestUserListAll();
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
     window.addEventListener("resize", onResize);
@@ -535,25 +552,7 @@ onMounted(() => {
     nickname.value = loginStore.nickname;
     setCctvList();
 
-    if (sessionStorage.getItem("directCall")) {
-        checkDirectCall.value = sessionStorage.getItem("directCall");
-    }
 
-    $signallingSocket.on("openMeetingChecking", (response) => {
-        $signallingSocket.off("openMeetingChecking"); // Remove immediately after first response
-        const resJson = JSON.parse(response);
-        console.log(resJson)
-        if (resJson.start_status === 0) {
-            console.log("openMeeting");
-            openMeeting(meetingSeq);
-        } else if (resJson.start_status === 1) {
-            console.log("joinMeeting");
-            joinMeeting(meetingSeq, 1);
-        } else if (resJson.start_status === 3) {
-            console.log("회의실이 삭제되어있다.");
-            commonStore.setNoneOverlayAlertStatus(8);
-        }
-    });
 });
 
 onUnmounted(() => {
@@ -620,19 +619,19 @@ watch(
     cursor: pointer;
     width: 69%;
     &:hover {
-            /* 호버 시 확대 */
-            transform: scale(1.1);
-            z-index: 10; /* 다른 요소 위로 올라오도록 설정 */
-            overflow: visible; /* 잘린 텍스트가 보이도록 변경 */
-            white-space: normal; /* 줄 바꿈 허용 */
-            background-color: rgba(255, 255, 255, 0.9); /* 배경색 추가하여 겹치지 않게 함 */
-            color: #1f2937;
-            padding: 5px;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            /* 호버 시 전체 텍스트가 보이도록 너비를 자동으로 설정 */
-            width: max-content;
-        }
+        /* 호버 시 확대 */
+        transform: scale(1.1);
+        z-index: 10; /* 다른 요소 위로 올라오도록 설정 */
+        overflow: visible; /* 잘린 텍스트가 보이도록 변경 */
+        white-space: normal; /* 줄 바꿈 허용 */
+        background-color: rgba(255, 255, 255, 0.9); /* 배경색 추가하여 겹치지 않게 함 */
+        color: #1f2937;
+        padding: 5px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        /* 호버 시 전체 텍스트가 보이도록 너비를 자동으로 설정 */
+        width: max-content;
+    }
 }
 
 .textEllipsisEn {
@@ -785,7 +784,7 @@ watch(
     width: 100%;
     height: 97px;
     position: relative;
-	background: #1068AC 0% 0% no-repeat padding-box
+    background: #1068ac 0% 0% no-repeat padding-box;
 }
 
 .empty {
@@ -801,7 +800,7 @@ watch(
 
 .window {
     width: 100%;
-    height: inherit;
+    height: 100%;
     overflow: hidden;
     color: #fff;
 
@@ -966,20 +965,17 @@ watch(
 }
 
 .optionTxt {
+    display: flex;
     width: 90%;
     height: 31px;
-    padding-left: 25px;
-    padding-bottom: 7px;
-
-    .textEllipsis {
-        display: block;
-        white-space: break-spaces;
-        // word-wrap: break-word;
-        // word-break: break-all;
-        width: 250px;
-        // overflow: hidden;
-        // text-overflow: ellipsis;
-        height: 20px;
+    padding-left: 30px;
+    padding-top: 7px;
+    font-size:1.5rem;
+    align-items: flex-start;
+    >div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 }
 

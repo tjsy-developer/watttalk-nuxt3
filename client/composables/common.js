@@ -25,6 +25,14 @@ export function recentDataGetIndex(deviceId) {
     }
     return -1;
 }
+export function updateStatusRecentUser(list, targetDeviceId, newStatus) {
+    return list.map((node) => {
+        if (node.deviceId === targetDeviceId) {
+            return { ...node, status: newStatus }; // 상태만 바꿔서 새 객체 반환
+        }
+        return node;
+    });
+}
 
 export function updateStatusByDeviceId(treeData, targetDeviceId, newStatus) {
     console.log(treeData, targetDeviceId, newStatus);
@@ -118,7 +126,7 @@ export function commonToastMessage(string) {
         if (currentCount == toastCount) {
             toast.classList.remove("reveal");
         }
-    }, 3000);
+    }, 1000000);
 }
 
 export function emergencyAlarmBell(type) {

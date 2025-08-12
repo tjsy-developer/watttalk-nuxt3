@@ -62,6 +62,7 @@ export const useLoginStore = defineStore("login", {
                 this.sessionHqSeq = decodedUserInfo.hq_seq;
                 this.sessionBrSeq = decodedUserInfo.br_seq;
                 this.m_local_deviceid = decodedUserInfo.id;
+                this.sessionEmail = decodedUserInfo.email;
                 this.tokenDecodeResult = 0;
             } catch (e) {
                 console.error("Failed to decode JWT token:", e);

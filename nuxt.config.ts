@@ -1,6 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
+    ssr: false,
     srcDir: "client/",
     devtools: {
         enabled: true,
@@ -51,12 +52,12 @@ export default defineNuxtConfig({
     },
     css: ["@/assets/styles/scss/main.scss", "vue-final-modal/style.css"],
     plugins: [
+        "@/plugins/piniaPersist.client",
         "@/plugins/axios.client",
         "@/plugins/webrtc-adapter.client",
-        "@/plugins/socket.client",
+        // "@/plugins/socket.client",
         "@/plugins/janus.client",
         "@/plugins/initPreperence.client",
-        "@/plugins/piniaPersist.client",
         "@/plugins/vue-final-modal",
         "@/plugins/i18n",
         "@/plugins/pdfjs.client",

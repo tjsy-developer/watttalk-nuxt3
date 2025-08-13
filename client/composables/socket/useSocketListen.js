@@ -1,8 +1,13 @@
 // socketManager.js
 import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
-import { buildTree } from "@/utils/common"
-import { recentDataGetIndex, updateStatusByDeviceId, userDataGetIndex, userDataGetInfo } from "@/composables/common";
+import { buildTree, getFormattedDate } from "@/utils/common";
+import {
+    recentDataGetIndex,
+    updateStatusByDeviceId,
+    userDataGetIndex,
+    userDataGetInfo,
+} from "@/composables/common";
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
@@ -15,7 +20,7 @@ import { useDirectCallStore } from "@/stores/directCall";
 import { userListAdd } from "@/utils/userList";
 import { useLoginEvents } from "./useLoginEvents";
 import { useSignallingSocket } from "./useSignallingSocket";
-
+import { useDirectMessageStore } from "@/stores/directMessage";
 
 // environment, joinMeeting  > 연락처, 회의실, 회원대기실
 // openMeetingOnOff > onpenMeetingOnOff
@@ -28,9 +33,8 @@ import { useSignallingSocket } from "./useSignallingSocket";
 // multiRefuseCalling > 연락처
 // openMeetingChecking, sendEntryNotification > 연락처, 회의실
 
-
 export function bindSocketEvents() {
-    const { $signallingSocket } = useNuxtApp();
+    const { signallingSocket } = useSignallingSocket();
     const router = useRouter();
     const loginStore = useLoginStore();
     const preperenceStore = useUserPreferenceStore();
@@ -40,6 +44,7 @@ export function bindSocketEvents() {
     const commonStore = useCommonStore();
     const meetingStore = useMeetingStore();
     const directCallStore = useDirectCallStore();
+    const directMessageStore = useDirectMessageStore();
 
     const {
         requestCanMakeCall,
@@ -51,11 +56,11 @@ export function bindSocketEvents() {
     } = useSocketEmitEvents();
 
     const { loginRequest } = useLoginEvents();
-    $signallingSocket.off("userListAll");
-    $signallingSocket.on("userListAll", (response) => {
+    signallingSocket.off("userListAll");
+    signallingSocket.on("userListAll", (response) => {
         const json = JSON.parse(response);
-        
-        console.log("왜 안들어와", json.users)
+
+        console.log("왜 안들어와", json.users);
         userListStore.init();
         userListAdd(json.users);
         callStore.setUserData([]);
@@ -68,10 +73,10 @@ export function bindSocketEvents() {
         userListStore.setOrganizationList(result);
     });
 
-    $signallingSocket.off("lastCallTime");
-    $signallingSocket.on("lastCallTime", (response) => {
+    signallingSocket.off("lastCallTime");
+    signallingSocket.on("lastCallTime", (response) => {
         const json = JSON.parse(response);
-        console.log(response)
+        console.log(response);
         userListStore.init();
         callStore.setRecentData([]);
         callStore.setRecentDataAll([]);
@@ -82,43 +87,47 @@ export function bindSocketEvents() {
         userListStore.setRecentCallList(sortOrgList);
     });
 
-    $signallingSocket.off("callReadyStatus");
-    $signallingSocket.on("callReadyStatus", (response) => {
+    signallingSocket.off("callReadyStatus");
+    signallingSocket.on("callReadyStatus", (response) => {
         const json = JSON.parse(response);
-        console.log('callReadyStatus',json)
-        const userIdx = userDataGetIndex(json.deviceid)
+        console.log("callReadyStatus", json);
+        const userIdx = userDataGetIndex(json.deviceid);
         callStore.setUserDataStatusAtIndex({
             index: userIdx,
-            status: json.status
-        })
-        const recentIdx = recentDataGetIndex(json.deviceid)
+            status: json.status,
+        });
+        const recentIdx = recentDataGetIndex(json.deviceid);
         callStore.setUserDataStatusAtIndex({
             index: recentIdx,
-            status: json.status
-        })
+            status: json.status,
+        });
 
-        const updateRecentCallList = updateStatusByDeviceId(userListStore.recentCallList, json.deviceid, json.status);
+        const updateRecentCallList = updateStatusByDeviceId(
+            userListStore.recentCallList,
+            json.deviceid,
+            json.status,
+        );
         const updateOrgCallList = updateStatusByDeviceId(
             userListStore.organizationList,
             json.deviceid,
             json.status,
         );
-        console.log(updateOrgCallList)
+        console.log(updateOrgCallList);
         userListStore.setRecentCallList(updateRecentCallList);
         userListStore.setOrganizationList(updateOrgCallList);
     });
 
-    $signallingSocket.off("userStatus");
-    $signallingSocket.on("userStatus", (response) => {
+    signallingSocket.off("userStatus");
+    signallingSocket.on("userStatus", (response) => {
         const json = JSON.parse(response);
         const remoteInfo = userDataGetInfo(json.deviceid);
-        
+
         sessionStorage.setItem("m_remote_deviceid", remoteInfo.deviceId);
         sessionStorage.setItem("m_remote_nickname", remoteInfo.nickName);
         sessionStorage.setItem("m_remote_devicetype", remoteInfo.deviceType);
         sessionStorage.setItem("m_remote_status", remoteInfo.status);
 
-        // console.log("*** $signallingSocket: userStatus sessionStorage.setItem(inRoomFlag):", sessionStorage.getItem("inRoomFlag"))
+        // console.log("*** signallingSocket: userStatus sessionStorage.setItem(inRoomFlag):", sessionStorage.getItem("inRoomFlag"))
 
         // 자신이 통화중인 경우 상대방 초대하기
         alert(sessionStorage.getItem("inRoomFlag"));
@@ -137,7 +146,7 @@ export function bindSocketEvents() {
 
                 // 페이지 이동 (방입장)
                 commonStore.changeViewType(2);
-                router.push("/call")
+                router.push("/call");
                 reeuqestCreateFixRoomID();
             } else {
                 requestCreateRoomID();
@@ -151,12 +160,11 @@ export function bindSocketEvents() {
                 branch: remoteInfo.brName,
                 nickname: remoteInfo.nickName,
             });
-
         }
     });
 
-    $signallingSocket.off("forceLogoutResult");
-    $signallingSocket.on("forceLogoutResult", (response) => {
+    signallingSocket.off("forceLogoutResult");
+    signallingSocket.on("forceLogoutResult", (response) => {
         console.log("*** socket: on forceLogoutResult");
         const json = JSON.parse(response);
         console.log(json);
@@ -176,8 +184,8 @@ export function bindSocketEvents() {
         }
     });
 
-    $signallingSocket.off("forceLogoutRequest");
-    $signallingSocket.on("forceLogoutRequest", (response) => {
+    signallingSocket.off("forceLogoutRequest");
+    signallingSocket.on("forceLogoutRequest", (response) => {
         const json = JSON.parse(response);
         loginStore.setForceLogoutUserId(json.requestSocketid);
 
@@ -196,7 +204,33 @@ export function bindSocketEvents() {
             }, 5000);
         }
     });
+    signallingSocket.off("directMessage");
+    signallingSocket.on("directMessage", function (response) {
+        console.log("*** socket: directMessage response");
+        console.log(response);
 
+        const json = JSON.parse(response);
+        directMessageStore.setRemoteMessageList({ remoteDeviceId: json.sender });
+        directMessageStore.setAddReceiveMessage({
+            sender: json.sender,
+            receiver: json.receiver,
+            timestamp: json.datetime,
+            dateTime: getFormattedDate(json.datetime),
+            message: json.message,
+            read: false,
+        });
+    });
+
+    // 읽음처리 socket on event
+    signallingSocket.off("directMessageReadProcess");
+    signallingSocket.on("directMessageReadProcess", function (response) {
+        console.log("*** socket: directMessageReadProcess response");
+        console.log(response);
+
+        const json = JSON.parse(response);
+
+        
+    });
 
     // // 분기
     // socket.on("createRoomID", function (response) {
@@ -290,7 +324,7 @@ export function bindSocketEvents() {
     //     //     }
     //     //     console.log("*** methods: joinMeeting::");
     //     //     console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
-            
+
     //     //     meetingStore.setOpenAndJoin("join");
     //     //     meetingStore.setMeetingSeq(json.unique_roomid);
     //     //     meetingStore.meetingJoinFlag(true);
@@ -313,4 +347,3 @@ export function bindSocketEvents() {
     //     }
     // })
 }
-

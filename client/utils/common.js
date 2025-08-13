@@ -3,7 +3,7 @@ import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useTokenStore } from "@/stores/token";
 import { useNuxtApp } from "nuxt/app";
-import _ from "lodash"
+import _ from "lodash";
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
     const date = new Date();
@@ -333,13 +333,13 @@ export async function convertImageToBlob(src) {
     if (!src) return "";
     try {
         // fetch-plugin.js에서 이미 jwt 토큰을 헤더에 추가하므로 URL에 토큰을 추가할 필요가 없습니다.
-        const response = await $fetch.raw(src+'?token='+tokenStore.accessToken, {
+        const response = await $fetch.raw(src + "?token=" + tokenStore.accessToken, {
             // .raw()를 사용하여 response 객체 전체를 받습니다.
             method: "GET",
             responseType: "blob", // ✅ 바이너리 데이터를 Blob으로 받도록 설정
             timeout: 4000,
         });
-        console.log(response)
+        console.log(response);
         if (response.status === 200) {
             const blob = response._data; // ✅ `ofetch`는 바이너리 데이터를 `_data` 속성에 담습니다.
             return URL.createObjectURL(blob);
@@ -379,6 +379,27 @@ export function getFeedsDisplay(type, content) {
     }
 }
 
+export const getFormattedDate = (timestamp, format = "yyyy-mm-dd") => {
+    if (String(timestamp).length === 10) {
+        timestamp *= 1000;
+    }
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    const second = String(date.getSeconds()).padStart(2, "0");
+
+    return format
+        .replace(/yyyy/, String(year))
+        .replace(/mm/, month)
+        .replace(/dd/, day)
+        .replace(/hh/, hour)
+        .replace(/MM/, minute)
+        .replace(/ss/, second);
+};
+
 export default {
     getWorldTime,
     buildTree,
@@ -393,4 +414,5 @@ export default {
     getFeedsDisplay,
     fileReceiveMessageBell,
     emergencyAlarmBell,
+    getFormattedDate,
 };

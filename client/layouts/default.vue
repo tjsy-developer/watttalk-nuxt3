@@ -43,6 +43,28 @@
     >
         <AlertModal></AlertModal>
     </VueFinalModal>
+    <VueFinalModal
+        modal-id="notice-modal"
+        display-directive="show"
+        background="interactive"
+        content-transition="vfm-fade"
+        :hide-overlay="true"
+        @update:model-value="val => emit('update:modelValue', val)"
+        class="modal-container notice-modal non-overlay"
+    >
+        <NoticeModal></NoticeModal>
+    </VueFinalModal>
+    <!-- <VueFinalModal
+        modal-id="chat-modal"
+        display-directive="show"
+        background="interactive"
+        content-transition="vfm-fade"
+        :hide-overlay="true"
+        @update:model-value="val => emit('update:modelValue', val)"
+        class="modal-container notice-modal non-overlay"
+    >
+        <ChatModal></ChatModal>
+    </VueFinalModal> -->
     <dHeader></dHeader>
     <div class="content">
         <slot></slot>
@@ -63,6 +85,7 @@
 </template>
 
 <script setup>
+const emit = defineEmits(["update:modelValue"]);
 import { onMounted } from "vue";
 import { ModalsContainer, VueFinalModal } from "vue-final-modal";
 
@@ -75,8 +98,15 @@ import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
 
+import { useSocketInit } from "@/composables/socket/useSocketInit";
+import ChatModal from "@/components/modal/ChatModal.vue";
+import NoticeModal from "@/components/modal/NoticeModal.vue";
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
+
+function onUpdateModelValue(val) {
+    emit("update:modelValue", val);
+}
 
 // 각 모달의 가시성 상태는 activeModals 배열에 해당 타입이 포함되어 있는지로 확인
 const isLoginModalVisible = computed({
@@ -129,6 +159,7 @@ const isAlertModal = computed({
 });
 
 onMounted(() => {
+    useSocketInit();
     commonStore.setAlertStatus(0);
     modalStore.isModalOpen("message");
 });
@@ -156,7 +187,10 @@ onMounted(() => {
     font-size: 19px;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.1s, visibility 0.5s, transform 0.5s;
+    transition:
+        opacity 0.1s,
+        visibility 0.5s,
+        transform 0.5s;
     z-index: 10000;
     display: flex;
     align-items: center;

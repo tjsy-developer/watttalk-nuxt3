@@ -225,6 +225,7 @@ import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import CallWindow from "./CallWindow.vue";
 import ThumbNail from "./drawing/ThumbNail.vue";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const commonStore = useCommonStore();
 const callStore = useCallStore();
@@ -431,14 +432,14 @@ onMounted(() => {
     // Socket.io setup
     // Nuxt 3 typically uses `useNuxtApp().$nuxtSocket` or imports directly
     // if you've configured a plugin. Assuming `@nuxtjs/websocket` or similar.
-    const { $signallingSocket } = useNuxtApp(); // Get $nuxtSocket from Nuxt app instance
+    const { signallingSocket } = useSignallingSocket(); // Get $nuxtSocket from Nuxt app instance
 
-    $signallingSocket.on("multiCalling", (response) => {
+    signallingSocket.on("multiCalling", (response) => {
         if (response) {
             calcWidth(personnelInRoom.value + 1);
         }
     });
-    $signallingSocket.on("cancelCalling", (res) => {
+    signallingSocket.on("cancelCalling", (res) => {
         if (res) {
             calcWidth(personnelInRoom.value);
         }

@@ -3,6 +3,7 @@ import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js/core";
+import { requestNewToken } from "@/plugins/axios.client";
 // import { useTokenStore } from "@/stores/token"; // Pinia 예시
 
 export function useAuth() {

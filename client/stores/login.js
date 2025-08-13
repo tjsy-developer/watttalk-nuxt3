@@ -47,22 +47,22 @@ export const useLoginStore = defineStore("login", {
             this.tokenResult = payload;
         },
         // 토큰 복호화 (이전 mutation이었으나 Pinia에서 actions로 통합)
-        decodeToken(payload) {
+        setTokenInfo(payload) {
             console.log("*** Pinia: decodeToken");
             try {
                 // `this.UserInfo`는 state에 없으므로, `this.userInfo`로 변경하거나
                 // 임시 변수로 사용 후 state.userInfo에 할당합니다.
-                const decodedUserInfo = jwtDecode(payload);
-                console.log(decodedUserInfo);
-                this.userInfo = decodedUserInfo; // Assuming userInfo in state stores the decoded object
-                this.sessionAuth = decodedUserInfo.auth;
-                this.sessionID = decodedUserInfo.id;
-                this.sessionDeviceType = decodedUserInfo.device_type;
-                this.sessionEnSeq = decodedUserInfo.en_seq;
-                this.sessionHqSeq = decodedUserInfo.hq_seq;
-                this.sessionBrSeq = decodedUserInfo.br_seq;
-                this.m_local_deviceid = decodedUserInfo.id;
-                this.sessionEmail = decodedUserInfo.email;
+                // const decodedUserInfo = jwtDecode(payload);
+                console.log(payload.en_seq);
+                this.userInfo = payload; // Assuming userInfo in state stores the decoded object
+                this.sessionAuth = payload.auth;
+                this.sessionID = payload.id;
+                this.sessionDeviceType = payload.device_type;
+                this.sessionEnSeq = payload.en_seq;
+                this.sessionHqSeq = payload.hq_seq;
+                this.sessionBrSeq = payload.br_seq;
+                this.m_local_deviceid = payload.id;
+                this.sessionEmail = payload.email;
                 this.tokenDecodeResult = 0;
             } catch (e) {
                 console.error("Failed to decode JWT token:", e);

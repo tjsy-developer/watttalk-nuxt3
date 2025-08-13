@@ -2,6 +2,7 @@ import { useNuxtApp, useRouter } from "nuxt/app";
 import { useLoginStore } from "@/stores/login";
 import { useCommonStore } from "@/stores";
 import { useModalStore } from "@/stores/modal";
+import { useSignallingSocket } from "./useSignallingSocket";
 
 const statusCode = {
     Unauthorized: 0,
@@ -12,7 +13,7 @@ const statusCode = {
 };
 
 export function useLoginEvents() {
-    const { $signallingSocket } = useNuxtApp();
+    const { signallingSocket } = useSignallingSocket();
     const loginStore = useLoginStore();
     const commonStore = useCommonStore();
     const modalStore = useModalStore();
@@ -26,7 +27,7 @@ export function useLoginEvents() {
             connectStatus: 0,
             language: preferenceStore.lang,
         };
-        $signallingSocket.emit("login", JSON.stringify(payload));
+        signallingSocket.emit("login", JSON.stringify(payload));
         console.log("*** socket: emit login", payload);
     };
 
@@ -35,7 +36,7 @@ export function useLoginEvents() {
             deviceid: deviceId,
             appname: "powertalkweb",
         };
-        $signallingSocket.emit("environment", JSON.stringify(json));
+        signallingSocket.emit("environment", JSON.stringify(json));
         console.log("여기 로그찍어줘", json);
     };
 
@@ -81,12 +82,12 @@ export function useLoginEvents() {
             language: preferenceStore.lang,
         };
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("loginUserInfo", json);
+        signallingSocket.emit("loginUserInfo", json);
         console.log("*** socket: loginUserInfo request", json);
     }
 
     const listenLoginUserInfo = () => {
-        $signallingSocket.on("loginUserInfo", (userInfoRes) => {
+        signallingSocket.on("loginUserInfo", (userInfoRes) => {
             const userInfo = JSON.parse(userInfoRes);
             console.log("*** socket: loginUserInfo response", userInfo);
 
@@ -115,11 +116,11 @@ export function useLoginEvents() {
         });
     }
     const listenLoginEvent = () => {
-        $signallingSocket.on("login", handleLoginResponse);
+        signallingSocket.on("login", handleLoginResponse);
     };
 
     const listenEviroment = () => {
-        $signallingSocket.on("environment", (response) => {
+        signallingSocket.on("environment", (response) => {
             const json = JSON.parse(response);
 
             if (json.status == 0) {
@@ -164,7 +165,7 @@ export function useLoginEvents() {
     }
 
     const listenForceLogoutEvent = (localDeviceId) => {
-        $signallingSocket.on("forceLogoutResult", function (response) {
+        signallingSocket.on("forceLogoutResult", function (response) {
             const json = JSON.parse(response);
 
             /* 1: 성공 - login시도 , 0: 실패 - 다른 기기 통화중 */

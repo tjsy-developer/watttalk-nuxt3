@@ -1,6 +1,6 @@
 <template>
     <div class="recent-list">
-        <div v-for="(user, index) in props.data" :key="user.deviceid">
+        <div v-for="user in props.data" :key="user.deviceid">
             <div>
                 <img
                     v-if="user.devicetype == 1 && user.status == 1"
@@ -58,12 +58,12 @@
                 <img
                     v-if="user.status == 1"
                     :src="commonImages.useChat"
-                    @click="requestChat(user.deviceid)"
+                    @click="requestChat(user)"
                 />
                 <img
                     v-if="user.status == 0"
                     :src="commonImages.useNotChat"
-                    @click="requestChat(user.deviceid)"
+                    @click="requestChat(user)"
                     @mouseover="handleMouseChatOver"
                     @mouseleave="handleMouseChatLeave"
                 />
@@ -85,6 +85,8 @@ import { iconLogOffUser } from "@/assets/images/index";
 import { useI18n } from "vue-i18n";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { storeToRefs } from "pinia";
+import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
+import ChatModal from "@/components/modal/ChatModal.vue";
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
 const { t } = useI18n();
@@ -108,11 +110,12 @@ const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const meettingStore = useMeetingStore();
 
+const vfm = useVfm();
 const props = defineProps<{
     data: OrgNode[];
     search: string;
 }>();
-console.log('여기왜이렇게 늦니')
+console.log("여기왜이렇게 늦니");
 
 const { contentsViewType } = storeToRefs(commonStore);
 const openNodes = ref(new Set<string>());
@@ -162,9 +165,36 @@ function requestCall(remoteDeviceId: string | undefined) {
     }
 }
 
-function requestChat(remoteDeviceId: string | undefined) {
-
-
+function requestChat(remoteUser: OrgNode) {
+    // chattingList 에 추가하고
+    const { open } = useModal({
+        component: VueFinalModal,
+        keepAlive: true,
+        attrs: {
+            modalId: "chat-modal-" + remoteUser.deviceid,
+            displayDirective: "show",
+            background: "interactive",
+            contentTransition: "vfm-fade",
+            hideOverlay: true,
+            "onUpdate:modelValue": (val: any) => {
+                console.log("chat modal open state changed:", val);
+            },
+            class: "modal-container chat-modal non-overlay",
+            
+        },
+        slots: {
+            default: useModalSlot({
+                component: ChatModal,
+                attrs: {
+                    remoteDeviceId: remoteUser.deviceid,
+                    remoteNickName: remoteUser.nickname,
+                    profile: remoteUser.image,
+                }
+            }),
+        },
+    });
+    open();
+    // directMessageStore.setRemoteMessageList({ remoteDeviceId: remoteUser.deviceid})
 }
 
 function contactDateFormat(datetime: number) {
@@ -214,7 +244,8 @@ function contactDateFormat(datetime: number) {
     min-width: 130px;
 }
 
-.call-time, .user-name {
+.call-time,
+.user-name {
     color: #d3d3d3;
     font-size: 1.4rem;
 }

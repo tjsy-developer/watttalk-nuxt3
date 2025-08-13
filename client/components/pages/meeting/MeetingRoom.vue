@@ -293,6 +293,7 @@ import MeetingModal from "@/components/modal/meeting/MeetingModal.vue";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useUserPreferenceStore } from "@/stores/common";
 import DeleteMeetingModal from "@/components/modal/meeting/DeleteMeetingModal.vue";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const props = defineProps({
     compData: Object,
@@ -316,8 +317,8 @@ const displayMode = ref("darkmode");
 const cctvList = ref("");
 const showCctvList = ref(false);
 const { t } = useI18n();
-const { $signallingSocket, $modal } = useNuxtApp();
-
+const { $modal } = useNuxtApp();
+const { signallingSocket } = useSignallingSocket();
 const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -338,8 +339,8 @@ const openMeetingCheck = (meetingSeq) => {
     console.log("*** socket.commit:: openMeetingChecking");
     meetingStore.setOpenMeetingCheck(true);
 
-    $signallingSocket.emit("openMeetingChecking", json);
-    $signallingSocket.on("openMeetingChecking", (response) => {
+    signallingSocket.emit("openMeetingChecking", json);
+    signallingSocket.on("openMeetingChecking", (response) => {
 
     const resJson = JSON.parse(response);
     console.log(resJson);
@@ -559,31 +560,31 @@ onUnmounted(() => {
     window.removeEventListener("resize", onResize);
     console.log("*** onUnmounted: Window resize listener removed.");
 
-    if ($signallingSocket) {
+    if (signallingSocket) {
         console.log("*** onUnmounted: Socket Event Remove Started !!");
-        $signallingSocket.off("openMeetingChecking");
-        $signallingSocket.off("meetingList");
-        $signallingSocket.off("meetingCalendarList");
-        $signallingSocket.off("createMeeting");
-        $signallingSocket.off("modifyMeeting");
-        $signallingSocket.off("deleteMeeting");
-        $signallingSocket.off("openMeetingOnOff");
-        $signallingSocket.off("openMeeting");
-        $signallingSocket.off("joinMeeting");
-        $signallingSocket.off("leaveMeeting");
-        $signallingSocket.off("changedMeeting");
-        $signallingSocket.off("sendMeetingRoomID");
-        $signallingSocket.off("userListAll");
-        $signallingSocket.off("calling");
-        $signallingSocket.off("cancelCalling");
-        $signallingSocket.off("directMessageReadProcess");
-        $signallingSocket.off("directMessage");
-        $signallingSocket.off("getPreviousMessage");
-        $signallingSocket.off("environment");
-        $signallingSocket.off("forceLogoutRequest");
-        $signallingSocket.off("sendEntryNotification");
+        signallingSocket.off("openMeetingChecking");
+        signallingSocket.off("meetingList");
+        signallingSocket.off("meetingCalendarList");
+        signallingSocket.off("createMeeting");
+        signallingSocket.off("modifyMeeting");
+        signallingSocket.off("deleteMeeting");
+        signallingSocket.off("openMeetingOnOff");
+        signallingSocket.off("openMeeting");
+        signallingSocket.off("joinMeeting");
+        signallingSocket.off("leaveMeeting");
+        signallingSocket.off("changedMeeting");
+        signallingSocket.off("sendMeetingRoomID");
+        signallingSocket.off("userListAll");
+        signallingSocket.off("calling");
+        signallingSocket.off("cancelCalling");
+        signallingSocket.off("directMessageReadProcess");
+        signallingSocket.off("directMessage");
+        signallingSocket.off("getPreviousMessage");
+        signallingSocket.off("environment");
+        signallingSocket.off("forceLogoutRequest");
+        signallingSocket.off("sendEntryNotification");
         console.log("*** onUnmounted: All socket event listeners removed.");
-        // $signallingSocket.disconnect(); // Only if this component is responsible for disconnecting
+        // signallingSocket.disconnect(); // Only if this component is responsible for disconnecting
     }
 });
 

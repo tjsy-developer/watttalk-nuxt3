@@ -2,12 +2,26 @@
 
 import { useImageAssets } from '@/composables/useImageAssets';
 import { ref } from 'vue';
+import { useModal, useModalSlot, useVfm, ModalId } from 'vue-final-modal';
 
+const vfm = useVfm()
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
 
 const { menuImages } = useImageAssets();
+
+// const { open, close } = useModal({
+//     component: NoticeModal,
+//     keepAlive: true,
+// })
+
+const handleClickNotice = () => {
+    // open();
+    vfm.toggle('notice-modal')
+    console.log(vfm)
+}
 </script>
+
 
 <template>
     <div class="leftbar">
@@ -24,7 +38,7 @@ const { menuImages } = useImageAssets();
             <img :src="menuImages.cloud" />
             <label class="icon-label">클라우드</label>
         </a>
-        <div class="icon-btn bell" title="알림">
+        <div class="icon-btn bell" title="알림" @click="handleClickNotice">
             <img :src="menuImages.notice">
         </div>
         <audio id='calling_bell' loop style="display:none;">

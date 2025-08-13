@@ -90,7 +90,8 @@ import { checkMainVideo, userListGetNickname } from "@/utils/userList";
 import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 import { useModal } from "vue-final-modal";
 import LoadingModal from "@/components/modal/LoadingModal.vue";
-const { $signallingSocket, $transferSocket } = useNuxtApp();
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
+const { signallingSocket, transferSocket } = useSignallingSocket();
 const { t } = useI18n();
 const {
     requestMultiCalling,
@@ -255,7 +256,7 @@ onMounted(() => {
     //      sessionStorage.getItem("otherPartyAccess")
     // )
 
-    $signallingSocket.on("created", (response) => {
+    signallingSocket.on("created", (response) => {
         const json = JSON.parse(response);
         console.log("*** socket: created response. roomid: " + json.roomid);
 
@@ -274,13 +275,13 @@ onMounted(() => {
         );
     });
 
-    $signallingSocket.on("joined", (response) => {
+    signallingSocket.on("joined", (response) => {
         console.log(
             "*** socket: joined response. " + loginStore.m_local_deviceid + " is joined",
         );
     });
 
-    $signallingSocket.on("calling", function (response) {
+    signallingSocket.on("calling", function (response) {
         const json = JSON.parse(response);
         console.log("*** socket: calling response. json: " + response);
 
@@ -302,7 +303,7 @@ onMounted(() => {
                 nickname: json.nickname,
             };
             const json2 = JSON.stringify(obj);
-            $signallingSocket.emit("refuseCalling", json2);
+            signallingSocket.emit("refuseCalling", json2);
             console.log("*** socket: emit refuseCalling. json: ", json2);
 
             // console.log("calling >> When not making calls at the same time")
@@ -328,7 +329,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("refuseCalling", function (response) {
+    signallingSocket.on("refuseCalling", function (response) {
         const json = JSON.parse(response);
         console.log("*** socket: refusecalling response. json: " + response);
 
@@ -354,7 +355,7 @@ onMounted(() => {
     });
 
     // 상대방이 전화 취소했을 시
-    $signallingSocket.on("cancelCalling", function (response) {
+    signallingSocket.on("cancelCalling", function (response) {
         // const json = JSON.parse(response)
         console.log("*** socket: cancelCalling response. json: " + response);
 
@@ -389,7 +390,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("multiCalling", function (response) {
+    signallingSocket.on("multiCalling", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: multiCalling response. json:" + response);
@@ -405,7 +406,7 @@ onMounted(() => {
                     nickname: json.nickname,
                 };
                 const json2 = JSON.stringify(obj);
-                $signallingSocket.emit("refuseCalling", json2);
+                signallingSocket.emit("refuseCalling", json2);
                 console.log("*** socket: emit refuseCalling. json: ", json2);
                 return;
             }
@@ -542,7 +543,7 @@ onMounted(() => {
     });
 
     // receive > his_seq, status
-    $signallingSocket.on("callStartTime", function (response) {
+    signallingSocket.on("callStartTime", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: callStartTime response. json:" + response);
@@ -554,7 +555,7 @@ onMounted(() => {
     });
 
     // videoOnOff on event
-    $signallingSocket.on("videoOnOff", function (response) {
+    signallingSocket.on("videoOnOff", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: videoOnOff response. json:" + response);
@@ -606,7 +607,7 @@ onMounted(() => {
     });
 
     // screenSharing on event
-    $signallingSocket.on("screenSharing", function (response) {
+    signallingSocket.on("screenSharing", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: screenSharing response. json:" + response);
@@ -672,7 +673,7 @@ onMounted(() => {
     });
 
     // receive Message
-    $signallingSocket.on("notification", function (response) {
+    signallingSocket.on("notification", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: notification response. json:" + response);
@@ -715,7 +716,7 @@ onMounted(() => {
     });
 
     // 다른 사용자가 통화 종료했을 경우
-    $signallingSocket.on("discalling", function (response) {
+    signallingSocket.on("discalling", function (response) {
         if (response) {
             const json = JSON.parse(response);
             if (keepAliveList.includes(json.deviceid)) return;
@@ -925,7 +926,7 @@ onMounted(() => {
     // ========= 통화 중 연락처 화면 관련 function ===========
 
     // User Call Ready Status on/off Event
-    $signallingSocket.on("callReadyStatus", (response) => {
+    signallingSocket.on("callReadyStatus", (response) => {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: callReadyStatus. json: ", json);
@@ -954,7 +955,7 @@ onMounted(() => {
     });
 
     // userStatus :: calling에서는 상대방을 초대하는 것 외에는 없음.
-    $signallingSocket.on("userStatus", (response) => {
+    signallingSocket.on("userStatus", (response) => {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: userStatus response");
@@ -983,7 +984,7 @@ onMounted(() => {
     });
 
     // 통화중 상대방 초대하기
-    $signallingSocket.on("canMakeCall", (response) => {
+    signallingSocket.on("canMakeCall", (response) => {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: canMakeCall response. json: " + response);
@@ -1046,7 +1047,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("inviteCancelCalling", function (response) {
+    signallingSocket.on("inviteCancelCalling", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: inviteCancelcalling response");
@@ -1085,7 +1086,7 @@ onMounted(() => {
     });
 
     // 비회원 초대 이메일 체크 --- ksy
-    $signallingSocket.on("inviteNoneMember", function (response) {
+    signallingSocket.on("inviteNoneMember", function (response) {
         if (response) {
             console.log("*** socket: inviteNoneMember response. json:" + response);
 
@@ -1104,7 +1105,7 @@ onMounted(() => {
     });
 
     // hostCheck
-    $signallingSocket.on("videoCallHostCheck", function (response) {
+    signallingSocket.on("videoCallHostCheck", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("Type of json.deviceid:", json.deviceid); // string이 나와야 합니다.
@@ -1161,7 +1162,7 @@ onMounted(() => {
     });
 
     // 호스트 변경
-    $signallingSocket.on("videoCallHostChange", function (response) {
+    signallingSocket.on("videoCallHostChange", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: videoCallHostChange response. json: " + response);
@@ -1305,7 +1306,7 @@ onMounted(() => {
     });
 
     // 호스트 요청 팝업 socket event
-    $signallingSocket.on("videoCallHostRequest", function (response) {
+    signallingSocket.on("videoCallHostRequest", function (response) {
         // json.hostrequest_deviceid = host 요청자
         // localdeviceid = host
         try {
@@ -1371,7 +1372,7 @@ onMounted(() => {
     });
 
     // 호스트 요청 취소 response
-    $signallingSocket.on("videoCallHostCancel", function (response) {
+    signallingSocket.on("videoCallHostCancel", function (response) {
         try {
             // const json = JSON.parse(response)
             console.log("*** socket: videoCallHostCancel response. json: " + response);
@@ -1390,7 +1391,7 @@ onMounted(() => {
     });
 
     // 전체 음소거 관리
-    $signallingSocket.on("allMicOnOff", function (response) {
+    signallingSocket.on("allMicOnOff", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: allMicOnOff response. json: " + response);
@@ -1403,7 +1404,7 @@ onMounted(() => {
     });
 
     // 현재 방이 전체 음소거 인지 아닌지 확인요청이 들어옴.
-    $signallingSocket.on("requestSettingInRoom", function (response) {
+    signallingSocket.on("requestSettingInRoom", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: requestSettingInRoom reponse. json: " + response);
@@ -1528,7 +1529,7 @@ onMounted(() => {
     });
 
     // 호스트가 바라보는 화면으로 전환한다.
-    $signallingSocket.on("hostSelectedMainVideo", function (response) {
+    signallingSocket.on("hostSelectedMainVideo", function (response) {
         // try {
         const json = JSON.parse(response);
         console.log("*** socket: hostSelectedMainVideo response. json: " + response);
@@ -1570,7 +1571,7 @@ onMounted(() => {
     });
 
     // 메인영상 카메라 줌 적용 (ksy)
-    $signallingSocket.on("setZoomLevel", function (response) {
+    signallingSocket.on("setZoomLevel", function (response) {
         try {
             let fid = "";
             const json = JSON.parse(response);
@@ -1607,7 +1608,7 @@ onMounted(() => {
     });
 
     // 최초 방 입장 시 호스트가 설정한 방에 대한 정보 받아오기
-    $signallingSocket.on("resultSettingInRoom", function (response) {
+    signallingSocket.on("resultSettingInRoom", function (response) {
         // try {
         const json = JSON.parse(response);
         console.log("*** socket: resultSettingInRoom response. json: " + response);
@@ -1777,7 +1778,7 @@ onMounted(() => {
     });
 
     // 마이크 상태 update // 0 : micOFF, 1: micON
-    $signallingSocket.on("micOnOff", function (response) {
+    signallingSocket.on("micOnOff", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: micOnOff response. json: " + response);
@@ -1819,7 +1820,7 @@ onMounted(() => {
     });
 
     // 강제 마이크 on off
-    $signallingSocket.on("forceMicOnOff", function (response) {
+    signallingSocket.on("forceMicOnOff", function (response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: forceMicOnOff reponse. json: " + response);
@@ -1900,7 +1901,7 @@ onMounted(() => {
     });
 
     // changeDuration
-    $signallingSocket.on("changeDuration", function (response) {
+    signallingSocket.on("changeDuration", function (response) {
         try {
             // const json = JSON.parse(response)
             console.log("*** socket: on changeDuration. json: " + response);
@@ -1910,7 +1911,7 @@ onMounted(() => {
     });
 
     // 강제퇴장 socket on event
-    $signallingSocket.on("forceLeave", function (response) {
+    signallingSocket.on("forceLeave", function (response) {
         try {
             console.log("*** socket: forceLeave. json: " + response);
 
@@ -1928,7 +1929,7 @@ onMounted(() => {
     });
 
     // 소켓 leaveMeeting 받기
-    $signallingSocket.on("leaveMeeting", (response) => {
+    signallingSocket.on("leaveMeeting", (response) => {
         console.log("*** socket: leaveMeeting response. json: ", response);
         const json = JSON.parse(response);
 
@@ -1940,7 +1941,7 @@ onMounted(() => {
     });
 
     // 파일 수신자가 송신자에게 파일수신 수락/거절 질문을 받았을 때 (kyj)
-    $signallingSocket.on("fileTransfer", (response) => {
+    signallingSocket.on("fileTransfer", (response) => {
         try {
             escapeFullScreen();
             console.log("*** socket: on fileTransfer. json: ", response);
@@ -1964,7 +1965,7 @@ onMounted(() => {
             //      handleId: feeds.value[rfidIndex].rfid
             //  }
             //  const sendJson = JSON.stringify(obj)
-            //  $signallingSocket.emit("fileReceiver", sendJson)
+            //  signallingSocket.emit("fileReceiver", sendJson)
             //  console.log(
             //      "*** socket: emit fileReceiver - 다른 사용자와 파일 송신 중 -> 거절 처리. json: " +
             //          sendJson
@@ -1988,7 +1989,7 @@ onMounted(() => {
             //      handleId: feeds.value[rfidIndex].rfid
             //  }
             //  const sendJson = JSON.stringify(obj)
-            //  $signallingSocket.emit("fileReceiver", sendJson)
+            //  signallingSocket.emit("fileReceiver", sendJson)
             //  console.log(
             //      "*** socket: emit fileReceiver - 고화질 캡쳐 중 -> 거절 처리. json: " +
             //          sendJson
@@ -2114,7 +2115,7 @@ onMounted(() => {
     });
 
     // 파일 송신자가 수신자로부터 파일수신 수락/거절을 받았을 때 (kyj)
-    $signallingSocket.on("fileReceiver", (response) => {
+    signallingSocket.on("fileReceiver", (response) => {
         try {
             console.log("*** socket: fileReceiver response. json: ", response);
 
@@ -2205,7 +2206,7 @@ onMounted(() => {
     });
 
     // directMessage Receive
-    $signallingSocket.on("directMessage", function (response) {
+    signallingSocket.on("directMessage", function (response) {
         console.log("*** socket: directMessage response");
         console.log(response);
 
@@ -2245,7 +2246,7 @@ onMounted(() => {
     });
 
     // 읽음처리 socket on event
-    $signallingSocket.on("directMessageReadProcess", function (response) {
+    signallingSocket.on("directMessageReadProcess", function (response) {
         console.log("*** socket: directMessageReadProcess response");
         console.log(response);
 
@@ -2271,7 +2272,7 @@ onMounted(() => {
     });
 
     // 파일 수신측에서 파일 송신 취소 socket event
-    $signallingSocket.on("cancelFileTransfer", function (response) {
+    signallingSocket.on("cancelFileTransfer", function (response) {
         console.log("*** socket: cancelFileTransfer response");
         console.log(response);
         const json = JSON.parse(response);
@@ -2300,7 +2301,7 @@ onMounted(() => {
     });
 
     // disconnect 시
-    $signallingSocket.on("disconnect", function (response) {
+    signallingSocket.on("disconnect", function (response) {
         console.log("socket disconnect !!! ");
         // signallingToastMessage(t("signallingSocket Disconnect"));
     });
@@ -2309,7 +2310,7 @@ onMounted(() => {
     setCallingTimer("init");
 
     // changeAntenna
-    $signallingSocket.on("changeAntenna", function (response) {
+    signallingSocket.on("changeAntenna", function (response) {
         // console.log("*** socket: changeAntenna response")
         // console.log(response)
 
@@ -2319,7 +2320,7 @@ onMounted(() => {
     });
 
     // 썸네일 이관
-    $signallingSocket.on("moveThumbnail", function (response) {
+    signallingSocket.on("moveThumbnail", function (response) {
         drawingStore.setChangedHost(true);
         console.log("*** socket: moveThumbnail response");
         // console.log(response)
@@ -2396,7 +2397,7 @@ onMounted(() => {
     });
 
     // 파일 업로드된 이미지 url 수신
-    $signallingSocket.on("sendFileImageUrl", async function (response) {
+    signallingSocket.on("sendFileImageUrl", async function (response) {
         console.log("*** socket: on sendFileImageUrl");
         console.log(response);
 
@@ -2565,7 +2566,7 @@ onMounted(() => {
     }
 
     // 현재 사용중인 회의 socket 받고 vuex 저장
-    $signallingSocket.on("getMeetingInfo", (response) => {
+    signallingSocket.on("getMeetingInfo", (response) => {
         const json = JSON.parse(response);
         console.log("*** socket.on: getMeetingInfo json = ", json);
 
@@ -2581,7 +2582,7 @@ onMounted(() => {
     });
 
     // pdf To Image 진행률 받기
-    $transferSocket.on("pdfToImageRate", (response) => {
+    transferSocket.on("pdfToImageRate", (response) => {
         const json = JSON.parse(response);
         // console.log("*** transfer socket.on: pdfToImageRate json = ", json)
 
@@ -2592,7 +2593,7 @@ onMounted(() => {
                 file_name: PDFsendFileName.value,
             };
             const pdfToImageCancelJson = JSON.stringify(pdfToImageCancelInfo);
-            $transferSocket.emit("pdfToImageCancel", pdfToImageCancelJson);
+            transferSocket.emit("pdfToImageCancel", pdfToImageCancelJson);
             console.log(
                 "*** transfer socket: pdfToImageCancel request:",
                 pdfToImageCancelInfo,
@@ -2626,7 +2627,7 @@ onMounted(() => {
     });
 
     // pdf To Image 받기 -- 문제 발생 예상 부분
-    $transferSocket.on("pdfToImage", (response) => {
+    transferSocket.on("pdfToImage", (response) => {
         const json = JSON.parse(response);
         // console.log("*** transfer socket.on: pdfToImage json = ", json)
 
@@ -2691,7 +2692,7 @@ onMounted(() => {
 
     // 룸이 가득찼을 때 event 수신
     // receive > leaveDeviceid, remoteDeviceid, roomid
-    $signallingSocket.on("roomFull", (response) => {
+    signallingSocket.on("roomFull", (response) => {
         const json = JSON.parse(response);
         console.log("*** socket.on: roomFull json = ", json);
 
@@ -2748,7 +2749,7 @@ onMounted(() => {
     });
 
     // drawing on event
-    $signallingSocket.on("drawing", function (response) {
+    signallingSocket.on("drawing", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: drawing response. json:" + response);
@@ -2809,7 +2810,7 @@ onMounted(() => {
     });
 
     // laserPointer on event
-    $signallingSocket.on("laserPointer", function (response) {
+    signallingSocket.on("laserPointer", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: laserPointer response. json:" + response);
@@ -2849,7 +2850,7 @@ onMounted(() => {
     });
 
     // HQ Capture 취소
-    $signallingSocket.on("cancelHQCapture", function (response) {
+    signallingSocket.on("cancelHQCapture", function (response) {
         if (response) {
             // const json = JSON.parse(response)
             console.log("*** socket: failHQCapture response. json:" + response);
@@ -2879,7 +2880,7 @@ onMounted(() => {
     });
 
     // 이전 메세지 보기 이벤트 받기
-    $signallingSocket.on("getPreviousMessage", (response) => {
+    signallingSocket.on("getPreviousMessage", (response) => {
         // console.log("*** socket.on: getPreviousMessage res = ", response)
         console.log("*** socket.on: getPreviousMessage");
         const json = JSON.parse(response);
@@ -2942,7 +2943,7 @@ onMounted(() => {
     });
 
     // test :: requestBroadCast
-    $signallingSocket.on("requestBroadCast", function (response) {
+    signallingSocket.on("requestBroadCast", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: requestBroadCast response. json:" + response);
@@ -2964,7 +2965,7 @@ onMounted(() => {
     callStore.setMainVideoFullScreen(true);
 
     /* 모션 알람 socket on event */
-    $signallingSocket.on("motionDetect", function (response) {
+    signallingSocket.on("motionDetect", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: motionDetect response. json:" + response);
@@ -3349,7 +3350,7 @@ onMounted(() => {
     // const sendJson = JSON.stringify(obj)
     // setTimeout(() => {
     //  if (loginStore.m_local_deviceid == "test2") {
-    //      $signallingSocket.emit("motionDetect", sendJson)
+    //      signallingSocket.emit("motionDetect", sendJson)
     //      console.log("*** socket: emit motionDetect Stop. json: " + sendJson)
     //  }
     // }, 5000)
@@ -3362,7 +3363,7 @@ onMounted(() => {
     // const sendJson3 = JSON.stringify(obj3)
     // setTimeout(() => {
     //  if (loginStore.m_local_deviceid == "test3") {
-    //      $signallingSocket.emit("motionDetect", sendJson3)
+    //      signallingSocket.emit("motionDetect", sendJson3)
     //      console.log("*** socket: emit motionDetect Stop. json: " + sendJson3)
     //  }
     // }, 5000)
@@ -3375,7 +3376,7 @@ onMounted(() => {
     // const sendJson2 = JSON.stringify(obj2)
     // setTimeout(() => {
     //  if (loginStore.m_local_deviceid == "test4") {
-    //      $signallingSocket.emit("motionDetect", sendJson2)
+    //      signallingSocket.emit("motionDetect", sendJson2)
     //      console.log("*** socket: emit motionDetect Stop. json: " + sendJson2)
     //  }
     // }, 5000)
@@ -3388,15 +3389,15 @@ onMounted(() => {
     // const sendJson4 = JSON.stringify(obj4)
     // setTimeout(() => {
     //  if (loginStore.m_local_deviceid == "admin") {
-    //      $signallingSocket.emit("motionDetect", sendJson4)
+    //      signallingSocket.emit("motionDetect", sendJson4)
     //      console.log("*** socket: emit motionDetect Stop. json: " + sendJson4)
     //  }
     // }, 15000)
 
-    $signallingSocket.on("insertGPS", (response) => {
+    signallingSocket.on("insertGPS", (response) => {
         console.log(JSON.parse(response), "GPS response");
     });
-    $signallingSocket.on("getMyGPSList", (response) => {
+    signallingSocket.on("getMyGPSList", (response) => {
         if (gpsListEvent.value.type == 0) {
             // console.log(JSON.parse(response), "MYGPS ALL")
             if (JSON.parse(response).length != 0) {
@@ -3410,12 +3411,12 @@ onMounted(() => {
             }
         }
     });
-    $signallingSocket.on("getUserGPSList", (response) => {
+    signallingSocket.on("getUserGPSList", (response) => {
         callStore.setOtherGpsList(JSON.parse(response));
     });
 
     // 스트림 해상도 변경
-    $signallingSocket.on("startStreamMode", (response) => {
+    signallingSocket.on("startStreamMode", (response) => {
         console.log("*** socket: on startStreamMode");
         const json = JSON.parse(response);
         console.log(json);
@@ -3429,7 +3430,7 @@ onMounted(() => {
     });
 
     // 파일 전송률 수신
-    $signallingSocket.on("fileSendRate", (response) => {
+    signallingSocket.on("fileSendRate", (response) => {
         console.log("*** socket: on fileSeneRate");
         const json = JSON.parse(response);
         // console.log(json)
@@ -3440,7 +3441,7 @@ onMounted(() => {
         };
         commonStore.setFileReceptionRate(data);
     });
-    $signallingSocket.on("resultEntryNotification", (response) => {
+    signallingSocket.on("resultEntryNotification", (response) => {
         console.log("*** socket: on resultEntryNotification. respones >", response);
         const json = JSON.parse(response);
         const resData = json.entry_notification_list;
@@ -3497,7 +3498,7 @@ onMounted(() => {
             }, 2100);
         }
     });
-    $signallingSocket.on("keepAliveStream", (response) => {
+    signallingSocket.on("keepAliveStream", (response) => {
         console.log("*** keepAliveStream event ***");
         console.log(response);
         if (!response) return;
@@ -3676,13 +3677,13 @@ function loginRequest(localDeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("login", json);
+    signallingSocket.emit("login", json);
     // console.log("*** socket: emit login. " + json)
 }
 function createRoomRequest(deviceid, roomid, uniqueRoomid) {
     const obj = { deviceid, roomid, unique_roomid: uniqueRoomid };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("createRoom", json);
+    signallingSocket.emit("createRoom", json);
     // console.log("*** socket: emit createRoom. json: ", json)
 }
 // 상대방 통화 수신 가능한지 체크
@@ -3692,14 +3693,14 @@ function canReceiveCallRequest(localdeviceid, remotedeviceid) {
         remotedeviceid,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("canReceiveCall", json);
+    signallingSocket.emit("canReceiveCall", json);
     // console.log("*** socket: emit canReceiveCall. json: ", json)
 }
 function joinRoomRequest(deviceid, roomid, uniqueRoomid) {
     console.log(typeof deviceid, typeof roomid, typeof uniqueRoomid);
     const obj = { deviceid, roomid, unique_roomid: uniqueRoomid };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("joinRoom", json);
+    signallingSocket.emit("joinRoom", json);
     console.log("*** socket: emit joinRoom. json: ", json);
 }
 function callingRequest(
@@ -3738,7 +3739,7 @@ function callingRequest(
         };
     }
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("calling", json);
+    signallingSocket.emit("calling", json);
     // console.log("*** socket: emit calling. json: ", json)
 }
 function discallingRequest(localdeviceid, remotedeviceid, roomid, institution, nickname) {
@@ -3750,7 +3751,7 @@ function discallingRequest(localdeviceid, remotedeviceid, roomid, institution, n
         nickname,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("discalling", json);
+    signallingSocket.emit("discalling", json);
 
     // console.log("*** socket: emit discalling. json: ", json)
 }
@@ -3763,7 +3764,7 @@ function cancelCallingRequest() {
         nickname: sessionStorage.getItem("m_nickname"),
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("cancelCalling", json);
+    signallingSocket.emit("cancelCalling", json);
     // console.log("*** socket: emit cancelCalling. json: ", json)
 }
 function callingAccept(roomid, remotedeviceid) {
@@ -3785,7 +3786,7 @@ function callingReject(roomid, localdeviceid, remotedeviceid, institution, nickn
         nickname,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("refuseCalling", json);
+    signallingSocket.emit("refuseCalling", json);
     // console.log("*** socket: emit refuseCalling. json: ", json)
 }
 function getQueryStringValue(name) {
@@ -4161,7 +4162,7 @@ function fileSend(result) {
             HQCapture: 0, // 2021-08-30 추가 0 - false
         };
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("fileTransfer", json);
+        signallingSocket.emit("fileTransfer", json);
         console.log("*** socket: emit fileTransfer. json: " + json);
 
         //- 송신중 메세지 index 설정 - addChatFileSendMessage()에서 chattingFileSendIndex.value 값 사용
@@ -4214,7 +4215,7 @@ function fileSend(result) {
             handleId: feeds.value[rfidIndex].rfid,
         };
         const sendJson = JSON.stringify(obj);
-        $signallingSocket.emit("fileReceiver", sendJson);
+        signallingSocket.emit("fileReceiver", sendJson);
         console.log("*** socket: emit fileReceiver. json: " + sendJson);
 
         // 송신 진행률 -ksy 주석
@@ -4303,7 +4304,7 @@ function fileSend(result) {
             handleId: feeds.value[rfidIndex].rfid,
         };
         const sendJson = JSON.stringify(obj);
-        $signallingSocket.emit("fileReceiver", sendJson);
+        signallingSocket.emit("fileReceiver", sendJson);
         console.log("*** socket: emit fileReceiver. json: " + sendJson);
 
         // 채팅창에 파일 수신 거절 메세지 추가 (4)
@@ -4370,7 +4371,7 @@ function muteVideoCustom() {
         status: 0,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoOnOff", json);
+    signallingSocket.emit("videoOnOff", json);
     console.log("*** socket: emit videoOnOff. json: " + json);
 }
 // 비디오 unmute 함수
@@ -4404,7 +4405,7 @@ function unmuteVideoCustom() {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoOnOff", json);
+    signallingSocket.emit("videoOnOff", json);
     console.log("*** socket: emit videoOnOff. json: " + json);
 }
 // 일정 시간 간격으로 main video.srcObject 의 값이 있는지 체크.
@@ -5761,7 +5762,7 @@ function newRemoteFeed(id, display, audio, video) {
             //  //  status: 1
             //  // }
             //  // const sendJson = JSON.stringify(obj)
-            //  // $signallingSocket.emit("fileTransferFinish", sendJson)
+            //  // signallingSocket.emit("fileTransferFinish", sendJson)
             //  /* 고화질 캡쳐와 분기처리 */
             //  if (callStore.HQCaptureFlag) {
             //      // 파일 송수신 중 초기화
@@ -5834,7 +5835,7 @@ function newRemoteFeed(id, display, audio, video) {
             // //       status: 0
             // //   }
             // //   const sendJson = JSON.stringify(obj)
-            // //   $signallingSocket.emit("fileTransferFinish", sendJson)
+            // //   signallingSocket.emit("fileTransferFinish", sendJson)
             // // }
         },
         // <=kyj
@@ -6136,7 +6137,7 @@ function video_change(_this) {
 //      language: sessionStorage.getItem("languageCode")
 //  }
 //  const json = JSON.stringify(obj)
-//  $signallingSocket.emit("loginUserInfo", json)
+//  signallingSocket.emit("loginUserInfo", json)
 //  console.log("loginUserInfo request:" + json)
 // },
 // Calling Popup
@@ -6184,7 +6185,7 @@ function multiCallingReject(
     };
 
     const sendJson = JSON.stringify(obj);
-    $signallingSocket.emit("multiRefuseCalling", sendJson);
+    signallingSocket.emit("multiRefuseCalling", sendJson);
     console.log("*** socket: emit multiRefuseCalling. json: ", sendJson);
 
     // 멀티통화 수락 거절 화면 숨김
@@ -6213,7 +6214,7 @@ function multiCallingAccept(localdeviceid, remotedeviceid, roomid) {
     };
 
     const sendJson = JSON.stringify(obj);
-    $signallingSocket.emit("multiCalling", sendJson);
+    signallingSocket.emit("multiCalling", sendJson);
 
     console.log("*** socket: emit multiCalling. json: ", sendJson);
 
@@ -6932,7 +6933,7 @@ function sendMessageBroadCast() {
         };
 
         const sendJson = JSON.stringify(obj);
-        $signallingSocket.emit("notification", sendJson);
+        signallingSocket.emit("notification", sendJson);
         console.log("*** socket: emit notification. json: ", sendJson);
 
         chattingStore.setSendMessageFlag(false);
@@ -7057,7 +7058,7 @@ function recentListAllRequest(localdeviceid) {
         language: m_lang,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("lastCallTime", json);
+    signallingSocket.emit("lastCallTime", json);
     console.log("*** socket: emit lastCallTime. json:" + json);
 }
 // getUserList
@@ -7068,7 +7069,7 @@ function userListAllRequest(localDeviceid, enSeq) {
         language: m_lang,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("userListAll", json);
+    signallingSocket.emit("userListAll", json);
     console.log("*** socket: emit userListAll. json:" + json);
 }
 // getUserStatus
@@ -7078,7 +7079,7 @@ function userStatusRequest(remotedeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("userStatus", json);
+    signallingSocket.emit("userStatus", json);
     // console.log("*** socket: emit userStatus. json: " + json)
 }
 // getCanMakeCallRequest
@@ -7089,7 +7090,7 @@ function canMakeCallRequest(remotedeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("canMakeCall", json);
+    signallingSocket.emit("canMakeCall", json);
     console.log("*** socket: emit canMakeCall. json: " + json);
 }
 function inviteCancelCallingRequest() {
@@ -7101,7 +7102,7 @@ function inviteCancelCallingRequest() {
         nickname: sessionStorage.getItem("m_nickname"),
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("inviteCancelCalling", json);
+    signallingSocket.emit("inviteCancelCalling", json);
     console.log("*** socket: emit inviteCancelCalling. json: ", json);
 
     // 발신 중 모달 해제
@@ -7115,7 +7116,7 @@ function videoCallHostCheck(roomid, localdeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoCallHostCheck", json);
+    signallingSocket.emit("videoCallHostCheck", json);
     console.log("*** socket: emit videoCallHostCheck. json: " + json);
 }
 // callingWindow 왕관표시 제거 및 추가
@@ -7177,7 +7178,7 @@ function hostChangeRequest(roomid, localdeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoCallHostRequest", json);
+    signallingSocket.emit("videoCallHostRequest", json);
     console.log("*** socket: emit videoCallHostRequest. json: " + json);
 }
 function hostChange(result, roomid, localdeviceid, hostRequestDeviceid) {
@@ -7189,7 +7190,7 @@ function hostChange(result, roomid, localdeviceid, hostRequestDeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoCallHostChange", json);
+    signallingSocket.emit("videoCallHostChange", json);
     console.log("*** socket: emit videoCallHostChange. json: " + json);
 }
 function hostPermissionRequest(seq, nickname, hostDeviceid) {
@@ -7305,7 +7306,7 @@ function hostRequestCancel(roomid, localdeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("videoCallHostCancel", json);
+    signallingSocket.emit("videoCallHostCancel", json);
     console.log("*** socket: emit videoCallHostCancel. json: " + json);
 }
 // 전체 음소거 관리
@@ -7316,7 +7317,7 @@ function setAllMicMute(status, hostDeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("allMicOnOff", json);
+    signallingSocket.emit("allMicOnOff", json);
     console.log("*** socket: emit allMicOnOff. json: " + json);
 
     // 전체 음소거 상태 vuex 저장
@@ -7338,7 +7339,7 @@ function requestSettingInRoom(roomid, requestDeviceid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("requestSettingInRoom", json);
+    signallingSocket.emit("requestSettingInRoom", json);
     console.log("*** socket: emit requestSettingInRoom. json: " + json);
 }
 // 현재 방에 대한 설정 (음소거상태, mainVideo, 음소거인 사람, videoOff인 사람)
@@ -7373,7 +7374,7 @@ function resultSettingInRoom(
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("resultSettingInRoom", json);
+    signallingSocket.emit("resultSettingInRoom", json);
     console.log("*** socket: emit resultSettingInRoom. json: " + json);
 }
 // 테스트를 위해서 생성한 함수 (사용하지 않음)
@@ -7406,7 +7407,7 @@ function setZoomLevel(level) {
         level,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("setZoomLevel", json);
+    signallingSocket.emit("setZoomLevel", json);
     console.log("*** setZoomLevel emit", json);
     console.log("** zoomLevel", commonStore.userListStatus, feeds.value);
     if (videoCallHost.value && showHostMainIndex == 0) {
@@ -7484,7 +7485,7 @@ function hostSelectedMainVideo(rfid) {
     };
     commonStore.setMainVideoIndex(findFeedsIndexRfid(rfid));
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("hostSelectedMainVideo", json);
+    signallingSocket.emit("hostSelectedMainVideo", json);
     console.log("*** socket: emit hostSelectedMainVideo. json: " + json);
     // duration Socket Event 호출
     saveVideoDuration(
@@ -7738,7 +7739,7 @@ function micOnOff(status, rfid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("micOnOff", json);
+    signallingSocket.emit("micOnOff", json);
     console.log("*** socket: emit micOnOff. json: " + json);
 }
 // 강제 마이크 버튼 클릭 (호스트 -> 일반 사용자)
@@ -7749,7 +7750,7 @@ function forceMicOnOff(status, rfid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("forceMicOnOff", json);
+    signallingSocket.emit("forceMicOnOff", json);
     console.log("*** socket: emit forceMicOnOff. json: " + json);
 }
 // 마이크 음소거 변경
@@ -7851,7 +7852,7 @@ function saveVideoDuration(mainRfid, deviceid, roomid, uniqueRoomid) {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("changeDuration", json);
+    signallingSocket.emit("changeDuration", json);
     console.log("*** socket: emit changeDuration. json: " + json);
 }
 // 회의실 퇴장
@@ -7866,7 +7867,7 @@ function leaveMeeting() {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("leaveMeeting", json);
+    signallingSocket.emit("leaveMeeting", json);
     console.log("*** socket: emit leaveMeeting. json: " + json);
 }
 // =>kyj
@@ -7935,7 +7936,7 @@ async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
   reader.onload = (e) => {
     const buffer = e.target.result;
     // Uint8Array 형태로 변환해서 보냄 (기존 이벤트명 그대로 사용)
-    $transferSocket.emit("sendFileServerUpload", {
+    transferSocket.emit("sendFileServerUpload", {
       chunkIndex,
       data: new Uint8Array(buffer),
       fname: sendFileName,
@@ -7952,7 +7953,7 @@ async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
       remotedeviceid: commonStore.fileReceiver,
       rate,
     };
-    $signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
+    signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
     callStore.setTransmissionRate(rate);
 
     chunkIndex++;
@@ -7976,7 +7977,7 @@ async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
         remotedeviceid: commonStore.fileReceiver,
         roomid: sessionStorage.getItem("m_roomid"),
       };
-      $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
+      signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
       console.log("*** socket: sendFileServerUploadInfo request:", infoObj);
 
       commonStore.setFileSendStatus(6);
@@ -7990,7 +7991,7 @@ async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
         remotedeviceid: commonStore.fileReceiver,
         rate: 100,
       };
-      $signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
+      signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
       callStore.setTransmissionRate(100);
     }
   };
@@ -8011,7 +8012,7 @@ function sendDirectMessageRequest(sender, receiver, type, message, datetime) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("directMessage", json);
+    signallingSocket.emit("directMessage", json);
     console.log("*** socket: emit directMessage");
     console.log(json);
 }
@@ -8024,7 +8025,7 @@ function readProcess(sender, receiver, datetime) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("directMessageReadProcess", json);
+    signallingSocket.emit("directMessageReadProcess", json);
     console.log("*** socket: emit directMessageReadProcess");
     console.log(json);
 }
@@ -8071,7 +8072,7 @@ function inviteNonMember(nonMemberEmail) {
     }
     const json = JSON.stringify(obj);
     console.log(json);
-    $signallingSocket.emit("inviteNoneMember", json);
+    signallingSocket.emit("inviteNoneMember", json);
 }
 // janus destroyed 시 실행 하는 함수들
 function janusAndCallingDestroy() {
@@ -8093,7 +8094,7 @@ function janusAndCallingDestroy() {
         };
 
         const sendJson = JSON.stringify(obj);
-        $signallingSocket.emit("drawing", sendJson);
+        signallingSocket.emit("drawing", sendJson);
         console.log("*** socket: emit drawing. json: " + sendJson);
     }
     // 사용자 퇴장 직전에 줌레벨 1로 변경 알림 > 다른사용자들은 해당 사용자 퇴장 시 해당 인덱스배열의 zoomLevel을 1로 초기화(ksy)
@@ -8124,7 +8125,7 @@ function janusAndCallingDestroy() {
     };
 
     const json2 = JSON.stringify(obj2);
-    $signallingSocket.emit("destroyRoomID", json2);
+    signallingSocket.emit("destroyRoomID", json2);
     console.log("*** socket: emit destroyRoomID. json: ", json2);
 
     setTimeout(function () {
@@ -8135,7 +8136,7 @@ function janusAndCallingDestroy() {
             end_time: currentTime,
         };
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("callStopTime", json);
+        signallingSocket.emit("callStopTime", json);
         console.log("*** socket: emit callStopTime. json: ", json);
 
         // 통화 종료 시 watch 부분에 빼고 여기 넣음. -> 회의실 종료
@@ -8328,7 +8329,7 @@ function changeAntenna(rfid) {
     const obj = { rfid };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("changeAntenna", json);
+    signallingSocket.emit("changeAntenna", json);
     console.log("*** socket: emit changeAntenna. json:", json);
 }
 // 안테나 인터벌
@@ -8536,7 +8537,7 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
         // canvasHistory,
 
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("moveThumbnail", json);
+        signallingSocket.emit("moveThumbnail", json);
         console.log("*** socket: emit moveThumbnail");
         // console.log(json)
 
@@ -8553,7 +8554,7 @@ function getMeetingInfo(meetingSeq) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("getMeetingInfo", json);
+    signallingSocket.emit("getMeetingInfo", json);
     console.log("*** socket: emit getMeetingInfo");
     console.log(json);
 }
@@ -8600,7 +8601,7 @@ function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
     sizeSent += buffer.byteLength;
 
     // 기존 이벤트명 유지, 청크별 바이너리 데이터 전송
-    $transferSocket.emit("sendFileServerUpload", {
+    transferSocket.emit("sendFileServerUpload", {
       chunkIndex,
       totalChunks,
       data: new Uint8Array(buffer),
@@ -8664,7 +8665,7 @@ function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
         };
       }
 
-      $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
+      signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
       console.log("*** socket: sendFileServerUploadInfo request:", obj2);
     }
   };
@@ -8708,7 +8709,7 @@ function drawingPDFServerUpload(fname, fsize, pdfSrc) {
     if (progress > 100) progress = 100;
 
     // 기존 전송 이벤트 사용 (서버에서 청크 합치기 구현 필요)
-    $transferSocket.emit("sendPdfFileServerUpload", {
+    transferSocket.emit("sendPdfFileServerUpload", {
       chunkIndex,
       totalChunks,
       data: new Uint8Array(buffer),
@@ -8741,13 +8742,13 @@ function drawingPDFServerUpload(fname, fsize, pdfSrc) {
           remotedeviceid: null,
           roomid: sessionStorage.getItem("m_roomid"),
         };
-        $signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
+        signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
 
         const pdfToImageInfo = {
           file_name: sendFileName,
           groupIndex: drawingStore.lastPDFGroupIndex,
         };
-        $transferSocket.emit("pdfToImage", JSON.stringify(pdfToImageInfo));
+        transferSocket.emit("pdfToImage", JSON.stringify(pdfToImageInfo));
       } else {
         // 업로드 취소 처리 (기존 로직 유지)
         callStore.removePdfUploadQueArray();
@@ -8797,7 +8798,7 @@ function roomFullRequest() {
         roomid: sessionStorage.getItem("m_roomid"),
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("roomFull", json);
+    signallingSocket.emit("roomFull", json);
     console.log("*** socket: emit roomFull. json: ", json);
 }
 // 캔버스를 createOffe 한다.
@@ -8964,7 +8965,7 @@ function canvasCreateOffer(type) {
                 };
 
                 const sendJson = JSON.stringify(obj);
-                $signallingSocket.emit("drawing", sendJson);
+                signallingSocket.emit("drawing", sendJson);
                 console.log("*** socket: emit drawing. json: " + sendJson);
             } else {
                 // 드로잉 -> 화면공유로 이동하는 것이라면 화면공유로 이동해라.
@@ -8990,7 +8991,7 @@ function canvasCreateOffer(type) {
                 };
 
                 const sendJson = JSON.stringify(obj);
-                $signallingSocket.emit("drawing", sendJson);
+                signallingSocket.emit("drawing", sendJson);
                 console.log("*** socket: emit drawing. json: " + sendJson);
             }
         },
@@ -9019,7 +9020,7 @@ function laserPointerBroadCast() {
         yLocation: callStore.laserPointerLaction[0].y,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("laserPointer", json);
+    signallingSocket.emit("laserPointer", json);
     console.log("*** socket: emit laserPointer. json: ", json);
 }
 /* 비디오 체크 및 마이크 체크 */
@@ -9081,7 +9082,7 @@ function requestHQCapture() {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("requestHQCapture", json);
+    signallingSocket.emit("requestHQCapture", json);
     console.log("*** socket: emit requestHQCapture. json: ", json);
 }
 // 부재중 전화 기록
@@ -9094,7 +9095,7 @@ function setMissedCall(hisSeq, localDeviceid, remoteDeviceid, sendCallTime) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("missedCall", json);
+    signallingSocket.emit("missedCall", json);
     console.log("*** socket: emit missedCall. json: ", json);
 }
 /* 신규 사용자 Audio Duration Insert */
@@ -9108,7 +9109,7 @@ function insertNewAudioDuration(mainRfid, myRfid, deviceid, uniqueRoomid) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("insertNewAudioDuration", json);
+    signallingSocket.emit("insertNewAudioDuration", json);
     console.log("*** socket: emit insertNewAudioDuration. json: ", json);
 }
 // 이전 메세지 가져오기
@@ -9127,7 +9128,7 @@ function getPreviousMessage() {
 
         const json = JSON.stringify(obj);
 
-        $signallingSocket.emit("getPreviousMessage", json);
+        signallingSocket.emit("getPreviousMessage", json);
         console.log("*** socket.emit: getPreviousMessage Request: " + json);
 
         // 이전 메세지 클릭한 모달창 정보 초기화
@@ -9153,7 +9154,7 @@ function getPreviousMessage() {
 
                 const json = JSON.stringify(obj);
 
-                $signallingSocket.emit("getPreviousMessage", json);
+                signallingSocket.emit("getPreviousMessage", json);
                 console.log("*** socket.emit: getPreviousMessage Request: " + json);
 
                 // 이전 메세지 클릭한 모달창 정보 초기화
@@ -9174,7 +9175,7 @@ function getPreviousMessage() {
 
                 const json = JSON.stringify(obj);
 
-                $signallingSocket.emit("getPreviousMessage", json);
+                signallingSocket.emit("getPreviousMessage", json);
                 console.log("*** socket.emit: getPreviousMessage Request: " + json);
 
                 // 이전 메세지 클릭한 모달창 정보 초기화
@@ -9192,7 +9193,7 @@ function forceLogOutResult(reqSocketId, status) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("forceLogoutResult", json);
+    signallingSocket.emit("forceLogoutResult", json);
     console.log("*** socket: emit forceLogoutResult");
     console.log(json);
 }
@@ -9239,7 +9240,7 @@ function prepareStreamMode(type) {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("prepareStreamMode", json);
+    signallingSocket.emit("prepareStreamMode", json);
     console.log("*** socket: emit prepareStreamMode");
     console.log(json);
 }
@@ -9948,7 +9949,7 @@ function sayHello() {
                                         localuseruid: String(myid.value), // 2021-10-13 추가
                                     };
                                     const json = JSON.stringify(obj);
-                                    $signallingSocket.emit("callStartTime", json);
+                                    signallingSocket.emit("callStartTime", json);
                                     console.log(
                                         "*** socket: emit callStartTime. json: ",
                                         json,
@@ -10647,7 +10648,7 @@ function sayHello() {
                         };
 
                         const sendJson = JSON.stringify(obj);
-                        $signallingSocket.emit("drawing", sendJson);
+                        signallingSocket.emit("drawing", sendJson);
                         console.log("*** socket: emit drawing. json: " + sendJson);
                     }
                     // ksy Test Code - 파일 송신자 새로고침 시 수신창제거
@@ -10675,7 +10676,7 @@ function sayHello() {
                     };
 
                     const json2 = JSON.stringify(obj2);
-                    $signallingSocket.emit("destroyRoomID", json2);
+                    signallingSocket.emit("destroyRoomID", json2);
                     console.log("*** socket: emit destroyRoomID. json: ", json2);
 
                     setTimeout(function () {
@@ -10686,7 +10687,7 @@ function sayHello() {
                             end_time: currentTime,
                         };
                         const json = JSON.stringify(obj);
-                        $signallingSocket.emit("callStopTime", json);
+                        signallingSocket.emit("callStopTime", json);
                         console.log("*** socket: emit callStopTime. json: ", json);
 
                         // 통화 종료 시 watch 부분에 빼고 여기 넣음. -> 회의실 종료
@@ -11785,7 +11786,7 @@ watch(getCancelFileTransferFlag, (newValue, oldValue) => {
             remotedeviceid: commonStore.fileReceiver,
         };
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("cancelFileTransfer", json);
+        signallingSocket.emit("cancelFileTransfer", json);
         console.log("*** socket: emit cancelFileTransfer");
     }
     // 파일 송신 취소 플래그 변경 시 필요한 로직을 여기에 추가합니다.
@@ -12137,27 +12138,27 @@ watch(getCameraAllowedState, (newValue, oldValue) => {
 });
 
 onUnmounted(() => {
-    $signallingSocket.off("login");
-    $signallingSocket.off("connect");
-    $signallingSocket.off("environment");
-    $signallingSocket.off("callReadyStatus");
-    $signallingSocket.off("userListAll");
-    $signallingSocket.off("lastCallTime");
-    $signallingSocket.off("userStatus");
-    $signallingSocket.off("canMakeCall");
-    $signallingSocket.off("groupRoom");
-    $signallingSocket.off("createRoomID");
-    $signallingSocket.off("calling");
-    $signallingSocket.off("loginUserInfo");
-    $signallingSocket.off("cancelCalling");
-    $signallingSocket.off("multiRefuseCalling");
-    $signallingSocket.off("refuseCalling");
-    $signallingSocket.off("inviteCancelCalling");
-    $signallingSocket.off("directMessageReadProcess");
-    $signallingSocket.off("directMessage");
-    $signallingSocket.off("getPreviousMessage");
-    $signallingSocket.off("forceLogoutRequest");
-    $signallingSocket.off("getOverhaul");
+    signallingSocket.off("login");
+    signallingSocket.off("connect");
+    signallingSocket.off("environment");
+    signallingSocket.off("callReadyStatus");
+    signallingSocket.off("userListAll");
+    signallingSocket.off("lastCallTime");
+    signallingSocket.off("userStatus");
+    signallingSocket.off("canMakeCall");
+    signallingSocket.off("groupRoom");
+    signallingSocket.off("createRoomID");
+    signallingSocket.off("calling");
+    signallingSocket.off("loginUserInfo");
+    signallingSocket.off("cancelCalling");
+    signallingSocket.off("multiRefuseCalling");
+    signallingSocket.off("refuseCalling");
+    signallingSocket.off("inviteCancelCalling");
+    signallingSocket.off("directMessageReadProcess");
+    signallingSocket.off("directMessage");
+    signallingSocket.off("getPreviousMessage");
+    signallingSocket.off("forceLogoutRequest");
+    signallingSocket.off("getOverhaul");
 });
 </script>
 

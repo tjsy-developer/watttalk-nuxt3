@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-const { $signallingSocket, transferSocket } = useNuxtApp();
+const { signallingSocket, transferSocket } = useSignallingSocket();
 import MeetingModal from "@/components/modal/meeting/MeetingModal.vue";
 import MeetingRoom from "@/components/pages/meeting/MeetingRoom.vue";
 import { useDirectCallStore } from "@/stores/directCall";
@@ -95,6 +95,7 @@ const router = useRouter();
 const { t } = useI18n();
 import { useModal } from "vue-final-modal";
 import { useUserPreferenceStore } from "@/stores/common";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
@@ -133,7 +134,7 @@ const checkOptions = ref("");
 
 // 마운트될 때 실행할 작업
 onMounted(async () => {
-    // Use `$signallingSocket` directly. No `this.` prefix needed.
+    // Use `signallingSocket` directly. No `this.` prefix needed.
     sessionStorage.setItem("m_callWaiting", false);
     sessionStorage.setItem("inRoomFlag", false);
     sessionStorage.removeItem("m_inviting");
@@ -144,7 +145,7 @@ onMounted(async () => {
     sessionStorage.removeItem("m_remote_deviceid");
     commonStore.makeUserListStatus();
     // Socket meetingList 받기
-    $signallingSocket.on("meetingList", (response) => {
+    signallingSocket.on("meetingList", (response) => {
         console.log("*** socket.on: meetingList res ");
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -337,7 +338,7 @@ onMounted(async () => {
     });
 
     // 소켓 meetingCalendarList 받기
-    $signallingSocket.on("meetingCalendarList", (response) => {
+    signallingSocket.on("meetingCalendarList", (response) => {
         console.log("*** socket.on:  meetingCalendarList res ");
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -373,7 +374,7 @@ onMounted(async () => {
     });
 
     // 소켓 createMeeting 받기
-    $signallingSocket.on("createMeeting", (response) => {
+    signallingSocket.on("createMeeting", (response) => {
         console.log("*** socket.on: createMeeting res ");
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -413,7 +414,7 @@ onMounted(async () => {
     });
 
     // 소켓 modifyMeeting 받기
-    $signallingSocket.on("modifyMeeting", (response) => {
+    signallingSocket.on("modifyMeeting", (response) => {
         console.log("*** socket.on: modifyMeeting res ");
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -447,7 +448,7 @@ onMounted(async () => {
     });
 
     // 소켓 deleteMeeting 받기
-    $signallingSocket.on("deleteMeeting", (response) => {
+    signallingSocket.on("deleteMeeting", (response) => {
         console.log("*** socket.on: deleteMeeting res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -468,7 +469,7 @@ onMounted(async () => {
     });
 
     // 소켓 createRoomID 받기
-    $signallingSocket.on("createRoomID", (response) => {
+    signallingSocket.on("createRoomID", (response) => {
         console.log("*** socket.on: createRoomID res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -491,7 +492,7 @@ onMounted(async () => {
             if (meetingData && meetingData.entryNotification == 1) {
                 // Check if meetingData exists
                 console.log("*** socket.emit: sendEntryNotification >");
-                $signallingSocket.emit("sendEntryNotification");
+                signallingSocket.emit("sendEntryNotification");
                 meetingStore.setOpenMeetingData(null); // Assuming '' meant null or empty object
             } else {
                 meetingStore.setOpenMeetingData(null); // Assuming '' meant null or empty object
@@ -505,7 +506,7 @@ onMounted(async () => {
     });
 
     // 소켓 openMeeting 받기
-    $signallingSocket.on("openMeeting", (response) => {
+    signallingSocket.on("openMeeting", (response) => {
         console.log("*** socket.on: openMeeting res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -524,7 +525,7 @@ onMounted(async () => {
         callStore.setCallingType("meetingCall");
     });
 
-    $signallingSocket.on("openMeetingChecking", (response) => {
+    signallingSocket.on("openMeetingChecking", (response) => {
         // Accessing `openMeetingCheck` (a ref) directly
         if (meetingStore.openMeetingCheck == false) {
             // Direct access to state in store instance
@@ -578,7 +579,7 @@ onMounted(async () => {
     });
 
     // 소켓 joinMeeting 받기
-    $signallingSocket.on("joinMeeting", (response) => {
+    signallingSocket.on("joinMeeting", (response) => {
         console.log("*** socket.on: joinMeeting res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -603,7 +604,7 @@ onMounted(async () => {
     });
 
     // 소켓 changedMeeting 받기
-    $signallingSocket.on("changedMeeting", (response) => {
+    signallingSocket.on("changedMeeting", (response) => {
         console.log("****** socket *** socket.on: changedMeeting res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -637,7 +638,7 @@ onMounted(async () => {
     });
 
     // openMeetingChecking 함수를 타게 됨으로 해당 함수는 타지 않을 것으로 예상
-    $signallingSocket.on("sendMeetingRoomID", (response) => {
+    signallingSocket.on("sendMeetingRoomID", (response) => {
         console.log("*** socket.on: sendMeetingRoomID res = ", response);
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
@@ -647,7 +648,7 @@ onMounted(async () => {
     });
 
     // 언어 별 헤더 정보 변경 :: ksh 추가
-    $signallingSocket.on("loginUserInfo", function (response) {
+    signallingSocket.on("loginUserInfo", function (response) {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket.on: loginUserInfo response success");
@@ -668,7 +669,7 @@ onMounted(async () => {
     });
 
     // 2021-05-06 ksh :: 회의실에서도 통화 수락 거절 받을 수 있도록 기능 추가
-    $signallingSocket.on("calling", (response) => {
+    signallingSocket.on("calling", (response) => {
         const json = JSON.parse(response);
         console.log("*** socket.on: calling response, json: " + response);
         if (sessionStorage.getItem("m_callWaiting") === "true") {
@@ -680,7 +681,7 @@ onMounted(async () => {
                 nickname: json.nickname,
             };
             const json2 = JSON.stringify(obj);
-            $signallingSocket.emit("refuseCalling", json2);
+            signallingSocket.emit("refuseCalling", json2);
             console.log("*** socket.on: m_callWaiting > refuseCalling request: ", json2);
             return;
         }
@@ -751,7 +752,7 @@ onMounted(async () => {
             }
         }
     });
-    $signallingSocket.on("cancelCalling", (response) => {
+    signallingSocket.on("cancelCalling", (response) => {
         console.log("*** socket.on: cancelCalling response, json: " + response);
 
         callingBell("stop");
@@ -767,7 +768,7 @@ onMounted(async () => {
         }
     });
 
-    $signallingSocket.on("inviteCancelCalling", (response) => {
+    signallingSocket.on("inviteCancelCalling", (response) => {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: inviteCancelcalling response");
@@ -798,7 +799,7 @@ onMounted(async () => {
     });
 
     // directMessage Receive
-    $signallingSocket.on("directMessage", (response) => {
+    signallingSocket.on("directMessage", (response) => {
         console.log("*** socket: directMessage response");
         console.log(response);
 
@@ -834,7 +835,7 @@ onMounted(async () => {
     });
 
     // 읽음처리 socket on event
-    $signallingSocket.on("directMessageReadProcess", (response) => {
+    signallingSocket.on("directMessageReadProcess", (response) => {
         console.log("*** socket: directMessageReadProcess response");
         console.log(response);
 
@@ -856,7 +857,7 @@ onMounted(async () => {
     });
 
     // 이전 메세지 보기 이벤트 받기
-    $signallingSocket.on("getPreviousMessage", (response) => {
+    signallingSocket.on("getPreviousMessage", (response) => {
         console.log("*** socket.on: getPreviousMessage");
         const json = JSON.parse(response);
 
@@ -907,7 +908,7 @@ onMounted(async () => {
         }
     });
 
-    $signallingSocket.on("sendEntryNotification", (response) => {
+    signallingSocket.on("sendEntryNotification", (response) => {
         if (preferenceStore.enviroment.useDirectCall) {
             console.log("socket.on sendEntryNotification::", response);
             const json = JSON.parse(response);
@@ -949,26 +950,26 @@ onBeforeUnmount(() => {
 
     // Remove all specific socket event listeners
     console.log("*** onUnmounted: Socket Event Remove Started !!");
-    $signallingSocket.off("meetingList");
-    $signallingSocket.off("meetingCalendarList");
-    $signallingSocket.off("createMeeting");
-    $signallingSocket.off("modifyMeeting");
-    $signallingSocket.off("deleteMeeting");
-    $signallingSocket.off("openMeetingOnOff");
-    $signallingSocket.off("openMeeting");
-    $signallingSocket.off("joinMeeting");
-    $signallingSocket.off("leaveMeeting");
-    $signallingSocket.off("changedMeeting");
-    $signallingSocket.off("sendMeetingRoomID");
-    $signallingSocket.off("userListAll");
-    $signallingSocket.off("calling");
-    $signallingSocket.off("cancelCalling");
-    $signallingSocket.off("directMessageReadProcess");
-    $signallingSocket.off("directMessage");
-    $signallingSocket.off("getPreviousMessage");
-    $signallingSocket.off("environment");
-    $signallingSocket.off("forceLogoutRequest");
-    $signallingSocket.off("sendEntryNotification");
+    signallingSocket.off("meetingList");
+    signallingSocket.off("meetingCalendarList");
+    signallingSocket.off("createMeeting");
+    signallingSocket.off("modifyMeeting");
+    signallingSocket.off("deleteMeeting");
+    signallingSocket.off("openMeetingOnOff");
+    signallingSocket.off("openMeeting");
+    signallingSocket.off("joinMeeting");
+    signallingSocket.off("leaveMeeting");
+    signallingSocket.off("changedMeeting");
+    signallingSocket.off("sendMeetingRoomID");
+    signallingSocket.off("userListAll");
+    signallingSocket.off("calling");
+    signallingSocket.off("cancelCalling");
+    signallingSocket.off("directMessageReadProcess");
+    signallingSocket.off("directMessage");
+    signallingSocket.off("getPreviousMessage");
+    signallingSocket.off("environment");
+    signallingSocket.off("forceLogoutRequest");
+    signallingSocket.off("sendEntryNotification");
     console.log("*** onUnmounted: All socket event listeners removed.");
 });
 
@@ -987,7 +988,7 @@ const loginUserInfoRequest = () => {
         language: m_lang.value,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("loginUserInfo", json);
+    signallingSocket.emit("loginUserInfo", json);
     console.log("*** socket.emit: loginUserInfo request:" + json);
 };
 
@@ -1030,7 +1031,7 @@ const getMeetingList = (type) => {
         en_seq: loginStore.sessionEnSeq,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("meetingList", json);
+    signallingSocket.emit("meetingList", json);
     console.log("*** socket.emit: meetingList Request: " + json);
 };
 
@@ -1072,7 +1073,7 @@ const meetingCalendarList = () => {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("meetingCalendarList", json);
+    signallingSocket.emit("meetingCalendarList", json);
     console.log("*** socket.emit: meetingCalendarList Request: " + json);
 };
 
@@ -1162,7 +1163,7 @@ const createMeeting = () => {
         };
     }
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("createMeeting", json);
+    signallingSocket.emit("createMeeting", json);
     console.log("*** socket.emit: createMeeting Request: " + json);
 };
 
@@ -1248,7 +1249,7 @@ const modifyMeeting = () => {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("modifyMeeting", json);
+    signallingSocket.emit("modifyMeeting", json);
     console.log("*** socket.emit: modifyMeeting Request: " + json);
 };
 
@@ -1273,7 +1274,7 @@ const deleteMeeting = () => {
     }
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("deleteMeeting", json);
+    signallingSocket.emit("deleteMeeting", json);
     console.log("*** socket.emit: deleteMeeting Request: " + json);
 };
 
@@ -1287,7 +1288,7 @@ const openMeetingOnOff = () => {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("openMeetingOnOff", json);
+    signallingSocket.emit("openMeetingOnOff", json);
     console.log("*** socket.emit: openMeetingOnOff Request: " + json);
 };
 
@@ -1302,7 +1303,7 @@ const createRoomID = () => {
     console.log("getSendDurationEnable:", getSendDurationEnable.value);
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("createRoomID", json);
+    signallingSocket.emit("createRoomID", json);
     console.log("*** socket.emit: createRoomID Request: " + json);
 };
 
@@ -1323,7 +1324,7 @@ const openMeeting = (res) => {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("openMeeting", json);
+    signallingSocket.emit("openMeeting", json);
     console.log("*** socket.emit: openMeeting Request: " + json);
 };
 
@@ -1342,7 +1343,7 @@ const joinMeeting = (res) => {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("joinMeeting", json);
+    signallingSocket.emit("joinMeeting", json);
     console.log("*** socket.emit: joinMeeting Request: " + json);
 };
 
@@ -1368,7 +1369,7 @@ const changedMeeting = () => {
 
     const json = JSON.stringify(obj);
 
-    $signallingSocket.emit("changedMeeting", json);
+    signallingSocket.emit("changedMeeting", json);
     console.log("*** socket.emit: changedMeeting Request: " + json);
 };
 
@@ -1420,7 +1421,7 @@ const callingReject = (roomid, localdeviceid, remotedeviceid, institution, nickn
         nickname,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("refuseCalling", json);
+    signallingSocket.emit("refuseCalling", json);
     console.log("*** socket.emit: refuseCalling request: ", json);
     sessionStorage.setItem("m_callWaiting", "false");
 };
@@ -1436,7 +1437,7 @@ const sendDirectMessageRequest = (sender, receiver, type, message, datetime) => 
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("directMessage", json);
+    signallingSocket.emit("directMessage", json);
     console.log("*** socket: emit directMessage");
     console.log(json);
 };
@@ -1450,7 +1451,7 @@ const readProcess = (sender, receiver, datetime) => {
     };
 
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("directMessageReadProcess", json);
+    signallingSocket.emit("directMessageReadProcess", json);
     console.log("*** socket: emit directMessageReadProcess");
     console.log(json);
 };
@@ -1535,7 +1536,7 @@ watch(getMeetingJoinFlag, (newVal) => {
     if (newVal) {
         const obj = { meeting_seq: meetingSeq.value };
         const json = JSON.stringify(obj);
-        $signallingSocket.emit("openMeetingChecking", json);
+        signallingSocket.emit("openMeetingChecking", json);
         console.log("*** socket.emit: openMeetingChecking emit : " + json);
 
         if (calendar.value) {

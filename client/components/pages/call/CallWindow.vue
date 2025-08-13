@@ -2448,7 +2448,7 @@ padding-right: 1px;
     width: 100%;
     height: 30px;
     color: white;
-    z-index: 1;
+    /* z-index: 1; */
     background: rgba(0, 0, 0, 0.3);
 }
 

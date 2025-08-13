@@ -7,13 +7,13 @@
 <script setup>
 import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
-import { useNuxtApp } from "nuxt/app";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const loginStore = useLoginStore();
 const commonStore = useCommonStore();
 const prefrenceStore = useUserPreferenceStore();
 
-const { $signallingSocket } = useNuxtApp();
+const { signallingSocket } = useSignallingSocket();
 const loginLoadingImage = ref();
 
 import imgLoginKo from "@/assets/images/1_login.png";
@@ -22,6 +22,7 @@ import imgConfirmKo from "@/assets/images/2_confirm.png";
 import imgConfirmEn from "@/assets/images/2_confirm_en.png";
 import imgLogoutKo from "@/assets/images/3_logout.png";
 import imgLogoutEn from "@/assets/images/3_logout_en.png";
+
 
 // definePageMeta({
 //   layout: false
@@ -45,7 +46,7 @@ function LoginAttempt() {
         localDeviceid: loginStore.m_local_deviceid,
     };
     const json = JSON.stringify(obj);
-    $signallingSocket.emit("forceLogoutRequest", json);
+    signallingSocket.emit("forceLogoutRequest", json);
 }
 const forcedLogout = computed(() => loginStore.forcedLogout);
 

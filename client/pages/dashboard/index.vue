@@ -13,6 +13,7 @@
 // import ContactList from '@/components/pages/dashboard/ContactList.vue'
 import ContactList from "@/components/pages/dashboard/ContactList.vue";
 import { userDataGetInfo } from "@/composables/common";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
@@ -65,7 +66,7 @@ const getSendDMFlag = computed(() => directMessageStore.sendDMFlag);
 const getReadProcFlag = computed(() => directMessageStore.readProcFlag);
 const getPreviousMessageFlag = computed(() => directMessageStore.previousMessageFlag);
 
-const { $signallingSocket } = useNuxtApp();
+const { signallingSocket } = useSignallingSocket();
 const { requestCancelCalling } = useSocketEmitEvents();
 const buttonIndex = ref("");
 const isFilter = ref(0);
@@ -231,7 +232,7 @@ onMounted(() => {
     sessionStorage.removeItem("m_remote_deviceid")
     commonStore.makeUserListStatus()
 
-    $signallingSocket.on("createRoomID", function(response) {
+    signallingSocket.on("createRoomID", function(response) {
         if (response) {
             const json = JSON.parse(response);
             console.log('*** create room id response:', json);
@@ -255,7 +256,7 @@ onMounted(() => {
         }
     })
 
-    $signallingSocket.on("calling", (response) => {
+    signallingSocket.on("calling", (response) => {
         const json = JSON.parse(response);;
         console.log("*** socket: calling response", json);
         console.log(json);
@@ -349,7 +350,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("canMakeCall", (response) => {
+    signallingSocket.on("canMakeCall", (response) => {
         if (response) {
             const json = JSON.parse(response);;
             // console.log("*** socket: canMakeCall response, json:", json)
@@ -405,7 +406,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("groupRoom", (response) => {
+    signallingSocket.on("groupRoom", (response) => {
         const json = JSON.parse(response);;
         console.log("*** groupRoom response", json);
 
@@ -458,7 +459,7 @@ onMounted(() => {
         }
     });
 
-    $signallingSocket.on("cancelCalling", function(response) {
+    signallingSocket.on("cancelCalling", function(response) {
         console.log("*** socket: cancelCalling response")
         console.log(response)
 
@@ -479,7 +480,7 @@ onMounted(() => {
         }
     })
 
-    $signallingSocket.on("multiRefuseCalling", function(response) {
+    signallingSocket.on("multiRefuseCalling", function(response) {
         console.log("*** socket: multiRefuseCalling response")
         console.log(response)
         alert("여기13")
@@ -488,7 +489,7 @@ onMounted(() => {
         sessionStorage.setItem("m_callWaiting", "false")
     })
 
-    $signallingSocket.on("inviteCancelCalling", function(response) {
+    signallingSocket.on("inviteCancelCalling", function(response) {
         try {
             const json = JSON.parse(response);
             console.log("*** socket: inviteCancelcalling response")
@@ -526,7 +527,7 @@ onMounted(() => {
         }
     })
 
-    $signallingSocket.on("directMessage", function(response) {
+    signallingSocket.on("directMessage", function(response) {
         console.log("*** socket: directMessage response")
         console.log(response)
 
@@ -566,7 +567,7 @@ onMounted(() => {
     })
 
     // 읽음처리 socket on event
-    $signallingSocket.on("directMessageReadProcess", function(response) {
+    signallingSocket.on("directMessageReadProcess", function(response) {
         console.log("*** socket: directMessageReadProcess response")
         console.log(response)
 
@@ -597,7 +598,7 @@ onMounted(() => {
     })
 
     // 소켓 openMeetingChecking 받기
-    $signallingSocket.on("openMeetingChecking", response => {
+    signallingSocket.on("openMeetingChecking", response => {
         if (meetingStore.openMeetingCheck == false) {
             const json = JSON.parse(response);
 
@@ -625,7 +626,7 @@ onMounted(() => {
         }
     })
 
-    $signallingSocket.on("joinMeeting", response => {
+    signallingSocket.on("joinMeeting", response => {
         console.log("*** socket.on: joinMeeting res = ", response)
         const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json)
@@ -653,7 +654,7 @@ onMounted(() => {
         router.push("/call")
     })
 
-    $signallingSocket.on("getPreviousMessage", response => {
+    signallingSocket.on("getPreviousMessage", response => {
         // console.log("*** socket.on: getPreviousMessage res = ", response)
         console.log("*** socket.on: getPreviousMessage")
         const json = JSON.parse(response);

@@ -242,6 +242,7 @@ import { useModal, VueFinalModal } from "vue-final-modal";
 import { useLoginStore } from "@/stores/login";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { emitter } from "@/utils/eventBus";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const commonStore = useCommonStore();
 const directCallStore = useDirectCallStore();
@@ -253,7 +254,7 @@ const loginStore = useLoginStore();
 const directcallTxt = ref("");
 const directcallSeq = ref("");
 const route = useRoute();
-const { $signallingSocket } = useNuxtApp();
+const { signallingSocket } = useSignallingSocket();
 const { t } = useI18n();
 
 const { hide } = useModal("modal");

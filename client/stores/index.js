@@ -579,5 +579,8 @@ export const useCommonStore = defineStore("common", {
             //     console.error(error); // console.log 대신 console.error
             // }
         },
+        init() {
+            this.$reset();
+        },
     },
 });

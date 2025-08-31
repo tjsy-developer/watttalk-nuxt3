@@ -5,22 +5,22 @@
 				class="alertTitleCon"
 				:class="[noneOverlayAlertStatus == 14 ? 'col-auto' : '']"
 			>
-				<span class="alertTitle">{{ t("알림창") }}</span>
+				<span class="alertTitle">{{ $t("알림창") }}</span>
 			</div>
 
 			<div
 				v-if="noneOverlayAlertStatus == 14 && accessDeviceCheck == 'Mobile'"
 				class="row col items-center justify-end mobileScreenCaptureBox"
 			>
-				<p class="msg mobileScreenCaptureText">{{ t("capture Image Save") }}</p>
+				<p class="msg mobileScreenCaptureText">{{ $t("capture Image Save") }}</p>
 				<div
 					class="row items-center alertControlbuttons mobileScreenCaptureButtons"
 				>
 					<button @click="captureSave(true)" class="hostRequestadelineButton">
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button @click="captureSave(false)" class="hostRequestadelineButton">
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -31,7 +31,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("forceLeave confirm1") }}</p>
+						<p class="msg alertText">{{ $t("forceLeave confirm1") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons">
@@ -39,13 +39,13 @@
 						@click="forceLeaveResult(true)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click="forceLeaveResult(false)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -55,10 +55,10 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12 call">
-						<p class="msg alertText">{{ t("영상통화 세션을 종료합니다") }}</p>
+						<p class="msg alertText">{{ $t("영상통화 세션을 종료합니다") }}</p>
 					</div>
 					<div class="col-12 call">
-						<p class="msg alertText">{{ t("잠시만 기다려주세요") }}</p>
+						<p class="msg alertText">{{ $t("잠시만 기다려주세요") }}</p>
 					</div>
 				</div>
 			</div>
@@ -68,13 +68,13 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("호스트님이 영상통화에서") }}</p>
+						<p class="msg alertText">{{ $t("호스트님이 영상통화에서") }}</p>
 					</div>
 					<div class="col-12">
-						<p class="msg alertText">{{ t("퇴장 처리하였습니다") }}</p>
+						<p class="msg alertText">{{ $t("퇴장 처리하였습니다") }}</p>
 					</div>
 					<div class="col-12">
-						<p class="msg alertText">{{ t("3초 뒤 통화가 종료됩니다") }}</p>
+						<p class="msg alertText">{{ $t("3초 뒤 통화가 종료됩니다") }}</p>
 					</div>
 				</div>
 			</div>
@@ -84,7 +84,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("통화를 종료하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("통화를 종료하시겠습니까?") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
@@ -92,13 +92,13 @@
 						@click="hangupCallingConfirm(true)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click="hangupCallingConfirm(false)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -108,7 +108,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("회의를 종료하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("회의를 종료하시겠습니까?") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
@@ -116,13 +116,13 @@
 						@click="hangupCallingConfirm(true)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click="hangupCallingConfirm(false)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -132,10 +132,10 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("회의가 개설전입니다") }}</p>
+						<p class="msg alertText">{{ $t("회의가 개설전입니다") }}</p>
 					</div>
 					<div class="col-12">
-						<p class="msg alertText">{{ t("잠시만 기다려주세요") }}</p>
+						<p class="msg alertText">{{ $t("잠시만 기다려주세요") }}</p>
 					</div>
 				</div>
 			</div>
@@ -145,7 +145,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("종료된 회의입니다") }}</p>
+						<p class="msg alertText">{{ $t("종료된 회의입니다") }}</p>
 					</div>
 				</div>
 			</div>
@@ -155,7 +155,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("삭제된 회의입니다") }}</p>
+						<p class="msg alertText">{{ $t("삭제된 회의입니다") }}</p>
 					</div>
 				</div>
 			</div>
@@ -165,11 +165,11 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("네트워크 상태가 불안정하여 영상 화질이 저하될 수 있습니다") }}</p>
+						<p class="msg alertText">{{ $t("네트워크 상태가 불안정하여 영상 화질이 저하될 수 있습니다") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 30px">
-					<button @click="noneOverlayModalClose">{{ t("확인") }}</button>
+					<button @click="noneOverlayModalClose">{{ $t("확인") }}</button>
 				</div>
 			</div>
 			<div
@@ -178,7 +178,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("재연결중입니다") }}</p>
+						<p class="msg alertText">{{ $t("재연결중입니다") }}</p>
 					</div>
 				</div>
 			</div>
@@ -188,7 +188,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("드로잉으로 이동하시겠습니까?") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
@@ -196,13 +196,13 @@
 						@click.once="moveDrawingConfirm(true, 'preview')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click.once="moveDrawingConfirm(false, 'preview')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -212,9 +212,9 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("드로잉으로 이동하시겠습니까?") }}</p>
 						<p class="msg alertText">
-							{{ t("드로잉으로 이동 시 화면공유가 중지 됩니다") }}
+							{{ $t("드로잉으로 이동 시 화면공유가 중지 됩니다") }}
 						</p>
 					</div>
 				</div>
@@ -223,13 +223,13 @@
 						@click.once="moveDrawingConfirm(true, 'screenShareToDrawing')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click.once="moveDrawingConfirm(false, 'screenShareToDrawing')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -239,8 +239,8 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("화면공유를 시작하시겠습니까?") }}</p>
-						<p class="msg alertText">{{ t("화면공유 시작 시 드로잉이 중지 됩니다") }}</p>
+						<p class="msg alertText">{{ $t("화면공유를 시작하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("화면공유 시작 시 드로잉이 중지 됩니다") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
@@ -248,13 +248,13 @@
 						@click="moveScreenShare(true)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click="moveScreenShare(false)"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -286,7 +286,7 @@
 						class="row col-12 items-center justify-center pcScreenCaptureText"
 						:style="{}"
 					>
-						<p class="msg alertText">{{ t("capture Image Save") }}</p>
+						<p class="msg alertText">{{ $t("capture Image Save") }}</p>
 					</div>
 					<div
 						v-if="accessDeviceCheck == 'PC'"
@@ -297,13 +297,13 @@
 							@click="captureSave(true)"
 							class="hostRequestadelineButton"
 						>
-							{{ t("예") }}
+							{{ $t("예") }}
 						</button>
 						<button
 							@click="captureSave(false)"
 							class="hostRequestadelineButton"
 						>
-							{{ t("아니오") }}
+							{{ $t("아니오") }}
 						</button>
 					</div>
 				</div>
@@ -314,7 +314,7 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("서버에 업로드 중입니다") }}</p>
+						<p class="msg alertText">{{ $t("서버에 업로드 중입니다") }}</p>
 					</div>
 				</div>
 			</div>
@@ -324,8 +324,8 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("캡쳐하신 사진을 저장하였습니다") }}</p>
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+						<p class="msg alertText">{{ $t("캡쳐하신 사진을 저장하였습니다") }}</p>
+						<p class="msg alertText">{{ $t("드로잉으로 이동하시겠습니까?") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
@@ -333,13 +333,13 @@
 						@click.once="moveDrawingConfirm(true, 'capture')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button
 						@click.once="moveDrawingConfirm(false, 'capture')"
 						class="hostRequestadelineButton"
 					>
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -351,18 +351,18 @@
 					class="row requestStatus alertRequestDeclineMessage HQCaptureText col-12"
 				>
 					<div class="col-12 HQCaptrueText">
-						<p class="msg alertText">{{ t("메인화면 글라스에게 고화질 캡쳐를 요청하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 고화질 캡쳐 사진이 자동으로 수신됩니다") }}</p>
+						<p class="msg alertText">{{ $t("메인화면 글라스에게 고화질 캡쳐를 요청하였습니다") }}</p>
+						<p class="msg alertText">{{ $t("잠시 후 고화질 캡쳐 사진이 자동으로 수신됩니다") }}</p>
 					</div>
 					<div
 						class="row col-12 items-center justify-center HQCaptrueText"
 						style="padding-top: 15px"
 					>
-						<p class="msg alertText">{{ t("이 창은 5초뒤에 자동으로 사라집니다") }}</p>
+						<p class="msg alertText">{{ $t("이 창은 5초뒤에 자동으로 사라집니다") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 15px">
-					<button @click="closeNoneOverlayAlert">{{ t("확인") }}</button>
+					<button @click="closeNoneOverlayAlert">{{ $t("확인") }}</button>
 				</div>
 			</div>
 			<div
@@ -371,12 +371,12 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("고화질 캡쳐에 실패하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 다시 시도해주세요") }}</p>
+						<p class="msg alertText">{{ $t("고화질 캡쳐에 실패하였습니다") }}</p>
+						<p class="msg alertText">{{ $t("잠시 후 다시 시도해주세요") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 30px">
-					<button @click="closeNoneOverlayAlert">{{ t("확인") }}</button>
+					<button @click="closeNoneOverlayAlert">{{ $t("확인") }}</button>
 				</div>
 			</div>
 			<div
@@ -385,8 +385,8 @@
 			>
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
-						<p class="msg alertText">{{ t("자동 통화 종료를 설정하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 통화가 종료 됩니다") }}</p>
+						<p class="msg alertText">{{ $t("자동 통화 종료를 설정하였습니다") }}</p>
+						<p class="msg alertText">{{ $t("잠시 후 통화가 종료 됩니다") }}</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 30px">
@@ -394,13 +394,13 @@
 						v-if="$callStore.autoDiscallingResult"
 						class="msg alertText"
 					>
-						{{ t("잠시 후 통화가 종료 됩니다") }}
+						{{ $t("잠시 후 통화가 종료 됩니다") }}
 					</p>
 					<button
 						v-if="!$callStore.autoDiscallingResult"
 						@click="autoDiscallingCancel"
 					>
-						{{ t("cancel") }}
+						{{ $t("cancel") }}
 					</button>
 				</div>
 			</div>
@@ -411,19 +411,19 @@
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
 						<p class="msg alertText">
-							{{ t("다른 장치에서 로그인 중입니다") }}
+							{{ $t("다른 장치에서 로그인 중입니다") }}
 						</p>
 						<p class="msg alertText">
-							{{ t("강제 로그아웃하시겠습니까?") }}
+							{{ $t("강제 로그아웃하시겠습니까?") }}
 						</p>
 					</div>
 				</div>
 				<div class="alertControlbuttons" style="margin-top: 20px">
 					<button @click="forceLogout(true)" class="hostRequestadelineButton">
-						{{ t("예") }}
+						{{ $t("예") }}
 					</button>
 					<button @click="forceLogout(false)" class="hostRequestadelineButton">
-						{{ t("아니오") }}
+						{{ $t("아니오") }}
 					</button>
 				</div>
 			</div>
@@ -434,10 +434,10 @@
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
 						<p class="msg alertText">
-							{{ t("다른 기기에서 로그인 요청으로") }}
+							{{ $t("다른 기기에서 로그인 요청으로") }}
 						</p>
 						<p class="msg alertText">
-							{{ t("자동으로 로그아웃됩니다") }}
+							{{ $t("자동으로 로그아웃됩니다") }}
 						</p>
 					</div>
 				</div>
@@ -449,11 +449,11 @@
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
 						<p class="msg alertText">
-							{{ t("요청한 기기가 영상통화중이므로") }}
+							{{ $t("요청한 기기가 영상통화중이므로") }}
 						</p>
 						<p class="msg alertText">
-							{{ t("로그인할 수 없습니다") }}<br />{{
-								t("잠시 후 다시 시도하십시오")
+							{{ $t("로그인할 수 없습니다") }}<br />{{
+								$t("잠시 후 다시 시도하십시오")
 							}}
 						</p>
 					</div>
@@ -466,10 +466,10 @@
 				<div class="row requestStatus alertRequestDeclineMessage col-12">
 					<div class="col-12">
 						<p class="msg alertText">
-							{{ t("강제 로그아웃 중입니다") }}
+							{{ $t("강제 로그아웃 중입니다") }}
 						</p>
 						<p class="msg alertText">
-							{{ t("잠시 기다려주십시오") }}
+							{{ $t("잠시 기다려주십시오") }}
 						</p>
 					</div>
 				</div>
@@ -481,10 +481,9 @@
 <script setup>
 import { useCommonStore } from "@/stores";
 import { useDrawingCanvasStore } from "@/stores/drawing";
+import { useNuxtApp } from "nuxt/app";
 import { computed, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
+const { $t } = useNuxtApp()
 
 const commonStore = useCommonStore();
 const loginStore = useLoginStore();
@@ -558,6 +557,7 @@ const hangupCallingConfirm = (result) => {
 		} else {
 			commonStore.janus.destroy()
 		}
+		commonStore.setNoneOverlayAlertStatus(2);
 		meetingStore.setMeetingLeaveFlag(true)
 		modalStore.closeModal("noneOverlayModal");
 	} else {

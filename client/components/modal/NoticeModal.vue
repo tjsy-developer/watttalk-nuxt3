@@ -4,11 +4,10 @@ import { getFormattedDate } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { onMounted, ref } from "vue";
 import { useVfm } from "vue-final-modal";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 import VueDragResize from "vue3-drag-resize";
 
 const vfm = useVfm();
-const { t } = useI18n();
 const { $axios } = useNuxtApp();
 
 const loginStore = useLoginStore();
@@ -71,7 +70,7 @@ watch(
         >
             <div class="modal-body">
                 <div>
-                    <span>{{ t("공지사항") }}</span>
+                    <span>{{ $t("공지사항") }}</span>
                     <img
 						class="close-icon"
                         src="@/assets/images/ic_close.png"

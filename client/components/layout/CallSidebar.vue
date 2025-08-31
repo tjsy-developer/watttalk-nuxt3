@@ -1,5 +1,4 @@
 <script setup>
-const { t } = useI18n();
 import { commonToastMessage } from "@/composables/common";
 import { useImageAssets } from "@/composables/useImageAssets";
 import { useCommonStore } from "@/stores";
@@ -8,7 +7,7 @@ import { useChattingStore } from "@/stores/chatting";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { useModalStore } from "@/stores/modal";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
@@ -66,7 +65,7 @@ function handleChangeVideoOnOff() {
 function handleChangeMicOnOff() {
     if (!isHost.value && getAllMicMuteFlag.value && isSoundMute.value) {
         // 토스트 메세지 출력
-        commonToastMessage(t("toastMessage MicPermissions"));
+        commonToastMessage($t("toastMessage MicPermissions"));
         return;
     }
     commonStore.setIsSounded();
@@ -212,7 +211,7 @@ function handleClickFileSend() {
             v-if="isHost && !isDrawing && !isShare && isHQCapture"
             @click="handleClickHDVideoCapture"
             class="icon-btn func-img"
-            :title="`${t('고화질 캡처')}`"
+            :title="`${$t('고화질 캡처')}`"
         >
             <img src="@/assets/images/leftSideBar/ic_capture_hd.png" />
         </div>
@@ -220,26 +219,26 @@ function handleClickFileSend() {
             v-if="isHost && !isDrawing && !isShare && !isHQCapture"
             @click="handleClickVideoCapture"
             class="icon-btn func-img"
-            :title="`${t('화면 캡처')}`"
+            :title="`${$t('화면 캡처')}`"
         >
             <img src="@/assets/images/leftSideBar/ic_capture.png" />
         </div>
         <div 
             v-if="isHost"
             @click="handleClickDrawingOnOff"
-            class="icon-btn func-img" :title="`${t('드로잉')}`">
+            class="icon-btn func-img" :title="`${$t('드로잉')}`">
             <img src="@/assets/images/leftSideBar/ic_drawing.png" />
         </div>
         <div
             @click="handleClickFileSend" 
-            class="icon-btn func-img" :title="`${t('파일 전송')}`">
+            class="icon-btn func-img" :title="`${$t('파일 전송')}`">
             <img src="@/assets/images/leftSideBar/ic_file.png" />
         </div>
         <div
             v-if="isHost"
             @click="handleChangeShareOnOff"
             class="icon-btn func-img"
-            :title="`${t('화면공유')}`"
+            :title="`${$t('화면공유')}`"
         >
             <img v-if="!isShare" src="@/assets/images/leftSideBar/ic_share-1.png" />
             <img v-else src="@/assets/images/leftSideBar/ic_share_1.png" />
@@ -247,7 +246,7 @@ function handleClickFileSend() {
         <div
             @click="handleChangeMicOnOff"
             class="icon-btn func-img"
-            :title="`${isSoundMute ? t('내 마이크 활성화') : t('내 마이크 비활성화')}`"
+            :title="`${isSoundMute ? $t('내 마이크 활성화') : $t('내 마이크 비활성화')}`"
         >
             <img v-if="!isSoundMute" src="@/assets/images/leftSideBar/ic_mic-large.png" />
             <img v-else src="@/assets/images/leftSideBar/ic_mute-large.png" />
@@ -255,7 +254,7 @@ function handleClickFileSend() {
         <div
             @click="handleChangeVideoOnOff"
             class="icon-btn func-img"
-            :title="`${isVideoOff ? t('내 화면 활성화') : t('내 화면 비활성화')}`"
+            :title="`${isVideoOff ? $t('내 화면 활성화') : $t('내 화면 비활성화')}`"
         >
             <img v-if="!isVideoOff" src="@/assets/images/leftSideBar/ic_video.png" />
             <img v-else src="@/assets/images/leftSideBar/ic_video-2.png" />
@@ -263,7 +262,7 @@ function handleClickFileSend() {
         <div
             @click="handleClickHangUp"
             class="icon-btn func-img"
-            :title="`${t('통화종료')}`"
+            :title="`${$t('통화종료')}`"
         >
             <img src="@/assets/images/leftSideBar/ic_hang-up.png" />
         </div>

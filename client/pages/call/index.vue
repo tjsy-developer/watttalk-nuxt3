@@ -41,7 +41,7 @@
                 </p>
             </div>
         </div> -->
-        <canvas id="captureCanvas" style="display: none;"></canvas>
+        <canvas id="captureCanvas" style="display: none"></canvas>
     </div>
 </template>
 
@@ -82,7 +82,7 @@ import {
     getWorldTime,
     handleFileDownload,
 } from "@/utils/common";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import CallLayout from "@/components/pages/call/CallLayout.vue";
@@ -92,7 +92,7 @@ import { useModal } from "vue-final-modal";
 import LoadingModal from "@/components/modal/LoadingModal.vue";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 const { signallingSocket, transferSocket } = useSignallingSocket();
-const { t } = useI18n();
+
 const {
     requestMultiCalling,
     requestMultiRefuseCalling,
@@ -213,7 +213,7 @@ onMounted(() => {
     nextTick(() => {
         const { $Janus } = useNuxtApp();
         Janus = $Janus;
-        createLoadingMask("prepairVideoCall")
+        createLoadingMask("prepairVideoCall");
         sayHello();
     });
 
@@ -564,7 +564,9 @@ onMounted(() => {
             const videoOnOffIndex = findFeedsIndexRfid(json.rfid);
 
             // 사용자 언어에 따라 닉네임 변경
-            const customNickname = customUserNickname(feeds.value[videoOnOffIndex].rfdeviceid);
+            const customNickname = customUserNickname(
+                feeds.value[videoOnOffIndex].rfdeviceid,
+            );
             console.log(
                 "*** mounted: videoOnOff socket on event > customNickname: ",
                 customNickname,
@@ -583,7 +585,7 @@ onMounted(() => {
                 // VideoMain Index와 해당 Index가 동일 할 경우 Main 이미지 변경
                 if (callStore.videoMainIndex == videoOnOffIndex) {
                     // mainVideoChangeFunc(0, feeds[videoOnOffIndex].rfdisplay)
-                    console.log('여기')
+                    console.log("여기");
                     mainVideoChangeFunc(0, customNickname);
                 }
             } else {
@@ -800,7 +802,7 @@ onMounted(() => {
                 // )
                 $("#myvideo").show();
 
-               commonStore.fileSend();
+                commonStore.fileSend();
                 // 파일 송수신 flag 초기화
                 //commonStore.fileSendStatus", 0)
                 //commonStore.setFileModalFlag", false) // 파일 송수신 팝업 flag 초기화
@@ -817,7 +819,7 @@ onMounted(() => {
                 userNickname == commonStore.fileReceiver
             ) {
                 // 거절 팝업창으로 변경
-               commonStore.setFileSendStatus(4);
+                commonStore.setFileSendStatus(4);
 
                 console.log(sendFileReader.value, rateStopper.value);
                 // 송신할 파일 Reader 중단
@@ -1109,7 +1111,10 @@ onMounted(() => {
         try {
             const json = JSON.parse(response);
             console.log("Type of json.deviceid:", json.deviceid); // string이 나와야 합니다.
-            console.log("Type of loginStore.m_local_deviceid:", loginStore.m_local_deviceid); // string이 나와야 합니다.
+            console.log(
+                "Type of loginStore.m_local_deviceid:",
+                loginStore.m_local_deviceid,
+            ); // string이 나와야 합니다.
 
             // 2. 길이 확인
             if (json.deviceid == loginStore.m_local_deviceid) {
@@ -1133,12 +1138,12 @@ onMounted(() => {
 
                         if (showHostMainIndex == 0) {
                             showHostMainRfid = myid.value;
-                            console.log('내가 호스트')
+                            console.log("내가 호스트");
                             chattingStore.setVideoCallHost(true);
                         } else {
                             showHostMainRfid = feeds.value[showHostMainIndex].rfid;
-                            console.log('나 호스트아님')
-                            console.log('아니여기 안탔어?')
+                            console.log("나 호스트아님");
+                            console.log("아니여기 안탔어?");
                             chattingStore.setVideoCallHost(false);
                         }
 
@@ -1755,7 +1760,9 @@ onMounted(() => {
             (json.mainRfid != myid.value &&
                 json.mainRfid == "createRoom" &&
                 json.useScreenShare) ||
-            (json.mainRfid != myid.value && json.mainRfid == "createRoom" && json.useDrawing)
+            (json.mainRfid != myid.value &&
+                json.mainRfid == "createRoom" &&
+                json.useDrawing)
         ) {
             // 1:1 통화이지만, 호스트가 화면 공유 또는 드로잉일 경우 자신을 신규 사용자 AudioDuration을 등록한다.
             /* 신규 사용자 Audio Duration 생성 */
@@ -1788,7 +1795,7 @@ onMounted(() => {
             if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
-                   commonStore.setIsSounded();
+                    commonStore.setIsSounded();
                     // 마이크 음소거
                     toggleMute();
 
@@ -1830,7 +1837,7 @@ onMounted(() => {
             if (json.rfid == myid.value) {
                 if (json.status !== null || json.status !== undefined) {
                     // leftBar 음소거 버튼 변경
-                   commonStore.setIsSounded();
+                    commonStore.setIsSounded();
                     // 마이크 음소거
                     toggleMute();
 
@@ -1998,7 +2005,7 @@ onMounted(() => {
             // }
 
             // fileReceiver 저장
-           commonStore.setFileReceiver(json.deviceid);
+            commonStore.setFileReceiver(json.deviceid);
 
             /* 파일 송수신과 고화질 캡쳐 구분 */
             // 고화질 캡쳐일 경우는 바로 수락 처리 한다.
@@ -2033,7 +2040,7 @@ onMounted(() => {
                 const status = commonStore.userListStatus[rfidIndex].status;
 
                 // callingWindow에 파일 보내는 사람 이름 저장
-               commonStore.setFileSendNickname(fileSendNickname);
+                commonStore.setFileSendNickname(fileSendNickname);
 
                 // 하단 정렬일 경우에만
                 // callingLayout 4 하단 레이아웃 파일 송수신으로 버튼 변경
@@ -2067,7 +2074,7 @@ onMounted(() => {
 								beforeStatus: 수신완료 or 거절 할 경우 송신자측 이전 화면 상태값 저장
 							}
 					*/
-               commonStore.setFileReceiveInfo({
+                commonStore.setFileReceiveInfo({
                     index: rfidIndex,
                     fileReceiveInfo: {
                         fileChatIndex: chattingFileSendIndex.value,
@@ -2130,7 +2137,7 @@ onMounted(() => {
             // 파일 송신측이 수신측으로부터 파일 수신 거절을 받았을 때
             if (json.status === 0) {
                 // 거절 팝업창으로 변경
-               commonStore.setFileSendStatus(4);
+                commonStore.setFileSendStatus(4);
 
                 // 사진 전송 중 메세지 -> 사진 수신 거절 메세지로 변경 ksy
                 const fileChatIndex =
@@ -2142,7 +2149,7 @@ onMounted(() => {
                 const file = commonStore.sendFileData[0];
 
                 // 파일 송신중 모달창으로 변경
-               commonStore.setFileSendStatus(3);
+                commonStore.setFileSendStatus(3);
 
                 console.log(
                     `*** socket: fileReceiver - file is ${[
@@ -2215,7 +2222,7 @@ onMounted(() => {
         const senderNickname = userListGetNickname(json.sender);
         const receiverNickname = sessionStorage.getItem("m_nickname");
 
-       directMessageStore.receiveDM({
+        directMessageStore.receiveDM({
             message: json.message,
             type: 1,
             sender: json.sender,
@@ -2235,7 +2242,7 @@ onMounted(() => {
         const reciverNickname = userListGetNickname(json.sender);
 
         // 모달 생성 vuex
-       directMessageStore.addChattingModal({
+        directMessageStore.addChattingModal({
             deviceid: json.sender,
             nickname: reciverNickname,
         });
@@ -2264,7 +2271,7 @@ onMounted(() => {
                 directMessageList.datetime <= json.datetime
             ) {
                 // 읽음 처리
-               directMessageStore.setReadMessage({
+                directMessageStore.setReadMessage({
                     index: i,
                 });
             }
@@ -2356,7 +2363,7 @@ onMounted(() => {
         setTimeout(() => {
             // ksy:: 렌더링 해줄 canvas 정보를 셋팅한다(type == img, canvas)
             if (drawingStore.files[json.selectedFileIndex].type !== "pdf") {
-                console.log('여기7')
+                console.log("여기7");
                 drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].history,
                 );
@@ -2367,8 +2374,8 @@ onMounted(() => {
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
                 );
-                console.log('여기8')
-               drawingStore.setCanvasHistory(
+                console.log("여기8");
+                drawingStore.setCanvasHistory(
                     drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
                         .history,
                 );
@@ -2765,7 +2772,7 @@ onMounted(() => {
                 drawingStore.setDrawingVideo(true);
 
                 // 호스트가 드로잉을 비활성화 했음을 store 에 저장한다
-               commonStore.setIsDrawingEnable({
+                commonStore.setIsDrawingEnable({
                     result: false,
                 });
                 console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
@@ -2889,7 +2896,7 @@ onMounted(() => {
         // 이전 메세지 없음
         if (json.message.length == 0) {
             // console.log("데이터 없다")
-           directMessageStore.previousMessageNone(false);
+            directMessageStore.previousMessageNone(false);
         }
         // if {
         // 메시지 10개를 가져오는데 0개 이상일때 채팅이력을 차례대로 넣어준다
@@ -2899,7 +2906,7 @@ onMounted(() => {
                     // 발신
                     const userNickname = userListGetNickname(json.message[i].receiver);
 
-                   directMessageStore.previousSendDM({
+                    directMessageStore.previousSendDM({
                         message: json.message[i].message,
                         sender: loginStore.m_local_deviceid,
                         receiver: json.message[i].receiver,
@@ -2915,7 +2922,7 @@ onMounted(() => {
                     // 수신
                     const userNickname = userListGetNickname(json.message[i].sender);
 
-                   directMessageStore.previousReceiveDM({
+                    directMessageStore.previousReceiveDM({
                         message: json.message[i].message,
                         sender: json.message[i].sender,
                         receiver: json.message[i].receiver,
@@ -2933,10 +2940,10 @@ onMounted(() => {
                 // 가져온 메시지 만큼 돌고나서 메시지 개수가 10개 이하이면 더이상 가져올 메시지가 없다는 것으로 판단
                 // 이후 (이전 데이터보기) 버튼을 없앤다
                 if (json.message.length - 1 == i && json.message.length < 10) {
-                   directMessageStore.previousMessageNone(false);
+                    directMessageStore.previousMessageNone(false);
                 } else {
                     // 채팅이 10개 이상이거나 다른 채팅모달로 넘어갔을때를 대비하여 다시 true로 변경
-                   directMessageStore.previousMessageNone(true);
+                    directMessageStore.previousMessageNone(true);
                 }
             }
         }
@@ -4197,6 +4204,7 @@ function fileSend(result) {
     }
     // 수락했을 때
     else if (result == 3) {
+        alert(receiveFileResFlag.value.selectedUserName);
         // 송신자가 보낸 파일을 수락 클릭했을 경우 송신자이름으로 index 조회- ksy
         const rfidIndex = findFeedsIndexNickname(
             receiveFileResFlag.value.selectedUserName,
@@ -5415,7 +5423,7 @@ function newRemoteFeed(id, display, audio, video) {
                 // janus destroy 시 이전 사용자들은 남겨야 하기 때문에 다시 한번 remoteStream을 호출한다.
                 video.addEventListener("click", function () {
                     // video_change(
-                    console.log("상대방 Viedo 클릭")
+                    console.log("상대방 Viedo 클릭");
 
                     // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
                     if (commonStore.isDrawing) {
@@ -6272,7 +6280,7 @@ function mainVideoChangeFunc(type, req) {
         $("#videoMainDivWrap").css("width", width);
 
         $("#videoMainDiv").hide();
-        console.log('videoOFF')
+        console.log("videoOFF");
         commonStore.setMainVideoStatus({
             type: "videoOFF",
             text: name,
@@ -6318,7 +6326,7 @@ function mainVideoChangeFunc(type, req) {
         });
     } else if (type == 5) {
         if (videoOffResult.value == true) {
-            console.log('videoOFF')
+            console.log("videoOFF");
             commonStore.setMainVideoStatus({
                 type: "videoOFF",
                 text: name,
@@ -7127,7 +7135,7 @@ function setHostIcon(index, hostIcon) {
 // deviceid로 feeds의 index 구하기
 function findFeedsIndexDeviceid(deviceid) {
     let FindFeedsIndex = "";
-    console.log("findFeedsIndexDeviceid", feeds.value)
+    console.log("findFeedsIndexDeviceid", feeds.value);
     for (let i = 1; i < feeds.value.length; i++) {
         if (feeds.value[i] != null && feeds.value[i].rfdeviceid == deviceid) {
             FindFeedsIndex = feeds.value[i].rfindex;
@@ -7174,7 +7182,7 @@ function findFeedsNicknameByDeviceid(deviceid) {
 function hostChangeRequest(roomid, localdeviceid) {
     const obj = {
         roomid,
-        localdeviceid
+        localdeviceid,
     };
 
     const json = JSON.stringify(obj);
@@ -7242,7 +7250,6 @@ function noneOverlayModal(seq) {
 function alertModal(seq) {
     escapeFullScreen();
     commonStore.setAlertStatus(seq);
-
 }
 // 파일 수신 미리보기 모달창 추가
 function previewModal(url) {
@@ -7255,7 +7262,7 @@ function previewModal(url) {
     });
     // // 파일 수신 자동일 경우
     if (autoPictureAccept.value) {
-        autoPictureModal.value = true
+        autoPictureModal.value = true;
     }
 
     const { open, close } = useModal({
@@ -7265,8 +7272,8 @@ function previewModal(url) {
             previewImage: url,
             onClose: () => close(),
         },
-    })
-    open()
+    });
+    open();
 }
 
 function previewModalHide(result) {
@@ -7417,7 +7424,7 @@ function setZoomLevel(level) {
 }
 // 호스트가 바라보는 화면으로 모두 전환 요청
 function hostSelectedMainVideo(rfid) {
-    console.log(rfid, myid.value)
+    console.log(rfid, myid.value);
     // rfid로 인덱스 찾기
     let mainVideoIndex = "";
     let mainVideoDeviceid = "";
@@ -7513,7 +7520,7 @@ function micStatusChange(status, hostDeviceid) {
         // console.log("# mic off !")
         // 현재 마이크 상태 변경 : ON -> OFF
         if (!currentMicStatus) {
-            commonStore.setIsSounded()
+            commonStore.setIsSounded();
 
             // 마이크 음소거
             toggleMute();
@@ -7566,7 +7573,7 @@ function micStatusChange(status, hostDeviceid) {
         // console.log("# mic on !")
         if (currentMicStatus) {
             // 현재 마이크 상태 변경 : OFF -> ON
-            commonStore.setIsSounded()
+            commonStore.setIsSounded();
             // 마이크 음소거 해제
             toggleMute();
         }
@@ -7639,7 +7646,7 @@ function hostViewMainVideo(feedsIndex) {
         // 메인화면에 선택된 사람의 상태로 mainVideo 상태를 변경한다.
         // console.log("@@@@@ 여기는 내가 메인이다.")
         if (!commonStore.isVideo) {
-            console.log('여기')
+            console.log("여기");
             mainVideoChangeFunc(0, "localstream");
         } else if (
             !(
@@ -7678,7 +7685,7 @@ function hostViewMainVideo(feedsIndex) {
         // console.log(commonStore.userListStatus[feedsIndex].status)
         // 메인화면에 선택된 사람의 상태로 mainVideo 상태를 변경한다.
         if (commonStore.userListStatus[feedsIndex].status == "unpublished") {
-            console.log('여기')
+            console.log("여기");
             mainVideoChangeFunc(0, selectedMainName);
         } else if (commonStore.userListStatus[feedsIndex].status == "attach") {
             mainVideoChangeFunc(1, selectedMainName);
@@ -7691,7 +7698,6 @@ function hostViewMainVideo(feedsIndex) {
         "*** methods: hostViewMainVideo - selectedMainName : " + selectedMainName,
     );
     // console.log("# selectedRemoteVideo : " + feedsIndex)
-
 
     // console.log("###############")
     // console.log(feedsIndex)
@@ -7909,45 +7915,36 @@ function sendFileServerUploadFileToBlob(sendImage) {
     const bb = new Blob([ab], { type: mimeString });
     return bb;
 }
+
 // 파일 송수신 용 서버 업로드
-async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
-  const dateName = createDateName();
-  const fileExtension = fname.split('.').pop();
-  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
+async function sendFileServerUpload(type, file, fileJoinMembers) {
+  const loginStore = useLoginStore();
+  const commonStore = useCommonStore();
+  const callStore = useCallStore();
 
-  // 전송률 업데이트 관련 변수
+  const dateName = new Date().toISOString().replace(/[:.]/g, "");
+  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${file.name.split(".").pop()}`;
+
+  // 브라우저에서는 ss import 없이 chunk 전송
+  const reader = file.stream().getReader();
   let sizeSent = 0;
-  let rate = 0;
 
-  const chunkSize = 64 * 1024; // 64KB 청크
-  const totalChunks = Math.ceil(file.size / chunkSize);
-  let chunkIndex = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
 
-  const reader = new FileReader();
-
-  // 청크 읽어서 전송 함수
-  function readAndSendChunk() {
-    const start = chunkIndex * chunkSize;
-    const end = Math.min(start + chunkSize, file.size);
-    const blob = file.slice(start, end);
-    reader.readAsArrayBuffer(blob);
-  }
-
-  reader.onload = (e) => {
-    const buffer = e.target.result;
-    // Uint8Array 형태로 변환해서 보냄 (기존 이벤트명 그대로 사용)
+    // 서버에 기존 이벤트 구조 그대로 emit
     transferSocket.emit("sendFileServerUpload", {
-      chunkIndex,
-      data: new Uint8Array(buffer),
       fname: sendFileName,
-      totalChunks,
       type,
+      chunk: value,
+      totalSize: file.size
     });
 
-    sizeSent += buffer.byteLength;
-    rate = Math.floor((sizeSent / file.size) * 100);
+    // 전송률 계산
+    sizeSent += value.length;
+    const rate = Math.floor((sizeSent / file.size) * 100);
 
-    // 기존 전송률 이벤트 그대로 사용
     const rateObj = {
       localdeviceid: loginStore.m_local_deviceid,
       remotedeviceid: commonStore.fileReceiver,
@@ -7955,50 +7952,27 @@ async function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
     };
     signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
     callStore.setTransmissionRate(rate);
+  }
 
-    chunkIndex++;
-
-    if (chunkIndex < totalChunks) {
-      readAndSendChunk();
-    } else {
-      // 전송 완료 처리
-
-      // 기존 DB 저장 요청 이벤트 그대로 사용
-      const infoObj = {
-        en_seq: loginStore.sessionEnSeq,
-        hq_seq: loginStore.sessionHqSeq,
-        br_seq: loginStore.sessionBrSeq,
-        joined_members: fileJoinMembers,
-        file_path: str_stream_picture_file_path.value,
-        file_name: sendFileName,
-        file_type: type,
-        getWorldTime: getWorldTime(),
-        localdeviceid: loginStore.m_local_deviceid,
-        remotedeviceid: commonStore.fileReceiver,
-        roomid: sessionStorage.getItem("m_roomid"),
-      };
-      signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
-      console.log("*** socket: sendFileServerUploadInfo request:", infoObj);
-
-      commonStore.setFileSendStatus(6);
-      const nickname = userListGetNickname(commonStore.fileReceiver);
-      addChatFileSendMessage(nickname, 5, "");
-      fileSendReset();
-
-      // 전송률 100% 전송
-      const rateObj = {
-        localdeviceid: loginStore.m_local_deviceid,
-        remotedeviceid: commonStore.fileReceiver,
-        rate: 100,
-      };
-      signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
-      callStore.setTransmissionRate(100);
-    }
+  // 업로드 완료 이벤트
+  const infoObj = {
+    en_seq: loginStore.sessionEnSeq,
+    hq_seq: loginStore.sessionHqSeq,
+    br_seq: loginStore.sessionBrSeq,
+    joined_members: fileJoinMembers,
+    file_path: "/uploads/",
+    file_name: sendFileName,
+    file_type: type,
+    getWorldTime: new Date().toISOString(),
+    localdeviceid: loginStore.m_local_deviceid,
+    remotedeviceid: commonStore.fileReceiver,
+    roomid: sessionStorage.getItem("m_roomid"),
   };
-
-  // 첫 청크 전송 시작
-  readAndSendChunk();
+  signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
+  commonStore.setFileSendStatus(6);
 }
+
+
 
 // <- kyj
 // socket sendMessage
@@ -8055,9 +8029,8 @@ function inviteNonMember(nonMemberEmail) {
         obj = {
             meeting_seq: meetingSeq,
             email: nonMemberEmail,
-            domain:
-                "http://localhost:3000/watttalk",
-                // 'http://localhost:3000' + "/watttalk",
+            domain: "http://localhost:3000/watttalk",
+            // 'http://localhost:3000' + "/watttalk",
             PMDomain: "https://hdcardev.watttalk.kr", // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
@@ -8179,14 +8152,18 @@ function janusAndCallingDestroy() {
             window.location.href = "https://wattsolution.co.kr/";
         } else if (callingType.value == "meetingCall") {
             commonStore.changeViewType(1);
-            router.push("/meeting")
+            router.push("/meeting");
         } else {
             commonStore.changeViewType(0);
-            router.push("/dashboard")
+            router.push("/dashboard");
         }
 
         setTimeout(function () {
-            window.location.reload();
+            // window.location.reload();
+            callStore.init();
+            drawingStore.init();
+            meetingStore.init();
+            chattingStore.init();
         }, 500);
     }, 3000);
 }
@@ -8471,7 +8448,9 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
                                 const changeURL = JSON.parse(
                                     myThumbnailList[i].pdf[k].history.state[l],
                                 );
-                                if (changeURL.objects[0].src != pdfUrlSaveArrays.value[j]) {
+                                if (
+                                    changeURL.objects[0].src != pdfUrlSaveArrays.value[j]
+                                ) {
                                     changeURL.objects[0].src =
                                         pdfUrlSaveArrays.value[j].pages[k].url;
                                     changeURL.objects[0].crossOrigin = "anonymous";
@@ -8559,235 +8538,241 @@ function getMeetingInfo(meetingSeq) {
     console.log(json);
 }
 function base64ToBlob(base64) {
-  const [prefix, base64Data] = base64.split(',');
-  const mime = prefix.match(/:(.*?);/)[1];
-  const byteString = atob(base64Data);
-  const arrayBuffer = new ArrayBuffer(byteString.length);
-  const uint8Array = new Uint8Array(arrayBuffer);
+    const [prefix, base64Data] = base64.split(",");
+    const mime = prefix.match(/:(.*?);/)[1];
+    const byteString = atob(base64Data);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
 
-  for (let i = 0; i < byteString.length; i++) {
-    uint8Array[i] = byteString.charCodeAt(i);
-  }
+    for (let i = 0; i < byteString.length; i++) {
+        uint8Array[i] = byteString.charCodeAt(i);
+    }
 
-  return new Blob([arrayBuffer], { type: mime });
+    return new Blob([arrayBuffer], { type: mime });
 }
 
 function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
-  const dateName = createDateName();
-  const fileExtension = fname.split('.').pop();
-  const fileType = "picture";
+    const dateName = createDateName();
+    const fileExtension = fname.split(".").pop();
+    const fileType = "picture";
 
-  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
+    const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
 
-  // base64 string을 Blob으로 변환
-  const blob = base64ToBlob(sendImageSrc);
+    // base64 string을 Blob으로 변환
+    const blob = base64ToBlob(sendImageSrc);
 
-  const chunkSize = 64 * 1024; // 64KB
-  const totalChunks = Math.ceil(blob.size / chunkSize);
-  let chunkIndex = 0;
-  let sizeSent = 0;
+    const chunkSize = 64 * 1024; // 64KB
+    const totalChunks = Math.ceil(blob.size / chunkSize);
+    let chunkIndex = 0;
+    let sizeSent = 0;
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  function readAndSendChunk() {
-    const start = chunkIndex * chunkSize;
-    const end = Math.min(start + chunkSize, blob.size);
-    const chunkBlob = blob.slice(start, end);
-    reader.readAsArrayBuffer(chunkBlob);
-  }
-
-  reader.onload = (e) => {
-    const buffer = e.target.result;
-    sizeSent += buffer.byteLength;
-
-    // 기존 이벤트명 유지, 청크별 바이너리 데이터 전송
-    transferSocket.emit("sendFileServerUpload", {
-      chunkIndex,
-      totalChunks,
-      data: new Uint8Array(buffer),
-      fname: sendFileName,
-      type: fileType,
-    });
-
-    chunkIndex++;
-
-    if (chunkIndex < totalChunks) {
-      readAndSendChunk();
-    } else {
-      // 모든 청크 전송 완료 후 DB 저장 요청 등 처리
-      let obj2;
-
-      if (type === "drawingImage") {
-        obj2 = {
-          en_seq: loginStore.sessionEnSeq,
-          hq_seq: loginStore.sessionHqSeq,
-          br_seq: loginStore.sessionBrSeq,
-          joined_members: sessionStorage.getItem("m_nickname"),
-          file_path: str_stream_picture_file_path.value,
-          file_name: sendFileName,
-          file_type: fileType,
-          getWorldTime: getWorldTime(),
-          localdeviceid: loginStore.m_local_deviceid,
-          remotedeviceid: null,
-          roomid: sessionStorage.getItem("m_roomid"),
-        };
-
-        // 초기화
-        callStore.setDrawingGetFileSrc("");
-        callStore.setDrawingGetFileObject(null);
-        callStore.setDrawingGetFileChangeFlag(false);
-      } else if (type === "captureImage") {
-        const videoMainIndex = callStore.videoMainIndex;
-
-        let joinMembers = "";
-        let localdeviceid = "";
-
-        if (feeds.value[videoMainIndex] != null && videoMainIndex !== 0) {
-          joinMembers = sessionStorage.getItem("m_nickname") + ", " + feeds.value[videoMainIndex].rfdisplay;
-          localdeviceid = feeds.value[videoMainIndex].rfdeviceid;
-        } else {
-          joinMembers = sessionStorage.getItem("m_nickname");
-          localdeviceid = loginStore.m_local_deviceid;
-        }
-
-        obj2 = {
-          en_seq: loginStore.sessionEnSeq,
-          hq_seq: loginStore.sessionHqSeq,
-          br_seq: loginStore.sessionBrSeq,
-          joined_members: joinMembers,
-          file_path: str_stream_picture_file_path.value,
-          file_name: sendFileName,
-          file_type: fileType,
-          getWorldTime: getWorldTime(),
-          localdeviceid,
-          remotedeviceid: loginStore.m_local_deviceid,
-          roomid: sessionStorage.getItem("m_roomid"),
-        };
-      }
-
-      signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
-      console.log("*** socket: sendFileServerUploadInfo request:", obj2);
+    function readAndSendChunk() {
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, blob.size);
+        const chunkBlob = blob.slice(start, end);
+        reader.readAsArrayBuffer(chunkBlob);
     }
-  };
 
-  // 전송 시작
-  readAndSendChunk();
+    reader.onload = (e) => {
+        const buffer = e.target.result;
+        sizeSent += buffer.byteLength;
 
-  console.log("*** socket: sendFileServerUpload request: " + sendFileName);
+        // 기존 이벤트명 유지, 청크별 바이너리 데이터 전송
+        transferSocket.emit("sendFileServerUpload", {
+            chunkIndex,
+            totalChunks,
+            data: new Uint8Array(buffer),
+            fname: sendFileName,
+            type: fileType,
+        });
+
+        chunkIndex++;
+
+        if (chunkIndex < totalChunks) {
+            readAndSendChunk();
+        } else {
+            // 모든 청크 전송 완료 후 DB 저장 요청 등 처리
+            let obj2;
+
+            if (type === "drawingImage") {
+                obj2 = {
+                    en_seq: loginStore.sessionEnSeq,
+                    hq_seq: loginStore.sessionHqSeq,
+                    br_seq: loginStore.sessionBrSeq,
+                    joined_members: sessionStorage.getItem("m_nickname"),
+                    file_path: str_stream_picture_file_path.value,
+                    file_name: sendFileName,
+                    file_type: fileType,
+                    getWorldTime: getWorldTime(),
+                    localdeviceid: loginStore.m_local_deviceid,
+                    remotedeviceid: null,
+                    roomid: sessionStorage.getItem("m_roomid"),
+                };
+
+                // 초기화
+                callStore.setDrawingGetFileSrc("");
+                callStore.setDrawingGetFileObject(null);
+                callStore.setDrawingGetFileChangeFlag(false);
+            } else if (type === "captureImage") {
+                const videoMainIndex = callStore.videoMainIndex;
+
+                let joinMembers = "";
+                let localdeviceid = "";
+
+                if (feeds.value[videoMainIndex] != null && videoMainIndex !== 0) {
+                    joinMembers =
+                        sessionStorage.getItem("m_nickname") +
+                        ", " +
+                        feeds.value[videoMainIndex].rfdisplay;
+                    localdeviceid = feeds.value[videoMainIndex].rfdeviceid;
+                } else {
+                    joinMembers = sessionStorage.getItem("m_nickname");
+                    localdeviceid = loginStore.m_local_deviceid;
+                }
+
+                obj2 = {
+                    en_seq: loginStore.sessionEnSeq,
+                    hq_seq: loginStore.sessionHqSeq,
+                    br_seq: loginStore.sessionBrSeq,
+                    joined_members: joinMembers,
+                    file_path: str_stream_picture_file_path.value,
+                    file_name: sendFileName,
+                    file_type: fileType,
+                    getWorldTime: getWorldTime(),
+                    localdeviceid,
+                    remotedeviceid: loginStore.m_local_deviceid,
+                    roomid: sessionStorage.getItem("m_roomid"),
+                };
+            }
+
+            signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
+            console.log("*** socket: sendFileServerUploadInfo request:", obj2);
+        }
+    };
+
+    // 전송 시작
+    readAndSendChunk();
+
+    console.log("*** socket: sendFileServerUpload request: " + sendFileName);
 }
 // drawingPDFServerUpload
 function drawingPDFServerUpload(fname, fsize, pdfSrc) {
-  const dateName = createDateName();
-  const fileExtension = fname.split('.').pop();
-  const fileType = "pdf";
+    const dateName = createDateName();
+    const fileExtension = fname.split(".").pop();
+    const fileType = "pdf";
 
-  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
-  PDFsendFileName.value = sendFileName;
+    const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
+    PDFsendFileName.value = sendFileName;
 
-  const chunkSize = 64 * 1024; // 64KB
-  const totalChunks = Math.ceil(fsize / chunkSize);
+    const chunkSize = 64 * 1024; // 64KB
+    const totalChunks = Math.ceil(fsize / chunkSize);
 
-  let chunkIndex = 0;
-  let sizeSent = 0;
+    let chunkIndex = 0;
+    let sizeSent = 0;
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  function readAndSendChunk() {
-    const start = chunkIndex * chunkSize;
-    const end = Math.min(start + chunkSize, fsize);
-    const blob = pdfSrc.slice(start, end);
+    function readAndSendChunk() {
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, fsize);
+        const blob = pdfSrc.slice(start, end);
 
-    reader.readAsArrayBuffer(blob);
-  }
+        reader.readAsArrayBuffer(blob);
+    }
 
-  reader.onload = (e) => {
-    const buffer = e.target.result;
-    sizeSent += buffer.byteLength;
-    let progress = Math.floor((sizeSent / fsize) * 100);
+    reader.onload = (e) => {
+        const buffer = e.target.result;
+        sizeSent += buffer.byteLength;
+        let progress = Math.floor((sizeSent / fsize) * 100);
 
-    // 진행률 100보다 크면 100으로 고정
-    if (progress > 100) progress = 100;
+        // 진행률 100보다 크면 100으로 고정
+        if (progress > 100) progress = 100;
 
-    // 기존 전송 이벤트 사용 (서버에서 청크 합치기 구현 필요)
-    transferSocket.emit("sendPdfFileServerUpload", {
-      chunkIndex,
-      totalChunks,
-      data: new Uint8Array(buffer),
-      fname: sendFileName,
-      type: fileType,
-    });
+        // 기존 전송 이벤트 사용 (서버에서 청크 합치기 구현 필요)
+        transferSocket.emit("sendPdfFileServerUpload", {
+            chunkIndex,
+            totalChunks,
+            data: new Uint8Array(buffer),
+            fname: sendFileName,
+            type: fileType,
+        });
 
-    callStore.setPDFUploadProgrss(Math.floor(progress / 2));
+        callStore.setPDFUploadProgrss(Math.floor(progress / 2));
 
-    chunkIndex++;
+        chunkIndex++;
 
-    if (chunkIndex < totalChunks) {
-      readAndSendChunk();
-    } else {
-      // 업로드 완료 후 처리
+        if (chunkIndex < totalChunks) {
+            readAndSendChunk();
+        } else {
+            // 업로드 완료 후 처리
 
-      if (!callStore.PDFcancelUploadFlag) {
-        clearInterval(PDFCancelUploadInterval.value);
+            if (!callStore.PDFcancelUploadFlag) {
+                clearInterval(PDFCancelUploadInterval.value);
 
-        const obj2 = {
-          en_seq: loginStore.sessionEnSeq,
-          hq_seq: loginStore.sessionHqSeq,
-          br_seq: loginStore.sessionBrSeq,
-          joined_members: sessionStorage.getItem("m_nickname"),
-          file_path: str_stream_picture_file_path.value,
-          file_name: sendFileName,
-          file_type: fileType,
-          getWorldTime: getWorldTime(),
-          localdeviceid: loginStore.m_local_deviceid,
-          remotedeviceid: null,
-          roomid: sessionStorage.getItem("m_roomid"),
-        };
-        signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
+                const obj2 = {
+                    en_seq: loginStore.sessionEnSeq,
+                    hq_seq: loginStore.sessionHqSeq,
+                    br_seq: loginStore.sessionBrSeq,
+                    joined_members: sessionStorage.getItem("m_nickname"),
+                    file_path: str_stream_picture_file_path.value,
+                    file_name: sendFileName,
+                    file_type: fileType,
+                    getWorldTime: getWorldTime(),
+                    localdeviceid: loginStore.m_local_deviceid,
+                    remotedeviceid: null,
+                    roomid: sessionStorage.getItem("m_roomid"),
+                };
+                signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
 
-        const pdfToImageInfo = {
-          file_name: sendFileName,
-          groupIndex: drawingStore.lastPDFGroupIndex,
-        };
-        transferSocket.emit("pdfToImage", JSON.stringify(pdfToImageInfo));
-      } else {
-        // 업로드 취소 처리 (기존 로직 유지)
-        callStore.removePdfUploadQueArray();
-        callStore.setPDFcancelUploadFlag(false);
-        console.log("*** setPDFCancelUploadFlag Change : ", callStore.PDFcancelUploadFlag);
+                const pdfToImageInfo = {
+                    file_name: sendFileName,
+                    groupIndex: drawingStore.lastPDFGroupIndex,
+                };
+                transferSocket.emit("pdfToImage", JSON.stringify(pdfToImageInfo));
+            } else {
+                // 업로드 취소 처리 (기존 로직 유지)
+                callStore.removePdfUploadQueArray();
+                callStore.setPDFcancelUploadFlag(false);
+                console.log(
+                    "*** setPDFCancelUploadFlag Change : ",
+                    callStore.PDFcancelUploadFlag,
+                );
 
-        if (callStore.pdfUploadQueArray.length > 0) {
-          callStore.setPDFUploading(true);
-          const next = callStore.pdfUploadQueArray[0];
-          drawingPDFServerUpload(next.name, next.size, next.src);
+                if (callStore.pdfUploadQueArray.length > 0) {
+                    callStore.setPDFUploading(true);
+                    const next = callStore.pdfUploadQueArray[0];
+                    drawingPDFServerUpload(next.name, next.size, next.src);
+                }
+            }
         }
-      }
-    }
-  };
+    };
 
-  // 취소 감시용 인터벌 (기존 코드 유지)
-  PDFCancelUploadInterval.value = setInterval(() => {
-    if (callStore.PDFcancelUploadFlag) {
-      console.log("*** transfer socket: PDF CancelUpload - abort upload");
+    // 취소 감시용 인터벌 (기존 코드 유지)
+    PDFCancelUploadInterval.value = setInterval(() => {
+        if (callStore.PDFcancelUploadFlag) {
+            console.log("*** transfer socket: PDF CancelUpload - abort upload");
 
-      // 취소 플래그 세팅
-      callStore.setDrawingGetPDFUploadFlag(false);
-      callStore.setPDFUploading(false);
-      callStore.setPDFUploadProgrss(0);
-      clearInterval(PDFCancelUploadInterval.value);
+            // 취소 플래그 세팅
+            callStore.setDrawingGetPDFUploadFlag(false);
+            callStore.setPDFUploading(false);
+            callStore.setPDFUploadProgrss(0);
+            clearInterval(PDFCancelUploadInterval.value);
 
-      // reader가 읽고 있으면 중단 가능 (FileReader는 abort 지원)
-      if (reader.readyState === 1) {
-        reader.abort();
-      }
-    }
-  }, 1000);
+            // reader가 읽고 있으면 중단 가능 (FileReader는 abort 지원)
+            if (reader.readyState === 1) {
+                reader.abort();
+            }
+        }
+    }, 1000);
 
-  // 업로드 시작
-  readAndSendChunk();
+    // 업로드 시작
+    readAndSendChunk();
 
-  // 드로잉 관련 UI 상태 초기화 (기존 코드 유지)
-  callStore.setDrawingGetPDFUploadSrc("");
-  callStore.setDrawingGetPDFUploadObject(null);
+    // 드로잉 관련 UI 상태 초기화 (기존 코드 유지)
+    callStore.setDrawingGetPDFUploadSrc("");
+    callStore.setDrawingGetPDFUploadObject(null);
 }
 
 // 방 인원 초과
@@ -9200,30 +9185,30 @@ function forceLogOutResult(reqSocketId, status) {
 let loadingModal = null;
 
 function initLoadingModal(type) {
-  if (!loadingModal) {
-    loadingModal = useModal({
-      component: LoadingModal,
-      key: `loading-modal`,
-      attrs: {
-        maskLoadingType: type,
-      },
-    });
-  }
-  return loadingModal;
+    if (!loadingModal) {
+        loadingModal = useModal({
+            component: LoadingModal,
+            key: `loading-modal`,
+            attrs: {
+                maskLoadingType: type,
+            },
+        });
+    }
+    return loadingModal;
 }
 
-function createLoadingMask(type, status = 'open') {
-  const { open: loadingOpen, close: loadingClose } = initLoadingModal(type);
+function createLoadingMask(type, status = "open") {
+    const { open: loadingOpen, close: loadingClose } = initLoadingModal(type);
 
-  if (status === 'open') {
-    loadingOpen();
-  } else if (status === 'close') {
-    loadingClose();
-  }
+    if (status === "open") {
+        loadingOpen();
+    } else if (status === "close") {
+        loadingClose();
+    }
 }
 /* resultSettingInRoomResult & onlocalStreamSuccess 일 경우 로딩 마스크 제거 */
 function loadingMaskDelete() {
-    createLoadingMask('', 'close')
+    createLoadingMask("", "close");
     callStore.setOnlocalStreamSuccess(false);
 }
 function prepareStreamMode(type) {
@@ -9631,7 +9616,7 @@ function sayHello() {
         getQueryStringValue("subscriber-mode") === "true";
 
     // -> kyj
-    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}/storage/watttalk/photos/`
+    str_stream_picture_file_path.value = `${"https://hdcardev.watttalk.kr"}/storage/watttalk/photos/`;
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
@@ -10456,7 +10441,7 @@ function sayHello() {
                                     sessionStorage.getItem("m_nickname");
                                 const chattingMessage =
                                     sessionStorage.getItem("m_nickname") +
-                                    t("chatting Enter");
+                                    $t("chatting Enter");
                                 const chattingLevel = 2; // 공지
                                 const chattingType = 0;
 
@@ -10547,7 +10532,7 @@ function sayHello() {
                                 main_stream_check();
                             }, 1000);
 
-                            console.log('setOnlocalStreamSuccess')
+                            console.log("setOnlocalStreamSuccess");
                             /* onlocalStream 진행 후 onlocalStreamSuccess True 변경 */
                             callStore.setOnlocalStreamSuccess(true);
 
@@ -10627,7 +10612,10 @@ function sayHello() {
                         janusAndCallingDestroy();
                     } else {
                         alert(error, function () {
-                            window.location.reload();
+                            callStore.init();
+                            drawingStore.init();
+                            meetingStore.init();
+                            chattingStore.init();
                         });
                     }
                 },
@@ -10735,14 +10723,18 @@ function sayHello() {
                             window.location.href = "https://wattsolution.co.kr/";
                         } else if (callingType.value == "meetingCall") {
                             commonStore.changeViewType(1);
-                            router.push("/meeting") 
+                            router.push("/meeting");
                         } else {
                             commonStore.changeViewType(0);
-                            router.push("/dashboard")
+                            router.push("/dashboard");
                         }
 
                         setTimeout(function () {
-                            window.location.reload();
+                            callStore.init();
+                            drawingStore.init();
+                            meetingStore.init();
+                            chattingStore.init();
+                            commonStore.init();
                         }, 500);
                     }, 3000);
                 },
@@ -11279,7 +11271,7 @@ watch(getHostRequestResult, (newValue, oldValue) => {
             // 전체 음소거가 맞다면, 나의 마이크 상태가 ON 이라면 OFF로 변경한다. (isSounded = flase (mic on 상태))
             if (!commonStore.isSounded) {
                 // 음소거 버튼 변경
-                commonStore.setIsSounded()
+                commonStore.setIsSounded();
 
                 // 마이크 음소거
                 commonStore.toggleMute();
@@ -11491,7 +11483,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         for (let i = 1; i <= previewModalInfo.value.previewModalcnt; i++) {
             commonStore.setPreviewModalFlag({ modalIndex: i, url: "", show: "hide" });
             // document.getElementsByName("previewModal" + i)[0].style.display = "none";
-            modalStore.closeModal("preview" + i)
+            modalStore.closeModal("preview" + i);
         }
 
         // 메인이 videoOFF 상태일 경우 예외 처리
@@ -11524,7 +11516,6 @@ watch(getIsDrawing, (newValue, oldValue) => {
         // console.log("**** 드로잉 활성화 상태: ", $store.state.isDrawingEnable)
     } else {
         // 드로잉 hide !
-        alert("여기를 안타는거야?")
         callStore.setDrawingIframe(false);
 
         // 투명 찍어주는 interval.value 초기화
@@ -11756,7 +11747,9 @@ watch(getCancelFileTransferFlag, (newValue, oldValue) => {
 
     if (newValue) {
         // 송신할 파일 Reader 중단
-        if (!(typeof sendFileReader.value == "undefined" || sendFileReader.value == null)) {
+        if (
+            !(typeof sendFileReader.value == "undefined" || sendFileReader.value == null)
+        ) {
             sendFileReader.value.abort();
         }
 

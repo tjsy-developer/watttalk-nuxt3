@@ -55,12 +55,13 @@ export default defineNuxtConfig({
         "@/plugins/piniaPersist.client",
         "@/plugins/axios.client",
         "@/plugins/webrtc-adapter.client",
-        // "@/plugins/socket.client",
+        "@/plugins/socket.client",
         "@/plugins/janus.client",
         "@/plugins/initPreperence.client",
         "@/plugins/vue-final-modal",
-        "@/plugins/i18n",
+        "@/plugins/i18next.client",
         "@/plugins/pdfjs.client",
+        "@/plugins/socket-io-stream.client",
     ],
     modules: [
         "@nuxt/devtools",
@@ -90,15 +91,6 @@ export default defineNuxtConfig({
                 },
             },
         },
-        server: {
-            proxy: {
-                "/image-proxy": {
-                    target: "https://hdcardev.watttalk.kr",
-                    changeOrigin: true,
-                    rewrite: (path) => path.replace(/^\/image-proxy/, ""),
-                },
-            },
-        },
     },
     runtimeConfig: {
         public: {
@@ -112,10 +104,10 @@ export default defineNuxtConfig({
         },
     },
     devServer: {
-        https: {
-            key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
-            cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
-        },
+        // https: {
+        //     key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
+        //     cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
+        // },
         // host: "0.0.0.0",
     },
 });

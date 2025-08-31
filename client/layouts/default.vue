@@ -98,7 +98,6 @@ import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
 
-import { useSocketInit } from "@/composables/socket/useSocketInit";
 import ChatModal from "@/components/modal/ChatModal.vue";
 import NoticeModal from "@/components/modal/NoticeModal.vue";
 const modalStore = useModalStore();
@@ -159,7 +158,6 @@ const isAlertModal = computed({
 });
 
 onMounted(() => {
-    useSocketInit();
     commonStore.setAlertStatus(0);
     modalStore.isModalOpen("message");
 });

@@ -72,7 +72,6 @@
 </template>
 
 <script setup>
-import { useSocketInit } from "@/composables/socket/useSocketInit";
 import { ModalsContainer, VueFinalModal } from "vue-final-modal";
 import CallHeader from "@/components/layout/CallHeader.vue";
 import CallSideBar from "@/components/layout/CallSidebar.vue";
@@ -144,7 +143,6 @@ const isPreviewModal = computed({
     },
 });
 onMounted(() => {
-    useSocketInit();
     commonStore.setAlertStatus(0);
     modalStore.isModalOpen("message");
 });

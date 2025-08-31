@@ -22,17 +22,6 @@ import { useLoginEvents } from "./useLoginEvents";
 import { useSignallingSocket } from "./useSignallingSocket";
 import { useDirectMessageStore } from "@/stores/directMessage";
 
-// environment, joinMeeting  > 연락처, 회의실, 회원대기실
-// openMeetingOnOff > onpenMeetingOnOff
-// userStatus, callReadyStatus, canMakeCall  > 연락처 컴포넌트
-// createRoomID > 회의실, 영상통화
-// canMakeCall > 영상통화, 연락처
-// groupRoom > 연락처
-// calling > 연락처, 영상통화, 회의실
-// calling , cancelCalling, inviteCancelCalling, directMessage, directMessageReadProcess, getPreviousMessage > 연락처, 영상통화, 회의실
-// multiRefuseCalling > 연락처
-// openMeetingChecking, sendEntryNotification > 연락처, 회의실
-
 export function bindSocketEvents() {
     const { signallingSocket } = useSignallingSocket();
     const router = useRouter();
@@ -56,39 +45,35 @@ export function bindSocketEvents() {
     } = useSocketEmitEvents();
 
     const { loginRequest } = useLoginEvents();
-    signallingSocket.off("userListAll");
-    signallingSocket.on("userListAll", (response) => {
-        const json = JSON.parse(response);
 
+    // ---------- Handlers ----------
+    function handleUserListAll(response) {
+        const json = JSON.parse(response);
         console.log("왜 안들어와", json.users);
         userListStore.init();
         userListAdd(json.users);
         callStore.setUserData([]);
         callStore.setUserDataAll([]);
-
         const sortOrgList = json.users.sort((a, b) => b.status - a.status);
         callStore.setUserData(sortOrgList);
         callStore.setUserDataAll(json.users);
         const result = buildTree(sortOrgList);
         userListStore.setOrganizationList(result);
-    });
+    }
 
-    signallingSocket.off("lastCallTime");
-    signallingSocket.on("lastCallTime", (response) => {
+    function handleLastCallTime(response) {
         const json = JSON.parse(response);
         console.log(response);
         userListStore.init();
         callStore.setRecentData([]);
         callStore.setRecentDataAll([]);
-
         const sortOrgList = json.users.sort((a, b) => b.status - a.status);
         callStore.setRecentData(sortOrgList);
         callStore.setRecentDataAll(json.users);
         userListStore.setRecentCallList(sortOrgList);
-    });
+    }
 
-    signallingSocket.off("callReadyStatus");
-    signallingSocket.on("callReadyStatus", (response) => {
+    function handleCallReadyStatus(response) {
         const json = JSON.parse(response);
         console.log("callReadyStatus", json);
         const userIdx = userDataGetIndex(json.deviceid);
@@ -115,10 +100,9 @@ export function bindSocketEvents() {
         console.log(updateOrgCallList);
         userListStore.setRecentCallList(updateRecentCallList);
         userListStore.setOrganizationList(updateOrgCallList);
-    });
+    }
 
-    signallingSocket.off("userStatus");
-    signallingSocket.on("userStatus", (response) => {
+    function handleUserStatus(response) {
         const json = JSON.parse(response);
         const remoteInfo = userDataGetInfo(json.deviceid);
 
@@ -127,49 +111,39 @@ export function bindSocketEvents() {
         sessionStorage.setItem("m_remote_devicetype", remoteInfo.deviceType);
         sessionStorage.setItem("m_remote_status", remoteInfo.status);
 
-        // console.log("*** signallingSocket: userStatus sessionStorage.setItem(inRoomFlag):", sessionStorage.getItem("inRoomFlag"))
-
-        // 자신이 통화중인 경우 상대방 초대하기
-        alert(sessionStorage.getItem("inRoomFlag"));
         if (sessionStorage.getItem("inRoomFlag") === "true") {
             requestCanMakeCall(remoteInfo.deviceId);
             sessionStorage.setItem("m_callWaiting", "true");
-        }
-
-        // 상대방이 대기실에 있는경우
-        if (json.status == 1) {
-            if (preperenceStore.roomNumber) {
-                // 새로 생성한 roomid sessionStorage 등록
-                sessionStorage.setItem("m_roomid", preperenceStore.roomNumber);
-                sessionStorage.setItem("inRoomFlag", "true");
-                sessionStorage.setItem("createRoomFlag", "true");
-
-                // 페이지 이동 (방입장)
-                commonStore.changeViewType(2);
-                router.push("/call");
-                reeuqestCreateFixRoomID();
-            } else {
-                requestCreateRoomID();
+        } else {
+            if (json.status == 1) {
+                if (preperenceStore.roomNumber) {
+                    sessionStorage.setItem("m_roomid", preperenceStore.roomNumber);
+                    sessionStorage.setItem("inRoomFlag", "true");
+                    sessionStorage.setItem("createRoomFlag", "true");
+                    commonStore.changeViewType(2);
+                    router.push("/call");
+                    reeuqestCreateFixRoomID();
+                } else {
+                    requestCreateRoomID();
+                }
+            } else if (json.status == 2) {
+                requestGroupRoom(remoteInfo.deviceId);
+                callStore.callingPopupInfo({
+                    institution: remoteInfo.enName,
+                    headquarters: remoteInfo.hqName,
+                    branch: remoteInfo.brName,
+                    nickname: remoteInfo.nickName,
+                });
             }
-            // 상대방이 방에 입장한 상태
-        } else if (json.status == 2) {
-            requestGroupRoom(remoteInfo.deviceId);
-            callStore.callingPopupInfo({
-                institution: remoteInfo.enName,
-                headquarters: remoteInfo.hqName,
-                branch: remoteInfo.brName,
-                nickname: remoteInfo.nickName,
-            });
         }
-    });
+        
+    }
 
-    signallingSocket.off("forceLogoutResult");
-    signallingSocket.on("forceLogoutResult", (response) => {
+    function handleForceLogoutResult(response) {
         console.log("*** socket: on forceLogoutResult");
         const json = JSON.parse(response);
         console.log(json);
 
-        /* 1: 성공 - login시도 , 0: 실패 - 다른 기기 통화중 */
         if (json.status == 1) {
             loginRequest(loginStore.m_local_deviceid);
         } else {
@@ -177,38 +151,29 @@ export function bindSocketEvents() {
                 commonStore.setNoneOverlayAlertStatus(22);
             }, 500);
             setTimeout(() => {
-                loginStore.setLoginType({
-                    logintype: 3,
-                });
+                loginStore.setLoginType({ logintype: 3 });
             }, 3000);
         }
-    });
+    }
 
-    signallingSocket.off("forceLogoutRequest");
-    signallingSocket.on("forceLogoutRequest", (response) => {
+    function handleForceLogoutRequest(response) {
         const json = JSON.parse(response);
         loginStore.setForceLogoutUserId(json.requestSocketid);
 
-        /* contentsViewType == 2 : 영상 통화중이라서 강제로그아웃(요청) 거절 */
         if (commonStore.contentsViewType === 2) {
             requestForceLogoutResult(json.requestSocketid, 0);
-            /* contentsViewType !== 2 : 영상통화중이 아님 강제로그아웃(요청) 수락 */
         } else {
             commonStore.setNoneOverlayAlertStatus(21);
             sessionStorage.setItem("forcedLogout", true);
             setTimeout(() => {
                 requestForceLogoutResult(json.requestSocketid, 1);
-                loginStore.setLoginType({
-                    logintype: 3,
-                });
+                loginStore.setLoginType({ logintype: 3 });
             }, 5000);
         }
-    });
-    signallingSocket.off("directMessage");
-    signallingSocket.on("directMessage", function (response) {
-        console.log("*** socket: directMessage response");
-        console.log(response);
+    }
 
+    function handleDirectMessage(response) {
+        console.log("*** socket: directMessage response", response);
         const json = JSON.parse(response);
         directMessageStore.setRemoteMessageList({ remoteDeviceId: json.sender });
         directMessageStore.setAddReceiveMessage({
@@ -219,131 +184,32 @@ export function bindSocketEvents() {
             message: json.message,
             read: false,
         });
-    });
+    }
 
-    // 읽음처리 socket on event
-    signallingSocket.off("directMessageReadProcess");
-    signallingSocket.on("directMessageReadProcess", function (response) {
-        console.log("*** socket: directMessageReadProcess response");
-        console.log(response);
-
+    function handleDirectMessageReadProcess(response) {
+        console.log("*** socket: directMessageReadProcess response", response);
         const json = JSON.parse(response);
+    }
 
-        
-    });
+    // ---------- Binding ----------
+    signallingSocket.on("userListAll", handleUserListAll);
+    signallingSocket.on("lastCallTime", handleLastCallTime);
+    signallingSocket.on("callReadyStatus", handleCallReadyStatus);
+    signallingSocket.on("userStatus", handleUserStatus);
+    signallingSocket.on("forceLogoutResult", handleForceLogoutResult);
+    signallingSocket.on("forceLogoutRequest", handleForceLogoutRequest);
+    signallingSocket.on("directMessage", handleDirectMessage);
+    signallingSocket.on("directMessageReadProcess", handleDirectMessageReadProcess);
 
-    // // 분기
-    // socket.on("createRoomID", function (response) {
-    //     console.log("*** socket on createRoomID:", JSON.parse(response));
-    //     emitter.emit("createRoomID", JSON.parse(response));
-    // });
-
-    // socket.on("calling", (response) => {
-    //     console.log("*** socket on calling:", JSON.parse(response));
-    //     emitter.emit("calling", JSON.parse(response));
-    // });
-
-    // socket.on("canMakeCall", (response) => {
-    //     console.log("*** socket on canMakeCall:", JSON.parse(response));
-    //     emitter.emit("canMakeCall", JSON.parse(response));
-    // });
-
-    // socket.on("groupRoom", (response) => {
-    //     console.log("*** socket on groupRoom:", JSON.parse(response));
-    //     emitter.emit("groupRoom", JSON.parse(response));
-    // })
-
-    // socket.on("multiRefuseCalling", (response) => {
-    //     console.log("*** socket on multiRefuseCalling:", JSON.parse(response));
-    //     emitter.emit("multiRefuseCalling", JSON.parse(response));
-    // });
-
-    // socket.on("cancelCalling", (response) => {
-    //     console.log("*** socket on cancelCalling:", JSON.parse(response));
-    //     emitter.emit("cancelCalling", JSON.parse(response));
-    // });
-
-    // socket.on("inviteCancelCalling", (response) => {
-    //     console.log("*** socket on inviteCancelCalling:", JSON.parse(response));
-    //     emitter.emit("inviteCancelCalling", JSON.parse(response));
-    // });
-
-    // socket.on("joinMeeting", (response) => {
-    //     console.log("*** socket on joinMeeting:", JSON.parse(response));
-    //     emitter.emit("joinMeeting", JSON.parse(response));
-    // });
-
-    // socket.on("directMessage", (response) => {
-    //     console.log("*** socket on directMessage:", JSON.parse(response));
-    //     emitter.emit("directMessage", JSON.parse(response));
-    // });
-
-    // socket.on("directMessageReadProcess", (response) => {
-    //     console.log("*** socket on directMessageReadProcess:", JSON.parse(response));
-    //     emitter.emit("directMessageReadProcess", JSON.parse(response));
-    // });
-
-    // socket.on("getPreviousMessage", (response) => {
-    //     console.log("*** socket on getPreviousMessage:", JSON.parse(response));
-    //     emitter.emit("getPreviousMessage", JSON.parse(response));
-    // });
-
-    // socket.on("getOverhaul", (response) => {
-    //     console.log("*** socket on getOverhaul:", JSON.parse(response));
-    //     emitter.emit("getOverhaul", JSON.parse(response));
-    // });
-
-    // // 분기
-    // socket.on("openMeetingChecking", (response) => {
-    //     console.log("*** socket on openMeetingChecking:", JSON.parse(response));
-    //     emitter.emit("openMeetingChecking", JSON.parse(response));
-    //     // console.log("*** socket.on: openMeetingChecking res = ", response);
-    //     // const json = JSON.parse(response);
-    //     // console.log("*** socket.on: json = ", json);
-    //     // if (json.start_status == 0) {
-    //     //     if (json.everyone_start_yn == 1) {
-
-    //     //         const openMeetingData = {
-    //     //             entryNotification: json.unique_roomid,
-    //     //         };
-
-    //     //         meetingStore.setOpenMeetingData(openMeetingData);
-    //     //         callStore.setUniqueRoomid(json.unique_roomid)
-    //     //         directCallStore.clearDirectCallInfo();
-
-    //     //         requestCreateRoomID()
-    //     //         meetingStore.setOpenAndJoin("open");
-    //     //         meetingStore.setMeetingSeq(json.unique_roomid);
-    //     //         meetingStore.meetingOpenFlag(true);
-    //     //     } else {
-    //     //         noneOverlayModal(6);
-    //     //     }
-    //     // } else if (json.start_status == 1) {
-    //     //     if (!json.roomid) {
-    //     //         meetingStore.setOpenMeetingCheck(false);
-    //     //     }
-    //     //     console.log("*** methods: joinMeeting::");
-    //     //     console.log("*** methods: joinMeeting:: meetingSeq = ", (json.unique_roomid));
-
-    //     //     meetingStore.setOpenAndJoin("join");
-    //     //     meetingStore.setMeetingSeq(json.unique_roomid);
-    //     //     meetingStore.meetingJoinFlag(true);
-    //     // } else if (json.start_status == 3) {
-    //     //     console.log("회의실이 삭제되어있다.");
-    //     //     commonStore.setNoneOverlayAlertStatus(8);
-    //     //     noneOverlayModal(8);
-    //     // }
-    // });
-
-    // socket.on("sendEntryNotification", (response) => {
-    //     console.log("*** socket on sendEntryNotification:", JSON.parse(response));
-    //     const json = JSON.parse(response);
-    //     console.log("sendEntryNotification", json);
-    //     console.log(json)
-    //     directCallStore.setDirectCallInfo(json);
-    //     // callingPopup Show
-    //     if (directCallStore.directcallList.length == 1) {
-    //         commonStore.setAlert(8);
-    //     }
-    // })
+    // ---------- Unbinder ----------
+    return () => {
+        signallingSocket.off("userListAll", handleUserListAll);
+        signallingSocket.off("lastCallTime", handleLastCallTime);
+        signallingSocket.off("callReadyStatus", handleCallReadyStatus);
+        signallingSocket.off("userStatus", handleUserStatus);
+        signallingSocket.off("forceLogoutResult", handleForceLogoutResult);
+        signallingSocket.off("forceLogoutRequest", handleForceLogoutRequest);
+        signallingSocket.off("directMessage", handleDirectMessage);
+        signallingSocket.off("directMessageReadProcess", handleDirectMessageReadProcess);
+    };
 }

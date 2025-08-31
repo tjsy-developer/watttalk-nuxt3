@@ -3,11 +3,11 @@
         <div class="noneOverayModalContainer">
             <div class="">
                 <div class="alertTitleCon">
-                    <span class="alertTitle">{{ t("알림창") }}</span>
+                    <span class="alertTitle">{{ $t("알림창") }}</span>
                 </div>
                 <div class="mobileScreenCaptureBox">
                     <p class="msg mobileScreenCaptureText">
-                        {{ t("회의를 삭제하시겠습니까?") }}
+                        {{ $t("회의를 삭제하시겠습니까?") }}
                     </p>
                     <div
                         class="row items-center alertControlbuttons mobileScreenCaptureButtons"
@@ -16,10 +16,10 @@
                             @click="deleteMeetingRoom(props.seq)"
                             class="hostRequestadelineButton"
                         >
-                            {{ t("예") }}
+                            {{ $t("예") }}
                         </button>
                         <button @click="close" class="hostRequestadelineButton">
-                            {{ t("아니오") }}
+                            {{ $t("아니오") }}
                         </button>
                     </div>
                 </div>
@@ -32,9 +32,9 @@
 import { defineProps } from "vue";
 import { useMeetingStore } from "@/stores/meeting";
 import { VueFinalModal } from "vue-final-modal";
-import { useI18n } from "vue-i18n";
+import { useNuxtApp } from "nuxt/app";
+const { $t } = useNuxtApp()
 
-const { t } = useI18n();
 const props = defineProps({
     seq: {
         type: Number,

@@ -20,9 +20,10 @@
 </template>
 
 <script setup>
+import { useNuxtApp } from "nuxt/app";
 import { onMounted } from "vue";
 import { VueFinalModal } from "vue-final-modal";
-
+const { $t } = useNuxtApp();
 const props = defineProps(["maskLoadingType"]);
 
 onMounted(() => {
@@ -51,6 +52,6 @@ onMounted(() => {
 	}
 }
 .loading-bar {
-
+	height: 100px;
 }
 </style>

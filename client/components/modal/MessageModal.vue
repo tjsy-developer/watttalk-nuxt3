@@ -5,23 +5,23 @@
         </button>
         <div class="alert-box">
             <div class="alert-title">
-                <h3 class="alertTitle">{{ t("알림창") }}</h3>
+                <h3 class="alertTitle">{{ $t("알림창") }}</h3>
                 <div class="titleUnderLine"></div>
             </div>
             <div v-if="alertStatus == 0">
                 <div class="requestStatus alertRequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText">{{ t("현재 통화 중인 방에") }}</p>
+                        <p class="msg alertText">{{ $t("현재 통화 중인 방에") }}</p>
                     </div>
                     <div class="">
                         <span class="msg alertText">{{
-                            t("호스트가 존재하지 않습니다")
+                            $t("호스트가 존재하지 않습니다")
                         }}</span>
                     </div>
                 </div>
                 <div class="alertControlbuttons">
                     <button @click="alertModalClose" class="hostRequestadelineButton">
-                        {{ t("확인") }}
+                        {{ $t("확인") }}
                     </button>
                 </div>
             </div>
@@ -29,17 +29,17 @@
             <div v-else-if="alertStatus == 1">
                 <div class="requestStatus alert RequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText">{{ t("잘못된 요청입니다") }}</p>
+                        <p class="msg alertText">{{ $t("잘못된 요청입니다") }}</p>
                     </div>
                     <div class="">
                         <span class="msg alertText">{{
-                            t("호스트가 존재하지 않습니다")
+                            $t("호스트가 존재하지 않습니다")
                         }}</span>
                     </div>
                 </div>
                 <div class="alertControlbuttons">
                     <button @click="alertModalClose" class="hostRequestadelineButton">
-                        {{ t("확인") }}
+                        {{ $t("확인") }}
                     </button>
                 </div>
             </div>
@@ -47,13 +47,13 @@
             <div v-else-if="alertStatus == 2">
                 <div class="requestStatus alertRequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText">{{ t("요청자가 PC가 아닙니다") }}</p>
-                        <p class="msg alertText">{{ t("호스트는 PC만 가능합니다") }}</p>
+                        <p class="msg alertText">{{ $t("요청자가 PC가 아닙니다") }}</p>
+                        <p class="msg alertText">{{ $t("호스트는 PC만 가능합니다") }}</p>
                     </div>
                 </div>
                 <div class="alertControlbuttons">
                     <button @click="alertModalClose" class="hostRequestadelineButton">
-                        {{ t("확인") }}
+                        {{ $t("확인") }}
                     </button>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                 <div class="requestStatus alertRequestDeclineMessage">
                     <div class="">
                         <p class="msg alertText">
-                            {{ t("해당 사용자를 강제퇴장 하시겠습니까?") }}
+                            {{ $t("해당 사용자를 강제퇴장 하시겠습니까?") }}
                         </p>
                     </div>
 					<div>
@@ -74,13 +74,13 @@
                         @click="forceLeaveResult(true)"
                         class="hostRequestadelineButton"
                     >
-                        {{ t("수락") }}
+                        {{ $t("수락") }}
                     </button>
                     <button
                         @click="forceLeaveResult(false)"
                         class="hostRequestadelineButton"
                     >
-                        {{ t("거절") }}
+                        {{ $t("거절") }}
                     </button>
                 </div>
             </div>
@@ -89,8 +89,8 @@
 </template>
 <script setup>
 import { useCommonStore } from "@/stores";
-import { useI18n } from "vue-i18n";
-const { t, locale: $i18nLocale } = useI18n();
+import { useNuxtApp } from "nuxt/app";
+const { $t } = useNuxtApp()
 const commonStore = useCommonStore();
 const callStore = useCallStore();
 const alertStatus = computed(() => commonStore.alertStatus);

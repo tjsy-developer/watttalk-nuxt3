@@ -44,18 +44,18 @@
         <div class="row justify-center content-center receiveBackground">
           <img src="@/assets/images/calling/ic_call-send-2.png" :style="{paddingTop:'10px'}">
           <div class=" row justify-center buttonsLayout1" :style="{paddingTop: '10px'}">
-            <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">{{ t("accept") }}</button>
-            <button @click="setMultiCalling(0)" class="receiveBtnCallingLayoutType4">{{ t("decline") }}</button>
+            <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">{{ $t("accept") }}</button>
+            <button @click="setMultiCalling(0)" class="receiveBtnCallingLayoutType4">{{ $t("decline") }}</button>
           </div>
         </div>
       </div>
       <div class=" bubblyLeft messageContainer" v-else-if="compData.fileSend">
         <div class="row" style="text-align: center">
-          <p class=" fileReceiveText1" style="margin: 0">{{ compData.nickname }} {{ t("fileSending text7") }}</p>
-          <p class=" fileReceiveText2" style="margin-bottom: 7px">{{ t("fileSending text8") }}</p>
+          <p class=" fileReceiveText1" style="margin: 0">{{ compData.nickname }} {{ $t("fileSending text7") }}</p>
+          <p class=" fileReceiveText2" style="margin-bottom: 7px">{{ $t("fileSending text8") }}</p>
           <div class=" row justify-center buttonsLayout2" :style="{paddingTop: '10px'}">
-            <button @click="fileReceiveAccept(compData.nickname)" class="receiveBtnCallingLayoutType3">{{ t("accept") }}</button>
-            <button @click="fileReceiveDecline(compData.nickname)" class="receiveBtnCallingLayoutType4">{{ t("decline") }}</button>
+            <button @click="fileReceiveAccept(compData.nickname)" class="receiveBtnCallingLayoutType3">{{ $t("accept") }}</button>
+            <button @click="fileReceiveDecline(compData.nickname)" class="receiveBtnCallingLayoutType4">{{ $t("decline") }}</button>
           </div>
         </div>
       </div>
@@ -71,13 +71,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n'; // Assuming you use vue-i18n for translations
-
-const { t } = useI18n();
 import { useChattingStore } from "@/stores/chatting";
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
+import { useNuxtApp } from 'nuxt/app';
 
+const { $t } = useNuxtApp();
 
 const callStore = useCallStore();
 const commonStore = useCommonStore();
@@ -90,30 +89,30 @@ const props = defineProps({
 
 // Reactive data (formerly 'data()' in Options API)
 const emergencyIcons = ref([
-  { img: new URL('@/assets/images/messageBox/ic_fire-2.png', import.meta.url).href, text: t("fire") },
-  { img: new URL('@/assets/images/messageBox/ic_emergency-2.png', import.meta.url).href, text: t("emergencies") },
-  { img: new URL('@/assets/images/messageBox/ic_ax-2.png', import.meta.url).href, text: t("accident") },
-  { img: new URL('@/assets/images/messageBox/ic_car-2.png', import.meta.url).href, text: t("patient transportation") },
-  { img: new URL('@/assets/images/messageBox/ic_hand-2.png', import.meta.url).href, text: t("work order") },
-  { img: new URL('@/assets/images/messageBox/ic_check-2.png', import.meta.url).href, text: t("on-site confirmation") }
+  { img: new URL('@/assets/images/messageBox/ic_fire-2.png', import.meta.url).href, text: $t("fire") },
+  { img: new URL('@/assets/images/messageBox/ic_emergency-2.png', import.meta.url).href, text: $t("emergencies") },
+  { img: new URL('@/assets/images/messageBox/ic_ax-2.png', import.meta.url).href, text: $t("accident") },
+  { img: new URL('@/assets/images/messageBox/ic_car-2.png', import.meta.url).href, text: $t("patient transportation") },
+  { img: new URL('@/assets/images/messageBox/ic_hand-2.png', import.meta.url).href, text: $t("work order") },
+  { img: new URL('@/assets/images/messageBox/ic_check-2.png', import.meta.url).href, text: $t("on-site confirmation") }
 ]);
 
 const directionIcons = ref([
-  { img: new URL('@/assets/images/messageBox/ic_direction_up.png', import.meta.url).href, text: t("chatting direction up text") },
-  { img: new URL('@/assets/images/messageBox/ic_direction_left.png', import.meta.url).href, text: t("chatting direction left text") },
-  { img: new URL('@/assets/images/messageBox/ic_direction_front.png', import.meta.url).href, text: t("chatting direction front text") },
-  { img: new URL('@/assets/images/messageBox/ic_direction_down.png', import.meta.url).href, text: t("chatting direction down text") },
-  { img: new URL('@/assets/images/messageBox/ic_direction_right.png', import.meta.url).href, text: t("chatting direction right text") },
-  { img: new URL('@/assets/images/messageBox/ic_direction_back.png', import.meta.url).href, text: t("chatting direction back text") }
+  { img: new URL('@/assets/images/messageBox/ic_direction_up.png', import.meta.url).href, text: $t("chatting direction up text") },
+  { img: new URL('@/assets/images/messageBox/ic_direction_left.png', import.meta.url).href, text: $t("chatting direction left text") },
+  { img: new URL('@/assets/images/messageBox/ic_direction_front.png', import.meta.url).href, text: $t("chatting direction front text") },
+  { img: new URL('@/assets/images/messageBox/ic_direction_down.png', import.meta.url).href, text: $t("chatting direction down text") },
+  { img: new URL('@/assets/images/messageBox/ic_direction_right.png', import.meta.url).href, text: $t("chatting direction right text") },
+  { img: new URL('@/assets/images/messageBox/ic_direction_back.png', import.meta.url).href, text: $t("chatting direction back text") }
 ]);
 
 const moveIcons = ref([
-  { img: new URL('@/assets/images/messageBox/ic_move_up.png', import.meta.url).href, text: t("chatting up text") },
-  { img: new URL('@/assets/images/messageBox/ic_move_left.png', import.meta.url).href, text: t("chatting left text") },
-  { img: new URL('@/assets/images/messageBox/ic_move_front.png', import.meta.url).href, text: t("chatting front text") },
-  { img: new URL('@/assets/images/messageBox/ic_move_down.png', import.meta.url).href, text: t("chatting down text") },
-  { img: new URL('@/assets/images/messageBox/ic_move_right.png', import.meta.url).href, text: t("chatting right text") },
-  { img: new URL('@/assets/images/messageBox/ic_move_back.png', import.meta.url).href, text: t("chatting back text") }
+  { img: new URL('@/assets/images/messageBox/ic_move_up.png', import.meta.url).href, text: $t("chatting up text") },
+  { img: new URL('@/assets/images/messageBox/ic_move_left.png', import.meta.url).href, text: $t("chatting left text") },
+  { img: new URL('@/assets/images/messageBox/ic_move_front.png', import.meta.url).href, text: $t("chatting front text") },
+  { img: new URL('@/assets/images/messageBox/ic_move_down.png', import.meta.url).href, text: $t("chatting down text") },
+  { img: new URL('@/assets/images/messageBox/ic_move_right.png', import.meta.url).href, text: $t("chatting right text") },
+  { img: new URL('@/assets/images/messageBox/ic_move_back.png', import.meta.url).href, text: $t("chatting back text") }
 ]);
 
 const mainVideoNickName = ref(""); // Not used in template or logic, so consider removing if unnecessary.
@@ -150,12 +149,12 @@ const getTime = (time) => {
   }
   if (arr[0] > 11) {
     if (arr[0] == 12) {
-      result = t("meetingPm") + " " + Number(arr[0]) + ":" + arr[1];
+      result = $t("meetingPm") + " " + Number(arr[0]) + ":" + arr[1];
     } else {
-      result = t("meetingPm") + " " + (arr[0] % 12) + ":" + arr[1];
+      result = $t("meetingPm") + " " + (arr[0] % 12) + ":" + arr[1];
     }
   } else {
-    result = t("meetingAm") + " " + Number(arr[0]) + ":" + arr[1];
+    result = $t("meetingAm") + " " + Number(arr[0]) + ":" + arr[1];
   }
   return result;
 };

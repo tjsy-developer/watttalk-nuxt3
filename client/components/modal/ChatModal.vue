@@ -6,12 +6,10 @@ import { getFormattedDate } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { onMounted, ref } from "vue";
 import { useVfm } from "vue-final-modal";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 import VueDragResize from "vue3-drag-resize";
 
 const vfm = useVfm();
-const { t } = useI18n();
-const { $axios } = useNuxtApp();
 const { requestDirectMessage, requestDirectMessageReadProcess } = useSocketEmitEvents();
 const props = defineProps(["remoteDeviceId", "remoteNickName", "profile"]);
 
@@ -61,7 +59,7 @@ function readMsg() {
 		receiver: props.remoteDeviceId,
 		datetime: Math.floor(Date.now() / 1000)
 	})
-	directMessageStore.setReadMessage({remoteDeviceId: })
+	directMessageStore.setReadMessage({remoteDeviceId: props.remoteDeviceId})
 }
 const targetMessageList = computed(() => {
   return directMessageStore.openMessageList.find(
@@ -118,7 +116,7 @@ watch(
                 <div class="msg-input">
                     <div>
                         <textarea v-model="msg" @focus="readMsg" @keydown.enter="sendBtn.click()" @mousedown.stop ></textarea>
-                        <button @click="sendMsg" ref="sendBtn">{{ t("전송") }}</button>
+                        <button @click="sendMsg" ref="sendBtn">{{ $t("전송") }}</button>
                     </div>
                 </div>
             </div>

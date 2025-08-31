@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-const { $colorMode } = useNuxtApp() as any;
+
 const { commonImages, headerImages } = useImageAssets();
 import { iconKorea, iconSpain, iconUSA } from "@/assets/images/index";
 import { useNuxtApp } from "nuxt/app";
 import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
-import { useI18n } from "vue-i18n";
 import { useCallStore } from "@/stores/call";
 
-const { t } = useI18n();
 const loginStore = useLoginStore();
 const callStore = useCallStore();
 
@@ -17,7 +15,7 @@ const isOpen = ref(false);
 const isOpenDisplay = ref(false);
 const isOpenLanguage = ref(false);
 const checked = ref(false)
-
+const { $colorMode, $t } = useNuxtApp() as any;
 function toggle() {
     isOpen.value = !isOpen.value;
 }
@@ -150,7 +148,7 @@ onMounted(() => {
             </div>
         </div>
          <div class="auto-save-box">
-                <labe>{{ t("영상 자동 저장") }}</labe>
+                <labe>{{ $t("영상 자동 저장") }}</labe>
                 <label class="toggleSwitch">
                     <input type="checkbox" v-model="callStore.autoVideoSaveChange" @change="handleChangeAutoSave" />
                     <span class="slider">
@@ -263,7 +261,7 @@ header > :last-child {
     align-self: flex-end;
     align-items: center;
     gap: 10px;
-    margin-right: 80px;
+    margin-right: 15px;
 }
 
 .toggleSwitch {

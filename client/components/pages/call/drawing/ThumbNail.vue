@@ -12,7 +12,7 @@
                     src="@/assets/images/callAttachment/ic_file_24.png"
                     alt="No file icon"
                 />
-                <span>{{ t("noFileReceived") }}</span>
+                <span>{{ $t("noFileReceived") }}</span>
             </div>
 
             <div v-else id="filesBox" class="filesBox no-wrap row items-center">
@@ -172,8 +172,9 @@ import { commonToastMessage } from "@/composables/common";
 import { useCallStore } from "@/stores/call";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 import lodash from "lodash"
+import { useNuxtApp } from "nuxt/app";
 
 const drawingStore = useDrawingCanvasStore();
 const callStore = useCallStore();
@@ -187,7 +188,6 @@ const isPdfOpen = ref(false);
 const pdfNum = ref(0);
 const isEscape = ref(false);
 const displayMode = ref("darkmode");
-const { t, locale: $i18nLocale } = useI18n();
 const fileClick = (e, type) => {
     // 원본 console.log("fileClick type", this.files[this.selectedFileIndex].type)
     // 시도 console.log("fileClick Enter => type: ".concat(this.files[e].type, ", files index: ", e, ", lastCanvasJson: ", this.$store.state.drawing.lastCanvasJson))

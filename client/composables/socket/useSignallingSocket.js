@@ -8,6 +8,7 @@ export function useSignallingSocket() {
         signallingSocket = io(useRuntimeConfig().public.NUXT_PUBLIC_SIGNALLING_URL, {
             transports: ["websocket"],
             reconnection: true,
+            autoConnect: true
         });
     }
 
@@ -15,6 +16,7 @@ export function useSignallingSocket() {
         transferSocket = io(useRuntimeConfig().public.NUXT_PUBLIC_TRANSFER_URL, {
             transports: ["websocket"],
             reconnection: true,
+            autoConnect: true,
         });
     }
     return { signallingSocket, transferSocket };

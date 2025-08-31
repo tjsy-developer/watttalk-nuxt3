@@ -2,7 +2,7 @@
 		<div class="main-container notice directCall"
 			v-if="commonStore.alertNum > 0 && commonStore.alertNum < 5">
 			<div class="notice notice-header">
-				<span>{{ t("알림창") }}</span> 
+				<span>{{ $t("알림창") }}</span> 
 				<button @click="openModalCheck">
 					<img src="@/assets/images/ic_close.png">
 				</button>
@@ -17,7 +17,7 @@
 					alt="Calling"
 				/>
 				<h3 class="status-description">
-					{{ t("상대방이 통화중입니다.") }} <br /> {{ t("잠시 후 다시 걸어주시기 바랍니다.") }}
+					{{ $t("상대방이 통화중입니다.") }} <br /> {{ $t("잠시 후 다시 걸어주시기 바랍니다.") }}
 				</h3>
 			</div>
 			<div
@@ -30,7 +30,7 @@
 					alt="Calling"
 				/>
 				<h3 class="status-description">
-					{{ t("통신 에러로 통화 연결이 끊어졌습니다") }}
+					{{ $t("통신 에러로 통화 연결이 끊어졌습니다") }}
 				</h3>
 			</div>
 			<div
@@ -43,9 +43,9 @@
 					alt="Calling"
 				/>
 				<h3 class="status-description">
-					{{ t("상대방이 전화를 받을 수 없습니다") }}
+					{{ $t("상대방이 전화를 받을 수 없습니다") }}
 						<br />
-					{{ t("잠시 후 다시 걸어주시기 바랍니다") }}
+					{{ $t("잠시 후 다시 걸어주시기 바랍니다") }}
 				</h3>
 			</div>
 			<div
@@ -58,7 +58,7 @@
 					alt="Calling"
 				/>
 				<h3 class="status-description">
-					{{ t("해당 룸에 정원이 초과되어 접속 할 수 없습니다") }}
+					{{ $t("해당 룸에 정원이 초과되어 접속 할 수 없습니다") }}
 				</h3>
 			</div>
 		</div>
@@ -68,7 +68,7 @@
 				class="main-container"
 				v-if="commonStore.alertNum == 0"
 			>
-				<div class="status-text">{{ t("수신 중") }}</div>
+				<div class="status-text">{{ $t("수신 중") }}</div>
 				<img
 					src="@/assets/images/calling/ic_call_2.png"
 					class="absoluteCallingImg"
@@ -88,14 +88,14 @@
 						class="button accept"
 					>
 						<img src="@/assets/images/ic_popup_ok.png" />
-						<span>{{ t("수락") }}</span>
+						<span>{{ $t("수락") }}</span>
 					</button>
 					<button
 						@click="setCallingResult(0)"
 						class="button decline"
 					>
 						<img src="@/assets/images/ic_popup_finish.png" />
-						<span>{{ t("거절") }}</span>
+						<span>{{ $t("거절") }}</span>
 					</button>
 				</div>
 			</div>
@@ -126,7 +126,7 @@
 					class="button cancel"
 				>
 						<img src="@/assets/images/ic_popup_finish.png" />
-						<span>{{ t("취소") }}</span>
+						<span>{{ $t("취소") }}</span>
 					</button>
 				</div>
 			</div>
@@ -157,7 +157,7 @@
 					class="button cancel"
 				>
 						<img src="@/assets/images/ic_popup_finish.png" />
-						<span>{{ t("취소") }}</span>
+						<span>{{ $t("취소") }}</span>
 					</button>
 				</div>
 			</div>
@@ -168,8 +168,8 @@
 				class="main-container"
 				v-if="commonStore.alertNum == 7"
 			>
-				<div class="status-text">{{ t("긴급통화") }}</div>
-				<div class="status-text">{{ t("발신 중") }}</div>
+				<div class="status-text">{{ $t("긴급통화") }}</div>
+				<div class="status-text">{{ $t("발신 중") }}</div>
 				<img
 					src="@/assets/images/calling/ic_call_1.png"
 					class="absoluteCallingImg"
@@ -189,7 +189,7 @@
 					class="button cancel"
 				>
 						<img src="@/assets/images/ic_popup_finish.png" />
-						<span>{{ t("취소") }}</span>
+						<span>{{ $t("취소") }}</span>
 					</button>
 				</div>
 			</div>
@@ -200,7 +200,7 @@
 				class="main-container"
 				v-if="commonStore.alertNum == 8"
 			>
-				<div class="status-text">{{ t("수신 중") }}</div>
+				<div class="status-text">{{ $t("수신 중") }}</div>
 				<img
 					src="@/assets/images/calling/ic_call_2.png"
 					class="absoluteCallingImg"
@@ -215,14 +215,14 @@
 						class="button accept"
 					>
 						<img src="@/assets/images/ic_popup_ok.png" />
-						<span>{{ t("수락") }}</span>
+						<span>{{ $t("수락") }}</span>
 					</button>
 					<button
 						@click="directCallResult(0)"
 						class="button decline"
 					>
 						<img src="@/assets/images/ic_popup_finish.png" />
-						<span>{{ t("거절") }}</span>
+						<span>{{ $t("거절") }}</span>
 					</button>
 				</div>
 			</div>
@@ -236,7 +236,7 @@ import { onMounted } from "vue";
 import { useCommonStore } from "@/stores";
 import { useDirectCallStore } from "@/stores/directCall";
 import { useNuxtApp } from "nuxt/app";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 import { useMeetingStore } from "@/stores/meeting";
 import { useModal, VueFinalModal } from "vue-final-modal";
 import { useLoginStore } from "@/stores/login";
@@ -255,7 +255,6 @@ const directcallTxt = ref("");
 const directcallSeq = ref("");
 const route = useRoute();
 const { signallingSocket } = useSignallingSocket();
-const { t } = useI18n();
 
 const { hide } = useModal("modal");
 
@@ -369,9 +368,9 @@ function firstEntry() {
     const index = res.length - 1;
     directcallTxt.value =
         res[index].member_name +
-        t("님이") +
+        $t("님이") +
         res[index].subject +
-        t("회의를 시작했습니다");
+        $t("회의를 시작했습니다");
     directcallSeq.value = res[index].meeting_seq;
 }
 
@@ -405,7 +404,7 @@ const setDirectCallInfo = computed(() => directCallStore.directcallList);
 watch(setDirectCallInfo, (newVal) => {
     if (newVal.length > 1) {
         const last = newVal[newVal.length - 1];
-        directcallTxt.value = `${last.member_name}${t("님이")}${last.subject}${t("회의를 시작했습니다")}`;
+        directcallTxt.value = `${last.member_name}${$t("님이")}${last.subject}${$t("회의를 시작했습니다")}`;
         directcallSeq.value = last.meeting_seq;
     }
 });

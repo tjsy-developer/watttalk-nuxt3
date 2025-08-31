@@ -6,7 +6,7 @@ import { defineStore } from "pinia";
 export const useLoginStore = defineStore("login", {
     state: () => ({
         rfreshToken: "",
-        loginType: "",
+        loginType: 1,
         sessionAuth: "",
         sessionID: "",
         sessionDeviceType: "",

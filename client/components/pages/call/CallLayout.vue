@@ -625,10 +625,11 @@ onUnmounted(() => {
     background: rgba(60, 60, 60, 0.9);
     padding: 18px;
     border-radius: 13px;
-    overflow: scroll;
+    overflow: auto;
     max-width: 227px;
     width: 227px;
     gap: 25px;
+    box-sizing: content-box;
     /* bottom: 8px; */
     flex-direction: column;
     >.windowContainer {
@@ -649,7 +650,7 @@ onUnmounted(() => {
     background: rgba(60, 60, 60, 0.9);
     padding: 0 18px;
     border-radius: 13px;
-    overflow: scroll;
+    overflow: auto;
     max-width: 100%;
     width: -webkit-fill-available;
     position: absolute;

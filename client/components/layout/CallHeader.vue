@@ -1,12 +1,10 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
-const { $colorMode } = useNuxtApp();
 const { commonImages, headerImages } = useImageAssets();
 import { iconKorea, iconSpain, iconUSA } from "@/assets/images/index";
 import { useNuxtApp } from "nuxt/app";
 import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
-import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import { useCallStore } from "@/stores/call";
 import { useMeetingStore } from "@/stores/meeting";
@@ -15,6 +13,7 @@ import { useCommonStore } from "@/stores";
 import { commonToastMessage } from "@/composables/common";
 import ContactList from "../pages/dashboard/ContactList.vue";
 
+const { $colorMode , $t } = useNuxtApp();
 const loginStore = useLoginStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
@@ -31,8 +30,6 @@ const curLang = ref("");
 const chatBarStatus = ref(false); // chatBarStatus는 컴포넌트 내부에 정의되어 있다고 가정
 const checked = ref(false); // sendDurationEnable과 연동될 checked 상태
 const showContactList = ref(false);
-
-const { t } = useI18n();
 
 function handleChangeLayoutType(layoutType) {
     console.log(
@@ -67,14 +64,14 @@ function handleChangeLayoutType(layoutType) {
     console.log(commonStore.isDrawing);
     // 드로잉일 경우 레이아웃 변경 금지 : 변경 시 그림을 그려도 상대방에게 영상이 전송되지 않아서.
     if (commonStore.isDrawing) {
-        commonToastMessage(t("toastMessage Drawing NoChangeLayout"));
+        commonToastMessage($t("toastMessage Drawing NoChangeLayout"));
         console.log("1");
         return;
     }
 
     // 낙하 모션 알람이 발생한 경우 레이아웃 변경 금지
     if (callStore.motionFallFlag) {
-        commonToastMessage(t("toastMessage motionFall NoChangeLayout"));
+        commonToastMessage($t("toastMessage motionFall NoChangeLayout"));
         console.log("2");
         return;
     }
@@ -82,7 +79,7 @@ function handleChangeLayoutType(layoutType) {
     // 움직임 없음 모션 알람이 발생한 경우 레이아웃 변경 금지
     if (callStore.motionNoMoveFlag) {
         console.log("3");
-        commonToastMessage(t("toastMessage motionNoMove NoChangeLayout"));
+        commonToastMessage($t("toastMessage motionNoMove NoChangeLayout"));
         return;
     }
 
@@ -171,9 +168,9 @@ watch(getLang, (newResult, oldResult) => {
     console.log("*** watch: before Lang : " + oldResult);
     console.log("*** watch: New Lang : " + newResult);
     if (newResult === "ko") {
-        curLang.value = t("lang")[0]; // this.$t 대신 t 함수 사용
+        curLang.value = $t("lang")[0]; // this.$t 대신 t 함수 사용
     } else {
-        curLang.value = t("lang")[1]; // this.$t 대신 t 함수 사용
+        curLang.value = $t("lang")[1]; // this.$t 대신 t 함수 사용
     }
 });
 
@@ -217,11 +214,11 @@ function toggleContactList() {
                     src="@/assets/images/attachment_header/ic_drawing.svg"
                     class="icon"
                 />
-                <span>{{ t("드로잉 종료") }}</span>
+                <span>{{ $t("드로잉 종료") }}</span>
             </button>
             <button v-if="isShare" @click="handleChangeShareOnOff">
                 <img src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
-                <span>{{ t("화면공유 종료") }}</span>
+                <span>{{ $t("화면공유 종료") }}</span>
             </button>
         </div>
         <div class="layout-butttons">

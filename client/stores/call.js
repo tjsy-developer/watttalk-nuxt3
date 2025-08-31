@@ -614,6 +614,9 @@ export const useCallStore = defineStore("call", {
         setCctvInfo(payload) {
             this.cctvInfo = payload;
         },
+        init() {
+            this.$reset();
+        }
     },
     // persist: {
     //     key: "call-store",

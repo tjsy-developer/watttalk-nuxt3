@@ -90,9 +90,9 @@ import { userListGetNickname } from "@/utils/userList";
 import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
 import { storeToRefs } from "pinia";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed } from "vue";
-import { useI18n } from "vue-i18n";
+const { $t } = useNuxtApp()
 const router = useRouter();
-const { t } = useI18n();
+
 import { useModal } from "vue-final-modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
@@ -1506,7 +1506,6 @@ watch(calendar, (newVal) => {
 
 // Watch for meeting save flag
 watch(getMeetingSaveFlag, (newVal) => {
-    alert(newVal);
     if (newVal) {
         createMeeting();
         meetingStore.setMeetingSaveInfo(null); // Directly calling action
@@ -1525,7 +1524,6 @@ watch(getMeetingDeleteFlag, (newVal) => {
 
 // Watch for meeting open flag
 watch(getMeetingOpenFlag, (newVal) => {
-    alert(newVal)
     if (newVal) {
         createRoomID();
     }

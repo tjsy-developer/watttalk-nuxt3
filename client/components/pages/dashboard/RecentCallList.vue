@@ -82,14 +82,15 @@ import { useCallStore } from "@/stores/call";
 import { useDirectMessageStore } from "@/stores/directMessage";
 import { useMeetingStore } from "@/stores/meeting";
 import { iconLogOffUser } from "@/assets/images/index";
-import { useI18n } from "vue-i18n";
+
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { storeToRefs } from "pinia";
 import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
 import ChatModal from "@/components/modal/ChatModal.vue";
+import { useNuxtApp } from "nuxt/app";
+const { $t } : any = useNuxtApp()
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
-const { t } = useI18n();
 interface OrgNode {
     deviceid: string;
     devicetype: number;
@@ -141,6 +142,7 @@ function handleMouseChatLeave(event: MouseEvent) {
 }
 
 function requestCall(remoteDeviceId: string | undefined) {
+    alert(remoteDeviceId)
     if (!remoteDeviceId) return;
     try {
         modalStore.openModal("device", {
@@ -202,9 +204,9 @@ function contactDateFormat(datetime: number) {
     const dateObj = new Date(timestampMs);
 
     // 개별 키로 요일과 월/일 글자 가져오기
-    const monthLabel = t("week7");
-    const dayLabel = t("week8");
-    const todayLabel = `(${t(`week${dateObj.getDay()}`)})`;
+    const monthLabel = $t("week7");
+    const dayLabel = $t("week8");
+    const todayLabel = `(${$t(`week${dateObj.getDay()}`)})`;
 
     const month = dateObj.getMonth() + 1 + monthLabel;
     const day = dateObj.getDate() + dayLabel;

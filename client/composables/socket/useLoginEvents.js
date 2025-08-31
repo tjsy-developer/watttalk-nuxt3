@@ -3,6 +3,7 @@ import { useLoginStore } from "@/stores/login";
 import { useCommonStore } from "@/stores";
 import { useModalStore } from "@/stores/modal";
 import { useSignallingSocket } from "./useSignallingSocket";
+import { tryOnScopeDispose } from "@vueuse/core";
 
 const statusCode = {
     Unauthorized: 0,
@@ -20,6 +21,135 @@ export function useLoginEvents() {
     const preferenceStore = useUserPreferenceStore();
     const router = useRouter();
 
+    // -------------------------
+    // 1) 핸들러 정의
+    // -------------------------
+    const handleLoginResponse = (response) => {
+        const data = JSON.parse(response);
+        console.log("login", data);
+
+        if (data.errcode === statusCode.Unauthorized) {
+            alert("loginStatus Unauthorized");
+            loginStore.setLoginType(3);
+            return;
+        }
+        if (data.errcode === statusCode.Not_Registered) {
+            alert("loginStatus NoneRegister");
+            loginStore.setLoginType(3);
+            return;
+        }
+        if (data.errcode === statusCode.Duplicate) {
+            commonStore.setNoneOverlayAlertStatus(20);
+            return;
+        }
+
+        loginStore.setLoginInfo({
+            institution: data.institution,
+            headquarters: data.headquarters,
+            branch: data.branch,
+            nickname: data.nickname,
+        });
+
+        requestLoginUserInfo(loginStore.m_local_deviceid);
+        requestEnvironment(loginStore.m_local_deviceid);
+    };
+
+    const handleLoginUserInfo = (userInfoRes) => {
+        const userInfo = JSON.parse(userInfoRes);
+        console.log("*** socket: loginUserInfo response", userInfo);
+
+        loginStore.setLoginInfo({
+            institution: userInfo.institution,
+            headquarters: userInfo.headquarters,
+            branch: userInfo.branch,
+            nickname: userInfo.nickname,
+        });
+
+        sessionStorage.setItem("m_institution", userInfo.institution);
+        sessionStorage.setItem("m_headquarters", userInfo.headquarters);
+        sessionStorage.setItem("m_branch", userInfo.branch);
+        sessionStorage.setItem("m_nickname", userInfo.nickname);
+
+        const isInvited = sessionStorage.getItem("isInvited");
+        if (isInvited == "false") {
+            router.push("/dashboard");
+            modalStore.closeModal("noneOverlayModal");
+        } else {
+            router.push(
+                `/meetingRoom/memberMeetingOnOff?reservId=${loginStore.reservId}`,
+            );
+        }
+    };
+
+    const handleEnvironment = (response) => {
+        const json = JSON.parse(response);
+        if (json.status == 0) {
+            alert("환경설정 정보가 등록되지않았습니다");
+            loginStore.setLoginType(3);
+            return;
+        }
+
+        let appJson = {};
+        for (const key in json) {
+            appJson = JSON.parse(json[key]);
+            break;
+        }
+
+        function convertStringBooleansExtended(obj) {
+            const result = {};
+            for (const key in obj) {
+                const val = obj[key];
+                if (val === "True" || val === "1") result[key] = true;
+                else if (val === "False" || val === "0") result[key] = false;
+                else result[key] = val;
+            }
+            return result;
+        }
+
+        const transAppInfo = convertStringBooleansExtended(appJson);
+        console.log("*** enviroment", transAppInfo);
+        preferenceStore.setEnviroment({
+            useAutoPictureAccept: transAppInfo.autoPictureAccept,
+            useAutoDiscalling: transAppInfo.autoDiscalling,
+            useDirectCall: transAppInfo.directCall,
+            autoCallAcceptTime: transAppInfo.autoCallAcceptTime,
+            onlyVoiceCallId: transAppInfo.onlyVoiceCallID.split(",") || [],
+            videoRecording: transAppInfo.useVideoRecording,
+            roomNumber: transAppInfo.roomNumber,
+        });
+    };
+
+    const handleForceLogoutResult = (response) => {
+        const json = JSON.parse(response);
+        if (json.status == 1) {
+            loginRequest(loginStore.m_local_deviceid);
+        } else {
+            modalStore.closeModal("noneOverlayModal");
+            setTimeout(() => loginStore.setLoginType(3), 3000);
+        }
+    };
+
+    // -------------------------
+    // 2) 이벤트 등록
+    // -------------------------
+    const listenLoginEvent = () => {
+        signallingSocket.on("login", handleLoginResponse);
+        signallingSocket.on("loginUserInfo", handleLoginUserInfo);
+        signallingSocket.on("environment", handleEnvironment);
+        signallingSocket.on("forceLogoutResult", handleForceLogoutResult);
+
+        // onUnmounted 시 이벤트 해제
+        tryOnScopeDispose(() => {
+            signallingSocket.off("login", handleLoginResponse);
+            signallingSocket.off("loginUserInfo", handleLoginUserInfo);
+            signallingSocket.off("environment", handleEnvironment);
+            signallingSocket.off("forceLogoutResult", handleForceLogoutResult);
+        });
+    };
+
+    // -------------------------
+    // 3) emit 함수
+    // -------------------------
     const loginRequest = (deviceId) => {
         if (!deviceId) return;
         const payload = {
@@ -31,161 +161,26 @@ export function useLoginEvents() {
         console.log("*** socket: emit login", payload);
     };
 
+    const requestLoginUserInfo = (loginId) => {
+        const obj = {
+            deviceid: loginId,
+            language: preferenceStore.lang,
+        };
+        signallingSocket.emit("loginUserInfo", JSON.stringify(obj));
+    };
+
     const requestEnvironment = (deviceId) => {
         const json = {
             deviceid: deviceId,
             appname: "powertalkweb",
         };
         signallingSocket.emit("environment", JSON.stringify(json));
-        console.log("여기 로그찍어줘", json);
     };
-
-    const handleLoginResponse = (response) => {
-        const data = JSON.parse(response);
-        console.log('login', data)
-        const status = loginStore.loginStatus;
-
-        if (data.errcode === statusCode.Unauthorized) {
-            alert("loginStatus Unauthorized");
-            loginStore.setLoginType(3);
-            return;
-        }
-
-        if (data.errcode === statusCode.Not_Registered) {
-            alert("loginStatus NoneRegister");
-            loginStore.setLoginType(3);
-            return;
-        }
-
-        if (data.errcode === status.Duplicate) {
-            commonStore.setNoneOverlayAlertStatus(20);
-            return;
-        }
-
-        // 정상 로그인 처리
-        console.log("*** socket: login response success", data);
-        loginStore.setLoginInfo({
-            institution: data.institution,
-            headquarters: data.headquarters,
-            branch: data.branch,
-            nickname: data.nickname,
-        });
-
-        // 유저 정보 요청
-        requestLoginUserInfo(loginStore.m_local_deviceid);
-        listenLoginUserInfo();
-        requestEnvironment(loginStore.m_local_deviceid);
-    };
-    const requestLoginUserInfo = (loginId) => {
-        const obj = {
-            deviceid: loginId,
-            language: preferenceStore.lang,
-        };
-        const json = JSON.stringify(obj);
-        signallingSocket.emit("loginUserInfo", json);
-        console.log("*** socket: loginUserInfo request", json);
-    }
-
-    const listenLoginUserInfo = () => {
-        signallingSocket.on("loginUserInfo", (userInfoRes) => {
-            const userInfo = JSON.parse(userInfoRes);
-            console.log("*** socket: loginUserInfo response", userInfo);
-
-            loginStore.setLoginInfo({
-                institution: userInfo.institution,
-                headquarters: userInfo.headquarters,
-                branch: userInfo.branch,
-                nickname: userInfo.nickname,
-            });
-
-            sessionStorage.setItem("m_institution", userInfo.institution);
-            sessionStorage.setItem("m_headquarters", userInfo.headquarters);
-            sessionStorage.setItem("m_branch", userInfo.branch);
-            sessionStorage.setItem("m_nickname", userInfo.nickname);
-
-
-            const isInvited = sessionStorage.getItem("isInvited")
-            if (isInvited == 'false') {
-                router.push("/dashboard");
-                modalStore.closeModal("noneOverlayModal");
-            } else {
-                router.push(
-                    `/meetingRoom/memberMeetingOnOff?reservId=${loginStore.reservId}`,
-                );
-            }
-        });
-    }
-    const listenLoginEvent = () => {
-        signallingSocket.on("login", handleLoginResponse);
-    };
-
-    const listenEviroment = () => {
-        signallingSocket.on("environment", (response) => {
-            const json = JSON.parse(response);
-
-            if (json.status == 0) {
-                alert("환경설정 정보가 등록되지않았습니다")
-                loginStore.setLoginType(3);
-                return
-            }
-
-            let appJson = {}
-            for (const key in json) {
-                appJson = JSON.parse(json[key]);
-                break;
-            }
-            
-            function convertStringBooleansExtended(obj) {
-                const result = {}
-            
-                for (const key in obj) {
-                const val = obj[key]
-            
-                if (val === "True") result[key] = true
-                else if (val === "False") result[key] = false
-                else if (val === "1") result[key] = true
-                else if (val === "0") result[key] = false
-                else result[key] = val
-                }
-            
-                return result
-            }
-            const transAppInfo = convertStringBooleansExtended(appJson);
-            preferenceStore.setEnviroment({
-                useAutoPictureAccept: transAppInfo.autoPictureAccept,
-                useAutoDiscalling: transAppInfo.autoDiscalling,
-                useDirectCall: transAppInfo.directCall,
-                autoCallAcceptTime: transAppInfo.autoCallAcceptTime,
-                onlyVoiceCallId: transAppInfo.onlyVoiceCallID.split(",") || [],
-                videoRecording: transAppInfo.useVideoRecording,
-                roomNumber: transAppInfo.roomNumber,
-            });
-            console.log("environment", json);
-        });
-    }
-
-    const listenForceLogoutEvent = (localDeviceId) => {
-        signallingSocket.on("forceLogoutResult", function (response) {
-            const json = JSON.parse(response);
-
-            /* 1: 성공 - login시도 , 0: 실패 - 다른 기기 통화중 */
-            if (json.status == 1) {
-                loginRequest(localDeviceId);
-            } else {
-                // 다른기기 로그아웃 발생하는거 시켜야됨
-                self.noneOverlayModal(22);
-                setTimeout(() => {
-                    loginStore.setLoginType(3);
-                }, 3000);
-            }
-        });
-    }
-
 
     return {
         loginRequest,
         listenLoginEvent,
-        listenEviroment,
-        listenForceLogoutEvent,
+        requestLoginUserInfo,
+        requestEnvironment,
     };
 }

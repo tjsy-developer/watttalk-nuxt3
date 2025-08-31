@@ -250,5 +250,8 @@ export const useMeetingStore = defineStore("meeting", {
         changeMeetingViewType(payload) {
             this.meetingViewType = payload;
         },
+        init() {
+            this.$reset();
+        },
     },
 });

@@ -13,7 +13,7 @@ WORKDIR $APP_DIR
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY nuxt.config.ts ./
-COPY i18n.config.ts ./
+# COPY i18n.config.ts ./
 COPY app.vue ./
 COPY client ./client
 COPY server ./server

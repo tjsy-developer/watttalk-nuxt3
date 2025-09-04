@@ -234,24 +234,24 @@ function toggleContactList() {
                     <ContactList></ContactList>
                 </section>
             </div>
-            <div>
+            <div class="layout-box">
                 <button
                     @click="handleChangeLayoutType(1)"
                     :class="callingLayoutType == 1 ? 'active' : 'inactive'"
                 >
-                    <img src="@/assets/images/header/ic_4.png" />
+                    <img src="@/assets/images/header/ic_4.png" class="default"/>
                 </button>
                 <button
                     @click="handleChangeLayoutType(3)"
                     :class="callingLayoutType == 3 ? 'active' : 'inactive'"
                 >
-                    <img src="@/assets/images/header/ic_5.png" />
+                    <img src="@/assets/images/header/ic_5.png" class="default"/>
                 </button>
                 <button
                     @click="handleChangeLayoutType(4)"
                     :class="callingLayoutType == 4 ? 'active' : 'inactive'"
                 >
-                    <img src="@/assets/images/header/ic_6.png" />
+                    <img src="@/assets/images/header/ic_6.png" class="default"/>
                 </button>
             </div>
             <div>
@@ -322,7 +322,9 @@ header {
         }
     }
 }
-
+.layout-box {
+    padding: 0 10px;
+}
 .layout-butttons {
     display: flex;
     height: 100%;
@@ -333,6 +335,12 @@ header {
     > div {
         display: flex;
         align-items: center;
+        > button {
+            height: 100%;
+            > img:not(.default) {
+                height: inherit;
+            }
+        }
     }
     /* *:not(.active, .inactive) {
         height: inherit;

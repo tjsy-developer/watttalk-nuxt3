@@ -174,11 +174,6 @@
                         {{ t("거절했습니다") }}
                     </p>
                 </div>
-                <div class="control-buttons">
-                    <button @click="cancelFileTransfer" class="decline-btn">
-                        {{ t("취소") }}
-                    </button>
-                </div>
             </section>
         </div>
         <div class="alert-box" v-else-if="fileSendStatus == 6">
@@ -334,6 +329,10 @@ $color-text-light: #d6d6d6;
 /* 전역 또는 기본 스타일 */
 p {
     margin: 0 0 0 !important;
+}
+
+h4 {
+    margin: 0;
 }
 
 select {

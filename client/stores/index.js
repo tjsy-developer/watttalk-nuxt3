@@ -332,6 +332,8 @@ export const useCommonStore = defineStore("common", {
         // 공통 modal status Vuex
         setAlertStatus(payload) {
             this.alertStatus = payload;
+            const modalStore = useModalStore();
+            modalStore.openModal("message");
         },
         setNoneOverlayAlertStatus(payload) {
             this.noneOverlayAlertStatus = payload;

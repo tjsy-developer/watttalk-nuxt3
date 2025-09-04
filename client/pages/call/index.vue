@@ -7204,6 +7204,7 @@ function previewModal(url) {
         key: `preview-modal-${commonStore.previewModalInfo.previewModalcnt + 1}`,
         attrs: {
             previewImage: url,
+            hideOverlay: true, 
             onClose: () => close(),
         },
     });

@@ -38,7 +38,7 @@
             <section v-if="alertStatus == 2">
                 <div class="content">
                     <p class="msg alert-text">
-                        {{ t("요청자가 PC가 아닙니") }}
+                        {{ t("요청자가 PC가 아닙니다") }}
                     </p>
                     <p class="msg alert-text">{{ t("호스트는 PC만 가능합니다") }}</p>
                 </div>

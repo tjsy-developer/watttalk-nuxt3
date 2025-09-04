@@ -18,7 +18,7 @@
     <VueFinalModal
         v-model="isMessageModalVisible"
         :clickToClose="false"
-        class="modal-container message-modal"
+        class="modal-container"
     >
         <MessageModal></MessageModal>
     </VueFinalModal>
@@ -149,13 +149,13 @@ const isAlertModal = computed({
 });
 
 onMounted(() => {
-    commonStore.setAlertStatus(0);
-    modalStore.isModalOpen("message");
+    // 모달 레이아웃 테스트용
+    // commonStore.setAlertStatus(0);
+    // modalStore.isModalOpen("message");
 
     // // noneOverlay
     // commonStore.setNoneOverlayAlertStatus(23);
     // modalStore.openModal("noneOverlayModal");
-
 
     // commonStore.setFileSendStatus(7)
     // modalStore.openModal("fileSend")

@@ -1,12 +1,13 @@
-import { getWorldTime } from '@/utils/common';
+import { getWorldTime } from "@/utils/common";
 import { useNuxtApp, useRouter } from "nuxt/app";
 import { useLoginStore } from "@/stores/login";
 import { useUserPreferenceStore } from "@/stores/common";
-import { onMounted } from 'vue';
-import { useModalStore } from '@/stores/modal';
-import { useMeetingStore } from '@/stores/meeting';
-import { userDataGetInfo } from '../common';
-import { useSignallingSocket } from './useSignallingSocket';
+import { onMounted } from "vue";
+import { useModalStore } from "@/stores/modal";
+import { useMeetingStore } from "@/stores/meeting";
+import { userDataGetInfo } from "../common";
+import { useSignallingSocket } from "./useSignallingSocket";
+import { useDirectMessageStore } from "@/stores/directMessage";
 
 const statusCode = {
     Unauthorized: 0,
@@ -22,6 +23,7 @@ export default function useSocketEmitEvents() {
     const modalStore = useModalStore();
     const preperenceStore = useUserPreferenceStore();
     const meetingStore = useMeetingStore();
+    const directMessageStore = useDirectMessageStore();
 
     const requestCreateFixRoomID = () => {
         const json = {
@@ -52,7 +54,7 @@ export default function useSocketEmitEvents() {
             en_seq: loginStore.sessionEnSeq,
             language: preperenceStore.lang,
         };
-        console.log(json)
+        console.log(json);
         signallingSocket.emit("userListAll", JSON.stringify(json));
     };
 
@@ -94,12 +96,9 @@ export default function useSocketEmitEvents() {
             const json = {
                 deviceid: loginStore.m_local_deviceid,
                 sendDurationEnable: preperenceStore.recordingStatus,
-            };  
+            };
             signallingSocket.emit("createRoomID", JSON.stringify(json));
-        } catch(error) {
-
-        }
-
+        } catch (error) {}
     };
 
     const requestCalling = ({
@@ -169,7 +168,7 @@ export default function useSocketEmitEvents() {
 
     const requestDirectMessageReadProcess = ({ sender, receiver, datetime }) => {
         const json = {
-            sender: loginStore.m_local_deviceid,
+            sender,
             receiver,
             datetime,
         };
@@ -187,28 +186,32 @@ export default function useSocketEmitEvents() {
         signallingSocket.emit("joinMeeting", JSON.stringify(json));
     };
 
-    const requestGetPreviousMessage = ({ receiver, prevMessageCount }) => {
+    const requestGetPreviousMessage = (receiver) => {
+        const firstMessageTime = directMessageStore.openMessageList.find(
+            (item) => item.remoteDeviceId == receiver,
+        )?.messageList?.[0]?.timestamp || getWorldTime();
+        
         const json = {
             sender: loginStore.m_local_deviceid,
             receiver: receiver,
-            datetime: getWorldTime(), // 현재 시간으로 부터 이전 메세지 가져오기
-            count: prevMessageCount, // 이전 메세지 가져올 갯수
+            datetime: firstMessageTime, // 현재 시간으로 부터 이전 메세지 가져오기
+            count: 10, // 이전 메세지 가져올 갯수
         };
         signallingSocket.emit("getPreviousMessage", JSON.stringify(json));
     };
 
     const requestOpenMeetingChecking = (meetingSeq) => {
         const json = {
-            meeting_seq: meetingSeq
+            meeting_seq: meetingSeq,
         };
         signallingSocket.emit("openMeetingChecking", JSON.stringify(json));
-    }
+    };
 
     const requestMultiCalling = ({
         remoteDeviceId,
         roomID,
         currentRoomNumberCount,
-        uniqueRoomID
+        uniqueRoomID,
     }) => {
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
@@ -221,17 +224,14 @@ export default function useSocketEmitEvents() {
         signallingSocket.emit("multiCalling", JSON.stringify(json));
     };
 
-    const requestMultiRefuseCalling = ({
-        remoteDeviceId,
-        roomID,
-    }) => {
+    const requestMultiRefuseCalling = ({ remoteDeviceId, roomID }) => {
         const remoteInfo = userDataGetInfo(remoteDeviceId);
         const json = {
             localdeviceid: loginStore.m_local_deviceid,
             remotedeviceid: remoteDeviceId,
             roomid: roomID,
             institution: remoteInfo.enName,
-            nickname: remoteInfo.nickName
+            nickname: remoteInfo.nickName,
         };
         signallingSocket.emit("multiRefuseCalling", JSON.stringify(json));
     };
@@ -242,7 +242,7 @@ export default function useSocketEmitEvents() {
             status: 0,
         };
         signallingSocket.emit("screenSharing", JSON.stringify(json));
-    }
+    };
 
     const requestForceLeave = (remoteDeviceId) => {
         const json = {

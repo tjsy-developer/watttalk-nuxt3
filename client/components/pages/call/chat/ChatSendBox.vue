@@ -16,7 +16,7 @@
                     }"
                     class="normal"
                 >
-                    {{ $t("일반") }}
+                    {{ t("일반") }}
                 </button>
                 <button
                     @click="switchMessageType(2)"
@@ -38,7 +38,7 @@
                     v-if="!videoCallHost"
                     class="emergency"
                 >
-                    {{ $t("긴급") }}
+                    {{ t("긴급") }}
                 </button>
                 <button
                     @click="switchMessageType(4)"
@@ -55,7 +55,7 @@
                     v-if="videoCallHost && !isDrawing"
                     class="normal"
                 >
-                    {{ $t("chatting move") }}
+                    {{ t("chatting move") }}
                 </button>
                 <button
                     @click="switchMessageType(5)"
@@ -72,7 +72,7 @@
                     v-if="videoCallHost && !isDrawing"
                     class="emergency"
                 >
-                    {{ $t("chatting direction") }}
+                    {{ t("chatting direction") }}
                 </button>
             </div>
             <div class="col-auto row justify-end iconContainer">
@@ -115,7 +115,7 @@
                     v-if="videoCallHost"
                     class="emergency"
                 >
-                    {{ $t("emergency") }}
+                    {{ t("emergency") }}
                 </button>
             </div>
         </div>
@@ -141,7 +141,7 @@
                 :style="{ backgroundColor: messageType == 2 ? '#EE314A' : '#1c8eff' }"
                 class="col-12 sendMessageBtn"
             >
-                {{ $t("send message") }}
+                {{ t("send message") }}
             </button>
         </div>
         <div class="specific-message-box" v-else-if="messageType == 3">
@@ -190,10 +190,10 @@
 </template>
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-const { $t } = useNuxtApp() // For translations
 import { useChattingStore } from "@/stores/chatting";
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
+const { t } = useI18n();
 
 const chattingStore = useChattingStore();
 const callStore = useCallStore();
@@ -220,56 +220,56 @@ const accessDeviceCheck = computed(() => commonStore.accessDeviceCheck); // Assu
 const emergencyIconList = computed(() => [
     {
         img: new URL("@/assets/images/messageBox/ic_fire.png", import.meta.url).href,
-        text: $t("fire"),
+        text: t("fire"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_emergency.png", import.meta.url).href,
-        text: $t("emergencies"),
+        text: t("emergencies"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_ax.png", import.meta.url).href,
-        text: $t("accident"),
+        text: t("accident"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_car.png", import.meta.url).href,
-        text: $t("patient transportation"),
+        text: t("patient transportation"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_hand.png", import.meta.url).href,
-        text: $t("work order"),
+        text: t("work order"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_check.png", import.meta.url).href,
-        text: $t("on-site confirmation"),
+        text: t("on-site confirmation"),
     },
 ]);
 
 const moveIconList = computed(() => [
     {
         img: new URL("@/assets/images/messageBox/ic_move_up.png", import.meta.url).href,
-        text: $t("chatting up"),
+        text: t("chatting up"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_move_left.png", import.meta.url).href,
-        text: $t("chatting left"),
+        text: t("chatting left"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_move_front.png", import.meta.url)
             .href,
-        text: $t("chatting front"),
+        text: t("chatting front"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_move_down.png", import.meta.url).href,
-        text: $t("chatting down"),
+        text: t("chatting down"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_move_right.png", import.meta.url)
             .href,
-        text: $t("chatting right"),
+        text: t("chatting right"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_move_back.png", import.meta.url).href,
-        text: $t("chatting back"),
+        text: t("chatting back"),
     },
 ]);
 
@@ -277,32 +277,32 @@ const directionIconList = computed(() => [
     {
         img: new URL("@/assets/images/messageBox/ic_direction_up.png", import.meta.url)
             .href,
-        text: $t("chatting up"),
+        text: t("chatting up"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_direction_left.png", import.meta.url)
             .href,
-        text: $t("chatting left"),
+        text: t("chatting left"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_direction_front.png", import.meta.url)
             .href,
-        text: $t("chatting front"),
+        text: t("chatting front"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_direction_down.png", import.meta.url)
             .href,
-        text: $t("chatting down"),
+        text: t("chatting down"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_direction_right.png", import.meta.url)
             .href,
-        text: $t("chatting right"),
+        text: t("chatting right"),
     },
     {
         img: new URL("@/assets/images/messageBox/ic_direction_back.png", import.meta.url)
             .href,
-        text: $t("chatting back"),
+        text: t("chatting back"),
     },
 ]);
 

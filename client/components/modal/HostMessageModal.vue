@@ -5,37 +5,37 @@
         </button>
         <div class="alert-box">
             <div class="alert-title">
-                <h4 class="alertTitle">{{ $t("호스트 권한 요청") }}</h4>
+                <h4 class="alertTitle">{{ t("호스트 권한 요청") }}</h4>
                 <div class="titleUnderLine"></div>
             </div>
             <div v-if="hostRequestStatus == 0">
                 <div class="requestStatus alertRequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText"> {{ `${hostRequestNickname} ${$t('님이')}` }}</p>
+                        <p class="msg alertText"> {{ `${hostRequestNickname} ${t('님이')}` }}</p>
                     </div>
                     <div class="">
                         <span class="msg alertText">{{
-                            $t("호스트 권한 요청을 보냈습니다")
+                            t("호스트 권한 요청을 보냈습니다")
                         }}</span>
                     </div>
                 </div>
                 <div class="alertControlbuttons">
                     <button @click="hostRequestResult('accept')" class="hostRequestadelineButton">
-                        {{ $t("수락") }}
+                        {{ t("수락") }}
                     </button>
 					<button @click="hostRequestResult('reject')" class="hostRequestadelineButton">
-                        {{ $t("거절") }}
+                        {{ t("거절") }}
                     </button>
                 </div>
             </div>
             <div v-else-if="hostRequestStatus == 1">
                 <div class="requestStatus alert RequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText">{{ $t("호스트 권한 요청을 보냈습니다") }}</p>
+                        <p class="msg alertText">{{ t("호스트 권한 요청을 보냈습니다") }}</p>
                     </div>
                     <div class="">
                         <span class="msg alertText">{{
-                            $t("수락 대기중입니다")
+                            t("수락 대기중입니다")
                         }}</span>
                     </div>
                 </div>
@@ -43,8 +43,8 @@
             <div v-else>
                 <div class="requestStatus alertRequestDeclineMessage">
                     <div class="">
-                        <p class="msg alertText">{{ $t("상대방이 권한 요청을") }}</p>
-                        <p class="msg alertText">{{ $t("거절했습니다") }}</p>
+                        <p class="msg alertText">{{ t("상대방이 권한 요청을") }}</p>
+                        <p class="msg alertText">{{ t("거절했습니다") }}</p>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
 <script setup>
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 const callStore = useCallStore();
 const modalStore = useModalStore();
 

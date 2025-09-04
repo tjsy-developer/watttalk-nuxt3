@@ -90,7 +90,7 @@ import { userListGetNickname } from "@/utils/userList";
 import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
 import { storeToRefs } from "pinia";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed } from "vue";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 const router = useRouter();
 
 import { useModal } from "vue-final-modal";
@@ -795,64 +795,6 @@ onMounted(async () => {
             callingBell("stop");
         } catch (e) {
             console.error(`${e}`);
-        }
-    });
-
-    // directMessage Receive
-    signallingSocket.on("directMessage", (response) => {
-        console.log("*** socket: directMessage response");
-        console.log(response);
-
-        const json = JSON.parse(response);
-
-        const senderNickname = userListGetNickname(json.sender);
-        const receiverNickname = sessionStorage.getItem("m_nickname");
-
-        directMessageStore.receiveDM({
-            message: json.message,
-            type: 1,
-            sender: json.sender,
-            receiver: json.receiver,
-            senderNickname,
-            receiverNickname,
-            datetime: json.datetime,
-            chattingDateTime: getDirectMessageTimeZone(json.datetime),
-        });
-
-        dircetMessageBell("play");
-
-        const reciverNickname = userListGetNickname(json.sender);
-
-        directMessageStore.addChattingModal({
-            deviceid: json.sender,
-            nickname: reciverNickname,
-        });
-
-        setTimeout(() => {
-            // Using proxy.$emit if 'privateChatDeviceID' is an event emitted by this component
-            proxy.$emit("privateChatDeviceID", json.sender);
-        }, 500);
-    });
-
-    // 읽음처리 socket on event
-    signallingSocket.on("directMessageReadProcess", (response) => {
-        console.log("*** socket: directMessageReadProcess response");
-        console.log(response);
-
-        const json = JSON.parse(response);
-
-        for (let i = 0; i < directMessageStore.directMessageList.length; i++) {
-            const directMessageItem = directMessageStore.directMessageList[i];
-
-            if (
-                directMessageItem.sender === json.sender &&
-                directMessageItem.receiver === json.receiver &&
-                directMessageItem.datetime <= json.datetime
-            ) {
-                directMessageStore.setReadMessage({
-                    index: i,
-                });
-            }
         }
     });
 

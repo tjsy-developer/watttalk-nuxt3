@@ -54,17 +54,6 @@
     >
         <NoticeModal></NoticeModal>
     </VueFinalModal>
-    <!-- <VueFinalModal
-        modal-id="chat-modal"
-        display-directive="show"
-        background="interactive"
-        content-transition="vfm-fade"
-        :hide-overlay="true"
-        @update:model-value="val => emit('update:modelValue', val)"
-        class="modal-container notice-modal non-overlay"
-    >
-        <ChatModal></ChatModal>
-    </VueFinalModal> -->
     <dHeader></dHeader>
     <div class="content">
         <slot></slot>
@@ -169,7 +158,9 @@ onMounted(() => {
     left: 64px;
     top: 50px;
     width: -webkit-fill-available;
-    height: 100vh;
+    height: -webkit-fill-available;
+    max-width: calc(100vw - $sidebar-width);
+    max-height: calc(100vh - $header-height);
     @include tc(background-color, "bg-color");
 }
 

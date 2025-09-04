@@ -3,12 +3,12 @@
         <div class="noneOverayModalContainer">
             <div>
                 <div class="modal-title">
-                    <span class="alertTitle">{{ $t("file preview") }}</span>
+                    <span class="alertTitle">{{ t("file preview") }}</span>
                     <div class="previewCloseBtn">
                         <img
                             @click="previewfullScreen"
                             src="@/assets/images/calling/bt_maximization.png"
-                            :title="$t('maximize')"
+                            :title="t('maximize')"
                             class="fullscreenImg"
                         />
                         <img
@@ -25,7 +25,7 @@
                         @click="openDrawingConfirm"
                         :title="
                             videoCallHost && !drawingIframe
-                                ? $t('go to drawing')
+                                ? t('go to drawing')
                                 : undefined
                         "
                         :style="{
@@ -37,11 +37,11 @@
             </div>
             <div v-show="isMaximize" id="maximize" class="size">
 				<div class="modal-title maximize">
-                    <span class="alertTitle">{{ $t("file preview") }}</span>
+                    <span class="alertTitle">{{ t("file preview") }}</span>
                     <button class="col-auto minimizationBtn" @click="minimizeBtnClick">
                         <img
                             src="@/assets/images/calling/bt_minimization.png"
-                            :title="$t('minimization')"
+                            :title="t('minimization')"
                         />
                     </button>
                     <button class="col-auto minimizationCloseBtn" @click="cancelBtnClick">
@@ -63,6 +63,7 @@ import { useChattingStore } from "@/stores/chatting";
 import { computed, onMounted, ref } from "vue";
 import { VueFinalModal } from "vue-final-modal";
 
+const { t } = useI18n();
 const commonStore = useCommonStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();

@@ -43,6 +43,6 @@ export const useUserPreferenceStore = defineStore("userPreference", {
         },
     },
     persist: {
-        path: ['lang', 'theme'],
+        storage: process.client ? sessionStorage : undefined,
     },
 });

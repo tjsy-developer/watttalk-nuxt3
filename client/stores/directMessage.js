@@ -23,6 +23,7 @@ export const useDirectMessageStore = defineStore("directMessage", {
 
         totalChatCnt: 0,
         openMessageList: [],
+        prevMessageFocusUser: "",
     }),
 
     // Getters (현재 비어있으므로 선택 사항)
@@ -58,6 +59,7 @@ export const useDirectMessageStore = defineStore("directMessage", {
                 // messageList 배열이 없으면 초기화
                 if (!this.openMessageList[index].messageList) {
                     this.openMessageList[index].messageList = [];
+                    this.openMessageList[index].isLastMessage = false;
                 }
 
                 // 메시지 추가
@@ -80,6 +82,7 @@ export const useDirectMessageStore = defineStore("directMessage", {
                 // messageList 배열이 없으면 초기화
                 if (!this.openMessageList[index].messageList) {
                     this.openMessageList[index].messageList = [];
+                    this.openMessageList[index].isLastMessage = false;
                 }
 
                 // 메시지 추가
@@ -97,21 +100,51 @@ export const useDirectMessageStore = defineStore("directMessage", {
             const index = this.openMessageList.findIndex(
                 (item) => item.remoteDeviceId === payload.remoteDeviceId,
             );
-            console.log(index);
             if (index !== -1) {
-                // messageList 배열이 없으면 초기화
                 if (!this.openMessageList[index].messageList) {
                     this.openMessageList[index].messageList = [];
+                    this.openMessageList[index].isLastMessage = false;
                 }
 
-              this.openMessageList[index].messageList = this.openMessageList[
-                  index
-              ].messageList.map((value) => {
-                  return {
-                      ...value,
-                      read: true,
-                  };
-              });
+                this.openMessageList[index].messageList = this.openMessageList[
+                    index
+                ].messageList.map((value) => {
+                    return {
+                        ...value,
+                        read: true,
+                    };
+                });
+            }
+        },
+        setAddPrevMessage(payload) {
+            const index = this.openMessageList.findIndex(
+                (item) => item.remoteDeviceId === this.prevMessageFocusUser,
+            );
+            if (index !== -1) {
+                if (!this.openMessageList[index].messageList) {
+                    this.openMessageList[index].messageList = [];
+                    this.openMessageList[index].isLastMessage = false;
+                }
+
+                this.openMessageList[index].messageList.unshift({
+                    sender: payload.sender,
+                    receiver: payload.receiver,
+                    message: payload.message,
+                    timestamp: payload.timestamp,
+                    datetime: payload.dateTime,
+                    read: payload.read,
+                });
+            }
+        },
+        setPrevMessageFocusUser(payload) {
+            this.prevMessageFocusUser = payload;
+        },
+        setIsLastMessage() {
+            const index = this.openMessageList.findIndex(
+                (item) => item.remoteDeviceId === this.prevMessageFocusUser,
+            );
+            if (index !== -1) {
+                this.openMessageList[index].isLastMessage = true
             }
         },
     },

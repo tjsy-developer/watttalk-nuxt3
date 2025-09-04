@@ -12,7 +12,7 @@ VERSION=$(date +"%Y%m%d-%H%M%S")
 # 소나큐브 관련 변수
 export SONAR_SCANNER_ORIGIN="D:\project\sonar-scanner\bin\sonar-scanner"
 export SONAR_URL="https://sonarqube.hmg-corp.io"
-export SONAR_TOKEN="sqp_4bf71412ebacf9d4c012a489a65aead9947876c3"
+export SONAR_TOKEN="sqp_7850aae3d821ba8d12787927bb5acd6c9b28f79e"
 export SONAR_PROJECT_NAME="smartglass-solution-talk-local"
 export SONAR_PROJECT_KEY="smartglass-solution-talk-local"
 
@@ -25,7 +25,7 @@ cd "D:\project\watttalk-nuxt3" || exit
   -Dsonar.login="$SONAR_TOKEN" \
   -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
   -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-  # -Dsonar.exclusions="**/node_modules/**" \
+  -Dsonar.exclusions="**/node_modules/**" \
   -Dsonar.sources="." \
   -X
 

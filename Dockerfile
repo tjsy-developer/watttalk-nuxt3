@@ -16,7 +16,6 @@ COPY nuxt.config.ts ./
 # COPY i18n.config.ts ./
 COPY app.vue ./
 COPY client ./client
-COPY server ./server
 COPY configs ./configs
 COPY nuxt_configs ./nuxt_configs
 COPY .env .env

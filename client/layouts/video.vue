@@ -43,14 +43,6 @@
     >
         <HostModal></HostModal>
     </VueFinalModal>
-    <!-- <VueFinalModal
-        v-model="isPreviewModal"
-        :clickToClose="false"
-        class="modal-container host-modal"
-    >
-        <FilePreviewModal></FilePreviewModal>
-    </VueFinalModal> -->
-    <!--  -->
     <CallHeader></CallHeader>
     <div class="content">
         <slot></slot>

@@ -10,7 +10,7 @@
 
         <div class="host-modal-content">
             <div class="host-title-con">
-                <span class="host-title">{{ $t("호스트 권한 요청") }}</span>
+                <span class="host-title">{{ t("호스트 권한 요청") }}</span>
             </div>
             <div class="title-under-line"></div>
 
@@ -24,11 +24,11 @@
                             <span class="msg request-nickname">{{
                                 hostRequestNickname
                             }}</span>
-                            <span class="msg request-text">{{ $t("님이") }}</span>
+                            <span class="msg request-text">{{ t("님이") }}</span>
                         </p>
                     </div>
                     <div>
-                        <span class="msg request-text">{{ $t("호스트 권한 요청을 보냈습니다") }}</span>
+                        <span class="msg request-text">{{ t("호스트 권한 요청을 보냈습니다") }}</span>
                     </div>
                 </div>
                 <div class="host-request-buttons">
@@ -36,13 +36,13 @@
                         class="host-request-accept-button"
                         @click="hostRequestResult('accept')"
                     >
-                        {{ $t("수락") }}
+                        {{ t("수락") }}
                     </button>
                     <button
                         class="host-request-decline-button"
                         @click="hostRequestResult('reject')"
                     >
-                        {{ $t("거절") }}
+                        {{ t("거절") }}
                     </button>
                 </div>
             </div>
@@ -55,10 +55,10 @@
                     class="request-status host-request-message"
                 >
                     <div>
-                        <p class="msg request-text">{{ $t("호스트 권한 요청을 보냈습니다") }}</p>
+                        <p class="msg request-text">{{ t("호스트 권한 요청을 보냈습니다") }}</p>
                     </div>
                     <div>
-                        <span class="msg request-text">{{ $t("수락 대기중입니다") }}</span>
+                        <span class="msg request-text">{{ t("수락 대기중입니다") }}</span>
                     </div>
                 </div>
             </div>
@@ -71,11 +71,11 @@
                     class="request-status host-request-message"
                 >
                     <div>
-                        <p class="msg request-text">{{ $t("상대방이 권한 요청을") }}</p>
+                        <p class="msg request-text">{{ t("상대방이 권한 요청을") }}</p>
                     </div>
                     <div>
                         <span class="msg request-text">{{
-                            $t("거절했습니다")
+                            t("거절했습니다")
                         }}</span>
                     </div>
                 </div>
@@ -88,7 +88,7 @@
 import { useModalStore } from "@/stores/modal";
 import { useNuxtApp } from "nuxt/app";
 import { computed, onMounted } from "vue";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 
 const callStore = useCallStore();
 const modalStore = useModalStore();

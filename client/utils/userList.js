@@ -1,4 +1,5 @@
 import { useCommonStore } from "@/stores";
+import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
 
 // userListStore를 전역으로 선언하지 않고, 각 함수 내부에서 호출
@@ -109,6 +110,11 @@ export const checkMainVideo = () => {
     }
 };
 
+export const findUserInfo = (deviceId) => {
+    const callStore = useCallStore(); // ✨
+    return callStore.userData.find((value) => value.deviceid === deviceId) || {};
+};
+
 // default export는 그대로 둠 (이 파일의 목적에 따라)
 export default {
     userListInit,
@@ -125,4 +131,5 @@ export default {
     userListGetNewNotificationCount,
     userListSetNewNotificationCount,
     checkMainVideo,
+    findUserInfo,
 };

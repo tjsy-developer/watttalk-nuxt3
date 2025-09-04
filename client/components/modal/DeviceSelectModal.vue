@@ -1,17 +1,17 @@
 <template>
     <div class="mainWrap">
         <div class="modalHeader">
-            <span>{{ $t("카메라/마이크 설정") }}</span>
+            <span>{{ t("카메라/마이크 설정") }}</span>
             <img src="@/assets/images/darkmode/modal/ic_device_setup.svg" />
         </div>
         <div class="divisionLine"></div>
         <div class="body">
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("오디오") }}:</span>
+                    <span>{{ t("오디오") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedAudio">
-                    <option :value="false">{{ $t("없음") }}</option>
+                    <option :value="false">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in audioList"
                         :key="index"
@@ -23,10 +23,10 @@
             </div>
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("마이크") }}:</span>
+                    <span>{{ t("마이크") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedMic">
-                    <option :value="false">{{ $t("없음") }}</option>
+                    <option :value="false">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in micList"
                         :key="index"
@@ -38,10 +38,10 @@
             </div>
             <div class="selectionRow">
                 <div class="nameWrap">
-                    <span>{{ $t("카메라") }}:</span>
+                    <span>{{ t("카메라") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedCam" id="camInput">
-                    <option :value="-1">{{ $t("없음") }}</option>
+                    <option :value="-1">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in camList"
                         :key="index"
@@ -58,16 +58,16 @@
                     :value="false"
                     v-model="checked"
                 />
-                <span>{{ $t("영상통화 시작 시 카메라, 마이크 설정창 표시") }}</span>
+                <span>{{ t("영상통화 시작 시 카메라, 마이크 설정창 표시") }}</span>
             </div>
         </div>
         <div class="footer">
             <div class="buttonWrap">
                 <button class="closeBtn" v-if="showCloseBtn" @click.stop="close()">
-                    {{ $t("취소") }}
+                    {{ t("취소") }}
                 </button>
                 <button class="applyBtn" @click="apply()">
-                    <span>{{ $t("적용") }}</span>
+                    <span>{{ t("적용") }}</span>
                 </button>
             </div>
         </div>
@@ -81,7 +81,7 @@ import { useModalStore } from "@/stores/modal";
 import { deleteCookie, setCookie } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { onMounted } from "vue";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 
 const props = defineProps({
     type: String,

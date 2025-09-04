@@ -6,7 +6,7 @@
             <div class="col-auto chatTopButtonsContainer">
                 <div class="participants-box">
                     <img src="@/assets/images/ic_people.png" />
-                    <span class="participants"> {{ $t("참여자") }} </span>
+                    <span class="participants"> {{ t("참여자") }} </span>
                     <span class="personnel"> ({{ personnelInRoom }}) </span>
                 </div>
                 <button
@@ -19,7 +19,7 @@
                         callingType != 'joinGuestCall'
                     "
                 >
-                    <span>{{ $t("전체음소거") }}</span> 
+                    <span>{{ t("전체음소거") }}</span> 
                 </button>
                 <button
                     class="chatTopButtons entireMute"
@@ -31,7 +31,7 @@
                         callingType != 'joinGuestCall'
                     "
                 >
-                    <span>{{ $t("전체음소거해제") }}</span> 
+                    <span>{{ t("전체음소거해제") }}</span> 
                 </button>
                 <button
                     class="chatTopButtons hostRequest"
@@ -39,7 +39,7 @@
                     style="cursor: default"
                 >
                     <img src="@/assets/images/calling/ic_host.png" style="width: 15px" />
-                    <span style="padding-left: 0px"> {{ $t("호스트") }}</span>
+                    <span style="padding-left: 0px"> {{ t("호스트") }}</span>
                 </button>
                 <button
                     class="chatTopButtons hostRequest"
@@ -47,7 +47,7 @@
                     style="margin-left: 79px"
                     v-else-if="!videoCallHost && callingType != 'joinGuestCall'"
                 >
-                    <span>{{ $t("호스트요청") }}</span> 
+                    <span>{{ t("호스트요청") }}</span> 
                 </button>
             </div>
         </div>
@@ -70,7 +70,7 @@
                     class="col-auto chattingBarNewBassageBox"
                     :style="{ backgroundColor: !newEmergencyConfirm ? '#2386D2' : 'red' }"
                 >
-                    {{ $t("신규 메시지가 존재합니다") }}
+                    {{ t("신규 메시지가 존재합니다") }}
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@ import { useChattingStore } from "@/stores/chatting";
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 
 const chattingStore = useChattingStore();
 const callStore = useCallStore();

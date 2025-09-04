@@ -2,12 +2,12 @@
     <div class="window">
         <div v-if="!props.compData" class="empty row column items-center justify-center">
             <button @click="makingBtnClick" class="makeMeetingBtn">
-                + {{ $t("createMeeting") }}
+                + {{ t("createMeeting") }}
             </button>
         </div>
 
         <div v-else-if="props.compData.customData.status == 0" class="nonplaying">
-            <span class="room-status">{{ $t("beforeOpening") }}</span>
+            <span class="room-status">{{ t("beforeOpening") }}</span>
             <span class="font22">{{ props.compData.customData.title }}</span>
             <img
                 src="@/assets/images/conference/ic_hm_active.png"
@@ -17,7 +17,7 @@
         </div>
 
         <div v-else-if="props.compData.customData.status == 1" class="playing">
-            <span class="room-status">{{ $t("ongoing") }}</span>
+            <span class="room-status">{{ t("ongoing") }}</span>
             <span class="font22">{{ props.compData.customData.title }}</span>
             <img
                 src="@/assets/images/conference/ic_hm_active.png"
@@ -27,7 +27,7 @@
         </div>
 
         <div v-else-if="props.compData.customData.status == 2" class="closeMeeting">
-            <span class="room-status">{{ $t("endMeeting") }}</span>
+            <span class="room-status">{{ t("endMeeting") }}</span>
             <span class="font22">{{ props.compData.customData.title }}</span>
         </div>
 
@@ -41,7 +41,7 @@
                     class="contentView"
                 >
                     <img src="@/assets/images/conference/ic_date.png" alt="Date Icon" />
-                    <span class="spanTitle">{{ $t("meetingDate") }}:&nbsp;</span>
+                    <span class="spanTitle">{{ t("meetingDate") }}:&nbsp;</span>
                     <span class="col items-center spanContent timeOverFlow">{{
                         format(props.compData.startDate)
                     }}</span>
@@ -58,7 +58,7 @@
                         alt="Conference Start Icon"
                     />
                     <span class="row items-center spanTitle"
-                        >{{ $t("meetingStartPeriod") }} :&nbsp;</span
+                        >{{ t("meetingStartPeriod") }} :&nbsp;</span
                     >
                     <span class="col items-center spanContent timeOverFlow">
                         {{ format(props.compData.startDate) }}
@@ -75,7 +75,7 @@
                 >
                     <img src="@/assets/images/conference/ic_time.png" alt="Time Icon" />
                     <span class="row items-center spanTitle"
-                        >{{ $t("meetingTime") }}:&nbsp;</span
+                        >{{ t("meetingTime") }}:&nbsp;</span
                     >
                     <span class="col items-center spanContent timeOverFlow">{{
                         time()
@@ -93,12 +93,12 @@
                         alt="Conference End Icon"
                     />
                     <span class="row items-center spanTitle"
-                        >{{ $t("meetingEndPeriod") }} :&nbsp;</span
+                        >{{ t("meetingEndPeriod") }} :&nbsp;</span
                     >
                     <span class="col items-center spanContent timeOverFlow">
                         {{
                             props.compData.customData.type === 3
-                                ? $t("meeting validity period")
+                                ? t("meeting validity period")
                                 : format(props.compData.endDate) +
                                   (time() ? time().split("-")[1] : "")
                         }}
@@ -112,7 +112,7 @@
                         class="participantsImg"
                     />
                     <span class="row items-center participantsTitle"
-                        >{{ $t("meetingMember") }}:&nbsp;</span
+                        >{{ t("meetingMember") }}:&nbsp;</span
                     >
                     <span class="spanContent textEllipsisKo">{{
                         props.compData.customData.member
@@ -140,7 +140,7 @@
                     class="optionTxt"
                 >
                     <span class="row items-center participantsTitle"
-                        >{{ $t("추가 기능") }}:&nbsp;</span
+                        >{{ t("추가 기능") }}:&nbsp;</span
                     >
                     <div>
                         <span v-if="props.compData.customData.entry_notification_yn">{{  t('회의 초대 알림 발송') }}</span>
@@ -162,7 +162,7 @@
                         @click="roomModify(props.compData.customData.meeting_seq)"
                         class="modifyBtn"
                     >
-                        {{ $t("meetingModify") }}
+                        {{ t("meetingModify") }}
                     </button>
                     <button
                         @click="
@@ -170,7 +170,7 @@
                         "
                         class="deleteMeetingBtn"
                     >
-                        {{ $t("meetingDelete") }}
+                        {{ t("meetingDelete") }}
                     </button>
                 </div>
 
@@ -195,7 +195,7 @@
                                 displayMode == 'darkmode' ? ' #009B2A' : '#02a499',
                         }"
                     >
-                        {{ $t("meetingStart") }}
+                        {{ t("meetingStart") }}
                     </button>
                     <button
                         v-else-if="props.compData.customData.status == 1"
@@ -208,7 +208,7 @@
                         class="contentBtn"
                         style="background-color: #2386d2"
                     >
-                        {{ $t("meetingEnter") }}
+                        {{ t("meetingEnter") }}
                     </button>
                 </div>
 
@@ -233,7 +233,7 @@
                                 displayMode == 'darkmode' ? ' #009B2A' : '#02a499',
                         }"
                     >
-                        {{ $t("meetingStart") }}
+                        {{ t("meetingStart") }}
                     </button>
                     <button
                         v-else-if="
@@ -249,7 +249,7 @@
                         class="contentBtn"
                         style="background-color: #2386d2"
                     >
-                        {{ $t("meetingEnter") }}
+                        {{ t("meetingEnter") }}
                     </button>
                     <button
                         v-else-if="
@@ -267,7 +267,7 @@
                         style="background-color: #575757"
                         disabled
                     >
-                        {{ $t("meetingEnter") }}
+                        {{ t("meetingEnter") }}
                     </button>
                 </div>
             </div>
@@ -277,9 +277,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, getCurrentInstance } from "vue";
-const { $t } = useNuxtApp() // Assuming you're using vue-i18n
 import { useNuxtApp } from "nuxt/app"; // To access $nuxtSocket, $modal global properties
-
+const { t } = useI18n();
 // import MeetingModal from "@/components/meeting/meetingModal.vue"; // .vue extension is crucial
 // import DeleteMeeting from "@/components/meeting/deleteMeeting.vue"; // .vue extension
 // import DeviceSelectModal from "@/components/modals/deviceSelectModal.vue"; // .vue extension

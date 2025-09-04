@@ -255,7 +255,7 @@ onMounted(() => {});
             flex: 0 0 200px;
         }
         > .button-box {
-            flex: 0 0 200px;
+            flex: 0 0 145px;
             margin-left: auto;
         }
     }

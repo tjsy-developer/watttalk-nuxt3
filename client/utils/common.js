@@ -48,14 +48,15 @@ export function buildTree(users) {
         const branchChildren = headNode.children.get(branch);
 
         // 3. 사용자 노드 추가
-        branchChildren.push({
-            name: nickname,
-            enName: en_nickname,
-            children: [],
-            deviceType: devicetype,
-            status: status,
-            deviceId: deviceid,
-        });
+        if (devicetype !== 4)
+            branchChildren.push({
+                name: nickname,
+                enName: en_nickname,
+                children: [],
+                deviceType: devicetype,
+                status: status,
+                deviceId: deviceid,
+            });
     });
 
     // 4. 최종 트리 구조로 변환
@@ -114,7 +115,7 @@ export function getCookie(cookieName) {
     for (i = 0; i < ARRcookies.length; i++) {
         x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
         y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-        x = x.replace(/^\s+|\s+$/g, "");
+        x = x.trim();
 
         if (x === cookieName) {
             return unescape(y);

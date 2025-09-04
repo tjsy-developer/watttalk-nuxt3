@@ -4,6 +4,7 @@ import { useCommonStore } from "@/stores";
 import { useModalStore } from "@/stores/modal";
 import { useSignallingSocket } from "./useSignallingSocket";
 import { tryOnScopeDispose } from "@vueuse/core";
+import { jwtDecode } from "jwt-decode";
 
 const statusCode = {
     Unauthorized: 0,
@@ -24,7 +25,7 @@ export function useLoginEvents() {
     // -------------------------
     // 1) 핸들러 정의
     // -------------------------
-    const handleLoginResponse = (response) => {
+    const handleLoginResponse =async (response) => {
         const data = JSON.parse(response);
         console.log("login", data);
 
@@ -39,6 +40,7 @@ export function useLoginEvents() {
             return;
         }
         if (data.errcode === statusCode.Duplicate) {
+            alert(loginStore.m_local_deviceid);
             commonStore.setNoneOverlayAlertStatus(20);
             return;
         }

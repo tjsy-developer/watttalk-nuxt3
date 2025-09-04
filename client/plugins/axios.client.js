@@ -90,7 +90,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                             const res = await axios.post(
                                 "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
                                 {
-                                    refreshToken: store.getState().login.rToken,
+                                    refreshToken: tokenStore.rToken,
                                     deviceType: "",
                                 },
                             );

@@ -38,23 +38,29 @@ export function updateStatusByDeviceId(treeData, targetDeviceId, newStatus) {
     console.log(treeData, targetDeviceId, newStatus);
     function recursiveUpdate(nodes) {
         return nodes.map((node) => {
+            // 자식이 없는 경우
             if (!node.children || node.children.length === 0) {
-                if (node.deviceId === targetDeviceId) {
+                if (node.deviceid === targetDeviceId) {
+                    console.log("update 확인", node);
                     return { ...node, status: newStatus, checked: false }; // 상태만 바꿔서 새 객체 반환
                 }
-                return node;
-            } else {
-                // 자식 노드가 있을 경우 재귀 처리
+                return node; // 변경 없는 노드는 그대로 반환
+            }
+            // 자식이 있는 경우
+            else {
                 return {
-                    ...node,
-                    children: recursiveUpdate(node.children),
-                    checked: false,
+                    ...node, // 부모 노드도 새 객체로 반환
+                    children: recursiveUpdate(node.children), // 자식 재귀 업데이트
+                    checked: false, // 필요시 체크 초기화
                 };
             }
         });
     }
 
-    return recursiveUpdate(treeData);
+    // 최종 업데이트된 트리 반환
+    const updatedTree = recursiveUpdate(treeData);
+
+    return updatedTree;
 }
 
 export function userDataGetInfo(deviceId) {

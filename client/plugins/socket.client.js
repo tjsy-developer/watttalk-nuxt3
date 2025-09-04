@@ -15,25 +15,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const { encryptData } = useAuth();
     const route = useRoute();
 
-    // 로그인 페이지 쿼리 파라미터 처리
-    if (route.name === "login") {
-        const accessToken = route.query.jwt_token;
-        const loginType = route.query.login_type;
-        const rToken = route.query.rToken;
-        const reservId = route.query.reservId;
-
-        if (!accessToken || !rToken) {
-            console.log("파워매니저로 돌아가세요");
-            return;
-        }
-
-        const encryptRefreshToken = encryptData(rToken);
-        tokenStore.setRToken(encryptRefreshToken);
-        tokenStore.setAccessToken(accessToken);
-        loginStore.setLoginType(loginType);
-        sessionStorage.setItem("isInvited", reservId ? "true" : "false");
-    }
-
     if (!process.client) return;
 
     const { signallingSocket, transferSocket } = useSignallingSocket();
@@ -51,16 +32,18 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         useSocketEmitEvents();
 
         // 로그인 이벤트 등록
-        const { loginRequest, listenLoginEvent } = useLoginEvents();
+        const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
 
-        // m_local_deviceid가 준비되면 로그인 요청
-        watchEffect(() => {
-            if (loginStore.m_local_deviceid && route.name !== "call") {
+        // 마이그레이션 전 로직대로 진행하기위해 작성
+        nuxtApp.hooks.hook("app:mounted", () => {
+            if (nuxtApp.$router.currentRoute.value.name === "login") {
+                const decodedUserInfo = jwtDecode(tokenStore.accessToken);
+                loginRequest(decodedUserInfo.id);
+            } else if (nuxtApp.$router.currentRoute.value.name !== "call") {
                 loginRequest(loginStore.m_local_deviceid);
-                listenLoginEvent();
             }
         });
-        
+        listenLoginEvent();
     });
 
     signallingSocket.on("disconnect", () => {
@@ -90,30 +73,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         window.__socketUnloadHandlerAdded = true;
     }
 
-    // 토큰 검증
-    try {
-        if (["dashboard", "meeting", "login"].includes(route.name)) {
-            const { $axios } = nuxtApp;
-            const res = await $axios.post("homeRest/tokenCheck", {
-                jwt: tokenStore.accessToken,
-            });
-
-            if (res) {
-                loginStore.setTokenResult(0);
-                try {
-                    const decodedUserInfo = jwtDecode(tokenStore.accessToken);
-                    await loginStore.setTokenInfo(decodedUserInfo);
-                } catch {
-                    alert("복호화 실패");
-                    window.location.href = "http://localhost:8205";
-                    return;
-                }
-            }
-        }
-    } catch (err) {
-        console.log(err);
-    }
-
     // 전역 제공
     return {
         provide: {
@@ -122,3 +81,25 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         },
     };
 });
+
+function decodeToken(jwt) {
+    let result = false;
+    try {
+        const decodeJwt = jwtDecode(jwt);
+        const expireTime = decodeJwt.exp;
+
+        const date = new Date();
+        const unixTime = Math.floor(date.getTime() / 1000);
+
+        if (expireTime > unixTime) {
+            result = true;
+        } else {
+            result = "expired";
+        }
+    } catch {
+        console.log("decode fail");
+        result = "mutated";
+    }
+
+    return result;
+}

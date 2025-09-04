@@ -82,7 +82,7 @@ import {
     getWorldTime,
     handleFileDownload,
 } from "@/utils/common";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import CallLayout from "@/components/pages/call/CallLayout.vue";
@@ -521,7 +521,7 @@ onMounted(() => {
                             autoCallAcceptTime.value,
                     );
                     funcAutoCallAceept.value = setTimeout(() => {
-                        /* 
+                        /*
 								m_callWating == true => 전화가 온 상태
 								거절 또는 수락했을 경우 m_callWating = false
 							*/
@@ -874,8 +874,8 @@ onMounted(() => {
             );
             /* 통화 자동 종료가 설정되어있는지 체크한다. */
             if (autoDiscalling.value) {
-                /* 
-						방 안에 혼자남았을 경우 통화를 자동으로 종료한다. 
+                /*
+						방 안에 혼자남았을 경우 통화를 자동으로 종료한다.
 						사용자가 나가면 feeds를 empty로 바꾸기 때문에 값이 비어있는지 체크해야 한다.
 					*/
                 const NullFilterFeeds = feeds.value.filter(function (item) {
@@ -2212,72 +2212,6 @@ onMounted(() => {
         }
     });
 
-    // directMessage Receive
-    signallingSocket.on("directMessage", function (response) {
-        console.log("*** socket: directMessage response");
-        console.log(response);
-
-        const json = JSON.parse(response);
-
-        const senderNickname = userListGetNickname(json.sender);
-        const receiverNickname = sessionStorage.getItem("m_nickname");
-
-        directMessageStore.receiveDM({
-            message: json.message,
-            type: 1,
-            sender: json.sender,
-            receiver: json.receiver,
-            senderNickname,
-            receiverNickname,
-            datetime: json.datetime,
-            chattingDateTime: getDirectMessageTimeZone(json.datetime),
-            // compareDatetime: json.compareDatetime
-        });
-
-        // directMessageBell play
-        dircetMessageBell("play");
-
-        // 모달 뛰우기.
-        // test = "re1"
-        const reciverNickname = userListGetNickname(json.sender);
-
-        // 모달 생성 vuex
-        directMessageStore.addChattingModal({
-            deviceid: json.sender,
-            nickname: reciverNickname,
-        });
-
-        setTimeout(function () {
-            emit("privateChatDeviceID", json.sender);
-        }, 500);
-    });
-
-    // 읽음처리 socket on event
-    signallingSocket.on("directMessageReadProcess", function (response) {
-        console.log("*** socket: directMessageReadProcess response");
-        console.log(response);
-
-        const json = JSON.parse(response);
-
-        // 1) 현재 dircetMessageList에서 받아온 데이터의 sender와 receiver가 같고,
-        // compareDatetime과 같거나 작은 것을 읽음 처리로 한다.
-
-        for (let i = 0; i < directMessageStore.directMessageList.length; i++) {
-            const directMessageList = directMessageStore.directMessageList[i];
-
-            if (
-                directMessageList.sender == json.sender &&
-                directMessageList.receiver == json.receiver &&
-                directMessageList.datetime <= json.datetime
-            ) {
-                // 읽음 처리
-                directMessageStore.setReadMessage({
-                    index: i,
-                });
-            }
-        }
-    });
-
     // 파일 수신측에서 파일 송신 취소 socket event
     signallingSocket.on("cancelFileTransfer", function (response) {
         console.log("*** socket: cancelFileTransfer response");
@@ -2976,7 +2910,7 @@ onMounted(() => {
         if (response) {
             const json = JSON.parse(response);
             console.log("*** socket: motionDetect response. json:" + response);
-            /* 
+            /*
 					status = 2 > 움직임 없음 감지
 					status = 3 > 움직임 없음 감지 초기화
 					status = 4 > 낙하 감지
@@ -7917,62 +7851,89 @@ function sendFileServerUploadFileToBlob(sendImage) {
 }
 
 // 파일 송수신 용 서버 업로드
-async function sendFileServerUpload(type, file, fileJoinMembers) {
-  const loginStore = useLoginStore();
-  const commonStore = useCommonStore();
-  const callStore = useCallStore();
+function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
+    const parent = this;
+    const chunkSize = 64 * 1024; // 64KB
+    let offset = 0;
+    const dateName = createDateName();
+    const fileExt = fname.split(".").pop();
+    const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExt}`;
 
-  const dateName = new Date().toISOString().replace(/[:.]/g, "");
-  const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${file.name.split(".").pop()}`;
+    // 업로드 시작 알림
+    transferSocket.emit(
+        "sendFileServerUploadStart",
+        JSON.stringify({
+            fname: sendFileName,
+            fsize,
+        }),
+    );
 
-  // 브라우저에서는 ss import 없이 chunk 전송
-  const reader = file.stream().getReader();
-  let sizeSent = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    // 서버에 기존 이벤트 구조 그대로 emit
-    transferSocket.emit("sendFileServerUpload", {
-      fname: sendFileName,
-      type,
-      chunk: value,
-      totalSize: file.size
-    });
-
-    // 전송률 계산
-    sizeSent += value.length;
-    const rate = Math.floor((sizeSent / file.size) * 100);
-
-    const rateObj = {
-      localdeviceid: loginStore.m_local_deviceid,
-      remotedeviceid: commonStore.fileReceiver,
-      rate,
+    let sent = 0;
+    const updateRate = () => {
+        const rate = Math.floor((sent / fsize) * 100);
+        signallingSocket.emit(
+            "fileSendRate",
+            JSON.stringify({
+                localdeviceid: loginStore.m_local_deviceid,
+                remotedeviceid: commonStore.fileReceiver,
+                rate,
+            }),
+        );
+        callStore.setTransmissionRate(rate);
     };
-    signallingSocket.emit("fileSendRate", JSON.stringify(rateObj));
-    callStore.setTransmissionRate(rate);
-  }
 
-  // 업로드 완료 이벤트
-  const infoObj = {
-    en_seq: loginStore.sessionEnSeq,
-    hq_seq: loginStore.sessionHqSeq,
-    br_seq: loginStore.sessionBrSeq,
-    joined_members: fileJoinMembers,
-    file_path: "/uploads/",
-    file_name: sendFileName,
-    file_type: type,
-    getWorldTime: new Date().toISOString(),
-    localdeviceid: loginStore.m_local_deviceid,
-    remotedeviceid: commonStore.fileReceiver,
-    roomid: sessionStorage.getItem("m_roomid"),
-  };
-  signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(infoObj));
-  commonStore.setFileSendStatus(6);
+    const sendNext = () => {
+        if (offset >= fsize) {
+            // 끝
+            transferSocket.emit(
+                "sendFileServerUploadEnd",
+                JSON.stringify({ fname: sendFileName }),
+            );
+
+            // DB 저장
+            const info = {
+                en_seq: loginStore.sessionEnSeq,
+                hq_seq: loginStore.sessionHqSeq,
+                br_seq: loginStore.sessionBrSeq,
+                joined_members: fileJoinMembers,
+                file_path: str_stream_picture_file_path.value,
+                file_name: sendFileName,
+                file_type: type,
+                getWorldTime: getWorldTime(),
+                localdeviceid: loginStore.m_local_deviceid,
+                remotedeviceid: commonStore.fileReceiver,
+                roomid: sessionStorage.getItem("m_roomid"),
+            };
+            signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(info));
+            commonStore.setFileSendStatus(6);
+            const nickname = userListGetNickname(commonStore.fileReceiver);
+            addChatFileSendMessage(nickname, 5, "");
+            fileSendReset();
+            return;
+        }
+
+        const end = Math.min(offset + chunkSize, fsize);
+        const slice = file.slice(offset, end);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const chunk = e.target.result; // ArrayBuffer
+            transferSocket.emit("sendFileServerUploadChunk", {
+                fname: sendFileName,
+                chunk,
+                isLast: end >= fsize,
+            });
+
+            sent += chunk.byteLength;
+            updateRate();
+
+            offset += chunkSize;
+            sendNext(); // 다음 chunk
+        };
+        reader.readAsArrayBuffer(slice);
+    };
+
+    sendNext();
 }
-
-
 
 // <- kyj
 // socket sendMessage
@@ -9751,7 +9712,7 @@ function sayHello() {
                                 );
 
                                 // 토스트 메세지 5초간 출력한뒤 사라진다.
-                                visibleToastMessage(t("network down"));
+                                // visibleToastMessage(t("network down"));
                                 console.log("3. 토스트 메세지 출력했습니다.");
 
                                 // 30초 후 다시 한번 체크하여 iceStateConnect가 false 일 경우 통화 종료 처리한다.
@@ -10441,7 +10402,7 @@ function sayHello() {
                                     sessionStorage.getItem("m_nickname");
                                 const chattingMessage =
                                     sessionStorage.getItem("m_nickname") +
-                                    $t("chatting Enter");
+                                    t("chatting Enter");
                                 const chattingLevel = 2; // 공지
                                 const chattingType = 0;
 
@@ -10861,7 +10822,7 @@ const getForceMicMuteBtnClick = computed(() => callStore.forceMicMuteBtnClick);
 const getForceLeaveBtnClick = computed(() => callStore.forceLeaveBtnClick);
 const getForceLeaveClickResult = computed(() => callStore.forceLeaveClickResult);
 const changePersonnelInRoom = computed(() => chattingStore.personnelInRoom); // 이미 위의 mapState 용도와 겹치므로 하나로 통일해도 됩니다.
-
+const getHangupCallingConfirmFlag = computed(() => callStore.hangupCallingConfirmFlag);
 // --- watch 로직들 ---
 // 위에 정의된 computed 값들이 변경될 때 실행될 함수들입니다.
 
@@ -11354,7 +11315,7 @@ watch(getAllMicMuteStatus, (newValue, oldValue) => {
         // 마이크 off 일 경우 true / on 일 경우 false
         let resultBoolean = false; // 기본값 false로
 
-        if (result == 0) {
+        if (newValue == 0) {
             resultBoolean = true;
         }
 
@@ -11375,7 +11336,7 @@ watch(getAllMicMuteStatus, (newValue, oldValue) => {
         const nowDate = getWorldTime();
 
         let message = "";
-        if (result == 0) {
+        if (newValue == 0) {
             message = nickname + t(" 님이 전체 음소거를 하였습니다");
         } else {
             message = nickname + t("님이 전체 음소거를 해제하였습니다");
@@ -11672,13 +11633,12 @@ watch(changePersonnelInRoom, (newValue, oldValue) => {
     console.log("changePersonnelInRoom 변경됨:", newValue, oldValue);
 
     console.log("*** watch: changePersonnelInRoom");
-    // resultMaxNu = Math.max(newValue, resultMaxNum);
-    if (newValue > 1) {
+    resultMaxNum.value = Math.max(newValue, resultMaxNum.value);
+    if (resultMaxNum.value > 1) {
         if (sendDurationEnableFlag.value) {
             callStore.setSendDurationEnable(true);
         }
-        // sendDurationEnable.value = true
-    } else if (sendDurationEnable.value && newValue < 2) {
+    } else if (sendDurationEnable.value && resultMaxNum.value < 2) {
         sendDurationEnableFlag.value = true;
         callStore.setSendDurationEnable(false);
     }
@@ -12128,6 +12088,46 @@ watch(getCameraAllowedState, (newValue, oldValue) => {
         commonStore.setIsVideoTrue();
     }
     // 카메라 허용 상태 변경 시 필요한 로직을 여기에 추가합니다.
+});
+
+watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
+    if (newValue) {
+        let receiveRejectFlag = ""
+        for (let i = 0; i < commonStore.userListStatus.length; i++) {
+            // flag를 설정한다.
+            if (commonStore.userListStatus[i].status == "sending") {
+                // CallingCancel 존재하므로 전화 거절 처리
+                callStore.setCancelCallFlag(true);
+            }
+
+            // vuex에 userListStatus 배열의 요소 중 status가 receive가 있는지 체크한다.
+            if (commonStore.userListStatus[i].status == "receive") {
+                // 멀티통화 거절
+                callStore.setMultiCallingResult(0);
+                receiveRejectFlag = true;
+            }
+
+            // 파일 송수신 수락 대기 중인 것이 있는지 체크한다.
+            if (commonStore.userListStatus[i].status == 2) {
+                // 파일 송수신 거절 처리
+                commonStore.setFileSendStatus(4);
+                commonStore.setFileSendFlag(true);
+            }
+        }
+
+        if (callStore.cancelCallFlag == true || receiveRejectFlag == true) {
+            // 바로 이동 시 처리해야할 것들을 처리 하지 못함 :: 수신 팝업 등
+            setTimeout(function () {
+                commonStore.janus.destroy();
+            }, 500);
+        } else {
+            commonStore.janus.destroy();
+        }
+        commonStore.setNoneOverlayAlertStatus(2);
+        meetingStore.setMeetingLeaveFlag(true);
+        modalStore.closeModal("noneOverlayModal");
+        callStore.setHangupCallingConfirmFlag(false);
+    }
 });
 
 onUnmounted(() => {

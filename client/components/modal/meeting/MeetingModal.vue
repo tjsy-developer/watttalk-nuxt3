@@ -7,10 +7,10 @@
         <div class="makeMain">
             <div class="titleLine">
                 <span v-if="!props.compData" class="modalFont22">{{
-                    $t("createMeeting2")
+                    t("createMeeting2")
                 }}</span>
                 <span v-if="props.compData" class="modalFont22">{{
-                    $t("modifyMeeting")
+                    t("modifyMeeting")
                 }}</span>
                 <img
                     src="@/assets/images/conference/ic_hm_active_1.png"
@@ -19,7 +19,7 @@
             </div>
             <div class="inputBox">
                 <div class="label-box">
-                    <span class="firstLabel">{{ $t("meetingTitle") }}</span>
+                    <span class="firstLabel">{{ t("meetingTitle") }}</span>
                     <span class="invalidTitle">{{ errors.meetingTitle }}</span>
                 </div>
                 <input
@@ -31,7 +31,7 @@
                 />
 
                 <div class="label-box">
-                    <span class="label">{{ $t("meetingPeriod") }}</span>
+                    <span class="label">{{ t("meetingPeriod") }}</span>
                 </div>
                 <div class="items-center">
                     <div class="periodSelectBox" @click="dropdown = !dropdown">
@@ -72,10 +72,10 @@
                                     v-model="checkEntryNotification"
                                     value="true"
                                 />
-                                <span>{{ $t("사용") }}</span>
+                                <span>{{ t("사용") }}</span>
                             </div>
                             <div class="optionBox__txt">
-                                <span>{{ $t("회의 초대 알림 발송") }}</span>
+                                <span>{{ t("회의 초대 알림 발송") }}</span>
                             </div>
                         </div>
                         <div class="optionBox">
@@ -85,10 +85,10 @@
                                     v-model="checkDirectCall"
                                     value="true"
                                 />
-                                <span>{{ $t("사용") }}</span>
+                                <span>{{ t("사용") }}</span>
                             </div>
                             <div class="optionBox__txt">
-                                <span>{{ $t("스마트글라스 다이렉트콜 입장") }}</span>
+                                <span>{{ t("스마트글라스 다이렉트콜 입장") }}</span>
                             </div>
                         </div>
                         <div class="optionBox">
@@ -98,10 +98,10 @@
                                     v-model="checkEveryoneStart"
                                     value="true"
                                 />
-                                <span>{{ $t("사용") }}</span>
+                                <span>{{ t("사용") }}</span>
                             </div>
                             <div class="optionBox__txt">
-                                <span>{{ $t("누구나 회의 시작 가능") }}</span>
+                                <span>{{ t("누구나 회의 시작 가능") }}</span>
                             </div>
                         </div>
                     </div>
@@ -110,8 +110,8 @@
                     <span class="label" v-show="defaultPeriodType != ''">
                         <span>{{
                             defaultPeriodType == 0 || defaultPeriodType == 1
-                                ? $t("meetingDate")
-                                : $t("meetingStartDate")
+                                ? t("meetingDate")
+                                : t("meetingStartDate")
                         }}</span>
                     </span>
                     <span
@@ -185,8 +185,8 @@
                     <span class="label" v-show="defaultPeriodType != ''">
                         <span>{{
                             defaultPeriodType == 0 || defaultPeriodType == 1
-                                ? $t("회의시간")
-                                : $t("회의 종료일")
+                                ? t("회의시간")
+                                : t("회의 종료일")
                         }}</span>
                     </span>
                     <span
@@ -290,7 +290,7 @@
                         disabled
                     ></VueDatePicker>
                 </div>
-                <span class="label-box">{{ $t("meetingMember") }}</span>
+                <span class="label-box">{{ t("meetingMember") }}</span>
                 <div>
                     <div class="selected-opt">
                         <div
@@ -332,7 +332,7 @@
                         v-if="openMember"
                         class="justify-center items-center okBtn"
                     >
-                        <span>{{ $t("memberOK") }}</span>
+                        <span>{{ t("memberOK") }}</span>
                     </button>
                 </div>
 
@@ -342,12 +342,12 @@
                         v-if="!showMoreOptions"
                         @click="showMoreOptions = true"
                     >
-                        {{ $t("moreOptions") }}
+                        {{ t("moreOptions") }}
                     </button>
                 </div>
 
                 <span class="label-box" v-if="showMoreOptions">{{
-                    $t("meetingGuest")
+                    t("meetingGuest")
                 }}</span>
                 <div class="column column-gap10" v-if="showMoreOptions">
                     <div class="form-box">
@@ -369,7 +369,7 @@
                             class="emailInput second"
                         />
                         <button @click="guestEmailAdd" class="addBtn">
-                            {{ $t("guestAdd") }}
+                            {{ t("guestAdd") }}
                         </button>
                     </div>
                     <div>
@@ -412,7 +412,7 @@
                             class="cctvInput second"
                         />
                         <button @click="addCCTV" class="addBtn">
-                            {{ $t("guestAdd") }}
+                            {{ t("guestAdd") }}
                         </button>
                     </div>
                     <div v-if="showCctv">
@@ -441,12 +441,12 @@
 
                 <div class="button-box">
                     <button @click="saveMeeting" v-if="!compData" class="saveBtn">
-                        {{ $t("save") }}
+                        {{ t("save") }}
                     </button>
                     <button @click="modifyMeeting" v-if="compData" class="saveBtn">
-                        {{ $t("save") }}
+                        {{ t("save") }}
                     </button>
-                    <button @click="close" class="cancelBtn">{{ $t("cancel") }}</button>
+                    <button @click="close" class="cancelBtn">{{ t("cancel") }}</button>
                 </div>
             </div>
         </div>
@@ -458,7 +458,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { ko } from "date-fns/locale";
 import { string, object, number, date, boolean, array, mixed } from "yup";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 import { commonToastMessage } from "@/composables/common";
 import { useMeetingStore } from "@/stores/meeting";
 import { useCallStore } from "@/stores/call";
@@ -501,10 +501,10 @@ const typeChangeState = ref(false);
 const datePickerMode = ref("dark");
 
 const MTG_periodOption = ref([
-    { text: $t("즉시"), value: 0 },
-    { text: $t("1일"), value: 1 },
-    { text: $t("연일"), value: 2 },
-    { text: $t("상시"), value: 3 },
+    { text: t("즉시"), value: 0 },
+    { text: t("1일"), value: 1 },
+    { text: t("연일"), value: 2 },
+    { text: t("상시"), value: 3 },
 ]);
 
 const defaultPeriodType = ref(0);
@@ -635,7 +635,7 @@ onMounted(() => {
         startTime.value = new Date(`${mtgStartDate} ${tt[0]}`).toISOString();
 
         if (defaultPeriodType.value == 3) {
-            endTime.value = $t("meeting validity period"); // Use t for translation
+            endTime.value = t("meeting validity period"); // Use t for translation
         } else {
             endDate.value = new Date(mtgEndDate).toISOString();
             endTime.value = new Date(`${mtgEndDate} ${tt[1]}`).toISOString();
@@ -785,7 +785,7 @@ const guestEmailAdd = () => {
         if (c.fullEmail === loginStore.sessionEmail) {
             // Assuming commonToastMessage is a globally injected method
             console.log("나의 이메일이야")
-            commonToastMessage($t("toastMessage myselfEmailCheck"));
+            commonToastMessage(t("toastMessage myselfEmailCheck"));
             emailID.value = "";
             emailAddress.value = "";
             return;
@@ -810,17 +810,17 @@ const guestEmailAdd = () => {
             if (userData[i].deviceid === checkEmail && userData[i].devicetype !== 4) {
                 for (let j = 0; j < meetingMember.value.length; j++) {
                     if (meetingMember.value[j] === userData[i].nickname) {
-                        commonToastMessage(`${$t("toastMessage emailDuplicate")}`);
+                        commonToastMessage(`${t("toastMessage emailDuplicate")}`);
                         return;
                     }
                 }
                 if (loginStore.lang === "ko") {
                     commonToastMessage(
-                        `${userData[i].nickname}${$t("toastMessage emailCheck")}`,
+                        `${userData[i].nickname}${t("toastMessage emailCheck")}`,
                     );
                 } else {
                     commonToastMessage(
-                        `${$t("toastMessage emailCheck")}${userData[i].nickname} ${$t("toastMessage emailCheck2")}`,
+                        `${t("toastMessage emailCheck")}${userData[i].nickname} ${t("toastMessage emailCheck2")}`,
                     );
                 }
                 meetingMember.value.push(userData[i].nickname);
@@ -838,9 +838,9 @@ const guestEmailDelete = (e) => {
 }
 
 const addCCTV = () => {
-    if (cctvName.value === "") return alert($t("cctvs")[2]);
-    if (cctvUrl.value === "") return alert($t("cctvs")[3]);
-    if (!cctvUrl.value.includes("http")) return alert($t("cctvs")[4]);
+    if (cctvName.value === "") return alert(t("cctvs")[2]);
+    if (cctvUrl.value === "") return alert(t("cctvs")[3]);
+    if (!cctvUrl.value.includes("http")) return alert(t("cctvs")[4]);
 
     const cctvParms = {
         name: cctvName.value,
@@ -1113,7 +1113,7 @@ watch(startDate, (value) => {
     if (defaultPeriodType.value == 2) {
         if (endDate.value !== "" && endDate.value <= value) {
             // Compare ref values
-            commonToastMessage($t("Check the meeting start date")); // Use injected function
+            commonToastMessage(t("Check the meeting start date")); // Use injected function
             setTimeout(() => {
                 startDate.value = "";
             }, 0);
@@ -1141,7 +1141,7 @@ watch(endDate, (value) => {
     // 회의기간타입이 연일(2) 일경우 시작날짜 < 종료날짜 체크
     if (defaultPeriodType.value == 2 && value !== "") {
         if (startDate.value !== "" && startDate.value >= value) {
-            commonToastMessage($t("Check the meeting end date"));
+            commonToastMessage(t("Check the meeting end date"));
             setTimeout(() => {
                 endDate.value = "";
             }, 0);
@@ -1168,7 +1168,7 @@ watch(startTime, (value) => {
     // 시작시간 > 종료시간 조건 체크
     if (defaultPeriodType.value == 1) {
         if (endTime.value !== "" && endTime.value <= value) {
-            commonToastMessage($t("Start time check")[0]);
+            commonToastMessage(t("Start time check")[0]);
             setTimeout(() => {
                 startTime.value = "";
             }, 0);

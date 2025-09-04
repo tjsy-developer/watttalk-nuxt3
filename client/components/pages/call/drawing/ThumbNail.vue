@@ -12,7 +12,7 @@
                     src="@/assets/images/callAttachment/ic_file_24.png"
                     alt="No file icon"
                 />
-                <span>{{ $t("noFileReceived") }}</span>
+                <span>{{ t("noFileReceived") }}</span>
             </div>
 
             <div v-else id="filesBox" class="filesBox no-wrap row items-center">
@@ -172,7 +172,7 @@ import { commonToastMessage } from "@/composables/common";
 import { useCallStore } from "@/stores/call";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 import lodash from "lodash"
 import { useNuxtApp } from "nuxt/app";
 

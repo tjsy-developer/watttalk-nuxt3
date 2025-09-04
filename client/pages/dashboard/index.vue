@@ -507,70 +507,6 @@ const handleInviteCancelCalling = (response) => {
     }
 };
 
-const handleDirectMessage = (response) => {
-    console.log("*** socket: directMessage response");
-    console.log(response);
-
-    const json = JSON.parse(response);
-
-    const senderNickname = userListGetNickname(json.sender);
-    const receiverNickname = sessionStorage.getItem("m_nickname");
-
-    directMessageStore.receiveDM({
-        message: json.message,
-        type: 1,
-        sender: json.sender,
-        receiver: json.receiver,
-        senderNickname,
-        receiverNickname,
-        datetime: json.datetime,
-        chattingDateTime: getDirectMessageTimeZone(json.datetime),
-        // compareDatetime: json.compareDatetime
-    });
-
-    // directMessageBell play
-    dircetMessageBell("play");
-
-    const reciverNickname = userListGetNickname(json.sender);
-
-    // 모달 생성 vuex
-    directMessageStore.addChattingModal({
-        deviceid: json.sender,
-        nickname: reciverNickname,
-    });
-
-    // 채팅관련
-    setTimeout(function () {
-        self.$emit("privateChatDeviceID", json.sender);
-    }, 500);
-};
-
-// 읽음처리 socket on event
-const handleDirectMessageReadProcess = (response) => {
-    console.log("*** socket: directMessageReadProcess response");
-    console.log(response);
-
-    const json = JSON.parse(response);
-
-    // 1) 현재 dircetMessageList에서 받아온 데이터의 sender와 receiver가 같고,
-    // compareDatetime과 같거나 작은 것을 읽음 처리로 한다.
-
-    for (let i = 0; i < directMessageStore.directMessageList.length; i++) {
-        const directMessageList = directMessageStore.directMessageList[i];
-
-        if (
-            directMessageList.sender == json.sender &&
-            directMessageList.receiver == json.receiver &&
-            directMessageList.datetime <= json.datetime
-        ) {
-            // 읽음 처리
-            directMessageStore.setReadMessage({
-                index: i,
-            });
-        }
-    }
-};
-
 // 소켓 openMeetingChecking 받기
 const handleOpenMeetingChecking = (response) => {
     if (meetingStore.openMeetingCheck == false) {
@@ -624,66 +560,6 @@ const handleJoinMeeting = (response) => {
     router.push("/call");
 };
 
-const handleGetPreviousMessage = (response) => {
-    // console.log("*** socket.on: getPreviousMessage res = ", response)
-    console.log("*** socket.on: getPreviousMessage");
-    const json = JSON.parse(response);
-    // console.log("*** socket.on: json = ", json)
-
-    // 이전 메세지 없음
-    if (json.message.length == 0) {
-        //  console.log("데이터 없다")
-        directMessageStore.previousMessageNone(false);
-    }
-    // if {
-    // 메시지 10개를 가져오는데 0개 이상일때 채팅이력을 차례대로 넣어준다
-    if (json.message.length > 0) {
-        for (let i = 0; i < json.message.length; i++) {
-            if (json.message[i].sender == loginStore.m_local_deviceid) {
-                // 발신
-                const userNickname = userListGetNickname(json.message[i].receiver);
-
-                directMessageStore.previousSendDM({
-                    message: json.message[i].message,
-                    sender: loginStore.m_local_deviceid,
-                    receiver: json.message[i].receiver,
-                    senderNickname: loginStore.nickname,
-                    receiverNickname: userNickname,
-                    datetime: json.message[i].datetime,
-                    chattingDateTime: getDirectMessageTimeZone(json.message[i].datetime),
-                    readCheck: JSON.parse(json.message[i].readCheck),
-                });
-            } else {
-                // 수신
-                const userNickname = userListGetNickname(json.message[i].sender);
-
-                directMessageStore.previousReceiveDM({
-                    message: json.message[i].message,
-                    sender: json.message[i].sender,
-                    receiver: json.message[i].receiver,
-                    senderNickname: userNickname,
-                    receiverNickname: loginStore.nickname,
-                    datetime: json.message[i].datetime,
-                    chattingDateTime: self.getDirectMessageTimeZone(
-                        json.message[i].datetime,
-                    ),
-                    readCheck: JSON.parse(json.message[i].readCheck),
-                    // compareDatetime: json.compareDatetime
-                });
-            }
-
-            // 가져온 메시지 만큼 돌고나서 메시지 개수가 10개 이하이면 더이상 가져올 메시지가 없다는 것으로 판단
-            // 이후 (이전 데이터보기) 버튼을 없앤다
-            if (json.message.length - 1 == i && json.message.length < 10) {
-                directMessageStore.previousMessageNone(false);
-            } else {
-                // 채팅이 10개 이상이거나 다른 채팅모달로 넘어갔을때를 대비하여 다시 true로 변경
-                directMessageStore.previousMessageNone(true);
-            }
-        }
-    }
-};
-
 function callingAccept(roomid, remotedeviceid) {
     console.log(roomid, remotedeviceid, "여기찍어라");
     const remoteInfo = userDataGetInfo(remotedeviceid);
@@ -735,11 +611,8 @@ onMounted(() => {
     signallingSocket.on('cancelCalling', handleCancelCalling)
     signallingSocket.on('multiRefuseCalling', handleMultiRefuseCalling)
     signallingSocket.on('inviteCancelCalling', handleInviteCancelCalling)
-    signallingSocket.on('directMessage', handleDirectMessage)
-    signallingSocket.on('directMessageReadProcess', handleDirectMessageReadProcess)
     signallingSocket.on('openMeetingChecking', handleOpenMeetingChecking)
     signallingSocket.on('joinMeeting', handleJoinMeeting)
-    signallingSocket.on('getPreviousMessage', handleGetPreviousMessage)
 });
 
 // 언마운트되기 전 실행할 작업
@@ -751,11 +624,8 @@ onUnmounted(() => {
     signallingSocket.off("cancelCalling", handleCancelCalling);
     signallingSocket.off("multiRefuseCalling", handleMultiRefuseCalling);
     signallingSocket.off("inviteCancelCalling", handleInviteCancelCalling);
-    signallingSocket.off("directMessage", handleDirectMessage);
-    signallingSocket.off("directMessageReadProcess", handleDirectMessageReadProcess);
     signallingSocket.off("openMeetingChecking", handleOpenMeetingChecking);
     signallingSocket.off("joinMeeting", handleJoinMeeting);
-    signallingSocket.off("getPreviousMessage", handleGetPreviousMessage);
 });
 </script>
 
@@ -785,7 +655,6 @@ onUnmounted(() => {
     z-index: 1;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    overflow-y: auto;
     position: absolute;
     right: 230px;
     bottom: 0;

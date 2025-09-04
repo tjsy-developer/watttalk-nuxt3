@@ -16,7 +16,7 @@
             placeholder="검색"
             class="searh-input"
         />
-        <div>
+        <div class="contact-container">
             <RecentCallList
                 v-if="menuType == 0"
                 :data="userListStore.recentCallList"
@@ -142,5 +142,11 @@ onBeforeUnmount(() => {});
     &::placeholder {
         @include tc(color, "placeholder-color");
     }
+}
+
+.contact-container {
+    overflow-y: auto;
+    max-height: calc(100% - 82px);
+    height: 60vh;
 }
 </style>

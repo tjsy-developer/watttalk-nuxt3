@@ -72,7 +72,7 @@
     </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, watch } from "vue";
 import TreeNode from "@/components/pages/dashboard/TreeNode.vue";
 import { useImageAssets } from "@/composables/useImageAssets";
@@ -88,22 +88,9 @@ import { storeToRefs } from "pinia";
 import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
 import ChatModal from "@/components/modal/ChatModal.vue";
 import { useNuxtApp } from "nuxt/app";
-const { $t } : any = useNuxtApp()
+const { t } = useI18n();
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
-interface OrgNode {
-    deviceid: string;
-    devicetype: number;
-    status: number;
-    connectingstatus: number;
-    end_time: number;
-    call_count: number;
-    image: string;
-    institution: string;
-    nickname: string;
-    headquarters: string;
-    branch: string;
-}
 
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
@@ -112,36 +99,31 @@ const directMessageStore = useDirectMessageStore();
 const meettingStore = useMeetingStore();
 
 const vfm = useVfm();
-const props = defineProps<{
-    data: OrgNode[];
-    search: string;
-}>();
-console.log("여기왜이렇게 늦니");
+const props = defineProps(['data', 'search']);
 
 const { contentsViewType } = storeToRefs(commonStore);
-const openNodes = ref(new Set<string>());
 
-function handleMouseCallOver(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseCallOver(event) {
+    const target = event.target;
     target.src = commonImages.value.useCall;
 }
 
-function handleMouseCallLeave(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseCallLeave(event) {
+    const target = event.target;
     target.src = commonImages.value.useNotCall;
 }
 
-function handleMouseChatOver(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseChatOver(event) {
+    const target = event.target;
     target.src = commonImages.value.useChat;
 }
 
-function handleMouseChatLeave(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseChatLeave(event) {
+    const target = event.target;
     target.src = commonImages.value.useNotChat;
 }
 
-function requestCall(remoteDeviceId: string | undefined) {
+function requestCall(remoteDeviceId) {
     alert(remoteDeviceId)
     if (!remoteDeviceId) return;
     try {
@@ -167,22 +149,27 @@ function requestCall(remoteDeviceId: string | undefined) {
     }
 }
 
-function requestChat(remoteUser: OrgNode) {
-    // chattingList 에 추가하고
+function requestChat(remoteUser) {
+    const modalId = "chat-modal-" + remoteUser.deviceid
+    if (vfm.get(modalId)) {
+        vfm.open(modalId);
+        return;
+    }
+
+    // 최초 등록
     const { open } = useModal({
         component: VueFinalModal,
         keepAlive: true,
         attrs: {
-            modalId: "chat-modal-" + remoteUser.deviceid,
+            modalId,
             displayDirective: "show",
             background: "interactive",
             contentTransition: "vfm-fade",
             hideOverlay: true,
-            "onUpdate:modelValue": (val: any) => {
+            class: "modal-container chat-modal non-overlay",
+            "onUpdate:modelValue": (val) => {
                 console.log("chat modal open state changed:", val);
             },
-            class: "modal-container chat-modal non-overlay",
-            
         },
         slots: {
             default: useModalSlot({
@@ -191,22 +178,21 @@ function requestChat(remoteUser: OrgNode) {
                     remoteDeviceId: remoteUser.deviceid,
                     remoteNickName: remoteUser.nickname,
                     profile: remoteUser.image,
-                }
+                },
             }),
         },
     });
     open();
-    // directMessageStore.setRemoteMessageList({ remoteDeviceId: remoteUser.deviceid})
 }
 
-function contactDateFormat(datetime: number) {
+function contactDateFormat(datetime) {
     const timestampMs = datetime < 1e12 ? datetime * 1000 : datetime;
     const dateObj = new Date(timestampMs);
 
     // 개별 키로 요일과 월/일 글자 가져오기
-    const monthLabel = $t("week7");
-    const dayLabel = $t("week8");
-    const todayLabel = `(${$t(`week${dateObj.getDay()}`)})`;
+    const monthLabel = t("week7");
+    const dayLabel = t("week8");
+    const todayLabel = `(${t(`week${dateObj.getDay()}`)})`;
 
     const month = dateObj.getMonth() + 1 + monthLabel;
     const day = dateObj.getDate() + dayLabel;

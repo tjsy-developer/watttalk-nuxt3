@@ -1,10 +1,11 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import i18n from './config/i18n.config'
 
 export default defineNuxtConfig({
     ssr: false,
     srcDir: "client/",
     devtools: {
-        enabled: true,
+        enabled: false,
     },
     imports: {
         dirs: ["utils"], // 또는 'composables', 'stores', 'utils' 등
@@ -34,11 +35,11 @@ export default defineNuxtConfig({
                 },
                 {
                     src: "/js/toastr.min.js",
-                    defer: true,
+                    defer: false,
                 },
                 {
                     src: "/js/spin.min.js",
-                    defer: true,
+                    defer: false,
                 },
             ],
             link: [
@@ -59,12 +60,11 @@ export default defineNuxtConfig({
         "@/plugins/janus.client",
         "@/plugins/initPreperence.client",
         "@/plugins/vue-final-modal",
-        "@/plugins/i18next.client",
+        // "@/plugins/i18next.client",
         "@/plugins/pdfjs.client",
-        "@/plugins/socket-io-stream.client",
     ],
     modules: [
-        "@nuxt/devtools",
+        // "@nuxt/devtools",
         "@pinia/nuxt",
         "pinia-plugin-persistedstate/nuxt",
         [
@@ -74,7 +74,7 @@ export default defineNuxtConfig({
                 classSuffix: "",
             },
         ],
-        // ["@nuxtjs/i18n", require("./i18n.config")],
+        ["@nuxtjs/i18n", i18n],
     ],
     vite: {
         assetsInclude: ["**/*.svg", "**/*.worker.js"],
@@ -91,6 +91,9 @@ export default defineNuxtConfig({
                 },
             },
         },
+        server: {
+            hmr: false,
+        },
     },
     runtimeConfig: {
         public: {
@@ -103,11 +106,11 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_URL: process.env.NUXT_PUBLIC_ICE_SERVER_URL,
         },
     },
-    devServer: {
-        // https: {
-        //     key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
-        //     cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
-        // },
-        // host: "0.0.0.0",
-    },
+    // devServer: {
+    //     https: {
+    //         key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
+    //         cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
+    //     },
+    //     host: "0.0.0.0",
+    // },
 });

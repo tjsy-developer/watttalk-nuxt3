@@ -1,20 +1,16 @@
-<script setup lang="ts">
+<script setup>
 
 import { useImageAssets } from '@/composables/useImageAssets';
 import { useNuxtApp } from 'nuxt/app';
 import { ref } from 'vue';
-import { useModal, useModalSlot, useVfm, ModalId } from 'vue-final-modal';
+import { useModal, useModalSlot, useVfm } from 'vue-final-modal';
 
 const vfm = useVfm()
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
 
 const { menuImages } = useImageAssets();
-const { $t }: any = useNuxtApp();
-// const { open, close } = useModal({
-//     component: NoticeModal,
-//     keepAlive: true,
-// })
+const { t } = useI18n();
 
 const handleClickNotice = () => {
     // open();
@@ -28,16 +24,16 @@ const handleClickNotice = () => {
     <div class="leftbar">
         <router-link to="/dashboard" class="icon-btn" title="연락처">
             <img :src="menuImages.call" />
-            <label class="icon-label">{{ $t("연락처") }}</label>
+            <label class="icon-label">{{ t("연락처") }}</label>
         </router-link>
 
         <router-link to="/meeting" class="icon-btn" title="회의실">
             <img :src="menuImages.meetingRoom" />
-            <label class="icon-label">{{ $t("회의실") }}</label>
+            <label class="icon-label">{{ t("회의실") }}</label>
         </router-link>
         <a :href="'http://localhost:8205/attachment/video?page=1&viewType=gallery'" target="_blank" class="icon-btn" title="클라우드">
             <img :src="menuImages.cloud" />
-            <label class="icon-label">{{ $t("클라우드") }}</label>
+            <label class="icon-label">{{ t("클라우드") }}</label>
         </a>
         <div class="icon-btn bell" title="알림" @click="handleClickNotice">
             <img :src="menuImages.notice">

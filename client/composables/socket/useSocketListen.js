@@ -1,7 +1,7 @@
 // socketManager.js
 import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
-import { buildTree, getFormattedDate } from "@/utils/common";
+import { buildTree, dircetMessageBell, getFormattedDate } from "@/utils/common";
 import {
     recentDataGetIndex,
     updateStatusByDeviceId,
@@ -17,14 +17,17 @@ import { emitter } from "@/utils/eventBus";
 import { useRouter } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
 import { useDirectCallStore } from "@/stores/directCall";
-import { userListAdd } from "@/utils/userList";
+import { findUserInfo, userListAdd } from "@/utils/userList";
 import { useLoginEvents } from "./useLoginEvents";
 import { useSignallingSocket } from "./useSignallingSocket";
 import { useDirectMessageStore } from "@/stores/directMessage";
+import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
+import ChatModal from "@/components/modal/ChatModal.vue";
 
 export function bindSocketEvents() {
     const { signallingSocket } = useSignallingSocket();
     const router = useRouter();
+    const vfm = useVfm();
     const loginStore = useLoginStore();
     const preperenceStore = useUserPreferenceStore();
     const modalStore = useModalStore();
@@ -97,13 +100,14 @@ export function bindSocketEvents() {
             json.deviceid,
             json.status,
         );
-        console.log(updateOrgCallList);
+        console.log(updateRecentCallList);
         userListStore.setRecentCallList(updateRecentCallList);
         userListStore.setOrganizationList(updateOrgCallList);
     }
 
     function handleUserStatus(response) {
         const json = JSON.parse(response);
+        console.log(json);
         const remoteInfo = userDataGetInfo(json.deviceid);
 
         sessionStorage.setItem("m_remote_deviceid", remoteInfo.deviceId);
@@ -136,7 +140,6 @@ export function bindSocketEvents() {
                 });
             }
         }
-        
     }
 
     function handleForceLogoutResult(response) {
@@ -180,15 +183,73 @@ export function bindSocketEvents() {
             sender: json.sender,
             receiver: json.receiver,
             timestamp: json.datetime,
-            dateTime: getFormattedDate(json.datetime),
+            dateTime: getFormattedDate(json.datetime, "mm/dd hh:MM"),
             message: json.message,
             read: false,
         });
+
+        dircetMessageBell("play");
+        const remoteUser = findUserInfo(json.sender);
+        const modalId = "chat-modal-" + remoteUser.deviceid;
+        if (vfm.get(modalId)) {
+            vfm.open(modalId);
+            return;
+        }
+
+        // 최초 등록
+        const { open } = useModal({
+            component: VueFinalModal,
+            keepAlive: true,
+            attrs: {
+                modalId,
+                displayDirective: "show",
+                background: "interactive",
+                contentTransition: "vfm-fade",
+                hideOverlay: true,
+                class: "modal-container chat-modal non-overlay",
+                "onUpdate:modelValue": (val) => {
+                    console.log("chat modal open state changed:", val);
+                },
+            },
+            slots: {
+                default: useModalSlot({
+                    component: ChatModal,
+                    attrs: {
+                        remoteDeviceId: remoteUser.deviceid,
+                        remoteNickName: remoteUser.nickname,
+                        profile: remoteUser.image,
+                    },
+                }),
+            },
+        });
+        open();
     }
 
     function handleDirectMessageReadProcess(response) {
         console.log("*** socket: directMessageReadProcess response", response);
         const json = JSON.parse(response);
+        directMessageStore.setReadMessage({ remoteDeviceId: json.receiver });
+    }
+
+    function handlePreviousMessage(response) {
+        console.log("*** socket: getPreviousMessage response", response);
+        const json = JSON.parse(response);
+        const messageList = json.message;
+        if (messageList.length == 0) {
+            directMessageStore.setIsLastMessage();
+            return
+        }
+        for (let i = 0; i < messageList.length; i++) {
+            console.log(messageList[i].sender);
+            directMessageStore.setAddPrevMessage({
+                sender: messageList[i].sender,
+                receiver: messageList[i].receiver,
+                timestamp: messageList[i].datetime,
+                dateTime: getFormattedDate(messageList[i].datetime, "mm/dd hh:MM"),
+                message: messageList[i].message,
+                read: messageList[i].readCheck,
+            });
+        }
     }
 
     // ---------- Binding ----------
@@ -200,6 +261,7 @@ export function bindSocketEvents() {
     signallingSocket.on("forceLogoutRequest", handleForceLogoutRequest);
     signallingSocket.on("directMessage", handleDirectMessage);
     signallingSocket.on("directMessageReadProcess", handleDirectMessageReadProcess);
+    signallingSocket.on("getPreviousMessage", handlePreviousMessage);
 
     // ---------- Unbinder ----------
     return () => {
@@ -211,5 +273,6 @@ export function bindSocketEvents() {
         signallingSocket.off("forceLogoutRequest", handleForceLogoutRequest);
         signallingSocket.off("directMessage", handleDirectMessage);
         signallingSocket.off("directMessageReadProcess", handleDirectMessageReadProcess);
+        signallingSocket.off("getPreviousMessage", handlePreviousMessage);
     };
 }

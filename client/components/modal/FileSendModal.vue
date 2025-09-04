@@ -14,9 +14,9 @@
 
         <div class="alert-box" v-if="fileSendStatus == 0">
             <div class="row col-12 fileSendTitleCon">
-                <span class="col-auto fileSendTitle">{{ $t("사진 전송") }}</span>
+                <span class="col-auto fileSendTitle">{{ t("사진 전송") }}</span>
                 <span class="col fileSendExplanation">{{
-                    $t("사진을 수신할 사용자를 선택해주세요")
+                    t("사진을 수신할 사용자를 선택해주세요")
                 }}</span>
             </div>
             <div class="col-12 titleUnderLine"></div>
@@ -32,7 +32,7 @@
                             "
                             class="userSelect"
                         >
-                            <option disabled value="">{{ $t("사용자를 선택해주세요") }}</option>
+                            <option disabled value="">{{ t("사용자를 선택해주세요") }}</option>
                             <option
                                 v-show="contents?.status != 'none' && contents?.text != ''"
                                 v-for="(contents, contentsKey) in callingUser"
@@ -46,7 +46,7 @@
                     </div>
                     <div class="col-12 notSelectedText">
                         <p v-if="userSelectNone && fileSendStatus == 0">
-                            {{ $t("사용자가 선택되지 않았습니다") }}
+                            {{ t("사용자가 선택되지 않았습니다") }}
                         </p>
                     </div>
                 </div>
@@ -59,13 +59,13 @@
                         "
                         class="fileSendRequestaccenptButton confirm"
                     >
-                        {{ $t("확인") }}
+                        {{ t("확인") }}
                     </button>
                     <button
                         @click="fileSendModalClose"
                         class="fileSendRequestadelineButton cancel"
                     >
-                        {{ $t("취소") }}
+                        {{ t("취소") }}
                     </button>
                 </div>
             </div>
@@ -73,9 +73,9 @@
 
         <div  v-else-if="fileSendStatus == 1">
             <div class="row col-12 fileSendTitleCon">
-                <span class="col-auto fileSendTitle">{{ $t("사진 전송") }}</span>
+                <span class="col-auto fileSendTitle">{{ t("사진 전송") }}</span>
                 <span class="col fileSendExplanation">{{
-                    $t("사진을 선택해주세요")
+                    t("사진을 선택해주세요")
                 }}</span>
             </div>
             <div class="col-12 titleUnderLine"></div>
@@ -84,7 +84,7 @@
                     <div>
                         <div class="fileSelect">
                             <label for="file" id="fileInput" class="fileLabel">{{
-                                $t("파일 선택")
+                                t("파일 선택")
                             }}</label>
                             <input
 								v-show="false"
@@ -111,7 +111,7 @@
                                     : (fileSelectNone = false && fileSendStatus == 1)
                             "
                         >
-                            {{ $t("선택된 파일이 없습니다") }}
+                            {{ t("선택된 파일이 없습니다") }}
                         </p>
                     </div>
                 </div>
@@ -124,13 +124,13 @@
                         "
                         class="fileSendRequestaccenptButton confirm"
                     >
-                        {{ $t("확인") }}
+                        {{ t("확인") }}
                     </button>
                     <button
                         @click="fileSendModalClose"
                         class="fileSendRequestadelineButton cancel"
                     >
-                        {{ $t("취소") }}
+                        {{ t("취소") }}
                     </button>
                 </div>
             </div>
@@ -141,10 +141,10 @@
                 <div class="fileSelectContainer">
                     <div class="row col-12">
                         <div class="col-12 fileSendWaitText">
-                            <p>{{ $t("상대방의 수락을 기다리는 중입니다") }}</p>
+                            <p>{{ t("상대방의 수락을 기다리는 중입니다") }}</p>
                         </div>
                         <div class="col-12 fileSendWaitText">
-                            <p>{{ $t("잠시만 기다려주세요") }}</p>
+                            <p>{{ t("잠시만 기다려주세요") }}</p>
                         </div>
                     </div>
                 </div>
@@ -153,7 +153,7 @@
                         @click="cancelFileTransfer"
                         class="fileSendRequestadelineButton cancel"
                     >
-                        {{ $t("취소") }}
+                        {{ t("취소") }}
                     </button>
                 </div>
             </div>
@@ -163,10 +163,10 @@
             <div class="fileSendMessageBox items-center justify-center">
                 <div>
 					<div class="col-12 fileSendWaitText">
-						<p>{{ $t("사진을 전송 중입니다") }}</p>
+						<p>{{ t("사진을 전송 중입니다") }}</p>
 					</div>
 					<div class="col-12 fileSendWaitText">
-						<p>{{ $t("잠시만 기다려주세요") }}</p>
+						<p>{{ t("잠시만 기다려주세요") }}</p>
 					</div>
 				</div>
 				<div class="prog">
@@ -181,7 +181,7 @@
                         @click="cancelFileTransfer"
                         class="fileSendRequestadelineButton cancel"
                     >
-                        {{ $t("취소") }}
+                        {{ t("취소") }}
                     </button>
                 </div>
             </div>
@@ -191,10 +191,10 @@
             <div class="fileSendMessageBox items-center justify-center">
                 <div class="row">
 					<div class="col-12 fileSendWaitText">
-						<p>{{ $t("상대방이 사진 수신 요청을") }}</p>
+						<p>{{ t("상대방이 사진 수신 요청을") }}</p>
 					</div>
 					<div class="col-12 fileSendWaitText">
-						<p>{{ $t("거절했습니다") }}</p>
+						<p>{{ t("거절했습니다") }}</p>
 					</div>
 				</div>
             </div>
@@ -212,7 +212,7 @@
                             />
                         </div>
                         <div class="col-12 fileSendWaitText">
-                            <p>{{ $t("전송이 완료되었습니다") }}</p>
+                            <p>{{ t("전송이 완료되었습니다") }}</p>
                         </div>
                     </div>
                 </div>
@@ -231,7 +231,7 @@
                             />
                         </div>
                         <div class="col-12 fileSendWaitText">
-                            <p>{{ $t("전송이 취소되었습니다") }}</p>
+                            <p>{{ t("전송이 취소되었습니다") }}</p>
                         </div>
                     </div>
                 </div>
@@ -246,7 +246,7 @@ import { useCallStore } from "@/stores/call";
 import { useModalStore } from "@/stores/modal";
 import { useNuxtApp } from "nuxt/app";
 import { onBeforeMount, onMounted, ref } from "vue";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 const callStore = useCallStore();
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
@@ -311,9 +311,9 @@ function fileSelect() {
                 } else {
                     selectFileName.value =
                         uploadFiles.value.files[0].name +
-                        $t("외")[1] +
+                        t("외")[1] +
                         (selectCnt - 1) +
-                        $t("개")[2];
+                        t("개")[2];
                 }
 
                 // =>kyj
@@ -321,7 +321,7 @@ function fileSelect() {
                 commonStore.setSendFileData(uploadFiles.value.files);
             }
         } else {
-            alert("jpg, jpeg, png," + $t("fileSend extension")[0]);
+            alert("jpg, jpeg, png," + t("fileSend extension")[0]);
             return false;
         }
     }

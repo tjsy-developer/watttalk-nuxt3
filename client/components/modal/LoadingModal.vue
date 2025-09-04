@@ -7,12 +7,12 @@
 		<div class="loading-container">
 			<img src="@/assets/images/gif/loading.gif" class="loading-bar">
 			<div v-if="props.maskLoadingType == 'prepairVideoCall'">
-				<p>{{ $t("prepareVideoCall1") }}</p>
-				<p>{{ $t("prepareVideoCall2") }}</p>
+				<p>{{ t("prepareVideoCall1") }}</p>
+				<p>{{ t("prepareVideoCall2") }}</p>
 			</div>
 			<div v-else-if="props.maskLoadingType == 'ThumnailTransfer'">
-				<p>{{ $t("prepareThumbnailTransfer1") }}</p>
-				<p>{{ $t("prepareThumbnailTransfer2") }}</p>
+				<p>{{ t("prepareThumbnailTransfer1") }}</p>
+				<p>{{ t("prepareThumbnailTransfer2") }}</p>
 			</div>
 		</div>
 
@@ -23,7 +23,7 @@
 import { useNuxtApp } from "nuxt/app";
 import { onMounted } from "vue";
 import { VueFinalModal } from "vue-final-modal";
-const { $t } = useNuxtApp();
+const { t } = useI18n();
 const props = defineProps(["maskLoadingType"]);
 
 onMounted(() => {

@@ -4,7 +4,7 @@ import { getFormattedDate } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { onMounted, ref } from "vue";
 import { useVfm } from "vue-final-modal";
-const { $t } = useNuxtApp()
+const { t } = useI18n();
 import VueDragResize from "vue3-drag-resize";
 
 const vfm = useVfm();
@@ -18,10 +18,11 @@ const left = ref(0);
 const noticeList = ref([]);
 
 function dragResize(newRect) {
-    width.value = newRect.width;
-    height.value = newRect.height;
-    top.value = newRect.top;
-    left.value = newRect.left;
+    if (!newRect) return;
+    width.value = newRect.width ?? 0;
+    height.value = newRect.height ?? 0;
+    top.value = newRect.top ?? 0;
+    left.value = newRect.left ?? 0;
     console.log("drag");
 }
 
@@ -65,16 +66,18 @@ watch(
             :is-active="true"
             :w="420"
             :h="420"
+            :x="0"
+            :y="0"
             @resizing="dragResize"
             @dragging="dragResize"
         >
             <div class="modal-body">
                 <div>
-                    <span>{{ $t("공지사항") }}</span>
+                    <span>{{ t("공지사항") }}</span>
                     <img
-						class="close-icon"
+                        class="close-icon"
                         src="@/assets/images/ic_close.png"
-                        @click="vfm.close('notice-modal')"
+                        @click.stop="vfm.close('notice-modal')"
                     />
                 </div>
                 <section>
@@ -83,7 +86,10 @@ watch(
                             <div class="notice content">
                                 <div>
                                     <span>{{ notice.content }}</span>
-                                    <img src="@/assets/images/ic_new.png" />
+                                    <img
+                                        src="@/assets/images/ic_new.png"
+                                        class="new-ico"
+                                    />
                                 </div>
                                 <div>
                                     <img
@@ -140,9 +146,9 @@ section {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 7px;
+        padding: 4px;
         margin: 0;
-        gap: 6px;
+        gap: 2px;
         list-style: none;
         background-color: #353535;
         cursor: pointer;
@@ -161,6 +167,10 @@ section {
         > div {
             gap: 8px;
             display: flex;
+            align-items: center;
+        }
+        .new-ico {
+            height: 13px
         }
     }
     .notice.content span {

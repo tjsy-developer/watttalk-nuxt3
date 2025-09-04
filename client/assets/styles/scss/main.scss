@@ -63,7 +63,7 @@ button {
     height: 514px;
 }
 
-.message-modal {
+.message-modal, .alert-modal {
     width: 350px;
     height: 270px;
 }
@@ -179,4 +179,17 @@ button {
 }
 .vdr.active:before {
     outline: none !important;
+}
+
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+	background: #4D4D4D;
+}
+
+::-webkit-scrollbar-track {
+    background: #2C2C2C;
 }

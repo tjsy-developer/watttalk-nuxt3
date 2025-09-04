@@ -5,7 +5,7 @@
                 type="text"
                 id="memberSearchInput"
                 v-model="memberSearch"
-                :placeholder="$t('search')"
+                :placeholder="t('search')"
                 class="row justify-end items-center memberSearchText"
             />
             <button class="memberSearchBtn">
@@ -32,6 +32,7 @@ import ContactList from "../dashboard/ContactList.vue";
 import { useUserListStore } from "@/stores/userList";
 import OrganizationList from "../dashboard/OrganizationList.vue";
 
+const { t } = useI18n();
 const props = defineProps({
     enterMember: {
         type: Array,

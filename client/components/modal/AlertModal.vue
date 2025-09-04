@@ -1,479 +1,271 @@
 <template>
-	<div class="column row align-center noneOverayModalContainer">
-		<div class="row col-12">
-			<div
-				class="alertTitleCon"
-				:class="[noneOverlayAlertStatus == 14 ? 'col-auto' : '']"
-			>
-				<span class="alertTitle">{{ t("알림창") }}</span>
-			</div>
+	<div class="alert-container">
+		<div class="alert-box">
+            <div class="alert-title">
+                <h4 class="title">{{ t("알림창") }}</h4>
+                <div class="division"></div>
+            </div>
+			<section v-if="noneOverlayAlertStatus == 14 && accessDeviceCheck == 'Mobile'">
+                <div class="content">
+                    <p class="msg alert-text">
+                        {{ `${hostRequestNickname} ${t("님이")}` }}
+                    </p>
+                    <p class="msg alert-text">{{ t("호스트 권한 요청을 보냈습니다") }}</p>
+                </div>
+                <div class="control-buttons">
+                    <button @click="captureSave(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="captureSave(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 1">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("forceLeave confirm1") }}</p>
+                </div>
+                <div class="control-buttons">
+                    <button @click="forceLeaveResult(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="forceLeaveResult(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
 
-			<div
-				v-if="noneOverlayAlertStatus == 14 && accessDeviceCheck == 'Mobile'"
-				class="row col items-center justify-end mobileScreenCaptureBox"
-			>
-				<p class="msg mobileScreenCaptureText">{{ t("capture Image Save") }}</p>
-				<div
-					class="row items-center alertControlbuttons mobileScreenCaptureButtons"
-				>
-					<button @click="captureSave(true)" class="hostRequestadelineButton">
-						{{ t("예") }}
-					</button>
-					<button @click="captureSave(false)" class="hostRequestadelineButton">
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div class="col-12 titleUnderLine"></div>
-			<div
-				v-if="noneOverlayAlertStatus == 1"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("forceLeave confirm1") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons">
-					<button
-						@click="forceLeaveResult(true)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click="forceLeaveResult(false)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 2"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12 call">
-						<p class="msg alertText">{{ t("영상통화 세션을 종료합니다") }}</p>
-					</div>
-					<div class="col-12 call">
-						<p class="msg alertText">{{ t("잠시만 기다려주세요") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 3"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("호스트님이 영상통화에서") }}</p>
-					</div>
-					<div class="col-12">
-						<p class="msg alertText">{{ t("퇴장 처리하였습니다") }}</p>
-					</div>
-					<div class="col-12">
-						<p class="msg alertText">{{ t("3초 뒤 통화가 종료됩니다") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 4"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("통화를 종료하시겠습니까?") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click="hangupCallingConfirm(true)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click="hangupCallingConfirm(false)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 5"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("회의를 종료하시겠습니까?") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click="hangupCallingConfirm(true)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click="hangupCallingConfirm(false)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 6"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("회의가 개설전입니다") }}</p>
-					</div>
-					<div class="col-12">
-						<p class="msg alertText">{{ t("잠시만 기다려주세요") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 7"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("종료된 회의입니다") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 8"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("삭제된 회의입니다") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 9"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("네트워크 상태가 불안정하여 영상 화질이 저하될 수 있습니다") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 30px">
-					<button @click="noneOverlayModalClose">{{ t("확인") }}</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 10"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("재연결중입니다") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 11"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click.once="moveDrawingConfirm(true, 'preview')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click.once="moveDrawingConfirm(false, 'preview')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 12"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
-						<p class="msg alertText">
-							{{ t("드로잉으로 이동 시 화면공유가 중지 됩니다") }}
-						</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click.once="moveDrawingConfirm(true, 'screenShareToDrawing')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click.once="moveDrawingConfirm(false, 'screenShareToDrawing')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 13"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("화면공유를 시작하시겠습니까?") }}</p>
-						<p class="msg alertText">{{ t("화면공유 시작 시 드로잉이 중지 됩니다") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click="moveScreenShare(true)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click="moveScreenShare(false)"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 14"
-				style="height: 100%; width: 100%"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div
-					class="row requestStatus alertRequestDeclineMessage col-12"
-					style="width: 100%"
-					:style="{
-						height: accessDeviceCheck == 'PC' ? '100%' : '100%',
-						paddingTop: accessDeviceCheck == 'PC' ? '50px' : '10px',
-					}"
-				>
-					<div
-						class="col-12 row screenCaptureImg justify-center"
-						style="width: 100%"
-						:style="{ height: accessDeviceCheck == 'PC' ? '' : '100%' }"
-					>
-						<img
-							:src="callStore.captureImageInfo.fileSrc"
-							style="width: 100%; height: 100%"
-						/>
-					</div>
-					<div
-						v-if="accessDeviceCheck == 'PC'"
-						class="row col-12 items-center justify-center pcScreenCaptureText"
-						:style="{}"
-					>
-						<p class="msg alertText">{{ t("capture Image Save") }}</p>
-					</div>
-					<div
-						v-if="accessDeviceCheck == 'PC'"
-						class="alertControlbuttons pcScreenCaptureButtons"
-						style="margin-top: 20px"
-					>
-						<button
-							@click="captureSave(true)"
-							class="hostRequestadelineButton"
-						>
-							{{ t("예") }}
-						</button>
-						<button
-							@click="captureSave(false)"
-							class="hostRequestadelineButton"
-						>
-							{{ t("아니오") }}
-						</button>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 15"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("서버에 업로드 중입니다") }}</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 16"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("캡쳐하신 사진을 저장하였습니다") }}</p>
-						<p class="msg alertText">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button
-						@click.once="moveDrawingConfirm(true, 'capture')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("예") }}
-					</button>
-					<button
-						@click.once="moveDrawingConfirm(false, 'capture')"
-						class="hostRequestadelineButton"
-					>
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 17"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div
-					class="row requestStatus alertRequestDeclineMessage HQCaptureText col-12"
-				>
-					<div class="col-12 HQCaptrueText">
-						<p class="msg alertText">{{ t("메인화면 글라스에게 고화질 캡쳐를 요청하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 고화질 캡쳐 사진이 자동으로 수신됩니다") }}</p>
-					</div>
-					<div
-						class="row col-12 items-center justify-center HQCaptrueText"
-						style="padding-top: 15px"
-					>
-						<p class="msg alertText">{{ t("이 창은 5초뒤에 자동으로 사라집니다") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 15px">
-					<button @click="closeNoneOverlayAlert">{{ t("확인") }}</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 18"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("고화질 캡쳐에 실패하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 다시 시도해주세요") }}</p>
-					</div>
-				</div>
-				<div class="alertControlbuttons" style="margin-top: 30px">
-					<button @click="closeNoneOverlayAlert">{{ t("확인") }}</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 19"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">{{ t("자동 통화 종료를 설정하였습니다") }}</p>
-						<p class="msg alertText">{{ t("잠시 후 통화가 종료 됩니다") }}</p>
-					</div>
-				</div>
+			<section v-if="noneOverlayAlertStatus == 2">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("영상통화 세션을 종료합니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시만 기다려주세요") }}</p>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 3">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("호스트님이 영상통화에서") }}</p>
+					<p class="msg alert-text">{{ t("퇴장 처리하였습니다") }}</p>
+					<p class="msg alert-text">{{ t("3초 뒤 통화가 종료됩니다") }}</p>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 4">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("통화를 종료하시겠습니까?") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="hangupCallingConfirm(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="hangupCallingConfirm(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 5">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("회의를 종료하시겠습니까?") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="hangupCallingConfirm(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="hangupCallingConfirm(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 6">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("회의가 개설전입니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시만 기다려주세요") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 7">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("종료된 회의입니다") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 8">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("삭제된 회의입니다") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 9">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("네트워크 상태가 불안정하여") }}</p>
+					<p class="msg alert-text">{{ t("영상 화질이 저하될 수 있습니다") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="noneOverlayModalClose" class="decline-btn">
+                        {{ t("확인") }}
+                    </button>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 10">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("재연결중입니다") }}</p>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 11">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click.once="moveDrawingConfirm(true, 'preview')" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click.once="moveDrawingConfirm(false, 'preview')" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 12">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+					<p class="msg alert-text">{{ t("드로잉으로 이동 시 화면공유가 중지 됩니다") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click.once="moveDrawingConfirm(true, 'screenShareToDrawing')" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click.once="moveDrawingConfirm(false, 'screenShareToDrawing')" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 13">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("화면공유를 시작하시겠습니까?") }}</p>
+					<p class="msg alert-text">{{ t("화면공유 시작 시 드로잉이 중지 됩니다") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="moveScreenShare(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="moveScreenShare(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 14">
+                <div class="content">
+					<img
+						:src="callStore.captureImageInfo.fileSrc"
+						style="min-width: 500px; width: 100%; height: 100%; margin: 10px 0;"
+					/>
+					<p class="msg alert-text">{{ t("capture Image Save") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="captureSave(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="captureSave(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+
+			<section v-if="noneOverlayAlertStatus == 15">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("서버에 업로드 중입니다") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 16">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("캡쳐하신 사진을 저장하였습니다") }}</p>
+					<p class="msg alert-text">{{ t("드로잉으로 이동하시겠습니까?") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click.once="moveDrawingConfirm(true, 'capture')" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click.once="moveDrawingConfirm(false, 'capture')" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 17">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("메인화면 글라스에게 고화질 캡쳐를 요청하였습니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시 후 고화질 캡쳐 사진이 자동으로 수신됩니다") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="closeNoneOverlayAlert" class="decline-btn">
+                        {{ t("확인") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 18">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("고화질 캡쳐에 실패하였습니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시 후 다시 시도해주세요") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="closeNoneOverlayAlert" class="decline-btn">
+                        {{ t("확인") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 19">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("자동 통화 종료를 설정하였습니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시 후 통화가 종료 됩니다") }}</p>
+                </div>
 				<div class="alertControlbuttons" style="margin-top: 30px">
 					<p
-						v-if="$callStore.autoDiscallingResult"
+						v-if="callStore.autoDiscallingResult"
 						class="msg alertText"
 					>
 						{{ t("잠시 후 통화가 종료 됩니다") }}
 					</p>
-					<button
-						v-if="!$callStore.autoDiscallingResult"
-						@click="autoDiscallingCancel"
-					>
-						{{ t("cancel") }}
-					</button>
 				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 20"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">
-							{{ t("다른 장치에서 로그인 중입니다") }}
-						</p>
-						<p class="msg alertText">
-							{{ t("강제 로그아웃하시겠습니까?") }}
-						</p>
-					</div>
+				<div class="control-buttons">
+
+					<button v-if="!callStore.autoDiscallingResult"
+						@click="autoDiscallingCancel" class="decline-btn">
+                        {{ t("cancel") }}
+                    </button>
 				</div>
-				<div class="alertControlbuttons" style="margin-top: 20px">
-					<button @click="forceLogout(true)" class="hostRequestadelineButton">
-						{{ t("예") }}
-					</button>
-					<button @click="forceLogout(false)" class="hostRequestadelineButton">
-						{{ t("아니오") }}
-					</button>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 21"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">
-							{{ t("다른 기기에서 로그인 요청으로") }}
-						</p>
-						<p class="msg alertText">
-							{{ t("자동으로 로그아웃됩니다") }}
-						</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 22"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">
-							{{ t("요청한 기기가 영상통화중이므로") }}
-						</p>
-						<p class="msg alertText">
-							{{ t("로그인할 수 없습니다") }}<br />{{
-								t("잠시 후 다시 시도하십시오")
-							}}
-						</p>
-					</div>
-				</div>
-			</div>
-			<div
-				v-if="noneOverlayAlertStatus == 23"
-				class="row col-12 alertMessageBox items-center justify-center"
-			>
-				<div class="row requestStatus alertRequestDeclineMessage col-12">
-					<div class="col-12">
-						<p class="msg alertText">
-							{{ t("강제 로그아웃 중입니다") }}
-						</p>
-						<p class="msg alertText">
-							{{ t("잠시 기다려주십시오") }}
-						</p>
-					</div>
-				</div>
-			</div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 20">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("다른 장치에서 로그인 중입니다") }}</p>
+					<p class="msg alert-text">{{ t("강제 로그아웃하시겠습니까?") }}</p>
+                </div>
+				<div class="control-buttons">
+                    <button @click="forceLogout(true)" class="accept-btn">
+                        {{ t("예") }}
+                    </button>
+                    <button @click="forceLogout(false)" class="decline-btn">
+                        {{ t("아니오") }}
+                    </button>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 21">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("다른 기기에서 로그인 요청으로") }}</p>
+					<p class="msg alert-text">{{ t("자동으로 로그아웃됩니다") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 22">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("요청한 기기가 영상통화중이므로") }}</p>
+					<p class="msg alert-text">{{ t("로그인할 수 없습니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시 후 다시 시도하십시오") }}</p>
+                </div>
+            </section>
+			<section v-if="noneOverlayAlertStatus == 23">
+                <div class="content">
+                    <p class="msg alert-text">{{ t("강제 로그아웃 중입니다") }}</p>
+					<p class="msg alert-text">{{ t("잠시 기다려주십시오") }}</p>
+					<p class="msg alert-text">{{ t("잠시 후 다시 시도하십시오") }}</p>
+                </div>
+            </section>
 		</div>
 	</div>
 </template>
@@ -642,176 +434,125 @@ p {
     margin: 0 0 0 !important;
 }
 
-.noneOverayModalContainer {
-    float: none !important;
-    width: 100%;
-    height: 100%;
-    padding: 50px 37px;
-	box-sizing: border-box;
-	background-color: #262627;
-	color: #fff;
+h4 {
+	margin: 0;
+}
 
-	button {
-		color: #fff;
-	}
-    @media all and (max-width: 767px) {
-        padding: 20px 27px 50px 27px;
+.alert-container {
+    float: none !important;
+    min-width: 430px;
+    min-height: 326px;
+    width: max-content;
+    height: max-content;
+    background-color: #262627;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.45); /* #00000073 대신 rgba 사용 */
+    padding: 58px 37px 38px 37px;
+    border: 1px solid #4d4d4d;
+    box-sizing: border-box;
+}
+
+.alert-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    > section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+		min-height: 200px;
     }
 }
 
-.exclamationMarkImg {
-    position: absolute;
-    top: 2px;
-    right: 29px;
-    width: 131px;
+.alert-title {
+    width: 100%;
+    text-align: left;
 }
 
-.alertCloseBtn {
+.close-btn {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: -23px;
+
+    > img {
+        width: 14px;
+    }
 }
 
-.alertCloseImg {
-    width: 14px;
-}
-
-.alertTitle {
-    font-size: 22px;
+.title {
+    color: white;
     font-weight: bolder;
-    margin-left: 7px;
     margin-bottom: 3px;
 }
 
-.titleUnderLine {
+.division {
+    width: 100%;
     height: 1px;
-    background: #3c3c3c;
-    margin-top: 5px;
+    border-top: 1px solid #323232;
 }
 
-.msg {
-    /* No specific styles defined in original .sass for .msg itself */
+.alert-text {
+    color: #d6d6d6;
+    line-height: 1.7;
 }
 
-.alertMessageBox {
-    text-align: center;
-    height: 150px;
-}
-
-.requestStatus {
-    padding-top: 30px;
-    display: flex;
-    justify-content: center;
-
-    @media screen and (max-width: 479px) {
-        padding: 10px;
-    }
-
-    > div {
-        /* Original was commented out: */
-        // &:first-child
-        //   margin: auto
-        // &:last-child
-        //   width: auto
-        //   margin: auto
+.content {
+    margin: auto;
+	padding: 20px 0;
+    &.msg {
+        padding-top: 20px;
+        font-size: 14px;
+        color: yellow;
     }
 }
 
-.alertText {
-    font-size: 15px;
-    line-height: 24px;
-    word-break: keep-all !important;
-}
+.control-buttons {
+    margin-top: auto;
 
-.alertControlbuttons {
-    margin: 0px 0px 3px 10px;
-    width: inherit;
-    display: flex;
-    justify-content: center;
-    height: 34px;
-    // margin-left: 10px
-    // margin: 0px auto;
-
-    > button {
+    button + button {
+        margin-left: 10px;
+    }
+    .accept-btn {
+        color: white;
         padding: 6px 22px;
-        margin-right: 10px;
         font-size: 13px;
         border-radius: 15px;
-
-        &:first-child {
-			background-color: #1c8eff;
-        }
-
-        &:last-child {
-			background-color: #464646;
-            /* No specific styles in original */
-        }
+        background-color: #1c8eff;
+    }
+    .decline-btn {
+        color: white;
+        padding: 6px 22px;
+        font-size: 13px;
+        border-radius: 15px;
+        background-color: #575757;
     }
 }
 
-.screenCaptureImg {
-    width: 100%;
-    // height: 100%
-    // max-width: 536px
-    // max-height: 80%
-    @media screen and (max-height: 530px) {
-        margin: 0px auto !important;
-        margin-left: auto;
-
-        > img {
-            height: 100%;
-        }
+.file-box {
+    display: flex;
+    .file-label {
+        color: #fff;
+        font-size: 13px;
+        border-radius: 6px;
+        margin: 0px 12px 0px 12px;
+        width: 100px;
+        background-color: grey;
+        line-height: 1.6;
+        padding: 5px;
+        cursor: pointer;
     }
-}
 
-.HQCaptureText {
-    margin-top: 12px;
-}
-
-@media screen and (max-height: 767px) {
-    .mobileScreenCaptureText {
-        font-size: 12px !important;
-    }
-    .mobileScreenCaptureButtons {
-        margin: 0px 0px 0px 10px;
-
-        > .hostRequestadelineButton {
-            padding: 3px 15px !important;
-            font-size: 12px !important;
-            margin-right: 3px;
-        }
-    }
-}
-
-@media all and (max-width: 400px) {
-    .noneOverayModalContainer {
-        > div {
-            &:first-child {
-                display: grid;
-
-                > div {
-                    &:nth-child(2) {
-                        display: flex;
-                        height: fit-content;
-                        justify-content: center;
-                    }
-                }
-            }
-        }
-    }
-    .mobileScreenCaptureButtons {
-        padding-top: 10px;
-        padding-bottom: 15px;
-    }
-    .HQCaptrueText {
-        > p {
-            font-size: 13px;
-            word-break: keep-all;
-        }
-
-        > .alertControlbuttons {
-            margin-top: 10px !important;
-        }
+    .file-input {
+        width: 100%;
+        height: 33px;
+        padding: 0 8px;
+        background-color: #343434;
+        color: #fff;
     }
 }
 </style>

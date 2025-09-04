@@ -1,89 +1,68 @@
 <template>
-    <div class="column align-center alert-container">
-        <button @click="alertModalClose" class="col-auto alertCloseBtn">
-            <img src="@/assets/images/ic_close.png" alt="Close" class="alertCloseImg" />
+    <div class="alert-container">
+        <button @click="alertModalClose" class="close-btn">
+            <img src="@/assets/images/ic_close.png" alt="Close"/>
         </button>
+
         <div class="alert-box">
             <div class="alert-title">
-                <h3 class="alertTitle">{{ t("알림창") }}</h3>
-                <div class="titleUnderLine"></div>
+                <h4 class="title">{{ t("알림창") }}</h4>
+                <div class="division"></div>
             </div>
-            <div v-if="alertStatus == 0">
-                <div class="requestStatus alertRequestDeclineMessage">
-                    <div class="">
-                        <p class="msg alertText">{{ t("현재 통화 중인 방에") }}</p>
-                    </div>
-                    <div class="">
-                        <span class="msg alertText">{{
-                            t("호스트가 존재하지 않습니다")
-                        }}</span>
-                    </div>
+            <section v-if="alertStatus == 0">
+                <div class="content">
+                    <p class="msg alert-text">
+                        {{ t("현재 통화 중인 방에") }}
+                    </p>
+                    <p class="msg alert-text">{{ t("호스트가 존재하지 않습니다") }}</p>
                 </div>
-                <div class="alertControlbuttons">
-                    <button @click="alertModalClose" class="hostRequestadelineButton">
+                <div class="control-buttons">
+                    <button @click="alertModalClose" class="decline-btn">
                         {{ t("확인") }}
                     </button>
                 </div>
-            </div>
-
-            <div v-else-if="alertStatus == 1">
-                <div class="requestStatus alert RequestDeclineMessage">
-                    <div class="">
-                        <p class="msg alertText">{{ t("잘못된 요청입니다") }}</p>
-                    </div>
-                    <div class="">
-                        <span class="msg alertText">{{
-                            t("호스트가 존재하지 않습니다")
-                        }}</span>
-                    </div>
+            </section>
+            <section v-if="alertStatus == 1">
+                <div class="content">
+                    <p class="msg alert-text">
+                        {{ t("잘못된 요청입니다") }}
+                    </p>
+                    <p class="msg alert-text">{{ t("호스트가 존재하지 않습니다") }}</p>
                 </div>
-                <div class="alertControlbuttons">
-                    <button @click="alertModalClose" class="hostRequestadelineButton">
+                <div class="control-buttons">
+                    <button @click="alertModalClose" class="decline-btn">
                         {{ t("확인") }}
                     </button>
                 </div>
-            </div>
-
-            <div v-else-if="alertStatus == 2">
-                <div class="requestStatus alertRequestDeclineMessage">
-                    <div class="">
-                        <p class="msg alertText">{{ t("요청자가 PC가 아닙니다") }}</p>
-                        <p class="msg alertText">{{ t("호스트는 PC만 가능합니다") }}</p>
-                    </div>
+            </section>
+            <section v-if="alertStatus == 2">
+                <div class="content">
+                    <p class="msg alert-text">
+                        {{ t("요청자가 PC가 아닙니") }}
+                    </p>
+                    <p class="msg alert-text">{{ t("호스트는 PC만 가능합니다") }}</p>
                 </div>
-                <div class="alertControlbuttons">
-                    <button @click="alertModalClose" class="hostRequestadelineButton">
+                <div class="control-buttons">
+                    <button @click="alertModalClose" class="decline-btn">
                         {{ t("확인") }}
                     </button>
                 </div>
-            </div>
-
-            <div v-else-if="alertStatus == 4">
-                <div class="requestStatus alertRequestDeclineMessage">
-                    <div class="">
-                        <p class="msg alertText">
-                            {{ t("해당 사용자를 강제퇴장 하시겠습니까?") }}
-                        </p>
-                    </div>
-					<div>
-						<p>&nbsp;</p>
-					</div>
+            </section>
+             <section v-if="alertStatus == 4">
+                <div class="content">
+                    <p class="msg alert-text">
+                        {{ t("해당 사용자를 강제퇴장 하시겠습니까?") }}
+                    </p>
                 </div>
-                <div class="alertControlbuttons">
-                    <button
-                        @click="forceLeaveResult(true)"
-                        class="hostRequestadelineButton"
-                    >
+                                <div class="control-buttons">
+                    <button @click="forceLeaveResult(true)" class="accept-btn">
                         {{ t("수락") }}
                     </button>
-                    <button
-                        @click="forceLeaveResult(false)"
-                        class="hostRequestadelineButton"
-                    >
+                    <button @click="forceLeaveResult(false)" class="decline-btn">
                         {{ t("거절") }}
                     </button>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </template>
@@ -114,13 +93,19 @@ p {
     margin: 0 0 0 !important;
 }
 
+h4 {
+	margin: 0;
+}
+
 .alert-container {
     float: none !important;
-    width: 100%;
-    height: 100%;
+    min-width: 430px;
+    min-height: 326px;
+    width: max-content;
+    height: max-content;
     background-color: #262627;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.45); /* #00000073 대신 rgba 사용 */
-    padding: 19px 10px 38px 10px;
+    padding: 58px 37px 38px 37px;
     border: 1px solid #4d4d4d;
     box-sizing: border-box;
 }
@@ -128,11 +113,19 @@ p {
 .alert-box {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    justify-content: space-between;
     align-items: center;
     text-align: center;
     height: 100%;
-    justify-content: space-between;
+    width: 100%;
+    > section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+		min-height: 200px;
+    }
 }
 
 .alert-title {
@@ -140,80 +133,85 @@ p {
     text-align: left;
 }
 
-/* 닫기 버튼 */
-.alertCloseBtn {
+.close-btn {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: -23px;
 
-    .alertCloseImg {
-        /* .alertCloseBtn 내부에 .alertCloseImg 네스팅 */
+    > img {
         width: 14px;
     }
 }
 
-/* 모달 제목 */
-.alertTitle {
+.title {
     color: white;
     font-weight: bolder;
-    margin-left: 7px;
     margin-bottom: 3px;
 }
 
-/* 제목 아래 라인 */
-.titleUnderLine {
+.division {
     width: 100%;
     height: 1px;
     border-top: 1px solid #323232;
 }
 
-/* 공통 메시지 텍스트 색상 */
-.msg {
-    color: white;
-}
-
-/* 메시지 박스 */
-.alertMessageBox {
-    text-align: center;
-    height: 150px;
-}
-
-/* 요청 상태 관련 스타일 */
-.requestStatus {
-    padding-bottom: 40px;
-
-    > div {
-        /* direct child div */
-        &:first-child {
-            margin: auto;
-        }
-        &:last-child {
-            width: auto;
-            margin: auto;
-        }
-    }
-}
-
-/* 알림 텍스트 */
-.alertText {
+.alert-text {
     color: #d6d6d6;
-    font-size: 14px;
     line-height: 1.7;
 }
 
-/* 알림 제어 버튼들 */
-.alertControlbuttons {
-    align-items: center;
+.content {
+    margin: auto;
+	padding: 20px 0;
+    &.msg {
+        padding-top: 20px;
+        font-size: 14px;
+        color: yellow;
+    }
+}
 
-	button + button {
-		margin-left: 10px;
-	}
-    > button {
+.control-buttons {
+    margin-top: auto;
+
+    button + button {
+        margin-left: 10px;
+    }
+    .accept-btn {
         color: white;
         padding: 6px 22px;
         font-size: 13px;
         border-radius: 15px;
         background-color: #1c8eff;
+    }
+    .decline-btn {
+        color: white;
+        padding: 6px 22px;
+        font-size: 13px;
+        border-radius: 15px;
+        background-color: #575757;
+    }
+}
+
+.file-box {
+    display: flex;
+    .file-label {
+        color: #fff;
+        font-size: 13px;
+        border-radius: 6px;
+        margin: 0px 12px 0px 12px;
+        width: 100px;
+        background-color: grey;
+        line-height: 1.6;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .file-input {
+        width: 100%;
+        height: 33px;
+        padding: 0 8px;
+        background-color: #343434;
+        color: #fff;
     }
 }
 </style>

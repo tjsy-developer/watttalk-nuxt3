@@ -39,7 +39,7 @@
     <VueFinalModal
         v-model="isAlertModal"
         :clickToClose="false"
-        class="modal-container alert-modal"
+        class="modal-container"
     >
         <AlertModal></AlertModal>
     </VueFinalModal>
@@ -89,8 +89,10 @@ import AlertModal from "@/components/modal/AlertModal.vue";
 
 import ChatModal from "@/components/modal/ChatModal.vue";
 import NoticeModal from "@/components/modal/NoticeModal.vue";
+import { useCallStore } from "@/stores/call";
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
+const callStore = useCallStore();
 
 function onUpdateModelValue(val) {
     emit("update:modelValue", val);
@@ -149,6 +151,20 @@ const isAlertModal = computed({
 onMounted(() => {
     commonStore.setAlertStatus(0);
     modalStore.isModalOpen("message");
+
+    // // noneOverlay
+    // commonStore.setNoneOverlayAlertStatus(23);
+    // modalStore.openModal("noneOverlayModal");
+
+
+    // commonStore.setFileSendStatus(7)
+    // modalStore.openModal("fileSend")
+
+    // callStore.setHostRequestStatus(3);
+    // modalStore.openModal("host");
+
+    // commonStore.setAlert(0);
+    // modalStore.openModal("call");
 });
 </script>
 

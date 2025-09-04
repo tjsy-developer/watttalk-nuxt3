@@ -1794,6 +1794,7 @@ padding-right: 1px;
 
     > .sendingSpan,
     > .receiveSpan {
+        color: #fff;
         position: absolute;
         top: 23px;
         right: 23px;

@@ -6,15 +6,13 @@ export const useUserPreferenceStore = defineStore("userPreference", {
         lang: "ko",
         theme: "light", // 또는 'dark'
         recordingStatus: false,
-        enviroment: {
-            useAutoPictureAccept: false,
-            useAutoDiscalling: false,
-            useDirectCall: false,
-            autoCallAcceptTime: null,
-            onlyVoiceCallId: null,
-            videoRecording: null,
-            roomNumber: null,
-        },
+        useAutoPictureAccept: false,
+        useAutoDiscalling: false,
+        useDirectCall: false,
+        autoCallAcceptTime: null,
+        onlyVoiceCallId: null,
+        videoRecording: null,
+        roomNumber: null,
     }),
     actions: {
         setLang(payload) {
@@ -24,13 +22,13 @@ export const useUserPreferenceStore = defineStore("userPreference", {
             this.theme = payload;
         },
         setEnviroment(payload) {
-            this.enviroment.useAutoPictureAccept = payload.useAutoPictureAccept;
-            this.enviroment.useAutoDiscalling = payload.useAutoDiscalling;
-            this.enviroment.useDirectCall = payload.useDirectCall;
-            this.enviroment.autoCallAcceptTime = payload.autoCallAcceptTime;
-            this.enviroment.onlyVoiceCallId = payload.onlyVoiceCallId;
-            this.enviroment.videoRecording = payload.videoRecording;
-            this.enviroment.roomNumber = payload.roomNumber;
+            this.useAutoPictureAccept = payload.useAutoPictureAccept;
+            this.useAutoDiscalling = payload.useAutoDiscalling;
+            this.useDirectCall = payload.useDirectCall;
+            this.autoCallAcceptTime = payload.autoCallAcceptTime;
+            this.onlyVoiceCallId = payload.onlyVoiceCallId;
+            this.videoRecording = payload.videoRecording;
+            this.roomNumber = payload.roomNumber;
         },
         setRecordingStatus(payload) {
             this.recordingStatus = payload;

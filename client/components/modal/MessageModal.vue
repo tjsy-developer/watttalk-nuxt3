@@ -69,9 +69,11 @@
 <script setup>
 import { useCommonStore } from "@/stores";
 import { useNuxtApp } from "nuxt/app";
+import { useModalSlot } from "vue-final-modal";
 const { t } = useI18n();
 const commonStore = useCommonStore();
 const callStore = useCallStore();
+const modalStore = useModalStore();
 const alertStatus = computed(() => commonStore.alertStatus);
 
 function alertModalClose() {
@@ -98,6 +100,7 @@ h4 {
 }
 
 .alert-container {
+    position: relative;
     float: none !important;
     min-width: 430px;
     min-height: 326px;
@@ -136,7 +139,7 @@ h4 {
 .close-btn {
     position: absolute;
     top: 5px;
-    right: -23px;
+    right: 0px;
 
     > img {
         width: 14px;

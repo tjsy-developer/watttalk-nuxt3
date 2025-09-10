@@ -248,6 +248,7 @@ const mobileSubVideoShow = ref(false);
 const headerHeight = ref(0);
 const test = ref([]);
 const videoWidth = ref("");
+const videoHeight = ref("");
 const displayMode = ref("darkmode");
 
 const userList = computed(() => commonStore.userListStatus);
@@ -267,30 +268,32 @@ const mainUser = computed(() => {
 // --- Methods ---
 
 // callingLayoutType이 1인 경우 영상 크기를 재 조정하는 함수
-const calcWidth = (params) => {
-    if (callingLayoutType.value === 1) {
-        // Check if the element exists before accessing its properties
-        const container = document.getElementsByClassName("callingLayout1")[0];
-        if (!container) {
-            console.warn("Element with class 'callingLayout1' not found.");
-            return;
-        }
+const calcWidth = (count) => {
+    if (callingLayoutType.value !== 1) return;
 
-        const maxWidth = container.clientWidth;
-        const maxHeight = container.clientHeight - 35; // Assuming fixed header offset
-
-        if (params === 1) {
-            videoWidth.value = (maxHeight / 9) * 16 + "px";
-        } else if (params < 3) {
-            videoWidth.value = maxWidth / 2.15 + "px";
-        } else if (params < 5) {
-            videoWidth.value = maxWidth / 2.7 + "px";
-        } else if (params < 7) {
-            videoWidth.value = maxWidth / 3.25 + "px";
-        } else {
-            videoWidth.value = maxWidth / 3.9 + "px";
-        }
+    const container = document.getElementsByClassName("callingLayout1")[0];
+    if (!container) {
+        console.warn("Element with class 'callingLayout1' not found.");
+        return;
     }
+
+    const maxWidth = container.clientWidth;
+    const maxHeight = container.clientHeight - 35; // header offset
+
+    let videoPerRow = 2; // 한 줄에 2개씩
+    let videoWidthCalc = maxWidth / videoPerRow;
+
+    // 16:9 비율 적용
+    let videoHeightCalc = (videoWidthCalc * 9) / 16;
+
+    // 부모 높이 제한 적용
+    if (videoHeightCalc > maxHeight / Math.ceil(count / videoPerRow)) {
+        videoHeightCalc = maxHeight / Math.ceil(count / videoPerRow);
+        videoWidthCalc = (videoHeightCalc * 16) / 9;
+    }
+
+    videoWidth.value = videoWidthCalc + "px";
+    videoHeight.value = videoHeightCalc + "px";
 };
 
 const showMember = () => {
@@ -592,7 +595,7 @@ onUnmounted(() => {
                 height: 32px;
                 border-radius: 20px;
                 font-size: 14px;
-                font-wegith: bold; // Typo in original: should be font-weight
+                font-weight: bold; // Typo in original: should be font-weight
             }
         }
     }

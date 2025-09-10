@@ -133,7 +133,7 @@
 
                 <div
                     v-if="
-                        preprenceStore.enviroment.useDirectCall &&
+                        preprenceStore.useDirectCall &&
                         props.compData.customData.type === 3 &&
                         props.compData.customData.checkOptionTxt
                     "
@@ -556,27 +556,27 @@ onUnmounted(() => {
 
     if (signallingSocket) {
         console.log("*** onUnmounted: Socket Event Remove Started !!");
-        signallingSocket.off("openMeetingChecking");
-        signallingSocket.off("meetingList");
-        signallingSocket.off("meetingCalendarList");
-        signallingSocket.off("createMeeting");
-        signallingSocket.off("modifyMeeting");
-        signallingSocket.off("deleteMeeting");
-        signallingSocket.off("openMeetingOnOff");
-        signallingSocket.off("openMeeting");
-        signallingSocket.off("joinMeeting");
-        signallingSocket.off("leaveMeeting");
-        signallingSocket.off("changedMeeting");
-        signallingSocket.off("sendMeetingRoomID");
-        signallingSocket.off("userListAll");
-        signallingSocket.off("calling");
-        signallingSocket.off("cancelCalling");
-        signallingSocket.off("directMessageReadProcess");
-        signallingSocket.off("directMessage");
-        signallingSocket.off("getPreviousMessage");
-        signallingSocket.off("environment");
-        signallingSocket.off("forceLogoutRequest");
-        signallingSocket.off("sendEntryNotification");
+        // signallingSocket.off("openMeetingChecking");
+        // signallingSocket.off("meetingList");
+        // signallingSocket.off("meetingCalendarList");
+        // signallingSocket.off("createMeeting");
+        // signallingSocket.off("modifyMeeting");
+        // signallingSocket.off("deleteMeeting");
+        // signallingSocket.off("openMeetingOnOff");
+        // signallingSocket.off("openMeeting");
+        // signallingSocket.off("joinMeeting");
+        // signallingSocket.off("leaveMeeting");
+        // signallingSocket.off("changedMeeting");
+        // signallingSocket.off("sendMeetingRoomID");
+        // signallingSocket.off("userListAll");
+        // signallingSocket.off("calling");
+        // signallingSocket.off("cancelCalling");
+        // signallingSocket.off("directMessageReadProcess");
+        // signallingSocket.off("directMessage");
+        // signallingSocket.off("getPreviousMessage");
+        // signallingSocket.off("environment");
+        // signallingSocket.off("forceLogoutRequest");
+        // signallingSocket.off("sendEntryNotification");
         console.log("*** onUnmounted: All socket event listeners removed.");
         // signallingSocket.disconnect(); // Only if this component is responsible for disconnecting
     }

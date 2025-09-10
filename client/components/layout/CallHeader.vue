@@ -200,7 +200,7 @@ function toggleContactList() {
                 <!-- <img :src="headerImages.logo" alt="Hyundai" style="height: 24px" /> -->
             </div>
             <div class="call-timer">
-                <img src="@/assets/images/header/ic_call_16.png" class="icon" />
+                <img src="@/assets/images/header/ic_call_16.png" class="icon" alt="통화 시간" />
                 <span>{{ callingTimer || "00:00:00" }}</span>
             </div>
             <div class="call-timer">
@@ -214,11 +214,12 @@ function toggleContactList() {
                 <img
                     src="@/assets/images/attachment_header/ic_drawing.svg"
                     class="icon"
+                    :alt="t('드로잉 종료')"
                 />
                 <span>{{ t("드로잉 종료") }}</span>
             </button>
             <button v-if="isShare" @click="handleChangeShareOnOff">
-                <img src="@/assets/images/attachment_header/ic_screen.svg" class="icon" />
+                <img src="@/assets/images/attachment_header/ic_screen.svg" class="icon" :alt="t('화면공유 종료')"/>
                 <span>{{ t("화면공유 종료") }}</span>
             </button>
         </div>

@@ -108,7 +108,7 @@ const loginStore = useLoginStore();
 const preferenceStore = useUserPreferenceStore();
 
 // 전체보기 or 내 것만 보기
-const allView = ref(false);
+const allView = ref(0);
 
 // 캘린더보기 or 일반 회의 목록 보기
 const calendar = ref(false);
@@ -144,6 +144,7 @@ onMounted(async () => {
     sessionStorage.removeItem("m_remote_status");
     sessionStorage.removeItem("m_remote_deviceid");
     commonStore.makeUserListStatus();
+    getMeetingList(allView.value)
     // Socket meetingList 받기
     signallingSocket.on("meetingList", (response) => {
         console.log("*** socket.on: meetingList res ");
@@ -457,12 +458,13 @@ onMounted(async () => {
             // Typo `satus` from original code
             console.log("*** socket.on: 회의 삭제 성공");
 
-            if (allView.value) {
-                // Use .value for reactive ref
-                getMeetingList(1);
-            } else {
-                getMeetingList(0);
-            }
+            // if (allView.value) {
+            //     // Use .value for reactive ref
+            //     getMeetingList(1);
+            // } else {
+            //     getMeetingList(0);
+            // }
+            getMeetingList(allView.value)
         } else {
             console.log("*** socket.on: 회의 삭제 실패");
         }
@@ -516,7 +518,7 @@ onMounted(async () => {
         sessionStorage.setItem("createRoomFlag", "true");
         commonStore.makeUserListStatus(); // Call action from commonStore
 
-        commonStore.changeViewType(2);
+        commonStore.setChangeViewType(2);
         router.push("/call");
 
         // meetingStore.setMeetingSeq(null) // Uncomment if needed
@@ -557,19 +559,9 @@ onMounted(async () => {
 
                 if (calendar.value) {
                     // Use .value for reactive ref
-                    if (allView.value) {
-                        // Use .value for reactive ref
-                        meetingCalendarList(1);
-                    } else {
-                        meetingCalendarList(0);
-                    }
+                    meetingCalendarList(allView.value);
                 } else {
-                    if (allView.value) {
-                        // Use .value for reactive ref
-                        getMeetingList(1);
-                    } else {
-                        getMeetingList(0);
-                    }
+                    getMeetingList(allView.value);
                 }
             } else {
                 console.log("*** socket.on: 알 수 없는 에러 발생.");
@@ -599,7 +591,7 @@ onMounted(async () => {
 
         callStore.setCallingType("meetingCall");
 
-        commonStore.changeViewType(2);
+        commonStore.setChangeViewType(2);
         router.push("/call");
     });
 
@@ -615,20 +607,9 @@ onMounted(async () => {
             );
 
             if (calendar.value) {
-                // Use .value for reactive ref
-                if (allView.value) {
-                    // Use .value for reactive ref
-                    meetingCalendarList(1);
-                } else {
-                    meetingCalendarList(0);
-                }
+                meetingCalendarList(allView.value);
             } else {
-                if (allView.value) {
-                    // Use .value for reactive ref
-                    getMeetingList(1);
-                } else {
-                    getMeetingList(0);
-                }
+                getMeetingList(allView.value);
             }
         } else {
             console.log(
@@ -851,7 +832,7 @@ onMounted(async () => {
     });
 
     signallingSocket.on("sendEntryNotification", (response) => {
-        if (preferenceStore.enviroment.useDirectCall) {
+        if (preferenceStore.useDirectCall) {
             console.log("socket.on sendEntryNotification::", response);
             const json = JSON.parse(response);
             console.log(json);
@@ -866,12 +847,7 @@ onMounted(async () => {
 
     meetingStore.sortArray();
 
-    if (localStorage.getItem("meetingViewType")) {
-        allView.value = localStorage.getItem("meetingViewType") === "true"; // Update reactive ref
-    } else {
-        localStorage.setItem("meetingViewType", "false");
-        allView.value = false; // Initialize reactive ref
-    }
+    allView.value = Number(localStorage.getItem("meetingViewType")) || 0
 });
 
 // 언마운트되기 전 실행할 작업
@@ -979,13 +955,7 @@ const getMeetingList = (type) => {
 
 // 월력 요청
 // type = 0: 내 월력, 1: 전체 월력
-const meetingCalendarList = () => {
-    let type = 1;
-    if (allView.value) {
-        type = 1;
-    } else {
-        type = 0;
-    }
+const meetingCalendarList = (type) => {
     console.log("*** methods: meetingCalendarList::");
 
     const currentMonth = meetingStore.meetingListMonthInfo;
@@ -1051,7 +1021,7 @@ const createMeeting = () => {
     const startDateTimeStempUTC = String(Math.round(startDate.getTime() / 1000));
     const endDateTimeStempUTC = String(Math.round(endDate.getTime() / 1000));
 
-        console.log("시작 날짜 객체:", startDate);
+    console.log("시작 날짜 객체:", startDate);
     console.log("종료 날짜 객체:", endDate);
     console.log("시작 타임스탬프(초):", startDateTimeStempUTC);
     console.log("종료 타임스탬프(초):", endDateTimeStempUTC);
@@ -1344,7 +1314,7 @@ const callingAccept = (roomid, remotedeviceid) => {
     callStore.setCallingType("videoCall");
 
     sessionStorage.setItem("m_callWaiting", "false");
-    commonStore.changeViewType(2);
+    commonStore.setChangeViewType(2);
 
     router.push("/call"); // Nuxt 3 way to navigate
 };
@@ -1428,12 +1398,13 @@ const getMeetingOpenFlag = computed(() =>  meetingStore.meetingOpenFlag)
 // Watch for allView checkbox changes
 watch(allView, (newVal) => {
     console.log("*** watch: allView():: newVal = ", newVal);
-    localStorage.setItem("meetingViewType", String(newVal)); // localStorage stores strings
+    const meetingViewType = newVal ? 1 : 0
+    localStorage.setItem("meetingViewType", meetingViewType); // localStorage stores strings
 
     if (calendar.value) {
-        newVal ? meetingCalendarList(1) : meetingCalendarList(0);
+        meetingCalendarList(meetingViewType)
     } else {
-        newVal ? getMeetingList(1) : getMeetingList(0);
+        getMeetingList(meetingViewType)
     }
 });
 
@@ -1630,7 +1601,7 @@ watch(getReadProcFlag, (newVal) => {
     gap: 15px; // 요소들 사이의 간격
     @media (min-width: 640px) {
         > div {
-            width: calc(50% -  7.5px);
+            width: calc(50% - 7.5px);
         }
     }
     @media (min-width: 1280px) {

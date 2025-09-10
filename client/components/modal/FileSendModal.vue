@@ -12,11 +12,10 @@
             <div class="alert-title">
                 <h4 class="title">
                     {{ t("사진 전송") }}
-                    <span class="">{{ t("사진을 수신할 사용자를 선택해주세요") }}</span>
                 </h4>
-
-                <div class="division"></div>
+                <span class="">{{ t("사진을 수신할 사용자를 선택해주세요") }}</span>
             </div>
+            <div class="division"></div>
             <section>
                 <div class="content">
                     <select
@@ -65,11 +64,10 @@
             <div class="alert-title">
                 <h4 class="title">
                     {{ t("사진 전송") }}
-                    <span class="">{{ t("사진을 선택해주세요") }}</span>
                 </h4>
-
-                <div class="division"></div>
+                 <span class="">{{ t("사진을 선택해주세요") }}</span>
             </div>
+            <div class="division"></div>
             <section>
                 <div class="content">
                     <div class="file-box">
@@ -378,6 +376,7 @@ p {
 }
 
 .alert-container {
+    position: relative;
     float: none !important;
     width: 430px;
     height: 326px;
@@ -408,12 +407,20 @@ p {
 .alert-title {
     width: 100%;
     text-align: left;
+    display: flex;
+    align-items: end;
+    gap: 10px;
+    color: #fff;
+    > span {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
 }
 
 .close-btn {
     position: absolute;
     top: 5px;
-    right: -23px;
+    right: 0px;
 
     > img {
         width: 14px;

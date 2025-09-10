@@ -47,7 +47,10 @@
             v-else-if="compData.moveIcon"
             :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight']"
         >
-            <img :src="moveIcons[compData.moveIcon - 1].img" />
+            <img
+                :src="moveIcons[compData.moveIcon - 1].img"
+                :alt="moveIcons[compData.moveIcon - 1].text"
+            />
             <span
                 class="text-center arrowIconMoveText"
                 :style="{ lineHeight: locale == 'ko' ? '50px' : '50px' }"
@@ -59,7 +62,10 @@
             v-else-if="compData.directionIcon"
             :class="[compData.isReceived ? 'bubblyLeft' : 'bubblyRight']"
         >
-            <img :src="directionIcons[compData.directionIcon - 1].img" />
+            <img
+                :src="directionIcons[compData.directionIcon - 1].img"
+                :alt="moveIcons[compData.directionIcon - 1].text"
+            />
             <span class="text-center arrowIconDirectionText">{{
                 directionIcons[compData.directionIcon - 1].text
             }}</span>
@@ -69,6 +75,7 @@
                 <img
                     src="@/assets/images/calling/ic_call-send-2.png"
                     :style="{ paddingTop: '10px' }"
+                    :alt="t('수신')"
                 />
                 <div class="control-buttons" :style="{ paddingTop: '10px' }">
                     <button @click="setMultiCalling(1)" class="accept-btn">
@@ -110,7 +117,7 @@
                 { emergencyColor: compData.isEmergency },
             ]"
         >
-            <span v-html="makeNewLine(compData.message)"></span>
+            <span>{{ compData.message }}</span>
         </div>
     </div>
 </template>
@@ -323,6 +330,9 @@ onMounted(() => {
     color: #fff;
     background-color: #474b4e;
     border: 1px solid #5d5d5d;
+    > span {
+        white-space: pre-line;
+    }
 }
 
 $bubblyWidth: 16px;

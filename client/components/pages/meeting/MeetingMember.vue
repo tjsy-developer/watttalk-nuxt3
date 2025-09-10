@@ -31,10 +31,15 @@ import { useMeetingStore } from "@/stores/meeting";
 import ContactList from "../dashboard/ContactList.vue";
 import { useUserListStore } from "@/stores/userList";
 import OrganizationList from "../dashboard/OrganizationList.vue";
+import { updateStatusByChecked } from "@/composables/common";
 
 const { t } = useI18n();
 const props = defineProps({
     enterMember: {
+        type: Array,
+        default: () => [],
+    },
+    selectedMemberIds:{
         type: Array,
         default: () => [],
     },
@@ -75,8 +80,6 @@ watch(userList, (newVal) => {
             if (node.children && node.children.length > 0) {
                 node.children.forEach((child) => traverse(child));
             } else {
-                // children 배열이 비어있으면 가장 깊은 노드(leaf node)입니다.
-                console.log(node)
                 if (node.name && node.checked) {
                     names.push(node.name);
                 }
@@ -97,40 +100,35 @@ watch(userList, (newVal) => {
     }
     console.log(result);
     emit("selectMember", result);
+}, {
+    // This is the key change!
+    deep: true 
 });
 // Emits
 const emit = defineEmits(["value"]);
-
+const replaceArrayContents = (targetArray, sourceArray) => {
+  targetArray.splice(0, targetArray.length, ...sourceArray);
+};
 // Lifecycle Hook
 onMounted(() => {
-    console.log(props.enterMember);
-    // userList = props.enterMember;
+    // userList를 props.enterMember로 초기화
     userList.splice(0, userList.length, ...props.enterMember);
-    console.log(userList);
+
+    // props.selectedMemberIds를 기반으로 checked 상태 업데이트
+    let updatedList = userList.slice(); // 기존 배열의 복사본을 만들어 작업
+    props.selectedMemberIds.forEach(value => {
+        updatedList = updateStatusByChecked(updatedList, value, true);
+    });
+
+    // 업데이트된 배열로 userList를 교체하여 watch를 트리거
+    userList.splice(0, userList.length, ...updatedList);
 });
 </script>
 
 <style lang="scss" scoped>
-/* You can define variables here if you have common values
-   For example:
-   $primary-color: #007bff;
-   $border-radius: 6px;
-*/
-
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track-piece {
-    /* This pseudo-element usually takes properties for the track background */
-}
-
-::-webkit-scrollbar-thumb {
-    border-radius: 6px;
-}
-
 .scrollingBox {
-    overflow-x: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     width: 100%;
     height: 235px;
     z-index: 2;

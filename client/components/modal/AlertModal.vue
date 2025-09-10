@@ -263,7 +263,6 @@
                 <div class="content">
                     <p class="msg alert-text">{{ t("강제 로그아웃 중입니다") }}</p>
 					<p class="msg alert-text">{{ t("잠시 기다려주십시오") }}</p>
-					<p class="msg alert-text">{{ t("잠시 후 다시 시도하십시오") }}</p>
                 </div>
             </section>
 		</div>
@@ -439,6 +438,7 @@ h4 {
 }
 
 .alert-container {
+    position: relative;
     float: none !important;
     min-width: 430px;
     min-height: 326px;
@@ -477,7 +477,7 @@ h4 {
 .close-btn {
     position: absolute;
     top: 5px;
-    right: -23px;
+    right: 0px;
 
     > img {
         width: 14px;

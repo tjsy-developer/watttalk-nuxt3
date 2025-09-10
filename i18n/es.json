@@ -62,7 +62,7 @@
     "environment NotRegistered": "¡La información de configuración no está registrada! ¡Por favor contacte al administrador!",
     "environment relayServerNotInput": "¡Ingrese la información del servidor de retransmisión!",
     "login Success": "Inicio de sesión exitoso",
-    "Calling Alert Calling": "La otra parte está hablando por teléfono. <br> ¡Por favor espera y camina de nuevo!",
+    "Calling Alert Calling": "La otra parte está hablando por teléfono. ¡Por favor espera y camina de nuevo!",
     "call Connecting": "Conectando una llamada...",
     "call Unstable1": "Transmisión inestable",
     "call Unstable2": "Espere por favor.",

@@ -86,28 +86,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                         if (!isRefresh) {
                             isRefresh = true;
                         }
-                        try {
-                            const res = await axios.post(
-                                "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
-                                {
-                                    refreshToken: tokenStore.rToken,
-                                    deviceType: "",
-                                },
-                            );
-                            if (res) {
-                                tokenStore.setAccessToken(res[0]);
-                                isRefresh = false;
-                            }
-                            error.config.data.jwt = res[0];
-                            const newRes = await axios(originalRequest);
-                            console.log(newRes);
-                        } catch (err) {
-                            alert(
-                                "로그인 인증시간이 만료되었습니다. 로그인화면으로 이동합니다",
-                            );
-                            persistor.purge();
-                            location.href = "http://localhost:8205";
-                        }
+                        await requestNewToken(tokenStore.enRToken);
                     }
                 }
             },
@@ -116,73 +95,3 @@ export default defineNuxtPlugin((nuxtApp) => {
         nuxtApp.provide("axios", api);
     }
 });
-
-// -------------------- 유틸 함수 --------------------
-
-function decodeToken(jwt) {
-    try {
-        const decodedJwt = jwtDecode(jwt);
-        const unixTime = Math.floor(Date.now() / 1000);
-        return decodedJwt.exp > unixTime ? "effective" : "expired";
-    } catch {
-        console.log("decode fail");
-        return "mutated";
-    }
-}
-
-function decryptData(data) {
-    try {
-        const decryptBytes = CryptoJS.AES.decrypt(
-            data,
-            "dsdfjsdl54sd5fsadfjdslksfd87513sdfsdfjkfdsjlk",
-        );
-        let decryptData = decryptBytes.toString(CryptoJS.enc.Utf8);
-        return decryptData || false;
-    } catch (err) {
-        console.log(`decrypt error: ${err}`);
-        return false;
-    }
-}
-
-function encryptData(data) {
-    return CryptoJS.AES.encrypt(
-        data,
-        "dsdfjsdl54sd5fsadfjdslksfd87513sdfsdfjkfdsjlk",
-    ).toString();
-}
-
-export async function requestNewToken(currRefereshToken) {
-    const loginStore = useLoginStore();
-    const decRToken = decryptData(currRefereshToken);
-
-    if (!decRToken) {
-        loginStore.setTokenResult(2);
-        return Promise.reject(new Error("Invalid refresh token"));
-    }
-
-    try {
-        const res = await axios.post(
-            "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
-            {
-                refreshToken: decRToken,
-                deviceType: "",
-            },
-        );
-        const newAccessToken = res.data[0];
-        const newRefreshToken = encryptData(res.data[1]);
-        return { newAccessToken, newRefreshToken };
-    } catch (error) {
-        if (error.response?.status === 401) {
-            if (
-                error.response.data === "none" ||
-                error.response.data === "mutated" ||
-                error.response.data === "expired"
-            ) {
-                loginStore.setTokenResult(2);
-                alert("만료된 토큰입니다 다시 로그인해주세요");
-                location.href = "http://localhost:8205";
-            }
-        }
-        throw error;
-    }
-}

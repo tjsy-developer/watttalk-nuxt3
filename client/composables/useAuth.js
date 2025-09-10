@@ -3,7 +3,7 @@ import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js/core";
-import { requestNewToken } from "@/plugins/axios.client";
+import axios from "axios";
 // import { useTokenStore } from "@/stores/token"; // Pinia 예시
 
 export function useAuth() {
@@ -75,9 +75,44 @@ export function useAuth() {
         }
     };
 
+    async function requestNewToken(currRefereshToken) {
+        const loginStore = useLoginStore();
+        const decRToken = decryptData(currRefereshToken);
+        const { t } = useI18n();
+        if (!decRToken) {
+            loginStore.setTokenResult(2);
+            return Promise.reject(new Error("Invalid refresh token"));
+        }
+        try {
+            const res = await axios.post(
+                "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
+                {
+                    refreshToken: decRToken,
+                    deviceType: "",
+                },
+            );
+            const newAccessToken = res.data[0];
+            const newRefreshToken = encryptData(res.data[1]);
+            tokenStore.setRToken(newRefreshToken);
+            tokenStore.setAccessToken(newAccessToken);
+            return { newAccessToken, newRefreshToken };
+        } catch (error) {
+            if (error.response?.status === 401) {
+                if (error.response.data == "mutated") {
+                    alert(t("loginResult decodeFail"));
+                } else if (error.response.data == "expired") {
+                    alert(t("loginResult NotValid"));
+                }
+                location.href = "http://localhost:8205";
+            }
+        }
+    }
+
+
     return {
         encryptData,
         verifyToken,
         decodeToken,
+        requestNewToken,
     };
 }

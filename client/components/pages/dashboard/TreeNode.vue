@@ -42,7 +42,7 @@
                 <img :src="iconLogOffUser" />
                 <div v-if="node.status == 1" class="user-status"></div>
             </div>
-            <span>{{ node.name }}</span>
+            <span>{{ locale == "ko" ? node.name : node.enName || node.name }}</span>
             <div v-if="!hasChildren" class="button-box">
                 <img
                     v-if="node.status == 1 && !props.useCheckBox"
@@ -89,7 +89,7 @@
     </li>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { common } from "@/assets/images";
 import { iconLogOffUser, iconLogOnUser } from "@/assets/images/index";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
@@ -104,24 +104,20 @@ import { useColorMode } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, defineProps, onMounted, reactive, ref, watch } from "vue";
 
+const { t, locale } = useI18n();
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
 
-interface OrgNode {
-    name: string;
-    status?: number;
-    deviceType?: number;
-    deviceId?: string;
-    children?: OrgNode[];
-    checked?: boolean;
-}
+// interface OrgNode {
+//     name: string;
+//     status?: number;
+//     deviceType?: number;
+//     deviceId?: string;
+//     children?: OrgNode[];
+//     checked?: boolean;
+// }
 
-const props = defineProps<{
-    node: OrgNode;
-    openNodes: Set<string>;
-    parentPath: string[];
-    useCheckBox?: boolean;
-}>();
+const props = defineProps(["node", "openNodes", "parentPath", "useCheckBox"]);
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
@@ -135,22 +131,21 @@ const currentPath = [...props.parentPath, props.node.name];
 
 const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
 
-function getNodeKey(path: string[]) {
+function getNodeKey(path) {
     return path.join(">");
 }
 
-function toggle(e: Event) {
-
-    function isCheckboxInput(target: EventTarget | null): target is HTMLInputElement {
+function toggle(e) {
+    function isCheckboxInput(target) {
         return (
             target !== null &&
             target instanceof HTMLInputElement &&
-            target.type === 'checkbox'
+            target.type === "checkbox"
         );
     }
 
     if (isCheckboxInput(e.target)) {
-        console.log('Checkbox checked:', e.target.checked);
+        console.log("Checkbox checked:", e.target.checked);
         return;
     }
 
@@ -164,72 +159,77 @@ function toggle(e: Event) {
     }
 }
 
-function handleMouseCallOver(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseCallOver(event) {
+    const target = event.target;
     target.src = commonImages.value.useCall;
 }
 
-function handleMouseCallLeave(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseCallLeave(event) {
+    const target = event.target;
     target.src = commonImages.value.useNotCall;
 }
 
-function handleMouseChatOver(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseChatOver(event) {
+    const target = event.target;
     target.src = commonImages.value.useChat;
 }
 
-function handleMouseChatLeave(event: MouseEvent) {
-    const target = event.target as HTMLImageElement;
+function handleMouseChatLeave(event) {
+    const target = event.target;
     target.src = commonImages.value.useNotChat;
 }
 
-function requestCall(remoteDeviceId: string | undefined) {
+function requestCall(remoteDeviceId) {
     if (!remoteDeviceId) return;
-    try {
+
+    function calling() {
+        if (contentsViewType.value == 2) {
+            //@ts-ignore
+            callStore.setInCallingFunctionParams(remoteDeviceId);
+            //@ts-ignore
+            callStore.setInCallingFunction("userStatusRequest");
+        } else {
+            requestUserStatus(remoteDeviceId);
+            modalStore.closeModal("notice");
+        }
+    }
+
+    if (contentsViewType.value == 0) {
         modalStore.openModal("device", {
             type: "request",
             deviceId: remoteDeviceId,
             requestCall: () => {
                 commonStore.setDeviceModifyState(false);
                 console.log("Call Request Success", contentsViewType.value);
-                if (contentsViewType.value == 2) {
-                    //@ts-ignore
-                    callStore.setInCallingFunctionParams(remoteDeviceId);
-                    //@ts-ignore
-                    callStore.setInCallingFunction("userStatusRequest");
-                } else {
-                    requestUserStatus(remoteDeviceId);
-                    modalStore.closeModal("notice");
-                }
+                calling();
             },
         });
-    } catch (error) {
-        console.log(error);
+    } else {
+        calling();
     }
 }
 
-function requestChat(remoteDeviceId: string | undefined) {}
+function requestChat(remoteDeviceId) {}
 
-function handleClickCheck(node: any) {
+function handleClickCheck(node) {
+    console.log(node)
     const newCheckedState = !node.checked;
-
     setCheckedStateRecursive(node, newCheckedState);
     updateParentCheckStatus(node);
 }
 
-function setCheckedStateRecursive(node: any, checked: boolean) {
+function setCheckedStateRecursive(node, checked) {
     node.checked = checked;
     if (node.children && node.children.length > 0) {
-        node.children.forEach((child: any) => setCheckedStateRecursive(child, checked));
+        node.children.forEach((child) => setCheckedStateRecursive(child, checked));
     }
 }
 
-function updateParentCheckStatus(node: any) {
+function updateParentCheckStatus(node) {
     const parent = node.parent;
     if (!parent) return;
 
-    parent.checked = parent.children.every((child: any) => child.checked);
+    parent.checked = parent.children.every((child) => child.checked);
 
     updateParentCheckStatus(parent);
 }
@@ -252,7 +252,7 @@ onMounted(() => {});
             flex: 0 0 70px; /* 고정 너비 150px */
         }
         > span {
-            flex: 0 0 200px;
+            flex: 0 0 168px;
         }
         > .button-box {
             flex: 0 0 145px;

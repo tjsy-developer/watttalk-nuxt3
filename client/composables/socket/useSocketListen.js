@@ -119,18 +119,7 @@ export function bindSocketEvents() {
             requestCanMakeCall(remoteInfo.deviceId);
             sessionStorage.setItem("m_callWaiting", "true");
         } else {
-            if (json.status == 1) {
-                if (preperenceStore.roomNumber) {
-                    sessionStorage.setItem("m_roomid", preperenceStore.roomNumber);
-                    sessionStorage.setItem("inRoomFlag", "true");
-                    sessionStorage.setItem("createRoomFlag", "true");
-                    commonStore.changeViewType(2);
-                    router.push("/call");
-                    reeuqestCreateFixRoomID();
-                } else {
-                    requestCreateRoomID();
-                }
-            } else if (json.status == 2) {
+            if (json.status == 2) {
                 requestGroupRoom(remoteInfo.deviceId);
                 callStore.callingPopupInfo({
                     institution: remoteInfo.enName,
@@ -138,6 +127,21 @@ export function bindSocketEvents() {
                     branch: remoteInfo.brName,
                     nickname: remoteInfo.nickName,
                 });
+                commonStore.setAlert(5);
+                sessionStorage.setItem("m_callWaiting", "true");
+            } else {
+                if (json.status == 1) {
+                    if (preperenceStore.roomNumber) {
+                        sessionStorage.setItem("m_roomid", preperenceStore.roomNumber);
+                        sessionStorage.setItem("inRoomFlag", "true");
+                        sessionStorage.setItem("createRoomFlag", "true");
+                        commonStore.setChangeViewType(2);
+                        router.push("/call");
+                        reeuqestCreateFixRoomID();
+                    } else {
+                        requestCreateRoomID();
+                    }
+                }
             }
         }
     }

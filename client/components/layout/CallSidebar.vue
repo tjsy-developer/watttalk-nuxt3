@@ -266,7 +266,6 @@ function handleClickFileSend() {
         >
             <img src="@/assets/images/leftSideBar/ic_hang-up.png" />
         </div>
-        <div class="icon-btn func-img"></div>
         <audio id="calling_bell" loop style="display: none">
             <source src="@/assets/sounds/Wood.ogg" type="audio/ogg" />
         </audio>

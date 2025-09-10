@@ -7,10 +7,10 @@
         <div class="makeMain">
             <div class="titleLine">
                 <span v-if="!props.compData" class="modalFont22">{{
-                    t("createMeeting2")
+                    t("회의 생성")
                 }}</span>
                 <span v-if="props.compData" class="modalFont22">{{
-                    t("modifyMeeting")
+                    t("회의 수정")
                 }}</span>
                 <img
                     src="@/assets/images/conference/ic_hm_active_1.png"
@@ -19,7 +19,7 @@
             </div>
             <div class="inputBox">
                 <div class="label-box">
-                    <span class="firstLabel">{{ t("meetingTitle") }}</span>
+                    <span class="firstLabel">{{ t("회의 제목") }}</span>
                     <span class="invalidTitle">{{ errors.meetingTitle }}</span>
                 </div>
                 <input
@@ -31,13 +31,13 @@
                 />
 
                 <div class="label-box">
-                    <span class="label">{{ t("meetingPeriod") }}</span>
+                    <span class="label">{{ t("회의 기간") }}</span>
                 </div>
                 <div class="items-center">
                     <div class="periodSelectBox" @click="dropdown = !dropdown">
                         <select
                             class="selected-opt"
-                            @change="periodType"
+                            @change="handleChangePeriodType"
                             v-model="defaultPeriodType"
                         >
                             <button
@@ -59,12 +59,206 @@
                     </div>
                 </div>
 
+                <div v-if="defaultPeriodType == ScheduleType.IMMEDIATE">
+                    <div>
+                        <span class="label-box">{{ t("회의 날짜") }}</span>
+                        <div class="date-descript">{{ "오늘 날짜 자동 설정" }}</div>
+                    </div>
+                    <div>
+                        <span class="label-box">{{ t("회의 시간") }}</span>
+                        <div class="date-descript">{{ "회의 생성 후 2시간까지" }}</div>
+                    </div>
+                </div>
+                <div v-else-if="defaultPeriodType == ScheduleType.ONE_DAY">
+                    <div>
+                        <span class="label-box">{{ t("회의 날짜") }}</span>
+                        <div>
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startDate"
+                                format="yyyy-MM-dd"
+                                class="customDate"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('날짜를 선택해주세요')"
+                                :disabled="defaultPeriodType == '0'"
+                                :min-date="new Date()"
+                                :max-date="endDate"
+                                auto-apply
+                            ></VueDatePicker>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="label-box">{{ t("회의 시간") }}</span>
+                        <div class="date-container">
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startTime"
+                                class="customTime"
+                                time-picker
+                                :is-24="false"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('시작 시간')"
+                                :disabled="defaultPeriodType == 0"
+                                :hide-input-icon="true"
+                                minutes-increment="30"
+                            >
+                                <template #am-pm-button="{ toggle, value }">
+                                    <button @click="toggle">{{ value }}</button>
+                                </template>
+                            </VueDatePicker>
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="endTime"
+                                class="customTime"
+                                time-picker
+                                :is-24="false"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('종료 시간')"
+                                :disabled="defaultPeriodType == 0"
+                                :hide-input-icon="true"
+                                minutes-increment="30"
+                            >
+                                <template #am-pm-button="{ toggle, value }">
+                                    <button @click="toggle">{{ value }}</button>
+                                </template>
+                            </VueDatePicker>
+                        </div>
+                    </div>
+                </div>
+                <div v-else-if="defaultPeriodType == ScheduleType.DAILY">
+                    <div>
+                        <span class="label-box">{{ t("회의 시작일") }}</span>
+                        <div class="date-container">
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startDate"
+                                format="yyyy-MM-dd"
+                                class="customDate"
+                                teleport
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('날짜 선택')"
+                                :min-date="new Date()"
+                                :max-date="endDate"
+                                auto-apply
+                            ></VueDatePicker>
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startTime"
+                                time-picker
+                                teleport
+                                :is-24="false"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('시작 시간')"
+                                :hide-input-icon="true"
+                                minutes-increment="30"
+                                class="customTime col"
+                            >
+                                <template #am-pm-button="{ toggle, value }">
+                                    <button @click="toggle">{{ value }}</button>
+                                </template>
+                            </VueDatePicker>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="label-box">{{ t("회의 종료일") }}</span>
+                        <div class="date-container">
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="endDate"
+                                format="yyyy-MM-dd"
+                                class="customDate"
+                                teleport
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('날짜 선택')"
+                                :min-date="startDate"
+                                auto-apply
+                            ></VueDatePicker>
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="endTime"
+                                teleport
+                                class="customTime col"
+                                time-picker
+                                :is-24="false"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('종료 시간')"
+                                :hide-input-icon="true"
+                                minutes-increment="30"
+                            >
+                                <template #am-pm-button="{ toggle, value }">
+                                    <button @click="toggle">{{ value }}</button>
+                                </template>
+                            </VueDatePicker>
+                        </div>
+                    </div>
+                </div>
+                <div v-else-if="defaultPeriodType == ScheduleType.ALWAYS">
+                    <div>
+                        <span class="label-box">{{ t("회의 시작일") }}</span>
+                        <div class="date-container">
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startDate"
+                                format="yyyy-MM-dd"
+                                class="customDate"
+                                teleport
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('날짜 선택')"
+                                :min-date="new Date()"
+                                :max-date="endDate"
+                                auto-apply
+                            ></VueDatePicker>
+                            <VueDatePicker
+                                locale="ko"
+                                :dark="datePickerMode"
+                                v-model="startTime"
+                                format="HH:mm"
+                                time-picker
+                                teleport
+                                :is-24="false"
+                                :cancel-text="t('취소')"
+                                :select-text="t('확인')"
+                                :placeholder="t('시작 시간')"
+                                :hide-input-icon="true"
+                                minutes-increment="30"
+                                class="customTime col"
+                            >
+                                <template #am-pm-button="{ toggle, value }">
+                                    <button @click="toggle">{{ value }}</button>
+                                </template>
+                            </VueDatePicker>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="label-box">{{ t("회의 종료일") }}</span>
+                        <div class="date-descript">{{ "회의 삭제 시 까지 유지" }}</div>
+                    </div>
+                </div>
                 <div
                     class="justify-between"
-                    v-if="defaultPeriodType == 3 && preprenceStore.enviroment.useDirectCall"
+                    v-if="
+                        defaultPeriodType == ScheduleType.ALWAYS &&
+                        preprenceStore.useDirectCall
+                    "
                 >
                     <div class="items-center">
-                        <div class="label-box">{{ t('추가 기능') }}</div>
+                        <div class="label-box">{{ t("추가 기능") }}</div>
                         <div class="optionBox">
                             <div class="optionBox__input">
                                 <input
@@ -106,190 +300,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="label-box">
-                    <span class="label" v-show="defaultPeriodType != ''">
-                        <span>{{
-                            defaultPeriodType == 0 || defaultPeriodType == 1
-                                ? t("meetingDate")
-                                : t("meetingStartDate")
-                        }}</span>
-                    </span>
-                    <span
-                        class="invalidDate"
-                        v-if="defaultPeriodType == 1"
-                        v-show="defaultPeriodType != ''"
-                        >{{ errors.startDate }}</span
-                    >
-                    <span
-                        class="invalidDate"
-                        v-else-if="defaultPeriodType !== 0 && defaultPeriodType !== 1"
-                        v-show="defaultPeriodType != ''"
-                        >{{ errors.startDate || errors.startTime }}</span
-                    >
-                </div>
-
-                <div
-                    class="input-time-box"
-                    v-if="defaultPeriodType == 0 || defaultPeriodType == 1"
-                >
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="startDate"
-                        format="yyyy-MM-dd"
-                        class="customDate"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('날짜를 선택해주세요')"
-                        :disabled="defaultPeriodType == '0'"
-                        :min-date="new Date()"
-                        :max-date="endDate"
-                        auto-apply
-                    ></VueDatePicker>
-                </div>
-
-                <div class="input-time-box" v-else v-show="defaultPeriodType != ''">
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="startDate"
-                        format="yyyy-MM-dd"
-                        class="customDate"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('날짜를 선택해주세요')"
-                        :min-date="new Date()"
-                        :max-date="endDate"
-                        auto-apply
-                    ></VueDatePicker>
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="startTime"
-                        time-picker
-                        :is-24="false"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('시작 시간')"
-                        :hide-input-icon="true"
-                        minutes-increment="30"
-                        class="customTime col"
-                    >
-                        <template #am-pm-button="{ toggle, value }">
-                            <button @click="toggle">{{ value }}</button>
-                        </template>
-                    </VueDatePicker>
-                </div>
-
-                <div class="label-box">
-                    <span class="label" v-show="defaultPeriodType != ''">
-                        <span>{{
-                            defaultPeriodType == 0 || defaultPeriodType == 1
-                                ? t("회의시간")
-                                : t("회의 종료일")
-                        }}</span>
-                    </span>
-                    <span
-                        class="invalidDate"
-                        v-if="defaultPeriodType == 1"
-                        v-show="defaultPeriodType != ''"
-                        >{{ errors.startTime || errors.endTime }}</span
-                    >
-                    <span
-                        class="invalidDate"
-                        v-else-if="defaultPeriodType == 2"
-                        v-show="defaultPeriodType != ''"
-                        >{{ errors.endDate || errors.endTime }}</span
-                    >
-                </div>
-
-                <div
-                    class="input-time-box"
-                    v-if="defaultPeriodType == 0 || defaultPeriodType == 1"
-                >
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="startTime"
-                        class="customTime"
-                        time-picker
-                        :is-24="false"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('시작 시간')"
-                        :disabled="defaultPeriodType == 0"
-                        :hide-input-icon="true"
-                        minutes-increment="30"
-                    >
-                        <template #am-pm-button="{ toggle, value }">
-                            <button @click="toggle">{{ value }}</button>
-                        </template>
-                    </VueDatePicker>
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="endTime"
-                        class="customTime"
-                        time-picker
-                        :is-24="false"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('종료 시간')"
-                        :disabled="defaultPeriodType == 0"
-                        :hide-input-icon="true"
-                        minutes-increment="30"
-                    >
-                        <template #am-pm-button="{ toggle, value }">
-                            <button @click="toggle">{{ value }}</button>
-                        </template>
-                    </VueDatePicker>
-                </div>
-
-                <div class="input-time-box" v-if="defaultPeriodType == 2">
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="endDate"
-                        format="yyyy-MM-dd"
-                        class="customDate"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('날짜를 선택해주세요')"
-                        :min-date="startDate"
-                        :max-date="endDate"
-                        auto-apply
-                    ></VueDatePicker>
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="endTime"
-                        class="customTime col"
-                        time-picker
-                        :is-24="false"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('종료시간')"
-                        minutes-increment="30"
-                    >
-                        <template #am-pm-button="{ toggle, value }">
-                            <button @click="toggle">{{ value }}</button>
-                        </template>
-                    </VueDatePicker>
-                </div>
-
-                <div class="input-time-box" v-if="defaultPeriodType == 3">
-                    <VueDatePicker
-                        locale="ko"
-                        :dark="datePickerMode"
-                        v-model="endDate"
-                        format="yyyy-MM-dd"
-                        class="customDate col-12"
-                        :cancel-text="t('취소')"
-                        :select-text="t('확인')"
-                        :placeholder="t('회의 삭제 시까지 유지')"
-                        disabled
-                    ></VueDatePicker>
-                </div>
                 <span class="label-box">{{ t("meetingMember") }}</span>
                 <div>
                     <div class="selected-opt">
@@ -300,12 +310,15 @@
                             id="meetingMember"
                             :placeholder="t('chooseMember')"
                             readonly
-                            
                         >
-                            <span class="membersValue" v-for="(memberValue, memberValuesKey) in selectedMember"
-                            :key="memberValuesKey">{{
-                                `${memberValue}${memberValuesKey !== selectedMember.length - 1 ? "," : ""}`
-                            }}</span>
+                            <span
+                                class="membersValue"
+                                v-for="(memberValue, memberValuesKey) in selectedMember"
+                                :key="memberValuesKey"
+                                >{{
+                                    `${memberValue}${memberValuesKey !== selectedMember.length - 1 ? "," : ""}`
+                                }}</span
+                            >
                         </div>
                         <button class="memberBtn" v-if="!openMember" @click="memberClick">
                             &#x25BC;
@@ -325,6 +338,7 @@
                             @value="memberUpdate"
                             @selectMember="selectMember"
                             :enterMember="meetingMember"
+                            :selectedMemberIds="selectedMemberIds"
                         ></MeetingMember>
                     </div>
                     <button
@@ -342,7 +356,7 @@
                         v-if="!showMoreOptions"
                         @click="showMoreOptions = true"
                     >
-                        {{ t("moreOptions") }}
+                        + {{ t("참여자 추가") }}
                     </button>
                 </div>
 
@@ -354,44 +368,45 @@
                         <input
                             type="text"
                             id="emailID"
-                            v-model="emailID"
-                            placeholder="ID"
+                            v-model="email"
+                            :placeholder="t('이메일 입력')"
                             @keyup.enter="guestEmailAdd"
                             class="emailInput first"
                         />
-                        <span style="width: 12px">@</span>
-                        <input
+                        <!-- <input
                             type="text"
                             id="emailAddress"
                             v-model="emailAddress"
                             placeholder="wattsolution.co.kr"
                             @keyup.enter="guestEmailAdd"
                             class="emailInput second"
-                        />
+                        /> -->
                         <button @click="guestEmailAdd" class="addBtn">
                             {{ t("guestAdd") }}
                         </button>
                     </div>
                     <div>
                         <span
-                            class="emailInput third row items-center"
+                            class=" emailInput third row items-center"
                             contenteditable="false"
                             id="email"
                             :placeholder="t('addEmail')"
                             readonly
                         >
                             <div
-                                v-for="(email) in emails"
+                                v-for="email in emails"
                                 :key="email.fullEmail"
                                 :id="email.emailNum"
                                 class="email-box"
                             >
                                 <span>{{ email.fullEmail }}</span>
                                 <button @click="guestEmailDelete(email.emailNum)">
-                                    <img @click="guestEmailDelete(email.emailNum)" src="@/assets/images/conference/ic_email.png"/>
+                                    <img
+                                        @click="guestEmailDelete(email.emailNum)"
+                                        src="@/assets/images/conference/ic_email.png"
+                                    />
                                 </button>
-
-                        </div>
+                            </div>
                         </span>
                     </div>
 
@@ -456,9 +471,7 @@
 <script setup>
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { ko } from "date-fns/locale";
 import { string, object, number, date, boolean, array, mixed } from "yup";
-const { t } = useI18n();
 import { commonToastMessage } from "@/composables/common";
 import { useMeetingStore } from "@/stores/meeting";
 import { useCallStore } from "@/stores/call";
@@ -470,8 +483,16 @@ import MeetingMember from "@/components/pages/meeting/MeetingMember.vue";
 import { useUserListStore } from "@/stores/userList";
 import { userListGetEmail } from "@/utils/userList";
 import { useUserPreferenceStore } from "@/stores/common";
-import { useNuxtApp } from "nuxt/app";
+import { watch } from "vue";
 
+const ScheduleType = {
+    IMMEDIATE: 0,
+    ONE_DAY: 1,
+    DAILY: 2,
+    ALWAYS: 3,
+};
+
+const { t } = useI18n();
 const meetingStore = useMeetingStore();
 const callStore = useCallStore();
 const loginStore = useLoginStore();
@@ -485,15 +506,16 @@ const currentTime = ref("");
 const minEndTime = ref("");
 const meetingTitle = ref("");
 const title = ref("");
-const startDate = ref("");
-const startTime = ref("");
-const endTime = ref("");
-const endDate = ref("");
+const startDate = ref(null);
+const startTime = ref(null);
+const endTime = ref(null);
+const endDate = ref(null);
 const edit = ref(false);
 const meetingMember = ref([]);
 const member_deviceid = ref([]);
 const emailID = ref("");
 const emailAddress = ref("");
+const email = ref("");
 const modify = ref("");
 const openMember = ref(false);
 const dropdown = ref(false);
@@ -501,10 +523,10 @@ const typeChangeState = ref(false);
 const datePickerMode = ref("dark");
 
 const MTG_periodOption = ref([
-    { text: t("즉시"), value: 0 },
-    { text: t("1일"), value: 1 },
-    { text: t("연일"), value: 2 },
-    { text: t("상시"), value: 3 },
+    { text: t("즉시"), value: ScheduleType.IMMEDIATE },
+    { text: t("1일"), value: ScheduleType.ONE_DAY },
+    { text: t("연일"), value: ScheduleType.DAILY },
+    { text: t("상시"), value: ScheduleType.ALWAYS },
 ]);
 
 const defaultPeriodType = ref(0);
@@ -524,6 +546,8 @@ const showCctv = ref(false);
 const showMoreOptions = ref(false);
 const userList = reactive([]);
 const selectedMember = ref([]);
+const selectedMemberIds = ref([]);
+const isDataLoaded = ref(false);
 
 // Yup 스키마로 유효성 검사 규칙 정의
 const validationSchema = object({
@@ -629,16 +653,18 @@ onMounted(() => {
         console.log("*** mounted: this.compData.dates = ", props.compData.dates);
         let mtgStartDate = props.compData.startDate.replace(/\./g, "-"); // Use regex for global replace
         let mtgEndDate = props.compData.endDate.replace(/\./g, "-");
-        const tt = props.compData.customData.time.split(",");
+        const timeRange = props.compData.customData.time.split(",");
+        const mtgStartTime = timeRange[0].split(":");
+        const ntgEndTime = timeRange[1].split(":");
 
-        startDate.value = new Date(mtgStartDate).toISOString();
-        startTime.value = new Date(`${mtgStartDate} ${tt[0]}`).toISOString();
+        startDate.value = mtgStartDate;
+        startTime.value = { hours: mtgStartTime[0], minutes: mtgStartTime[1] };
 
         if (defaultPeriodType.value == 3) {
             endTime.value = t("meeting validity period"); // Use t for translation
         } else {
-            endDate.value = new Date(mtgEndDate).toISOString();
-            endTime.value = new Date(`${mtgEndDate} ${tt[1]}`).toISOString();
+            endDate.value = mtgEndDate;
+            endTime.value =  { hours: ntgEndTime[0], minutes: ntgEndTime[1] };
         }
         console.log(startDate.value, endDate.value, startTime.value, endTime.value);
 
@@ -658,12 +684,13 @@ onMounted(() => {
         const myDeviceId = sessionStorage.getItem("m_local_deviceid");
         const myNickname = sessionStorage.getItem("m_nickname");
 
-        const filteredMembersDeviceId = membersDeviceId.filter((id) => id !== myDeviceId);
-        const filteredMemberSplit = memberSplit.filter((name) => name !== myNickname);
+        const filteredMembersDeviceId = membersDeviceId.filter((id) => id !== loginStore.m_local_deviceid);
+        const filteredMemberSplit = memberSplit.filter((name) => name !== loginStore.nickname);
 
         member_deviceid.value = filteredMembersDeviceId;
         meetingMember.value = filteredMemberSplit;
-        console.log("여기 확인 해줘", meetingMember);
+
+        console.log("여기 확인 해줘", member_deviceid.value, meetingMember.value);
 
         const exptext = /^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\.[A-Za-z0-9\\-]+/;
         let emailNum = 0;
@@ -686,26 +713,28 @@ onMounted(() => {
         if (member_deviceid.value.length > 0) {
             member_deviceid.value.forEach((id) => {
                 meetingStore.meetingMemberIdAdd(id);
+                selectedMemberIds.value.push(id);
             });
         }
         if (meetingMember.value.length > 0) {
-            meetingStore.meetingMemberAdd(meetingMember.value);
+            meetingMember.value.forEach((name) => {
+                meetingStore.meetingMemberIdAdd(name);
+                selectedMember.value.push(name);
+            });
         }
-    } else {
-        selectedMember.value = [];
+    }
         defaultPeriodType.value = 0;
         let memberList = [];
         memberList[0] = {
-            name: userListStore.userListAll.institution[0],
+            name: loginStore.institution,
             children: userListStore.organizationList,
         };
         meetingMember.value = memberList;
-    }
 });
 
 function disabledDate(date) {
-  const today = new Date()
-  return date < today.setHours(0, 0, 0, 0) // 오늘보다 이전 날짜는 선택 불가
+    const today = new Date();
+    return date < today.setHours(0, 0, 0, 0); // 오늘보다 이전 날짜는 선택 불가
 }
 const leadZero = (value) => {
     return String(value).padStart(2, "0");
@@ -741,7 +770,7 @@ const dateFormatConversion = (splitDate) => {
 
 // --- Methods (functions in Composition API) ---
 
-const periodType = (e) => {
+const handleChangePeriodType = (e) => {
     defaultPeriodType.value = e.target.value;
     const mtgPeriodTag = document.getElementById("mtgPeriod");
     if (mtgPeriodTag) {
@@ -749,10 +778,10 @@ const periodType = (e) => {
         mtgPeriodTag.style.color = "#ffffff";
     }
     typeChangeState.value = true;
-    startDate.value = "";
-    endDate.value = "";
-    startTime.value = "";
-    endTime.value = "";
+    // startDate.value = "";
+    // endDate.value = "";
+    // startTime.value = "";
+    // endTime.value = "";
 };
 
 const close = () => {
@@ -761,40 +790,38 @@ const close = () => {
 };
 
 const guestEmailAdd = () => {
-    const a = emailID.value;
-    let b = emailAddress.value;
+    // const a = emailID.value;
+    // let b = emailAddress.value;
 
-    if (a === "" || (a === "" && b === "")) {
-        return;
-    } else if (b === "") {
-        b = "wattsolution.co.kr";
-    }
+    // if (a === "" || (a === "" && b === "")) {
+    //     return;
+    // } else if (b === "") {
+    //     b = "wattsolution.co.kr";
+    // }
 
     const c = {
-        fullEmail: a + "@" + b,
+        fullEmail: email.value,
         emailNum: idNum.value,
     };
 
     // Assuming userListGetEmail is a globally injected method
-    console.log(c.fullEmail)
+    console.log(c.fullEmail);
     const checkEmail = userListGetEmail(c.fullEmail);
 
-    console.log(checkEmail)
+    console.log(checkEmail);
     // 자신 이메일 체크
     if (checkEmail === -1) {
         if (c.fullEmail === loginStore.sessionEmail) {
             // Assuming commonToastMessage is a globally injected method
-            console.log("나의 이메일이야")
+            console.log("나의 이메일이야");
             commonToastMessage(t("toastMessage myselfEmailCheck"));
-            emailID.value = "";
-            emailAddress.value = "";
+            email.value = ""
             return;
         }
 
         // 비회원 등록
         meetingStore.emailAdd(c);
-        emailID.value = "";
-        emailAddress.value = "";
+        email.value = "";
         idNum.value++;
     } else {
         // Check if userData is available (e.g., a prop or another ref/computed property)
@@ -826,16 +853,17 @@ const guestEmailAdd = () => {
                 meetingMember.value.push(userData[i].nickname);
                 meetingStore.meetingMemberIdAdd(checkEmail);
                 meetingStore.meetingMemberEmailAdd(c.fullEmail);
-                emailID.value = "";
-                emailAddress.value = "";
+                selectedMember.value.push(userData[i].nickname);
+                selectedMemberIds.value.push(userData[i].deviceid);
+                email.value = "";
             }
         }
     }
 };
 
 const guestEmailDelete = (e) => {
-    meetingStore.emailDelete(e)
-}
+    meetingStore.emailDelete(e);
+};
 
 const addCCTV = () => {
     if (cctvName.value === "") return alert(t("cctvs")[2]);
@@ -865,18 +893,33 @@ const saveMeeting = async (modifyOnOff) => {
         const dateObject = new Date(date);
 
         // 날짜와 관련된 정보 추출
-        const year = dateObject.getFullYear();  // 2025
+        const year = dateObject.getFullYear(); // 2025
         const month = dateObject.getMonth() + 1; // 8 (월은 0부터 시작하므로 +1)
         const day = dateObject.getDate();
-        return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
     }
-    function formatToKoreanTime(time) {
-        const hours = String(time.hours).padStart(2, "0");
-        const minutes = String(time.minutes).padStart(2, "0");
-        return `${hours}:${minutes}`;
+    function formatToKoreanTime(value) {
+        if (typeof value === "String" && value.includes("T")) {
+            const date = new Date(value);
+
+            // ✅ 한국 시간 기준
+            const hh = String(date.getHours()).padStart(2, "0");
+            const mm = String(date.getMinutes()).padStart(2, "0");
+            return `${hh}:${mm}`;
+        } else if (typeof value === "object") {
+            const hh = String(value.hours).padStart(2, "0");
+            const mm = String(value.minutes).padStart(2, "0");
+            return `${hh}:${mm}`;
+        }
+
+        // 단순 시간 "HH:mm" 형태일 경우 그대로 리턴
+        if (/^\d{2}:\d{2}$/.test(value)) {
+            return value;
+        }
     }
-    console.log(meetingTitle.value);
+
     const titleVal = meetingTitle.value;
+    console.log(`변환하기전, ${startDate.value}, ${endDate.value}, ${startTime.value}, ${endTime.value}`)
     let currentStartDate = formatToKoreanDate(startDate.value);
     let currentEndDate = formatToKoreanDate(endDate.value);
     let currentStartTime = formatToKoreanTime(startTime.value);
@@ -893,21 +936,20 @@ const saveMeeting = async (modifyOnOff) => {
     currentType = String(currentType);
 
     console.log("meeting period type:", currentType);
-    const formatNumber = (num) => String(num).padStart(2, '0');
+    const formatNumber = (num) => String(num).padStart(2, "0");
     // 회의기간타입이 0일 경우
     if (currentType == 0) {
         currentStartDate = `${yyyy}-${formatNumber(MM)}-${formatNumber(dd)}`;
         currentEndDate = `${yyyy}-${formatNumber(MM)}-${formatNumber(dd)}`;
         currentStartTime = `${hh}:${mm}`;
-        currentEndDate = `${hh + 2}:${mm}`;
-
+        currentEndTime = `${hh + 2}:${mm}`;
     } else if (currentType == 1) {
         // 회의기간타입이 1일(1) 일경우 >> 시작날짜 == 종료날짜
         currentEndDate = currentStartDate;
     } else if (currentType == 3) {
         // 회의기간타입이 상시(3) 종료일을 임의로 2100년으로 설정
-        currentEndDate = '2100-01-01'
-        currentEndTime = '00:00'
+        currentEndDate = "2100-01-01";
+        currentEndTime = "00:00";
     }
     console.log(
         "startDate:",
@@ -920,33 +962,49 @@ const saveMeeting = async (modifyOnOff) => {
         currentEndTime,
     );
 
-    let member = [];
-    let memberId = [];
+    const isValidDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
+    const isValidTime = (time) => /^\d{2}:\d{2}$/.test(time);
 
-    // Use store.state directly
-    if (!props.compData) {
-        // Access props via `props.compData`
-        member = [...meetingStore.meetingMember];
-        memberId = [...meetingStore.meetingMemberId];
-        console.log("*** methods: saveMeeting:: not self.compData memberID", memberId);
-    } else {
-        member = [...meetingStore.meetingMember];
-        memberId = [...meetingStore.meetingMemberId];
-        console.log("*** methods: saveMeeting:: self.compData memberID", memberId);
-        console.log("*** methods: saveMeeting:: self.compData member", member);
+    if (defaultPeriodType.value == ScheduleType.ONE_DAY) {
+        if (!isValidDate(currentStartDate) ||!isValidTime(currentStartTime) ||  !isValidTime(currentEndTime)) {
+            console.error("❌ 잘못된 startDate:", currentStartDate, currentStartTime, currentEndTime);
+            commonToastMessage(t("회의 날짜, 회의 시간을 모두 입력해주세요"))
+            return
+        }
+    } else if (defaultPeriodType.value == ScheduleType.DAILY) {
+        if (!isValidDate(currentStartDate) || !isValidDate(currentEndDate) ||!isValidTime(currentStartTime) ||  !isValidTime(currentEndTime)) {
+            console.error("❌ 잘못된 startDate:", currentStartDate, currentEndDate, currentStartTime, currentEndTime);
+            commonToastMessage(t("회의 시작일, 회의 종료일의 (날짜, 시간)을 모두 입력해주세요"))
+            return
+        }
+    } else if (defaultPeriodType.value == ScheduleType.ALWAYS) {
+        if (!isValidDate(currentStartDate) || !isValidTime(currentStartTime)) {
+            console.error("❌ 잘못된 startDate:", currentStartDate, currentStartTime);
+            commonToastMessage(t("회의 시작일 (날짜, 시간)을 입력해주세요"))
+            return
+        }
     }
 
-    const memberEmail = [...meetingStore.meetingMemberEmail];
+    let member = [];
+    let memberId = [];
+    let memberEmail = [];
+
+    member.push(...selectedMember.value);
+    memberId.push(...selectedMemberIds.value);
+    memberEmail = callStore.userData
+        .filter(user => selectedMemberIds.value.includes(user.deviceid))
+        .map(user => user.email);
+
     // 본인 추가
     if (member.length === 0) {
         // Check length for array
         member.push(loginStore.nickname);
         memberId.push(loginStore.m_local_deviceid);
-        memberEmail.push(loginStore.sessionEmail)
+        memberEmail.push(loginStore.sessionEmail);
     } else {
         member.unshift(loginStore.nickname);
         memberId.unshift(loginStore.m_local_deviceid);
-        memberEmail.unshift(loginStore.sessionEmail)
+        memberEmail.unshift(loginStore.sessionEmail);
     }
 
     const guestEmail = [];
@@ -970,22 +1028,6 @@ const saveMeeting = async (modifyOnOff) => {
         cctvList = cctvs.value;
     }
 
-    console.log("*** before validate: startDate, startTime, endDate, endTime");
-    console.log(
-        currentStartDate,
-        currentStartTime,
-        currentEndDate,
-        currentEndTime,
-        currentType,
-    );
-    console.log(
-        typeof currentStartDate,
-        typeof currentStartTime,
-        typeof currentEndDate,
-        typeof currentEndTime,
-        typeof currentType,
-    );
-
     defaultPeriodType.value = currentType; // Re-assigning to ref is fine, though already `currentType`
 
     const meetingInfo = {
@@ -1005,6 +1047,9 @@ const saveMeeting = async (modifyOnOff) => {
         everyone_start_yn: everyoneStartYN,
         cctv_list: cctvList,
     };
+
+    console.log(meetingInfo);
+    // return meetingInfo;
     console.log("*******************meetineInfo 유효성 검사후*******************");
     console.log("*** methods: saveMeeting:: meetingInfo = ", meetingInfo);
 
@@ -1052,11 +1097,8 @@ const memberUpdate = (value) => {
 };
 
 const selectMember = (obj) => {
-    console.log(obj.names);
-    selectedMember.value = [];
     selectedMember.value = obj.names;
-    console.log(selectedMember.value);
-    console.log(obj.names, obj.deviceIds);
+    selectedMemberIds.value = obj.deviceIds;
 };
 const memberSubmitBtn = () => {
     const mm = meetingMember.value;
@@ -1072,10 +1114,10 @@ watch(type, (newVal, oldVal) => {
     if (defaultPeriodType.value) {
         // Access ref with .value
         console.log("변경");
-        startDate.value = "";
-        startTime.value = "";
-        endDate.value = "";
-        endTime.value = "";
+        // startDate.value = "";
+        // startTime.value = "";
+        // endDate.value = "";
+        // endTime.value = "";
         typeChangeState.value = false; // Reset the state after handling
     }
     console.log("*** watch: type --> before Value", oldVal);
@@ -1087,147 +1129,63 @@ watch(type, (newVal, oldVal) => {
         disabledState.value = false;
     }
 });
+watch(startTime,
+    (value) => {
+        console.log("changed or initial:", value);
 
-// Watch 'startDate'
-watch(startDate, (value) => {
-    // 유효성검사 변수 빈값이 들어오면 @처리
-    checkStartDate.value = value;
-    if (value === "") {
-        return;
-    }
+        // if (value == ScheduleType.IMMEDIATE) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.ONE_DAY) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.DAILY) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.ALWAYS) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // }
+    },
+    { immediate: true });
 
-    // startDate 날짜 변경 시 시간 초기화
-    // setTimeout(() => {
-    //     // Access refs with .value
-    //     if (!modify.value && !defaultPeriodType.value) {
-    //         // Do nothing as per original logic if not modify and not defaultPeriodType
-    //     } else if (defaultPeriodType.value == 1 || defaultPeriodType.value == 3) {
-    //         startTime.value = "";
-    //         endTime.value = "";
-    //     } else {
-    //         startTime.value = "";
-    //     }
-    // }, 0);
+watch(
+    defaultPeriodType,
+    (value) => {
+        console.log("changed or initial:", value);
 
-    // 회의기간 타입(2) 일 경우 시작날짜 < 종료날짜 조건 체크
-    if (defaultPeriodType.value == 2) {
-        if (endDate.value !== "" && endDate.value <= value) {
-            // Compare ref values
-            commonToastMessage(t("Check the meeting start date")); // Use injected function
-            setTimeout(() => {
-                startDate.value = "";
-            }, 0);
-        }
-    }
-});
-
-// Watch 'endDate'
-watch(endDate, (value) => {
-    // 유효성검사 변수 빈값이 들어오면 @처리
-    checkEndTime.value = value;
-    if (value === "") {
-        return;
-    }
-
-    // 회의종료날짜 재선택 시 종료시간 초기화
-    setTimeout(() => {
-        if (!modify.value && !defaultPeriodType.value) {
-            // Do nothing
-        } else {
-            endTime.value = "";
-        }
-    }, 0);
-
-    // 회의기간타입이 연일(2) 일경우 시작날짜 < 종료날짜 체크
-    if (defaultPeriodType.value == 2 && value !== "") {
-        if (startDate.value !== "" && startDate.value >= value) {
-            commonToastMessage(t("Check the meeting end date"));
-            setTimeout(() => {
-                endDate.value = "";
-            }, 0);
-        }
-    }
-});
-
-// Watch 'startTime'
-watch(startTime, (value) => {
-    // 유효성검사 변수 빈값이 들어오면 @처리
-    checkStartTime.value = value;
-    if (value === "") {
-        return;
-    }
-
-    console.log("*** watch: startTime -->", value);
-    const date = new Date();
-    // const currentTime = `${date.getHours()}:${date.getMinutes()}`; // Not used directly in logic
-
-    // 현재시간과 비교하기 위해 getTime() 사용
-    // Ensure 'today' ref is initialized (e.g., in onMounted)
-    const setValue = new Date(`${today.value} ${extractTime(value)}`); // Use today.value and extractTime
-
-    // 시작시간 > 종료시간 조건 체크
-    if (defaultPeriodType.value == 1) {
-        if (endTime.value !== "" && endTime.value <= value) {
-            commonToastMessage(t("Start time check")[0]);
-            setTimeout(() => {
-                startTime.value = "";
-            }, 0);
-        }
-    }
-
-    // 비교할시간이 기준시간을 지나지 않았을경우 true를 반환 , 지났을 경우에는 false를 반환
-    console.log(setValue.getTime() < date.getTime());
-
-    // 현재시간 이후로 설정해야한다.
-    // if (
-    //     edit.value !== true &&
-    //     startDate.value !== "" &&
-    //     today.value == extractDate(startDate.value) &&
-    //     setValue.getTime() < date.getTime()
-    // ) {
-    //     commonToastMessage(t("Start time check")[1]);
-    //     setTimeout(() => {
-    //         startTime.value = "";
-    //     }, 0);
-    // } else {
-    //     // 회의 종료 최소 시간 설정
-    //     const time = String(setValue).split(" ");
-    //     const splitTime = time[4].split(":");
-    //     if (Number(splitTime[1]) < 30) {
-    //         // Convert to Number for comparison
-    //         minEndTime.value = splitTime[0] + ":30";
-    //     } else {
-    //         let hour = Number(splitTime[0]) + 1;
-    //         if (hour < 10) {
-    //             hour = "0" + hour;
-    //         }
-    //         if (hour > 24) {
-    //             // Handle hour rollover to next day's 01:00 (if 24:XX)
-    //             hour = "01";
-    //         }
-    //         minEndTime.value = hour + ":00";
-    //     }
-    // }
-});
-
-// Watch 'endTime'
-watch(endTime, (value) => {
-    // 유효성검사 변수 빈값이 들어오면 @처리
-    checkEndTime.value = value;
-    if (value === "") {
-        return;
-    }
-    // 1일 일경우 시작시간< 종료시간 조건 체크
-    // if (defaultPeriodType.value == 1) {
-    //     if (startTime.value !== "" && startTime.value >= value) {
-    //         alert("여기지?")
-    //         commonToastMessage(t("End time check")[0]);
-    //         setTimeout(() => {
-    //             endTime.value = "";
-    //         }, 0);
-    //     }
-    // }
-});
+        // if (value == ScheduleType.IMMEDIATE) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.ONE_DAY) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.DAILY) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // } else if (value == ScheduleType.ALWAYS) {
+        //     startDate.value = "";
+        //     endDate.value = "";
+        //     startTime.value = "";
+        //     endTime.value = "";
+        // }
+    },
+    { immediate: true },
+);
 </script>
 <style lang="scss" scoped>
 input,
@@ -1244,7 +1202,6 @@ select,
     background-color: #262627;
     border: 1px solid #1d1d1d;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.45098);
-    color: #fff;
 }
 
 .invalidTitle {
@@ -1264,6 +1221,7 @@ select,
 .label-box {
     margin-top: 20px;
     margin-bottom: 10px;
+    color: #fff;
 }
 
 .invalidStartTime {
@@ -1444,9 +1402,12 @@ select,
 .memberInput {
     width: 90%;
     font: normal normal normal 14px/16px NanumSquare;
-    overflow: auto;
-
+    color: #fff;
+    &::placeholder {
+        color: #a1a1a1;
+    }
     &:empty::before {
+        color: #a1a1a1;
         content: attr(placeholder);
         font: normal normal normal 14px/16px NanumSquare;
     }
@@ -1493,24 +1454,23 @@ select,
 
 .emailInput {
     padding: 13px;
-
-    &.first {
-        width: 120px;
-        height: 40px;
-    }
-
     &.second {
         width: 136px;
         height: 40px;
+        
     }
 
     &.third {
         width: 344px;
-        height: 42px;
         font: normal normal normal 14px/16px NanumSquare;
         overflow-x: auto;
+        color: #fff;
+        background: #323232 0 0 no-repeat padding-box;
+        padding: 7px;
+        font-size: 15px;
 
         &:empty::before {
+            color: #a1a1a1;
             content: attr(placeholder);
             font: normal normal normal 14px/16px NanumSquare;
         }
@@ -1541,6 +1501,9 @@ select,
     .email-box {
         display: flex;
         align-items: center;
+        > button {
+            display: inherit;
+        }
     }
 }
 
@@ -1632,6 +1595,7 @@ select,
 }
 
 .modalFont22 {
+    color: #fff;
     font: normal normal 800 22px/26px NanumSquare;
 }
 
@@ -1917,15 +1881,6 @@ select,
     overflow: visible;
 }
 
-.makeMain::-webkit-scrollbar {
-    width: 10px !important;
-}
-
-.makeMain::-webkit-scrollbar-thumb {
-    width: 10px !important;
-    border-radius: 3px;
-}
-
 .optionBox {
     display: flex;
     justify-content: start;
@@ -1933,6 +1888,7 @@ select,
     width: 344px;
     font-size: 16px;
     margin-top: 15px;
+    color: #fff;
 
     &__input {
         display: flex;
@@ -1950,12 +1906,17 @@ select,
 }
 
 .showMoreOptionBtn {
-    width: 85px;
-    height: 47px;
+    height: 30px;
     border-radius: 20px;
     z-index: 1;
     text-align: center;
     color: #fff;
+    margin-top: 16px;
+    padding: 0 17px;
+    &:hover {
+        border-color: #4b4545;
+        border: 1px solid #4b4545;
+    }
 }
 
 .column-gap10 {
@@ -1975,7 +1936,8 @@ select,
     display: flex;
     background: #323232 0 0 no-repeat padding-box;
     padding: 10px;
-    color: #fff;
+    overflow-y: auto;
+    max-height: 125px;
 }
 
 .form-box,
@@ -1989,11 +1951,10 @@ select,
 .button-box {
     padding: 21px 0;
 }
-.customDate,
-.customTime {
-    .dp__input {
-        font-size: 15px;
-    }
+
+.dp__main * {
+    font-size: 15px;
+    background: #323232 0 0 no-repeat padding-box;
 }
 
 .input-time-box {
@@ -2005,5 +1966,16 @@ select,
     * {
         font-size: 14px;
     }
+}
+
+.date-container {
+    display: flex;
+    gap: 8px;
+    > div {
+        flex: 1;
+    }
+}
+.date-descript {
+    color: #a1a1a1;
 }
 </style>

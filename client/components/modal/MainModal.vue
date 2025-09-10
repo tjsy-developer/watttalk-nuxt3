@@ -6,7 +6,7 @@
         <div class="notice notice-header">
             <span>{{ t("알림창") }}</span>
             <button @click="openModalCheck">
-                <img src="@/assets/images/ic_close.png" />
+                <img src="@/assets/images/ic_close.png" :alt="t('닫기')"/>
             </button>
         </div>
         <div class="main-container" v-if="commonStore.alertNum == 1">

@@ -114,7 +114,7 @@ export const useCommonStore = defineStore("common", {
                 this.callingLayoutType = parseInt(e);
             }
         },
-        changeViewType(e) {
+        setChangeViewType(e) {
             this.contentsViewType = e;
         },
         isAlarmIconChecked() {

@@ -345,7 +345,7 @@ onMounted(() => {
                 commonStore.janus.destroy();
 
                 // contactList.vue 로 이동
-                commonStore.changeViewType(0);
+                commonStore.setChangeViewType(0);
                 router.push("/dashboard");
                 modalStore.closeModal("call");
             }, 3000);
@@ -1029,7 +1029,7 @@ onMounted(() => {
 
                 callingRequest(
                     loginStore.m_local_deviceid,
-                    json.deviceid,
+                    json.remotedeviceid,
                     sessionStorage.getItem("m_roomid"),
                     1,
                     remoteInfo.enName,
@@ -2330,10 +2330,10 @@ onMounted(() => {
                 drawingStore.setDrawingVideo(false);
             }
             // ksy:: 썸네일 이관이 끝나면 로딩바 제거
-            // loadingMaskDelete();
-            // nextTick(() => {
-            //  drawingStore.setCanvasHistoryFin", true)
-            // })
+            loadingMaskDelete();
+            nextTick(() => {
+                drawingStore.setCanvasHistoryFin(true)
+            })
         }, 500);
     });
 
@@ -3801,9 +3801,9 @@ function registerUsername() {
             request: "join",
             room: myroom.value, // 외부 변수 myroom의 .value 속성 접근
             ptype: "publisher",
-            display: username + "#" + loginStore.m_local_deviceid, // 외부 변수 loginStore 접근
+            display: (username || loginStore.nickname) + "#" + loginStore.m_local_deviceid, // 외부 변수 loginStore 접근
         };
-        myusername.value = username; // 외부 변수 myusername의 .value 속성 접근
+        myusername.value = username || loginStore.nickname; // 외부 변수 myusername의 .value 속성 접근
 
         // sfutest.value가 유효한지 확인 후 send 호출
         if (sfutest.value && typeof sfutest.value.send === "function") {
@@ -4138,7 +4138,7 @@ function fileSend(result) {
     }
     // 수락했을 때
     else if (result == 3) {
-        alert(receiveFileResFlag.value.selectedUserName);
+        console.log('파일수락 시 ', feeds.value, receiveFileResFlag.value)
         // 송신자가 보낸 파일을 수락 클릭했을 경우 송신자이름으로 index 조회- ksy
         const rfidIndex = findFeedsIndexNickname(
             receiveFileResFlag.value.selectedUserName,
@@ -4304,7 +4304,7 @@ function muteVideoCustom() {
     }
 
     if (callStore.videoMainIndex == 0) {
-        mainVideoChangeFunc(0, "localstream", commonStore.userListStatus[0].nickname);
+        mainVideoChangeFunc(0, "localstream");
     }
 
     // signalling socket video off emit
@@ -6969,11 +6969,11 @@ function addReceiveMessageList(
     if (!onOff) {
         // if (scrollLocationCheck) {
         // 신규 메시지 알림 호출
-        chattingStore.newMessageConfrim(true);
+        chattingStore.setNewMessageConfrim(true);
 
         if (level == 0) {
             // newEmergencyConfirm true
-            chattingStore.newEmergencyConfirm(true);
+            chattingStore.setNewEmergencyConfirm(true);
         }
     } else {
         // 스크롤이 마지막 위치일 경우, 마지막으로 이동시키는 Flow.
@@ -8113,19 +8113,15 @@ function janusAndCallingDestroy() {
             // 비회원 참가 시 window close
             window.location.href = "https://wattsolution.co.kr/";
         } else if (callingType.value == "meetingCall") {
-            commonStore.changeViewType(1);
+            commonStore.setChangeViewType(1);
             router.push("/meeting");
         } else {
-            commonStore.changeViewType(0);
+            commonStore.setChangeViewType(0);
             router.push("/dashboard");
         }
 
         setTimeout(function () {
-            // window.location.reload();
-            callStore.init();
-            drawingStore.init();
-            meetingStore.init();
-            chattingStore.init();
+            window.location.reload();
         }, 500);
     }, 3000);
 }
@@ -8500,8 +8496,13 @@ function getMeetingInfo(meetingSeq) {
     console.log(json);
 }
 function base64ToBlob(base64) {
-    const [prefix, base64Data] = base64.split(",");
-    const mime = prefix.match(/:(.*?);/)[1];
+    const [prefix, base64Data] = base64.split(',');
+  
+    // 안전한 정규식: ; 전까지의 모든 문자만 캡처
+    const mimeMatch = prefix.match(/:([^;]+);/);
+    if (!mimeMatch) throw new Error('Invalid base64 string');
+
+    const mime = mimeMatch[1];
     const byteString = atob(base64Data);
     const arrayBuffer = new ArrayBuffer(byteString.length);
     const uint8Array = new Uint8Array(arrayBuffer);
@@ -9583,7 +9584,7 @@ function sayHello() {
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
     Janus.init({
-        debug: false,
+        debug: true,
         currentMicId: commonStore.selectedMicID,
         callback() {
             $(this).attr("disabled", true).unbind("click");
@@ -10684,19 +10685,14 @@ function sayHello() {
                             // 비회원 참가 시 window close
                             window.location.href = "https://wattsolution.co.kr/";
                         } else if (callingType.value == "meetingCall") {
-                            commonStore.changeViewType(1);
+                            commonStore.setChangeViewType(1);
                             router.push("/meeting");
                         } else {
-                            commonStore.changeViewType(0);
+                            commonStore.setChangeViewType(0);
                             router.push("/dashboard");
                         }
-
                         setTimeout(function () {
-                            callStore.init();
-                            drawingStore.init();
-                            meetingStore.init();
-                            chattingStore.init();
-                            commonStore.init();
+                            window.location.reload();
                         }, 500);
                     }, 3000);
                 },
@@ -11159,7 +11155,7 @@ watch(getInCallingFunction, (newValue, oldValue) => {
             }
         }
 
-        requestUserStatus({ remoteDeviceId: callStore.inCallingFunctionParams });
+        requestUserStatus(callStore.inCallingFunctionParams);
     } else if (newValue == "requestMessageFunc") {
         const receiverDeviceid = callStore.inCallingFunctionParams;
         requestMessageFunc(receiverDeviceid);
@@ -12126,8 +12122,6 @@ watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
         }
         commonStore.setNoneOverlayAlertStatus(2);
         meetingStore.setMeetingLeaveFlag(true);
-        modalStore.closeModal("noneOverlayModal");
-        callStore.setHangupCallingConfirmFlag(false);
     }
 });
 
@@ -12159,5 +12153,6 @@ onUnmounted(() => {
 <style lang="scss">
 .calling {
     width: inherit;
+    flex: 1;
 }
 </style>

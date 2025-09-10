@@ -21,31 +21,25 @@ const handleClickNotice = () => {
 };
 
 const handleClickCloud = () => {
-    const targetWindow = window.open("http://localhost:8205/login", "target");
-
-    if (targetWindow) {
-        targetWindow.postMessage(
-            {
-                accessToken: tokenStore.accessToken,
-                refreshToken: enRToken,
-                user_info: {
-                    en_seq: loginStore.sessionEnSeq,
-                    hq_seq: loginStore.sessionHqSeq,
-                    br_seq: loginStore.sessionBrSeq,
-                    auth: loginStore.sessionAuth,
-                    user_id: loginStore.m_local_deviceid,
-                    user_name: loginStore.nickname,
-                    user_seq: "",
-                    en_alias: loginStore.institution,
-                    hq_alias: loginStore.headquarters,
-                    br_alias: loginStore.branch,
-                    email: loginStore.sessionEmail,
-                    device_type: loginStore.sessionDeviceType,
-                },
-            },
-            "*",
-        );
+    const params = {
+        accessToken: tokenStore.accessToken,
+        refreshToken: tokenStore.enRToken,
+        en_seq: loginStore.sessionEnSeq,
+        hq_seq: loginStore.sessionHqSeq,
+        br_seq: loginStore.sessionBrSeq,
+        auth: loginStore.sessionAuth,
+        user_id: loginStore.m_local_deviceid,
+        user_name: loginStore.nickname,
+        user_seq: "",
+        en_alias: loginStore.institution,
+        hq_alias: loginStore.headquarters,
+        br_alias: loginStore.branch,
+        email: loginStore.sessionEmail,
+        device_type: loginStore.sessionDeviceType,
     }
+    const queryString = new URLSearchParams(params).toString();
+    const domain = `http://localhost:8205/login?${queryString}`;
+    window.open(domain, "target");
 };
 </script>
 
@@ -65,7 +59,7 @@ const handleClickCloud = () => {
             <label class="icon-label">{{ t("클라우드") }}</label>
         </a>
         <div class="icon-btn bell" title="알림" @click="handleClickNotice">
-            <img :src="menuImages.notice" />
+            <img :src="menuImages.notice" :alt="t('알림')" />
         </div>
         <audio id="calling_bell" loop style="display: none">
             <source src="@/assets/sounds/Wood.ogg" type="audio/ogg" />

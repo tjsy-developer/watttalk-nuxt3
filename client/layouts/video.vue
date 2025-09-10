@@ -25,6 +25,7 @@
     <VueFinalModal
         v-model="isFileSendModalVisible"
         :clickToClose="false"
+        :hideOverlay="true"
         class="modal-container file-modal"
     >
         <FileSendModal></FileSendModal>
@@ -75,7 +76,6 @@ import { onMounted } from "vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
 import HostModal from "@/components/modal/HostModal.vue";
-import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -135,8 +135,6 @@ const isPreviewModal = computed({
     },
 });
 onMounted(() => {
-    commonStore.setAlertStatus(0);
-    modalStore.isModalOpen("message");
 });
 </script>
 

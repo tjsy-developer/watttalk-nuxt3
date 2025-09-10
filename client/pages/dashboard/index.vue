@@ -15,6 +15,7 @@ import ContactList from "@/components/pages/dashboard/ContactList.vue";
 import { userDataGetInfo } from "@/composables/common";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
+import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
 import { callingBell, getDirectMessageTimeZone } from "@/utils/common";
@@ -34,6 +35,7 @@ const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const loginStore = useLoginStore();
+const preferenceStore = useUserPreferenceStore();
 // 상태 값 추출
 const {
     contentsViewType,
@@ -49,12 +51,21 @@ const {
     recentDataAll,
     userData,
     userDataAll,
-    autoCallAcceptTime,
     sendDurationEnable,
     autoVideoSaveChange,
     callingPopupResult,
     groupCallCancelFlag,
 } = storeToRefs(callStore);
+
+const {
+    useAutoPictureAccept,
+    useAutoDiscalling,
+    useDirectCall,
+    autoCallAcceptTime,
+    onlyVoiceCallId,
+    videoRecording,
+    roomNumber,
+} = storeToRefs(preferenceStore);
 
 const { sendDMFlag, readProcFlag, previousMessageFlag, previousMessageInfo } =
     storeToRefs(directMessageStore);
@@ -162,7 +173,6 @@ watch(getCallingPopupResult, (result) => {
 
     callingPopupResultData.value = [];
     callStore.setCallingResult("init");
-    sessionStorage.setItem("m_callWaiting", "false");
 });
 
 watch(
@@ -235,6 +245,7 @@ const handleCreateRoomID = (response) => {
 
             // 페이지 이동 (방입장)
             router.push("/call");
+            commonStore.setChangeViewType(2);
         }
     }
 };
@@ -294,27 +305,27 @@ const handleCalling = (response) => {
         }
 
         // callingPopupResult
-        ((callingPopupResultData.roomid = json.roomid),
-            (callingPopupResultData.m_local_deviceid = loginStore.m_local_deviceid),
-            (callingPopupResultData.deviceid = json.deviceid),
-            (callingPopupResultData.institution = json.institution),
-            (callingPopupResultData.nickname = json.nickname),
-            (callingPopupResultData.meetingSeq = json.meeting_seq),
-            (callingPopupResultData.uniqueRoomid = json.unique_roomid),
-            console.log(callingPopupResultData));
+        callingPopupResultData.roomid = json.roomid;
+        callingPopupResultData.m_local_deviceid = loginStore.m_local_deviceid;
+        callingPopupResultData.deviceid = json.deviceid;
+        callingPopupResultData.institution = json.institution;
+        callingPopupResultData.nickname = json.nickname;
+        callingPopupResultData.meetingSeq = json.meeting_seq;
+        callingPopupResultData.uniqueRoomid = json.unique_roomid;
 
+        console.log(autoCallAcceptTime.value);
         /* 전화 자동 수락 */
         if (autoCallAcceptTime.value > 0) {
             console.log(
-                "*** socket: calling >> AutoCallAcceptTime = " + this.autoCallAcceptTime,
+                "*** socket: calling >> AutoCallAcceptTime = " + autoCallAcceptTime.value,
             );
             funcAutoCallAceept.value = setTimeout(() => {
                 // 방에 입장한 상태가 아니라면 전화를 수락한다.
                 /*
-						   m_callWating == true => 전화가 온 상태
-						   거절 또는 수락했을 경우 m_callWating = false
-						   즉, 내가 거절 또는 수락을 안눌른 상태이면서 현재 페이지일 경우 방에 자동 입장
-						*/
+                    m_callWating == true => 전화가 온 상태
+                    거절 또는 수락했을 경우 m_callWating = false
+                    즉, 내가 거절 또는 수락을 안눌른 상태이면서 현재 페이지일 경우 방에 자동 입장
+                */
                 if (
                     sessionStorage.getItem("inRoomFlag") !== "true" &&
                     commonStore.contentsViewType == 0 &&
@@ -335,7 +346,7 @@ const handleCalling = (response) => {
 const handleCanMakeCall = (response) => {
     if (response) {
         const json = JSON.parse(response);
-        // console.log("*** socket: canMakeCall response, json:", json)
+        console.log("*** socket: canMakeCall response, json:", json)
 
         // 통화 가능
         if (json.status == 1) {
@@ -435,6 +446,7 @@ const handleGroupRoom = (response) => {
 
                 // 페이지 이동 (방입장)
                 router.push("/call");
+                commonStore.setChangeViewType(2);
             }
         }
     }
@@ -556,7 +568,7 @@ const handleJoinMeeting = (response) => {
     // sessionStorage.setItem("callingType", "meetingCall")
 
     // 페이지 이동 (방입장)
-    commonStore.changeViewType(2);
+    commonStore.setChangeViewType(2);
     router.push("/call");
 };
 
@@ -588,6 +600,7 @@ function callingAccept(roomid, remotedeviceid) {
     // 페이지 이동 (방입장)
     sessionStorage.setItem("m_callWaiting", "false");
     router.push("/call");
+    commonStore.setChangeViewType(2);
 
     console.log("*** methods: callingAccept");
 }
@@ -604,15 +617,15 @@ onMounted(() => {
     sessionStorage.removeItem("m_remote_deviceid");
     commonStore.makeUserListStatus();
 
-    signallingSocket.on('createRoomID', handleCreateRoomID)
-    signallingSocket.on('calling', handleCalling)
-    signallingSocket.on('canMakeCall', handleCanMakeCall)
-    signallingSocket.on('groupRoom', handleGroupRoom)
-    signallingSocket.on('cancelCalling', handleCancelCalling)
-    signallingSocket.on('multiRefuseCalling', handleMultiRefuseCalling)
-    signallingSocket.on('inviteCancelCalling', handleInviteCancelCalling)
-    signallingSocket.on('openMeetingChecking', handleOpenMeetingChecking)
-    signallingSocket.on('joinMeeting', handleJoinMeeting)
+    signallingSocket.on("createRoomID", handleCreateRoomID);
+    signallingSocket.on("calling", handleCalling);
+    signallingSocket.on("canMakeCall", handleCanMakeCall);
+    signallingSocket.on("groupRoom", handleGroupRoom);
+    signallingSocket.on("cancelCalling", handleCancelCalling);
+    signallingSocket.on("multiRefuseCalling", handleMultiRefuseCalling);
+    signallingSocket.on("inviteCancelCalling", handleInviteCancelCalling);
+    signallingSocket.on("openMeetingChecking", handleOpenMeetingChecking);
+    signallingSocket.on("joinMeeting", handleJoinMeeting);
 });
 
 // 언마운트되기 전 실행할 작업

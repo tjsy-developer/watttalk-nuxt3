@@ -411,11 +411,11 @@ onMounted(() => {
             }
         });
         canvas.value.on("object:selected", (e) => {
-            disable(e);
+            disable();
             updateHistory(4);
         });
         canvas.value.on("object:modified", (e) => {
-            disable(e);
+            disable();
             updateHistory(5);
         });
         canvas.value.on("selection:created", (e) => {

@@ -63,12 +63,12 @@
             </div>
             <div
                 class="col-auto chattingBarNewMessageBoxContainer"
-                v-show="newMessageConfrim"
+                v-show="getNewMessageConfrim"
                 @click="newMessageConfirm()"
             >
                 <div
                     class="col-auto chattingBarNewBassageBox"
-                    :style="{ backgroundColor: !newEmergencyConfirm ? '#2386D2' : 'red' }"
+                    :style="{ backgroundColor: !getNewEmergencyConfirm ? '#2386D2' : 'red' }"
                 >
                     {{ t("신규 메시지가 존재합니다") }}
                 </div>
@@ -102,8 +102,8 @@ const newMessageConfirm = () => {
     if (scrollElement) {
         scrollElement.scrollTop = scrollElement.scrollHeight;
     }
-    chattingStore.newMessageConfrim(false);
-    chattingStore.newEmergencyConfirm(false);
+    chattingStore.setNewMessageConfrim(false);
+    chattingStore.setNewEmergencyConfirm(false);
 };
 
 const hostRequest = () => {
@@ -115,8 +115,8 @@ const setAllMicMuteStatus = (status) => {
 };
 
 const chattingMessageList = computed(() => chattingStore.chattingMessageList);
-const newMessageConfrim = computed(() => chattingStore.newMessageConfrim);
-const newEmergencyConfirm = computed(() => chattingStore.newEmergencyConfirm);
+const getNewMessageConfrim = computed(() => chattingStore.newMessageConfrim);
+const getNewEmergencyConfirm = computed(() => chattingStore.newEmergencyConfirm);
 const videoCallHost = computed(() => chattingStore.videoCallHost);
 const personnelInRoom = computed(() => chattingStore.personnelInRoom);
 const allMicMuteStatus = computed(() => callStore.allMicMuteStatus);
@@ -126,6 +126,9 @@ const micOnOffFlag = computed(() => callStore.micOnOffFlag);
 const callingType = computed(() => callStore.callingType);
 const accessDeviceCheck = computed(() => commonStore.accessDeviceCheck);
 
+watch(() => getNewMessageConfrim, () => {
+    
+})
 onMounted(() => {
 
     const scrollElement = document.getElementById("chattingBarMessageBoxScroll");
@@ -138,8 +141,8 @@ onMounted(() => {
             const scrollLocation = scrollHeight - clientHeight;
 
             if (scrollTop >= scrollLocation - 50) {
-                chattingStore.newMessageConfrim(false);
-                chattingStore.newEmergencyConfirm(false);
+                chattingStore.setNewMessageConfrim(false);
+                chattingStore.setNewEmergencyConfirm(false);
             }
         });
     }
@@ -158,16 +161,15 @@ onMounted(() => {
 .chat-container {
     display: flex;
     flex-direction: column;
-    flex: 282px;
+    flex: 0 0 282px;
     background-color: #323232;
 }
 .cancleCall {
     width: 100%;
-    /* $headerHeight would need to be a defined CSS variable or a static value if not using SASS compilation */
     height: var(
         --header-height,
         0
-    ); /* Example: using CSS custom property for dynamic headerHeight */
+    );
 }
 
 .chattingBarMessageBoxContainer {
@@ -188,7 +190,7 @@ onMounted(() => {
 
 .chattingBarMessageBoxScroll {
     overflow-y: auto;
-    height: inherit;
+    height: 100%;
 }
 
 .chatTopButtonsContainer > img {
@@ -221,7 +223,7 @@ onMounted(() => {
 }
 
 .chatTopButtons > span {
-    /* No specific styles defined here in your SASS */
+    word-break: keep-all;
 }
 
 .chatTopButtons > img {

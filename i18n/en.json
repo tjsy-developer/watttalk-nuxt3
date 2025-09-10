@@ -62,7 +62,7 @@
 	"environment NotRegistered": "Configuration information is not registered! Please contact the administrator!",
 	"environment relayServerNotInput": "Please input relay server information!",
 	"login Success": "login Success",
-	"Calling Alert Calling": "The other party is on the phone. <br> Please wait and walk again!",
+	"Calling Alert Calling": "The other party is on the phone. Please wait and walk again!",
 	"call Connecting": "Connecting a call...",
 	"call Unstable1": "Unstable transmission",
 	"call Unstable2": "Please wait.",

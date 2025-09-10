@@ -31,7 +31,7 @@
                     <div v-if="user.status == 1" class="user-status"></div>
                 </div>
                 <div class="hq-box">
-                    <span class="user-name">{{ user.nickname }}</span>
+                    <span class="user-name">{{ locale == 'ko' ? user.nickname: user.en_nickname || user.nickname }}</span>
                     <span>
                         {{ user.headquarters }}
                     </span>
@@ -88,7 +88,7 @@ import { storeToRefs } from "pinia";
 import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
 import ChatModal from "@/components/modal/ChatModal.vue";
 import { useNuxtApp } from "nuxt/app";
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
 
@@ -99,7 +99,7 @@ const directMessageStore = useDirectMessageStore();
 const meettingStore = useMeetingStore();
 
 const vfm = useVfm();
-const props = defineProps(['data', 'search']);
+const props = defineProps(["data", "search"]);
 
 const { contentsViewType } = storeToRefs(commonStore);
 
@@ -124,33 +124,41 @@ function handleMouseChatLeave(event) {
 }
 
 function requestCall(remoteDeviceId) {
-    alert(remoteDeviceId)
     if (!remoteDeviceId) return;
-    try {
-        modalStore.openModal("device", {
-            type: "request",
-            deviceId: remoteDeviceId,
-            requestCall: () => {
-                commonStore.setDeviceModifyState(false);
-                console.log("Call Request Success", contentsViewType.value);
-                if (contentsViewType.value == 2) {
-                    //@ts-ignore
-                    callStore.setInCallingFunctionParams(remoteDeviceId);
-                    //@ts-ignore
-                    callStore.setInCallingFunction("userStatusRequest");
-                } else {
-                    requestUserStatus(remoteDeviceId);
-                    modalStore.closeModal("notice");
-                }
-            },
-        });
-    } catch (error) {
-        console.log(error);
+
+    function calling() {
+        if (contentsViewType.value == 2) {
+            //@ts-ignore
+            callStore.setInCallingFunctionParams(remoteDeviceId);
+            //@ts-ignore
+            callStore.setInCallingFunction("userStatusRequest");
+        } else {
+            requestUserStatus(remoteDeviceId);
+            modalStore.closeModal("notice");
+        }
+    }
+
+    if (contentsViewType.value == 0) {
+        try {
+            modalStore.openModal("device", {
+                type: "request",
+                deviceId: remoteDeviceId,
+                requestCall: () => {
+                    commonStore.setDeviceModifyState(false);
+                    console.log("Call Request Success", contentsViewType.value);
+                    calling();
+                },
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    } else {
+        calling();
     }
 }
 
 function requestChat(remoteUser) {
-    const modalId = "chat-modal-" + remoteUser.deviceid
+    const modalId = "chat-modal-" + remoteUser.deviceid;
     if (vfm.get(modalId)) {
         vfm.open(modalId);
         return;

@@ -1077,7 +1077,7 @@
                     src="@/assets/images/calling/ic_antenna_5.png"
                 />
             </div>
-            <div v-if="antennaInfoStatus && antennaStatus" class="antennaDetailInfoBox">
+            <div v-if="antennaInfoStatus && antennaStatus && callingLayoutType == 1 && getMainVideoIdx == props.compData.userListIndex" class="antennaDetailInfoBox">
                 <div class="resolutionBox">
                     <span>Resolution :&nbsp;</span>
                     <span class="antennaDetailValue">{{ calcResolution }} <br /></span>
@@ -2434,7 +2434,6 @@ padding-right: 1px;
     display: flex;
     justify-content: center;
     z-index: 1;
-    position: relative;
     width: 100%;
     height: auto;
 }

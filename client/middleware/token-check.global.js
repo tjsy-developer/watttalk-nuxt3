@@ -2,13 +2,7 @@ import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { jwtDecode } from "jwt-decode";
 import { useRoute } from "vue-router";
-import CryptoJS from "crypto-js";
-function encryptData(data) {
-	return CryptoJS.AES.encrypt(
-		data,
-		"dsdfjsdl54sd5fsadfjdslksfd87513sdfsdfjkfdsjlk",
-	).toString();
-}
+import { useAuth } from "@/composables/useAuth";
 
 export default defineNuxtRouteMiddleware(async (to, path) => {
     if (process.server) return;
@@ -17,19 +11,26 @@ export default defineNuxtRouteMiddleware(async (to, path) => {
 	const tokenStore = useTokenStore();
 	const loginStore = useLoginStore();
 	let checkToken = route.query.jwt_token || tokenStore.accessToken;
-
-	try {
-        const { $axios } = useNuxtApp();
-        const res = await $axios.post("homeRest/tokenCheck", {
-            jwt: checkToken,
-		});
-        if (res.data) {
-            loginStore.setTokenResult(0);
+    const { verifyToken, encryptData, requestNewToken } = useAuth();
+    // const { t } = useI18n();
+    try {
+        const result = await verifyToken(checkToken);
+        if (result) {
+            const { $axios } = useNuxtApp();
+            const res = await $axios.post("homeRest/tokenCheck", {
+                jwt: checkToken,
+            });
+            if (res.data) {
+                loginStore.setTokenResult(0);
+            } else {
+                alert(t("loginResult NotValid"));
+                window.location.href = "http://localhost:8205";
+                return;
+            }
         } else {
-            alert("복호화 실패");
-            window.location.href = "http://localhost:8205";
-            return;
+            await requestNewToken(tokenStore.enRToken);
         }
+
     } catch (err) {
         console.log(err);
     }

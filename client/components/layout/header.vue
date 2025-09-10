@@ -25,7 +25,7 @@
                         class="dropdown-option"
                         :class="isOpenDisplay ? 'clicked' : ''"
                     >
-                        <img :src="headerImages.displayMode" />
+                        <img :src="headerImages.displayMode"/>
                         <div>
                             {{ t("화면스타일") }}
                         </div>
@@ -38,7 +38,7 @@
                                 class="dropdown-option"
                                 :class="{ active: $colorMode.preference === option.id }"
                             >
-                                <img :src="option.image" />
+                                <img :src="option.image" :alt="t(option.name)"/>
                                 <div>
                                     {{ t(option.name) }}
                                 </div>
@@ -63,7 +63,7 @@
                                 class="dropdown-option sub"
                                 :class="{ active: preprenceStore.lang === langOption.id }"
                             >
-                                <img :src="langOption.icon" />
+                                <img :src="langOption.icon" :alt="t(langOption.name)" />
                                 <div>
                                     {{ t(langOption.name) }}
                                 </div>
@@ -111,7 +111,8 @@ import { useLoginStore } from "@/stores/login";
 import { useCallStore } from "@/stores/call";
 import { useUserPreferenceStore } from "@/stores/common";
 const { $colorMode } = useNuxtApp();
-const { t } = useI18n();
+const { t, setLocale } = useI18n();
+const router = useRouter();
 const loginStore = useLoginStore();
 const callStore = useCallStore();
 const preprenceStore = useUserPreferenceStore();
@@ -151,8 +152,7 @@ function handleChangeDisplay(mode) {
 
 function handleChangeLanguage(lang) {
     preprenceStore.setLang(lang);
-    document.cookie = `i18n_redirected=${val};path=/`
-    useRouter().go(0)
+    setLocale(lang);
 }
 
 function logout() {

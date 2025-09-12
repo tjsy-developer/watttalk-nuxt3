@@ -54,9 +54,11 @@
     >
         <NoticeModal></NoticeModal>
     </VueFinalModal>
+    <dHeader></dHeader>
     <div class="content">
         <slot></slot>
     </div>
+    <sidebar></sidebar>
     <div id="toast">
         <img src="@/assets/images/calling/ic_alarm.png" style="margin-right: 10px" />
         <span></span>
@@ -169,10 +171,12 @@ onMounted(() => {
 <style lang="scss" scoped>
 .content {
     position: absolute;
+    left: 64px;
+    top: 50px;
     width: -webkit-fill-available;
     height: -webkit-fill-available;
-    max-width: 100vw;
-    max-height: 100vh;
+    max-width: calc(100vw - $sidebar-width);
+    max-height: calc(100vh - $header-height);
     @include tc(background-color, "bg-color");
 }
 

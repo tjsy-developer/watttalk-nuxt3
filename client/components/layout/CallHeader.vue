@@ -368,8 +368,8 @@ header {
     max-height: 80vh;
     padding: 41px 38px 8px 42px;
     z-index: 1;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    border-radius: 20px;
+    /* border-top-right-radius: 20px; */
     overflow-y: auto;
     position: absolute;
     right: 230px;
@@ -377,7 +377,7 @@ header {
     box-sizing: border-box;
     position: fixed;
     top: 50px;
-    right: 46px;
+    right: 169px;
     @include tc(background-color, "component-bg-color");
 }
 </style>

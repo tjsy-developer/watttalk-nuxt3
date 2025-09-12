@@ -2332,8 +2332,8 @@ onMounted(() => {
             // ksy:: 썸네일 이관이 끝나면 로딩바 제거
             loadingMaskDelete();
             nextTick(() => {
-                drawingStore.setCanvasHistoryFin(true)
-            })
+                drawingStore.setCanvasHistoryFin(true);
+            });
         }, 500);
     });
 
@@ -3555,40 +3555,33 @@ async function setAudioOutput() {
                 videoElement.removeAttribute("muted", false);
                 videoElement.muted = false;
                 try {
-                    await permanantAuido
-                        .setSinkId(audioOutID)
-                        .then(() => {
-                            console.log(
-                                `Success, audio output device attached: ${audioOutID}`,
-                            );
-                            videoElement.setAttribute("muted", "muted");
-                            videoElement.muted = "muted";
-                            permanantAuido.setAttribute("muted", false);
-                            permanantAuido.muted = false;
-                        })
-                        .catch((err) => {
-                            if (err.name === "SecurityError") {
-                                alert(
-                                    `You need to use https for selecting audio output device: ${err}`,
+                    if (
+                        permanantAuido &&
+                        permanantAuido.srcObject &&
+                        permanantAuido.srcObject.getAudioTracks().length > 0
+                    ) {
+                        await permanantAuido
+                            .setSinkId(audioOutID)
+                            .then(() => {
+                                console.log(
+                                    `Success, audio output device attached: ${audioOutID}`,
                                 );
-                            } else {
-                                console.log(`audio output change err: ${err}`);
-                                navigator.mediaDevices
-                                    .enumerateDevices()
-                                    .then((devices) => {
-                                        console.log(devices);
-                                        const audioList = devices.filter(
-                                            (device) => device.kind === "audiooutput",
-                                        );
-                                        const params = {
-                                            type: 0,
-                                            id: audioList[0].deviceId,
-                                        };
-                                        commonStore.setMediaDevices(params);
-                                        setAudioOutput();
-                                    });
-                            }
-                        });
+                                videoElement.muted = true;
+                                permanantAuido.muted = false;
+                            })
+                            .catch((err) => {
+                                if (err.name === "SecurityError") {
+                                    alert(
+                                        `You need to use https for selecting audio output device: ${err}`,
+                                    );
+                                } else {
+                                    console.log(`audio output change err: ${err}`);
+                                    // 여기서 재귀 호출 제거 또는 조건부 처리
+                                }
+                            });
+                    } else {
+                        console.log("No audio track, skip audio output change");
+                    }
                 } catch (err) {
                     console.log(err);
                     return;
@@ -3609,18 +3602,7 @@ async function setAudioOutput() {
         sfutest.unmuteAudio();
     }
 }
-// Login Request !!
-function loginRequest(localDeviceid) {
-    const obj = {
-        deviceid: localDeviceid,
-        connectStatus: 0,
-        language: m_lang,
-    };
 
-    const json = JSON.stringify(obj);
-    signallingSocket.emit("login", json);
-    // console.log("*** socket: emit login. " + json)
-}
 function createRoomRequest(deviceid, roomid, uniqueRoomid) {
     const obj = { deviceid, roomid, unique_roomid: uniqueRoomid };
     const json = JSON.stringify(obj);
@@ -3801,7 +3783,8 @@ function registerUsername() {
             request: "join",
             room: myroom.value, // 외부 변수 myroom의 .value 속성 접근
             ptype: "publisher",
-            display: (username || loginStore.nickname) + "#" + loginStore.m_local_deviceid, // 외부 변수 loginStore 접근
+            display:
+                (username || loginStore.nickname) + "#" + loginStore.m_local_deviceid, // 외부 변수 loginStore 접근
         };
         myusername.value = username || loginStore.nickname; // 외부 변수 myusername의 .value 속성 접근
 
@@ -4138,7 +4121,7 @@ function fileSend(result) {
     }
     // 수락했을 때
     else if (result == 3) {
-        console.log('파일수락 시 ', feeds.value, receiveFileResFlag.value)
+        console.log("파일수락 시 ", feeds.value, receiveFileResFlag.value);
         // 송신자가 보낸 파일을 수락 클릭했을 경우 송신자이름으로 index 조회- ksy
         const rfidIndex = findFeedsIndexNickname(
             receiveFileResFlag.value.selectedUserName,
@@ -6997,7 +6980,7 @@ function recentListAllRequest(localdeviceid) {
     const obj = {
         deviceid: localdeviceid,
         current_time: currentTime,
-        language: m_lang,
+        language: preferenceStore.lang,
     };
     const json = JSON.stringify(obj);
     signallingSocket.emit("lastCallTime", json);
@@ -7008,7 +6991,7 @@ function userListAllRequest(localDeviceid, enSeq) {
     const obj = {
         deviceid: localDeviceid,
         en_seq: enSeq,
-        language: m_lang,
+        language: preferenceStore.lang || "ko",
     };
     const json = JSON.stringify(obj);
     signallingSocket.emit("userListAll", json);
@@ -7204,7 +7187,7 @@ function previewModal(url) {
         key: `preview-modal-${commonStore.previewModalInfo.previewModalcnt + 1}`,
         attrs: {
             previewImage: url,
-            hideOverlay: true, 
+            hideOverlay: true,
             onClose: () => close(),
         },
     });
@@ -8495,14 +8478,22 @@ function getMeetingInfo(meetingSeq) {
     console.log("*** socket: emit getMeetingInfo");
     console.log(json);
 }
-function base64ToBlob(base64) {
-    const [prefix, base64Data] = base64.split(',');
-  
-    // 안전한 정규식: ; 전까지의 모든 문자만 캡처
-    const mimeMatch = prefix.match(/:([^;]+);/);
-    if (!mimeMatch) throw new Error('Invalid base64 string');
 
-    const mime = mimeMatch[1];
+function base64ToBlob(base64) {
+    const commaIndex = base64.indexOf(",");
+    if (commaIndex === -1) throw new Error("Invalid base64 string");
+
+    const prefix = base64.substring(0, commaIndex);
+    const base64Data = base64.substring(commaIndex + 1);
+
+    // 안전하게 MIME 타입 추출
+    const colonIndex = prefix.indexOf(":");
+    const semicolonIndex = prefix.indexOf(";", colonIndex + 1);
+    if (colonIndex === -1 || semicolonIndex === -1)
+        throw new Error("Invalid base64 string");
+
+    const mime = prefix.substring(colonIndex + 1, semicolonIndex);
+
     const byteString = atob(base64Data);
     const arrayBuffer = new ArrayBuffer(byteString.length);
     const uint8Array = new Uint8Array(arrayBuffer);
@@ -10314,7 +10305,7 @@ function sayHello() {
 
                                 $("#videolocal").css("border", "4px solid red");
                                 $("#videolocal").append(
-                                    '<video class="rounded centered" id="myvideo" width="100%" height="100%" autoplay playsinline muted="muted" />',
+                                    '<video class="rounded centered" id="myvideo"  height="100%" autoplay playsinline muted="muted" />',
                                 );
 
                                 // local 화면에서 video_change() EventListener 를 지정
@@ -12089,7 +12080,7 @@ watch(getCameraAllowedState, (newValue, oldValue) => {
 
 watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
     if (newValue) {
-        let receiveRejectFlag = ""
+        let receiveRejectFlag = "";
         for (let i = 0; i < commonStore.userListStatus.length; i++) {
             // flag를 설정한다.
             if (commonStore.userListStatus[i].status == "sending") {

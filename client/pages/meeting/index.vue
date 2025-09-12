@@ -132,6 +132,9 @@ const windowHeight = ref(null);
 const funcAutoCallAceept = ref(null);
 const checkOptions = ref("");
 
+definePageMeta({
+    layout: "waiting"
+});
 // 마운트될 때 실행할 작업
 onMounted(async () => {
     // Use `signallingSocket` directly. No `this.` prefix needed.
@@ -832,16 +835,14 @@ onMounted(async () => {
     });
 
     signallingSocket.on("sendEntryNotification", (response) => {
-        if (preferenceStore.useDirectCall) {
-            console.log("socket.on sendEntryNotification::", response);
-            const json = JSON.parse(response);
-            console.log(json);
-            console.log(json.member_name);
-            directCallStore.setDirectCallInfo(json);
+        console.log("socket.on sendEntryNotification::", response);
+        const json = JSON.parse(response);
+        console.log(json);
+        console.log(json.member_name);
+        directCallStore.setDirectCallInfo(json);
 
-            if (directCallStore.directcallList.length === 1) {
-                contentsBtnClick(8);
-            }
+        if (directCallStore.directcallList.length === 1) {
+            contentsBtnClick(8);
         }
     });
 
@@ -887,7 +888,6 @@ onBeforeUnmount(() => {
     signallingSocket.off("getPreviousMessage");
     signallingSocket.off("environment");
     signallingSocket.off("forceLogoutRequest");
-    signallingSocket.off("sendEntryNotification");
     console.log("*** onUnmounted: All socket event listeners removed.");
 });
 
@@ -1445,7 +1445,7 @@ watch(getMeetingOpenFlag, (newVal) => {
 // Watch for meeting join flag
 watch(getMeetingJoinFlag, (newVal) => {
     if (newVal) {
-        const obj = { meeting_seq: meetingSeq.value };
+        const obj = { meeting_seq: meetingStore.meetingSeq };
         const json = JSON.stringify(obj);
         signallingSocket.emit("openMeetingChecking", json);
         console.log("*** socket.emit: openMeetingChecking emit : " + json);

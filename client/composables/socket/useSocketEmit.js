@@ -8,6 +8,7 @@ import { useMeetingStore } from "@/stores/meeting";
 import { userDataGetInfo } from "../common";
 import { useSignallingSocket } from "./useSignallingSocket";
 import { useDirectMessageStore } from "@/stores/directMessage";
+import { useCallStore } from "@/stores/call";
 
 const statusCode = {
     Unauthorized: 0,
@@ -24,6 +25,7 @@ export default function useSocketEmitEvents() {
     const preperenceStore = useUserPreferenceStore();
     const meetingStore = useMeetingStore();
     const directMessageStore = useDirectMessageStore();
+    const callStore = useCallStore();
 
     const requestCreateFixRoomID = () => {
         const json = {
@@ -48,10 +50,10 @@ export default function useSocketEmitEvents() {
         signallingSocket.emit("environment", JSON.stringify(json));
     };
 
-    const requestUserListAll = () => {
+    const requestUserListAll = (deviceId, enSeq) => {
         const json = {
-            deviceid: loginStore.m_local_deviceid,
-            en_seq: loginStore.sessionEnSeq,
+            deviceid: deviceId || loginStore.m_local_deviceid,
+            en_seq: enSeq || loginStore.sessionEnSeq,
             language: preperenceStore.lang,
         };
         console.log(json);
@@ -95,7 +97,7 @@ export default function useSocketEmitEvents() {
         try {
             const json = {
                 deviceid: loginStore.m_local_deviceid,
-                sendDurationEnable: preperenceStore.recordingStatus,
+                sendDurationEnable: callStore.sendDurationEnable,
             };
             signallingSocket.emit("createRoomID", JSON.stringify(json));
         } catch (error) {}

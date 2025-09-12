@@ -60,7 +60,7 @@
                     class="col text-left videoNameSpan"
                 ></span>
             </div>
-            <div id="videoMainDiv" style="aspect-ratio: 16 / 9.14" class="justify-center">
+            <div id="videoMainDiv" class="justify-center" :class="drawingIframe ? 'drawing': ''">
                 <div
                     :class="[drawingIframe ? 'screen-draw' : 'screen-video']"
                     id="panel-inner-main"
@@ -80,7 +80,7 @@
                         :style="{ height: !drawingIframe ? '100%' : '', maxHeight: '' }"
                         id="videoMain"
                         style="
-                            aspect-ratio: 16 / 9.14;
+                            aspect-ratio: 16 / 9;
                             height: 100%;
                             position: absolute;
                             top: 0px;
@@ -1703,7 +1703,13 @@ $windowInfoBarHeight: 30px;
         overflow: hidden;
     }
 }
-
+ 
+#videoMainDiv {
+    height: -webkit-fill-available;
+}
+#videoMainDiv.drawing {
+    height: calc(100% - 94px);
+}
 .mainVideoBorder {
     border: 3px solid #fff;
     box-sizing: border-box;
@@ -1781,7 +1787,7 @@ padding-right: 1px;
 .receiveBackground,
 .otherBackground {
     width: 100% !important;
-    // aspect-ratio: 16 / 9.14
+    // aspect-ratio: 16 / 9
     height: 100%;
     max-width: inherit !important;
     max-height: inherit;
@@ -2015,6 +2021,7 @@ padding-right: 1px;
 
 .videoMainDivWrap {
     width: inherit;
+    height: inherit;
     .nickname {
         bottom: 3px;
         padding-left: 4px;

@@ -14,6 +14,10 @@
 				<p>{{ t("prepareThumbnailTransfer1") }}</p>
 				<p>{{ t("prepareThumbnailTransfer2") }}</p>
 			</div>
+			<div v-else-if="props.maskLoadingType == 'noneMemberSignup'">
+				<p>{{ t("비회원 가입을 진행하고 있습니다") }}</p>
+				<p>{{ t("잠시만 기다려주세요") }}</p>
+			</div>
 		</div>
 
     </VueFinalModal>

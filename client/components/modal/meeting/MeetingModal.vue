@@ -42,9 +42,6 @@
                         >
                             <button
                                 class="memberBtn"
-                                :style="{
-                                    transform: dropdown ? 'rotate(180deg)' : '',
-                                }"
                             >
                                 &#x25BC;
                             </button>
@@ -327,7 +324,6 @@
                             class="memberBtn"
                             v-if="openMember"
                             @click="memberClick"
-                            style="transform: rotate(180deg)"
                         >
                             &#x25BC;
                         </button>
@@ -899,6 +895,7 @@ const saveMeeting = async (modifyOnOff) => {
         return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
     }
     function formatToKoreanTime(value) {
+        console.log(typeof value, value)
         if (typeof value === "String" && value.includes("T")) {
             const date = new Date(value);
 
@@ -906,16 +903,14 @@ const saveMeeting = async (modifyOnOff) => {
             const hh = String(date.getHours()).padStart(2, "0");
             const mm = String(date.getMinutes()).padStart(2, "0");
             return `${hh}:${mm}`;
-        } else if (typeof value === "object") {
+        } else if (value && typeof value === "object") {
             const hh = String(value.hours).padStart(2, "0");
             const mm = String(value.minutes).padStart(2, "0");
             return `${hh}:${mm}`;
         }
 
         // 단순 시간 "HH:mm" 형태일 경우 그대로 리턴
-        if (/^\d{2}:\d{2}$/.test(value)) {
-            return value;
-        }
+        return value
     }
 
     const titleVal = meetingTitle.value;
@@ -1069,6 +1064,7 @@ const saveMeeting = async (modifyOnOff) => {
     meetingStore.meetingMemberEmailDeleteAll();
     meetingStore.emailDeleteAll();
     meetingStore.saveBtnClick(false);
+    emit('close')
 };
 
 const modifyMeeting = () => {

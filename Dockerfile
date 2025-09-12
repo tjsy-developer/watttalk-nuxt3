@@ -13,10 +13,11 @@ WORKDIR $APP_DIR
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY nuxt.config.ts ./
-# COPY i18n.config.ts ./
 COPY app.vue ./
 COPY client ./client
 COPY configs ./configs
+COPY config ./config
+COPY i18n ./i18n
 COPY nuxt_configs ./nuxt_configs
 COPY .env .env
 
@@ -37,3 +38,4 @@ RUN npm install
 RUN npm run build
 
 CMD ["npm", "start"]
+# CMD ["node", ".output/server/index.mjs"]

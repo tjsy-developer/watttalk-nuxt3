@@ -1,5 +1,12 @@
 <template>
-    <div class="chat-container">
+    <div class="chat-container" :class="!isShowChatBar ? 'hidden': ''">
+        <button class="slide-btn" @click="isShowChatBar = !isShowChatBar">
+            <img src="@/assets/images/calling/right_bt_default.png">
+            <img v-if="callStore.underStatus == 0" src="@/assets/images/calling/ic_right_20.png" class="chat-status arrow" :class="!isShowChatBar ? 'hidden': ''">
+            <img v-if="callStore.underStatus == 1" src="@/assets/images/calling/ic_call_20.png" class="chat-status">
+            <img v-if="callStore.underStatus == 2" src="@/assets/images/calling/ic_file_20.png" class="chat-status">
+            <img v-if="callStore.underStatus == 3" src="@/assets/images/calling/ic_text.png" class="chat-status">
+        </button>
         <div
             class="column content-start layout"
         >
@@ -96,6 +103,7 @@ const callStore = useCallStore();
 const commonStore = useCommonStore();
 
 const headerHeight = ref(0);
+const isShowChatBar = ref(true);
 
 const newMessageConfirm = () => {
     const scrollElement = document.getElementById("chattingBarMessageBoxScroll");
@@ -158,12 +166,27 @@ onMounted(() => {
         color: #fff;
     }
 }
+
 .chat-container {
     display: flex;
     flex-direction: column;
     flex: 0 0 282px;
     background-color: #323232;
+    position: relative;
+    transform: translateX(0);
+    opacity: 1;
 }
+
+.chat-container.hidden {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateX(285px);
+    opacity: 1;
+    flex: 0;
+    > div {
+        display: none;
+    }
+}
+
 .cancleCall {
     width: 100%;
     height: var(
@@ -240,4 +263,25 @@ onMounted(() => {
     display: flex;
     width: max-content;
 }
+.slide-btn {
+    position: absolute;
+    top: 50%;
+    right: 254px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 1;
+}
+
+.chat-status {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+}
+.chat-status.arrow {
+    transform: rotate(0deg);
+}
+.chat-status.arrow.hidden {
+    transform: rotate(180deg);
+}
+
 </style>

@@ -60,7 +60,6 @@ export default defineNuxtConfig({
         "@/plugins/janus.client",
         "@/plugins/initPreperence.client",
         "@/plugins/vue-final-modal",
-        // "@/plugins/i18next.client",
         "@/plugins/pdfjs.client",
     ],
     modules: [

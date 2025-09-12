@@ -1,8 +1,5 @@
 <template>
-    <div
-        class="thumbnail"
-        style="width: 100%; display: flex; right: 27px"
-    >
+    <div class="thumbnail" style="width: 100%; display: flex; right: 27px">
         <div id="thumbBody" class="thumbBody row items-center no-wrap">
             <div
                 v-if="files.length === 0"
@@ -144,19 +141,13 @@
 
         <div class="clearThumb">
             <div class="column thumbnailOptions">
-                <button
-                    class="addCanvas"
-                    @click="newCanvasAdd"
-                >
+                <button class="addCanvas" @click="newCanvasAdd">
                     <img
                         src="@/assets/images/callAttachment/ic_add.png"
                         alt="Add new canvas"
                     />
                 </button>
-                <button
-                    class="clearThumbnail"
-                    @click="clearThumbnail"
-                >
+                <button class="clearThumbnail" @click="clearThumbnail">
                     <img
                         src="@/assets/images/callAttachment/ic_all_delete.png"
                         alt="Clear all thumbnails"
@@ -173,7 +164,7 @@ import { useCallStore } from "@/stores/call";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
 const { t } = useI18n();
-import lodash from "lodash"
+import lodash from "lodash";
 import { useNuxtApp } from "nuxt/app";
 
 const drawingStore = useDrawingCanvasStore();
@@ -277,7 +268,7 @@ const fileClick = (e, type) => {
     // console.log("files.value History", canvasHistory.value.currentStateIndex)
     if (files.value[e].type == "img") {
         console.log("fileClick start, file.type == img");
-        console.log('여기2')
+        console.log("여기2");
         drawingStore.setCanvasHistory(files.value[e].history);
 
         if (canvasHistory.value.state.length > 0) {
@@ -322,7 +313,7 @@ const fileClick = (e, type) => {
             drawingStore.setHistorySplice(e);
         }
         // <-
-        console.log('여기3')
+        console.log("여기3");
         drawingStore.setCanvasHistory(files.value[e].history);
         // 최종 console.log("fileClick drawingStore.setCanvasHistory = ", files.value[e].history)
 
@@ -330,7 +321,7 @@ const fileClick = (e, type) => {
         // console.log("*******##** fileClick Test: #8")
     } else if (files.value[e].type == "canvas") {
         // 최종 console.log("fileClick quarter file.type == canvas")
-        console.log('여기4')
+        console.log("여기4");
         drawingStore.setCanvasHistory(files.value[e].history);
         if (canvasHistory.value.state.length > 0) {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
@@ -481,7 +472,7 @@ const pdfClick = (fileKey, pdfKey) => {
                 firstState: canvasAsJson,
             });
             // console.log("pdfClick if 문", files.value[fileKey].pdf[pdfKey].history)
-            console.log('여기5')
+            console.log("여기5");
             drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
                 setRemoveDuplicates(
@@ -499,7 +490,7 @@ const pdfClick = (fileKey, pdfKey) => {
     } else {
         // console.log("pdfClick else 문", files.value[fileKey].pdf[pdfKey].history, canvasHistory.value.currentStateIndex)
         // console.log(files.value[fileKey].pdf[pdfKey].history)
-        console.log('여기6')
+        console.log("여기6");
         drawingStore.setCanvasHistory(files.value[fileKey].pdf[pdfKey].history);
         // console.log(canvasHistory.value.state[canvasHistory.value.currentStateIndex])
         canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
@@ -566,7 +557,7 @@ const canvasImgChange = (num, beforeSuperIndex, type) => {
 const eachCanvasDelete = (e, pdfKey, group) => {
     if (!isPdfUploading.value) {
         if (files.value[e - 1].type != "pdf") {
-            console.log('fileClick 1')
+            console.log("fileClick 1");
             fileClick(e - 1);
             isDelete.value = true;
             let deleteIndex = null;
@@ -845,65 +836,62 @@ const getLastCanvasInfo = computed(() => {
 // });
 
 // files 감시 (배열 전체 변경 감지)
-watch(
-    files,
-    (newFiles) => {
-        const beforeCount = filesNumCount.value; // ref 접근 시 .value
-        filesNumCount.value = newFiles.length; // ref 접근 시 .value
-        const beforeWidth = thumbnailWidth.value; // ref 접근 시 .value
+watch(files, (newFiles) => {
+    const beforeCount = filesNumCount.value; // ref 접근 시 .value
+    filesNumCount.value = newFiles.length; // ref 접근 시 .value
+    const beforeWidth = thumbnailWidth.value; // ref 접근 시 .value
 
-        if (filesNumCount.value == 1) {
-            drawingStore.setThumbnailWidth(148);
-        }
+    if (filesNumCount.value == 1) {
+        drawingStore.setThumbnailWidth(148);
+    }
 
-        for (let i = 0; i < newFiles.length; i++) {
-            // superIndex는 drawingStore.index로 가정합니다.
-            if (index.value - 1 == newFiles[i].index) {
-                // ref 접근 시 .value
-                drawingStore.setSelectedFileIndex(i);
-                break;
-            }
-        }
-
-        if (canvas.value != null) {
+    for (let i = 0; i < newFiles.length; i++) {
+        // superIndex는 drawingStore.index로 가정합니다.
+        if (index.value - 1 == newFiles[i].index) {
             // ref 접근 시 .value
-            let fileType = "canvas";
-
-            if (beforeSelectedState.value) {
-                // ref 접근 시 .value
-                fileType = newFiles[selectedFileIndex.value].type; // ref 접근 시 .value
-            } else {
-                fileType = newFiles[newFiles.length - 1].type;
-            }
-
-            if (fileType != "pdf") {
-                drawingStore.setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
-                if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
-                    // ref 접근 시 .value
-                     console.log('fileClick 2')
-                    fileClick(newFiles.length - 1);
-                }
-                const scrollElement = document.getElementById("thumbBody");
-                if (scrollElement) {
-                    setTimeout(() => {
-                        scrollElement.scrollLeft = scrollElement.scrollWidth;
-                    }, 50);
-                }
-            } else {
-                drawingStore.setThumbnailWidth(thumbnailWidth.value + 32); // ref 접근 시 .value
-                nextTick(() => {
-                    // $nextTick 대신 nextTick 사용
-                    // this.pdfClick(this.files.length - 1, 0)
-                    // isDelete는 어디서 오는지 불분명하여 추정해서 추가하거나 제거해야 합니다.
-                    // if (!isDelete.value && beforeCount < filesNumCount.value) {
-                    //   // console.log("OPEN PDF", newFiles.length - 1, newFiles[newFiles.length - 1].group)
-                    //   // None
-                    // }
-                });
-            }
+            drawingStore.setSelectedFileIndex(i);
+            break;
         }
     }
-); // files 배열 내부의 변경도 감지하기 위해 deep 옵션 추가
+
+    if (canvas.value != null) {
+        // ref 접근 시 .value
+        let fileType = "canvas";
+
+        if (beforeSelectedState.value) {
+            // ref 접근 시 .value
+            fileType = newFiles[selectedFileIndex.value].type; // ref 접근 시 .value
+        } else {
+            fileType = newFiles[newFiles.length - 1].type;
+        }
+
+        if (fileType != "pdf") {
+            drawingStore.setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
+            if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
+                // ref 접근 시 .value
+                console.log("fileClick 2");
+                fileClick(newFiles.length - 1);
+            }
+            const scrollElement = document.getElementById("thumbBody");
+            if (scrollElement) {
+                setTimeout(() => {
+                    scrollElement.scrollLeft = scrollElement.scrollWidth;
+                }, 50);
+            }
+        } else {
+            drawingStore.setThumbnailWidth(thumbnailWidth.value + 32); // ref 접근 시 .value
+            nextTick(() => {
+                // $nextTick 대신 nextTick 사용
+                // this.pdfClick(this.files.length - 1, 0)
+                // isDelete는 어디서 오는지 불분명하여 추정해서 추가하거나 제거해야 합니다.
+                // if (!isDelete.value && beforeCount < filesNumCount.value) {
+                //   // console.log("OPEN PDF", newFiles.length - 1, newFiles[newFiles.length - 1].group)
+                //   // None
+                // }
+            });
+        }
+    }
+}); // files 배열 내부의 변경도 감지하기 위해 deep 옵션 추가
 
 // src 감시
 watch(src, (newVal) => {
@@ -1098,7 +1086,7 @@ watch(isDrawing, (newVal) => {
             console.log("beforeSelectedState:", beforeSelectedState.value); // ref 접근 시 .value
             if (beforeSelectedState.value) {
                 // ref 접근 시 .value
-                 console.log('fileClick 3')
+                console.log("fileClick 3");
                 fileClick(selectedFileIndex.value); // ref 접근 시 .value
                 console.log(
                     "this.fileClick(this.selectedFileIndex) - isDrawing type image",
@@ -1132,7 +1120,7 @@ watch(beforeThumbnailTransfer, async (newVal) => {
             // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
-                 console.log('fileClick 4')
+                console.log("fileClick 4");
                 await fileClick(selectedFileIndex.value); // ref 접근 시 .value
                 drawingStore.setBeforeThumbnailTransfer(false);
             } else {
@@ -1152,7 +1140,7 @@ watch(beforeCloseCanvas, (newVal) => {
             drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
-                 console.log('fileClick 5')
+                console.log("fileClick 5");
                 fileClick(selectedFileIndex.value); // ref 접근 시 .value
             } else {
                 pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
@@ -1192,7 +1180,7 @@ watch(lastCanvasSeted, async (res) => {
     // computed의 getLastCanvasInfo가 아닌, state의 lastCanvasSeted를 직접 감시하는 것으로 가정
     if (res) {
         drawingStore.setCanvasHistoryFin(false);
-         console.log('fileClick 6')
+        console.log("fileClick 6");
         await fileClick(selectedFileIndex.value); // ref 접근 시 .value
     }
 });
@@ -1301,198 +1289,200 @@ onUnmounted(() => {
 </script>
 <style lang="scss" scoped>
 .thumbnail {
-  height: 94px;
+    height: 94px;
 
-  &::-webkit-scrollbar {
-    width: 7px;
-    height: 3px;
-  }
+    &::-webkit-scrollbar {
+        width: 7px;
+        height: 3px;
+    }
 }
 
 .thumbBody {
     width: inherit;
-  height: 94px;
-  // margin-left: 93px;
-  border-top-left-radius: 7px;
-  border-bottom-left-radius: 7px;
-  opacity: 0.9;
-  overflow-x: auto;
-      background: #3c3c3c 0 0 no-repeat padding-box;
+    height: 94px;
+    // margin-left: 93px;
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+    opacity: 0.9;
+    overflow-x: auto;
+    background: #3c3c3c 0 0 no-repeat padding-box;
     border: 2px solid #3e3e3e;
 }
 
 .emptyFile {
-  width: 100%;
-  height: 100%;
-  font: normal normal bold 14px/16px NanumSquare;
+    width: 100%;
+    height: 100%;
+    font: normal normal bold 14px/16px NanumSquare;
 }
 
 .filesBox {
-  margin-left: 12px;
+    margin-left: 12px;
 
-  > div {
-    > button {
-      /* width: 132px; */
-      height: 74px;
-      border-radius: 7px;
-      -moz-border-radius: 7px;
-      -khtml-border-radius: 7px;
-      -webkit-border-radius: 7px;
-      padding: 0;
+    > div {
+        > button {
+            width: 118px;
+            height: 74px;
+            border-radius: 7px;
+            -moz-border-radius: 7px;
+            -khtml-border-radius: 7px;
+            -webkit-border-radius: 7px;
+            padding: 0;
+            position: relative;
+            cursor: pointer;
+        }
     }
-  }
 }
 
 .filesList {
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -khtml-border-radius: 7px;
-  -webkit-border-radius: 7px;
-
-  .thumbnailImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     border-radius: 7px;
     -moz-border-radius: 7px;
     -khtml-border-radius: 7px;
     -webkit-border-radius: 7px;
-  }
 
-  .thumbnailType {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-  }
+    .thumbnailImg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 7px;
+        -moz-border-radius: 7px;
+        -khtml-border-radius: 7px;
+        -webkit-border-radius: 7px;
+    }
+
+    .thumbnailType {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
 }
 
 .canvasPageBtn {
-  height: 100%;
-  margin-right: 10px;
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -khtml-border-radius: 7px;
-  -webkit-border-radius: 7px;
+    height: 100%;
+    margin-right: 10px;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    -webkit-border-radius: 7px;
 }
 
 .thumbnailOptions {
-  height: 94px;
+    height: 94px;
 }
 
 .clearThumb {
     background: #4e4e4e;
     border: 2px solid #3e3e3e;
-    display: flex    ;
+    display: flex;
     flex-direction: column;
     border-radius: 2px;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
 }
 .clearThumbnail {
-  width: 32px;
-  border-bottom-right-radius: 7px;
+    width: 32px;
+    border-bottom-right-radius: 7px;
 }
 
 .addCanvas {
-  width: 32px;
-  height: 50px;
-  border-top-right-radius: 7px;
+    width: 32px;
+    height: 50px;
+    border-top-right-radius: 7px;
 }
 
 .pdfPagesNum {
-  position: absolute;
-  bottom: 3px;
-  left: 45px;
-  width: 37px;
-  height: 12px;
-  border-radius: 7px;
-  font: normal normal bold 10px/12px NanumSquare;
+    position: absolute;
+    bottom: 3px;
+    left: 45px;
+    width: 37px;
+    height: 12px;
+    border-radius: 7px;
+    font: normal normal bold 10px/12px NanumSquare;
 }
 
 .eachDeleteBtn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }
 
 .pdfCanvasPage {
-  height: 100%;
-  width: 32px;
-  height: 83.2px;
-  border-radius: 5px;
+    height: 100%;
+    width: 32px;
+    height: 83.2px;
+    border-radius: 5px;
 
-  > img {
-    padding-left: 4px;
-    padding-right: 10px;
-    // width: 32px;
-  }
+    > img {
+        padding-left: 4px;
+        padding-right: 10px;
+        // width: 32px;
+    }
 
-  > button {
-    width: 132px;
-    height: 74px;
-  }
+    > button {
+        width: 132px;
+        height: 74px;
+    }
 }
 
 .pdfImg {
-  width: 132px;
-  height: 74px;
-  object-fit: cover;
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -khtml-border-radius: 7px;
-  -webkit-border-radius: 7px;
+    width: 132px;
+    height: 74px;
+    object-fit: cover;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    -webkit-border-radius: 7px;
 }
 
 .pdfOpenClose {
-  width: 14px;
-  height: 40px;
-  border-top-right-radius: 250px 150px;
-  border-bottom-right-radius: 250px 150px;
+    width: 14px;
+    height: 40px;
+    border-top-right-radius: 250px 150px;
+    border-bottom-right-radius: 250px 150px;
 
-  > img {
-    width: 12px;
-    height: 12px;
-  }
+    > img {
+        width: 12px;
+        height: 12px;
+    }
 }
 
 .pdfList {
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -khtml-border-radius: 7px;
-  -webkit-border-radius: 7px;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    -webkit-border-radius: 7px;
 }
 
 .pdfPagesInfo {
-  width: 130px;
-  height: 23px;
-  bottom: 0px;
-  left: 1px;
-  position: absolute;
-  border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
+    width: 130px;
+    height: 23px;
+    bottom: 0px;
+    left: 1px;
+    position: absolute;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
 
-  .pdfName {
-    display: inline-block;
-    padding-left: 8px;
-    width: 70%;
-    font: normal normal normal 14px/16px NanumSquare;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+    .pdfName {
+        display: inline-block;
+        padding-left: 8px;
+        width: 70%;
+        font: normal normal normal 14px/16px NanumSquare;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-  .pdfPageNum {
-    padding-right: 7px;
-    font: normal normal bold 10px/12px NanumSquare;
-  }
+    .pdfPageNum {
+        padding-right: 7px;
+        font: normal normal bold 10px/12px NanumSquare;
+    }
 }
 
 .pdfCanvasWrap {
-  margin-right: 10px;
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -khtml-border-radius: 7px;
-  -webkit-border-radius: 7px;
+    margin-right: 10px;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    -webkit-border-radius: 7px;
 }
 
 .selectedThumbnail {

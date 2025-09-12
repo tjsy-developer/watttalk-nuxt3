@@ -256,6 +256,17 @@ export function bindSocketEvents() {
         }
     }
 
+    function handleSendEntryNotification(response) {
+        console.log("socket.on sendEntryNotification::", response);
+        const json = JSON.parse(response);
+        console.log(json);
+        directCallStore.setDirectCallInfo(json);
+
+        if (directCallStore.directcallList.length === 1) {
+            commonStore.setAlert(8);
+        }
+    }
+
     // ---------- Binding ----------
     signallingSocket.on("userListAll", handleUserListAll);
     signallingSocket.on("lastCallTime", handleLastCallTime);
@@ -266,6 +277,7 @@ export function bindSocketEvents() {
     signallingSocket.on("directMessage", handleDirectMessage);
     signallingSocket.on("directMessageReadProcess", handleDirectMessageReadProcess);
     signallingSocket.on("getPreviousMessage", handlePreviousMessage);
+    signallingSocket.on("sendEntryNotification", handleSendEntryNotification);
 
     // ---------- Unbinder ----------
     return () => {
@@ -278,5 +290,6 @@ export function bindSocketEvents() {
         signallingSocket.off("directMessage", handleDirectMessage);
         signallingSocket.off("directMessageReadProcess", handleDirectMessageReadProcess);
         signallingSocket.off("getPreviousMessage", handlePreviousMessage);
+        signallingSocket.off("sendEntryNotification", handleSendEntryNotification);
     };
 }

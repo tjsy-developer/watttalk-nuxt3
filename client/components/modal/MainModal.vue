@@ -210,7 +210,6 @@ import { useMeetingStore } from "@/stores/meeting";
 import { useModal, VueFinalModal } from "vue-final-modal";
 import { useLoginStore } from "@/stores/login";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
-import { emitter } from "@/utils/eventBus";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const { t } = useI18n();
@@ -241,28 +240,28 @@ onMounted(() => {
         firstEntry();
     }
 
-    emitter.on("openMeetingChecking", (response) => {
+    signallingSocket.on("openMeetingChecking", (response) => {
         console.log("*** socket.on: openMeetingChecking res = ", response);
-        const json = response;
+        const json = JSON.parse(response);
         console.log("*** socket.on: json = ", json);
         if (json.start_status == 0) {
             if (json.everyone_start_yn == 1) {
-                this.openMeeting(json.unique_roomid);
+                meetingStore.setMeetingSeq(directcallSeq.value)
+                callStore.setUniqueRoomid(json.unique_roomid)
+                requestCreateRoomID(json.unique_roomid);
                 this.$store.commit("directcall/clearDirectCallInfo");
             } else {
-                alert("noneOverlayModal 6");
-                // this.noneOverlayModal(6)
+                noneOverlayModal(6)
             }
         } else if (json.start_status == 1) {
+            callStore.setUniqueRoomid(json.unique_roomid)
             requestJoinMeeting({
-                meetingSeq: meetingSeq,
+                meetingSeq: directcallSeq.value,
                 roomID: json.roomid,
                 uniqueRoomID: json.unique_roomid,
             });
         } else if (json.start_status == 3) {
-            console.log("회의실이 삭제되어있다.");
-            alert("noneOverlayModal 6");
-            // this.noneOverlayModal(8)
+            noneOverlayModal(8)
         }
     });
 });
@@ -342,14 +341,12 @@ function firstEntry() {
     const res = directCallStore.directcallList;
     const index = res.length - 1;
     directcallTxt.value =
-        res[index].member_name +
-        t("님이") +
-        res[index].subject +
-        t("회의를 시작했습니다");
+        `${res[index].member_name} ${t("님이")} ${res[index].subject} ${t("회의를 시작했습니다")}`;
     directcallSeq.value = res[index].meeting_seq;
 }
 
 function checkMediaDevice(type) {
+    alert(type)
     if (getCookie("closeDeviceModalPermanant") == "true") {
         deviceSettingFin(type);
     } else {
@@ -436,6 +433,7 @@ onBeforeUnmount(() => {
     color: #fff;
     text-align: center;
     line-height: 1.5;
+    font-size: 17px;
 }
 
 .button-container {

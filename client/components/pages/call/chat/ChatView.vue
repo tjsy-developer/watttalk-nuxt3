@@ -330,6 +330,7 @@ onMounted(() => {
     color: #fff;
     background-color: #474b4e;
     border: 1px solid #5d5d5d;
+    margin-top: 7px;
     > span {
         white-space: pre-line;
     }

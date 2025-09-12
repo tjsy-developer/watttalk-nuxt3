@@ -628,7 +628,8 @@ const toolClick = (tool) => {
         if (nowTool.value === "group") {
             return groupActiveObjects();
         }
-        canvas.value.discardActiveObject().renderAll();
+        canvas.value.discardActiveObject();
+        canvas.value.renderAll();
         canvas.value.forEachObject((object) => {
             object.selectable = false;
         });
@@ -722,13 +723,25 @@ const subMenuClick = (subMenu, tool) => {
         if (tool.type === "layer") {
             selectionMode(false);
             if (subMenu.value === "F") {
-                canvas.value.bringToFront(canvas.value.getActiveObjects());
+                canvas.value.getActiveObjects().forEach((obj) => {
+                    canvas.value.bringToFront(obj);
+                });
+                // canvas.value.bringToFront(canvas.value.getActiveObjects());
             } else if (subMenu.value === "f") {
-                canvas.value.bringForward(canvas.value.getActiveObjects());
+                canvas.value.getActiveObjects().forEach((obj) => {
+                    canvas.value.bringForward(obj);
+                });
+                // canvas.value.bringForward(canvas.value.getActiveObjects());
             } else if (subMenu.value === "B") {
-                canvas.value.sendToBack(canvas.value.getActiveObjects());
+                canvas.value.getActiveObjects().forEach((obj) => {
+                    canvas.value.sendToBack(obj);
+                });
+                // canvas.value.sendToBack(canvas.value.getActiveObjects());
             } else if (subMenu.value === "b") {
-                canvas.value.sendBackwards(canvas.value.getActiveObjects());
+                canvas.value.getActiveObjects().forEach((obj) => {
+                    canvas.value.sendBackwards(obj);
+                });
+                // canvas.value.sendBackwards(canvas.value.getActiveObjects());
             }
             toolClick(tools.value[10]);
         }
@@ -916,26 +929,25 @@ const drawArrow = (e) => {
 const drawSquare = (e) => {
     if (!canvas.value) return;
     selectionMode(false);
+
     if (isDrawing.value) {
         if (e) {
             pointer.value = canvas.value.getPointer(e.e);
             if (rect.value) {
+                // X 좌표가 왼쪽으로 갔을 경우 left 재조정
                 if (origX.value > pointer.value.x) {
-                    rect.value.set({
-                        left: Math.abs(pointer.value.x),
-                    });
-                }
-                if (origY.value > pointer.value.y) {
-                    rect.value.set({
-                        left: Math.abs(pointer.value.y),
-                    });
+                    rect.value.set({ left: pointer.value.x });
                 }
 
+                // Y 좌표가 위쪽으로 갔을 경우 top 재조정
+                if (origY.value > pointer.value.y) {
+                    rect.value.set({ top: pointer.value.y });
+                }
+
+                // width / height 계산
                 rect.value.set({
                     width: Math.abs(origX.value - pointer.value.x),
-                });
-                rect.value.set({
-                    width: Math.abs(origY.value - pointer.value.y),
+                    height: Math.abs(origY.value - pointer.value.y),
                 });
             }
 
@@ -949,19 +961,21 @@ const drawSquare = (e) => {
         pointer.value = canvas.value.getPointer(e.e);
         origX.value = pointer.value.x;
         origY.value = pointer.value.y;
+
         rect.value = new fabric.Rect({
             left: origX.value,
             top: origY.value,
             originX: "left",
             originY: "top",
-            width: pointer.value.x - origX.value,
-            height: pointer.value.y - origY.value,
-            stroke: tools.value[14].selected,
-            strokeWidth: tools.value[3].selected,
+            width: 0,
+            height: 0,
+            stroke: tools.value[14].selected, // 선 색상
+            strokeWidth: tools.value[3].selected, // 선 두께
             angle: 0,
             transparentCorners: false,
-            fill: "#00000000",
+            fill: "#00000000", // 투명 배경
         });
+
         canvas.value.add(rect.value);
     }
 };
@@ -969,32 +983,23 @@ const drawSquare = (e) => {
 const drawCircle = (e) => {
     if (!canvas.value) return;
     selectionMode(false);
+
     if (isDrawing.value) {
         if (e) {
             pointer.value = canvas.value.getPointer(e.e);
 
-            ellipse.value.stroke = tools.value[14].selected;
-            ellipse.value.strokeWidth = tools.value[4].selected;
-            if (ellipse.value) {
-                if (origX.value > pointer.value.x) {
-                    ellipse.value.set({
-                        left: Math.abs(pointer.value.x),
-                    });
-                }
-                if (origY.value > pointer.value.y) {
-                    ellipse.value.set({
-                        top: Math.abs(pointer.value.y),
-                    });
-                }
-                ellipse.value.set({
-                    rx: Math.abs(origX.value - pointer.value.x) / 2,
-                });
-                ellipse.value.set({
-                    ry: Math.abs(origY.value - pointer.value.y) / 2,
-                });
-                ellipse.value.setCoords();
-            }
+            ellipse.value.set({
+                stroke: tools.value[14].selected,
+                strokeWidth: tools.value[4].selected,
+                rx: Math.abs(origX.value - pointer.value.x) / 2,
+                ry: Math.abs(origY.value - pointer.value.y) / 2,
+                left: Math.min(origX.value, pointer.value.x),
+                top: Math.min(origY.value, pointer.value.y),
+                originX: "left",
+                originY: "top",
+            });
 
+            ellipse.value.setCoords();
             canvas.value.renderAll();
         } else {
             disable();
@@ -1005,14 +1010,20 @@ const drawCircle = (e) => {
         pointer.value = canvas.value.getPointer(e.e);
         origX.value = pointer.value.x;
         origY.value = pointer.value.y;
+
         ellipse.value = new fabric.Ellipse({
-            top: origY.value,
             left: origX.value,
+            top: origY.value,
             rx: 0,
             ry: 0,
             transparentCorners: false,
-            fill: "#00000000",
+            fill: "transparent", // 투명 fill
+            stroke: tools.value[14].selected,
+            strokeWidth: tools.value[4].selected,
+            originX: "left",
+            originY: "top",
         });
+
         canvas.value.add(ellipse.value);
     }
 };
@@ -1170,25 +1181,25 @@ const drawingPdfOnchangeEvent = async (e) => {
                 });
                 const renderContext = {
                     canvasContext: context,
-                    viewport
-                }
-                const task = page.render(renderContext)
-                    task.promise.then(() => {
-                        const imageData = fCanvas.upperCanvasEl.toDataURL({
-                            format: "png"
-                        })
-                        fabric.Image.fromURL(imageData, img => {
-                            img.scaleToHeight(page.view[3])
-                            fCanvas.setHeight(page.view[3])
-                            fCanvas.setWidth(page.view[2])
-                            drawingStore.setSrc({
-                                type: "pdf",
-                                src: imageData,
-                                name: file.name
-                            })
-                        })
-                    })
-                canvas.value.renderAll()
+                    viewport,
+                };
+                const task = page.render(renderContext);
+                task.promise.then(() => {
+                    const imageData = fCanvas.upperCanvasEl.toDataURL({
+                        format: "png",
+                    });
+                    fabric.Image.fromURL(imageData, (img) => {
+                        img.scaleToHeight(page.view[3]);
+                        fCanvas.setHeight(page.view[3]);
+                        fCanvas.setWidth(page.view[2]);
+                        drawingStore.setSrc({
+                            type: "pdf",
+                            src: imageData,
+                            name: file.name,
+                        });
+                    });
+                });
+                canvas.value.renderAll();
             } else if (!drawingStore.escapeDrawingPage) {
                 // self.escapeDrawingPage == false -> !drawingStore.escapeDrawingPage
                 drawingStore.setEscapeDrawingPage(true);
@@ -1232,7 +1243,8 @@ const deleteSelectedObjectFromCanvas = () => {
     canvas.value.getActiveObjects().forEach((obj) => {
         canvas.value.remove(obj);
     });
-    canvas.value.discardActiveObject().renderAll();
+    canvas.value.discardActiveObject();
+    canvas.value.renderAll();
     updateHistory(1);
 };
 
@@ -2624,7 +2636,7 @@ $toolPaddingSize: 1px;
 
 .canvas {
     width: calc(100% - 72px);
-    height: 100%;
+    height: inherit;
 
     > img {
         width: 100%;

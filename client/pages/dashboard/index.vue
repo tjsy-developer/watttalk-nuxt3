@@ -70,6 +70,9 @@ const {
 const { sendDMFlag, readProcFlag, previousMessageFlag, previousMessageInfo } =
     storeToRefs(directMessageStore);
 
+definePageMeta({
+    layout: "waiting"
+});
 // computed or methods 형태로 사용하려면
 const getCallingPopupResult = computed(() => callStore.callingPopupResult);
 const getGroupCallCancelFlag = computed(() => callStore.groupCallCancelFlag);

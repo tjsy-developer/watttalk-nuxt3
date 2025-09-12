@@ -222,7 +222,7 @@ function contactDateFormat(datetime) {
 .recent-list > div {
     display: flex;
     justify-content: space-between;
-    padding: 0 12px;
+    padding: 6px 12px;
 }
 .recent-list > div > div:not(.button-box) {
     display: flex;

@@ -15,7 +15,7 @@ const statusCode = {
 };
 
 export function useLoginEvents() {
-    const { signallingSocket } = useSignallingSocket();
+    const { signallingSocket, transferSocket } = useSignallingSocket();
     const loginStore = useLoginStore();
     const commonStore = useCommonStore();
     const modalStore = useModalStore();

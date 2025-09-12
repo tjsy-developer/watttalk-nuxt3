@@ -15,10 +15,6 @@
                     userList[windowKey]?.status !== 'main'
                 "
                 :key="windowKey"
-                :style="{
-                    width: callingLayoutType == 1 ? videoWidth : 'inherit',
-                    display: 'inline-block',
-                }"
                 class="windowContainer"
             >
                 <CallWindow
@@ -607,16 +603,17 @@ onUnmounted(() => {
 .callingLayout1 {
     width: 100%;
     height: 100%;
-    // min-width: 1086px
     padding: 5px;
     overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: center;
     > .windowContainer {
-        aspect-ratio: 16 / 9.14;
+        flex: 50%;
+        aspect-ratio: 16 / 9;
         margin: 6.9px 12px;
         min-width: 315px;
+        max-height: -webkit-fill-available;
     }
 }
 
@@ -635,6 +632,7 @@ onUnmounted(() => {
     box-sizing: content-box;
     /* bottom: 8px; */
     flex-direction: column;
+
     >.windowContainer {
         width: 227px !important;
         height: 150px;
@@ -676,15 +674,11 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     object-fit: fill;
-    /* background: #151515; */
+    padding: 15px;
     > .videoMainWrap {
         line-height: 100%;
         margin: auto;
     }
-}
-
-.windowContainer:nth-child(3n + 1) {
-    // margin-left: 55px
 }
 
 .userWindow {
@@ -703,6 +697,7 @@ onUnmounted(() => {
         position: absolute;
         width: 100%;
         height: 100%;
+        object-fit: fill;
     }
 }
 

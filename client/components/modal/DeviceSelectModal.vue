@@ -346,8 +346,8 @@ function checkParameter() {
     flex-direction: column;
     justify-items: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
+    width: 430px;
+    height: 514px;
     color: #fff;
     background-color: #262627;
 }
@@ -363,6 +363,7 @@ function checkParameter() {
         text-align: left;
         font: normal normal 800 22px/26px NanumSquare;
         bottom: 21px;
+        margin-bottom: 8px;
     }
 
     img {
@@ -374,7 +375,6 @@ function checkParameter() {
 .divisionLine {
     width: 376px;
     height: 1px;
-    margin-top: 8px;
     border-bottom: 1px solid #4d4d4d;
 }
 .body {

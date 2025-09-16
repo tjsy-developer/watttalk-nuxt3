@@ -4,14 +4,14 @@
     <VueFinalModal
         v-model="isLoginModalVisible"
         :clickToClose="false"
-        class="modal-container main-modal"
+        class="modal-container"
     >
         <MainModal></MainModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isDeviceModalVisible.visible"
         :clickToClose="false"
-        class="modal-container device-modal"
+        class="modal-container"
     >
         <DeviceSelectModal v-bind="isDeviceModalVisible.props"></DeviceSelectModal>
     </VueFinalModal>
@@ -25,14 +25,14 @@
     <VueFinalModal
         v-model="isHostMessageModalVisible"
         :clickToClose="false"
-        class="modal-container message-modal"
+        class="modal-container"
     >
         <HostMessageModal></HostMessageModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isFileSendModalVisible"
         :clickToClose="false"
-        class="modal-container file-modal"
+        class="modal-container"
     >
         <FileSendModal></FileSendModal>
     </VueFinalModal>

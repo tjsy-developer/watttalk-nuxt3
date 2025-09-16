@@ -1962,7 +1962,7 @@ const onResize = () => {
     // 필요하다면 여기서 canvasWidthHeightChange를 직접 호출할 수도 있습니다.
     // 하지만 onMounted에서 window.addEventListener('resize', canvasWidthHeightChange)로 직접 연결하는 것이 더 효율적일 수 있습니다.
     // 현재 코드에서는 canvasWidthHeightChange가 독립적으로 호출될 수 있도록 분리합니다.
-    canvasWidthHeightChange(); // 캔버스 크기 조정 함수 호출
+    // canvasWidthHeightChange(); // 캔버스 크기 조정 함수 호출
 };
 
 const workerResponseHandler = (event) => {

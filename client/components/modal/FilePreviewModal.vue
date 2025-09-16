@@ -133,7 +133,7 @@ p {
     justify-content: space-between;
     font-size: 1.2rem;
     background-color: #262626;
-    padding: 0 4px;
+    padding: 0 6px;
 
 	&.maximize {
 		padding: 6px 4px;	

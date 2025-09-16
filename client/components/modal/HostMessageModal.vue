@@ -66,8 +66,8 @@ p {
 .alert-container {
     position: relative;
     float: none !important;
-    width: 100%;
-    height: 100%;
+    width: 410px;
+    height: 310px;
     background-color: #262627;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.45); /* #00000073 대신 rgba 사용 */
     padding: 19px 37px 38px 37px;

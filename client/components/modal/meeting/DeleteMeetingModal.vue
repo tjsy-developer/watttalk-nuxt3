@@ -45,17 +45,7 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 const meetingStore = useMeetingStore();
 
-// SASS 파일은 Nuxt 3에서 자동으로 컴파일되므로 별도의 require는 필요 없습니다.
-// setup() 스크립트에서 import만 해주면 됩니다.
-// import "@/assets/styles/light/components/meeting/deleteMeeting.sass";
-// 하지만, 위와 같이 sass 파일을 import하면 전역적으로 적용될 수 있습니다.
-// scoped 스타일을 유지하려면 아래 <style> 블록을 활용하는 것이 더 좋습니다.
-
 const close = () => {
-    // 모달을 닫는 로직은 사용하는 모달 라이브러리에 따라 달라집니다.
-    // 여기서는 예시로 useModalComposable과 같은 컴포저블을 가정합니다.
-    // useModalComposable.hide("modal");
-    // 또는 이벤트 방출 방식을 사용합니다.
     emit("close");
 };
 
@@ -80,8 +70,8 @@ p {
 
 .noneOverayModalContainer {
     float: none !important;
-    width: 100%;
-    height: 100%;
+    width: 350px;
+    height: 270px;
     padding: 50px 37px;
 	box-sizing: border-box;
 	background-color: #262627;

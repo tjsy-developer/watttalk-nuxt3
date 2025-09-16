@@ -601,7 +601,7 @@ export const useCallStore = defineStore("call", {
         setOnlyVoiceID(payload) {
             this.onlyVoiceID = payload;
         },
-        toggleDeclineStatus() {
+        setDeclineStatus() {
             // payload 제거, 토글 로직
             this.declineStatus = !this.declineStatus;
         },

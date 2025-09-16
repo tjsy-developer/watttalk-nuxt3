@@ -6,12 +6,14 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js";
+import { useAuth } from "@/composables/useAuth";
 
 export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig();
     const router = useRouter();
-
+    const { verifyToken, encryptData, requestNewToken } = useAuth();
     if (process.client) {
+        
         const isLocalhost =
             typeof window !== "undefined" &&
             (window.location.hostname === "localhost" ||

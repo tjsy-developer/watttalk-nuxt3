@@ -7,7 +7,7 @@
             <span class="messageBoxNickname"
                 >{{ compData.nickname }} → {{ compData.mainVideoName }}</span
             >
-            <span class="messageBoxDate">{{ compData.chattingDate }}</span>
+            <span class="messageBoxDate">{{  getTime(compData.chattingDate) }}</span>
         </div>
         <div class="row" v-else>
             <div class="col-auto">
@@ -114,7 +114,7 @@
             v-else
             :class="[
                 compData.isReceived ? 'bubblyLeft' : 'bubblyRight',
-                { emergencyColor: compData.isEmergency },
+                { emergency: compData.isEmergency },
             ]"
         >
             <span>{{ compData.message }}</span>
@@ -235,7 +235,7 @@ const mainVideoNickName = ref(""); // Not used in template or logic, so consider
 
 // Methods
 const setMultiCalling = (multiCallingResult) => {
-    callStore.multiCallingResult();
+    callStore.setMultiCallingResult(multiCallingResult);
 };
 
 // Textarea newline conversion
@@ -334,7 +334,11 @@ onMounted(() => {
     > span {
         white-space: pre-line;
     }
+    &.emergency {
+        background-color: rgb(238, 49, 74);
+    }
 }
+
 
 $bubblyWidth: 16px;
 $bubblyHeight: 10px;
@@ -519,9 +523,9 @@ $windowInfoBarHeight: 30px;
 }
 
 .messageBoxDate {
-    margin-left: 10px;
     font-size: 13px;
     line-height: 23px;
+    color: #bcbcbc;
 }
 
 .receptionTime {
@@ -671,7 +675,7 @@ $windowInfoBarHeight: 30px;
         padding: 6px 22px;
         font-size: 13px;
         border-radius: 15px;
-        background-color: #575757;
+        background-color: #E600D7;
     }
 }
 </style>

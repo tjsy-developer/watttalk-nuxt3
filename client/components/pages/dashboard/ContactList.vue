@@ -46,22 +46,26 @@ import { ref } from "vue";
 import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 import { useVfm } from 'vue-final-modal';
 import LoadingModal from "@/components/modal/LoadingModal.vue";
+import { useMeetingStore } from "@/stores/meeting";
 
 const vfm = useVfm();
 const userListStore = useUserListStore();
 const commonStore = useCommonStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
+const meetingStore = useMeetingStore();
 const { requestUserListAll, requestLastCallTime } = useSocketEmitEvents();
+const route = useRoute();
 const { open } = useModal({
     component: MainModal,
     attrs: {
         title: "Hello World!",
         clickToClose: false,
-        class: "modal-container main-modal",
+        class: "modal-container",
     },
 });
-const contactListMenus = [
+
+let contactListMenus = [
     {
         label: "최근 통화 목록",
         value: 0,
@@ -71,6 +75,13 @@ const contactListMenus = [
         value: 1,
     },
 ];
+
+if (route.name == "call" && meetingStore.currentMeetingRoomid) {
+    contactListMenus.push({
+        label: "비회원 초대",
+        value: 2
+    })
+}
 const searchInput = ref("");
 const searchName = ref("");
 const menuType = ref(0);

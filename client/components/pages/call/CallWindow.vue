@@ -5,10 +5,18 @@
         @click="getMainVideoIndex"
         class="row window"
         :id="props.id"
-    >  
+    >
         <div class="status-indicators">
-            <img class="host-icon" v-if="props.compData.hostIcon" src="@/assets/images/calling/ic_host.png" />
-	        <img class="mute-icon" v-if="props.compData.mute" src="@/assets/images/calling/ic_r_mute.png" />
+            <img
+                class="host-icon"
+                v-if="props.compData.hostIcon"
+                src="@/assets/images/calling/ic_host.png"
+            />
+            <img
+                class="mute-icon"
+                v-if="props.compData.mute"
+                src="@/assets/images/calling/ic_r_mute.png"
+            />
         </div>
         <button
             v-if="props.compData && props.compData?.status == 'calling'"
@@ -60,16 +68,17 @@
                     class="col text-left videoNameSpan"
                 ></span>
             </div>
-            <div id="videoMainDiv" class="justify-center" :class="drawingIframe ? 'drawing': ''">
+            <div
+                id="videoMainDiv"
+                class="justify-center"
+                :class="drawingIframe ? 'drawing' : ''"
+            >
                 <div
                     :class="[drawingIframe ? 'screen-draw' : 'screen-video']"
                     id="panel-inner-main"
                 >
                     <Drawing
-                        v-if="
-                            drawingIframe &&
-                            callingLayoutType != 1
-                        "
+                        v-if="drawingIframe && callingLayoutType != 1"
                         id="test11"
                         class="callingWidth"
                     />
@@ -136,14 +145,12 @@
                     </div>
                     <div
                         v-if="streamInfoStatus && isGlassSelected"
-                        class="selectBoxDetailInfoBox row justify-center items-center"
+                        class="selectBoxDetailInfoBox"
                     >
                         <div
                             @click="changeStreamMode(1)"
-                            :style="{
-                                backgroundColor: streamMode == 0 ? '#000000' : '#282828',
-                            }"
-                            class="selectBoxDetailInfoBoxHDplus row"
+                            class="selectBoxDetailInfoBoxHD"
+                            :class="{ selected: streamMode == 1 }"
                         >
                             <button class="selectBoxDetailInfoCheckBoxHDPlus">
                                 <img
@@ -165,10 +172,8 @@
                         </div>
                         <div
                             @click="changeStreamMode(0)"
-                            :style="{
-                                backgroundColor: streamMode == 1 ? '#000000' : '#282828',
-                            }"
-                            class="selectBoxDetailInfoBoxHD row"
+                            class="selectBoxDetailInfoBoxHD"
+                            :class="{ selected: streamMode == 0 }"
                         >
                             <button class="selectBoxDetailInfoCheckBoxHD">
                                 <img
@@ -240,10 +245,7 @@
                             />
                         </button>
                     </div>
-                    <div
-                        v-if="drawingIframe"
-                        class="drawing-iframe"
-                    >
+                    <div v-if="drawingIframe" class="drawing-iframe">
                         <slot></slot>
                     </div>
                     <div
@@ -274,7 +276,7 @@
                         id="laserPointer"
                         class="laserPointer"
                     ></div>
-                    <div
+                    <!-- <div
                         v-if="props.compData?.status != 'none' && !isDrawing"
                         class="nickname row items-center"
                     >
@@ -283,7 +285,7 @@
                             @change="changeNickName(props.compData, $event)"
                             class="nickname-text"
                         />
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div
@@ -292,7 +294,7 @@
                 class="gpsView row justify-center items-center"
             >
                 <div class="mapTitleBar row justify-between items-center">
-                    <span class="mapTitle">{{ t("map")[2] }}</span>
+                    <span class="mapTitle">{{ t("사고자 위치 확인") }}</span>
                     <div class="mapTitleImg">
                         <button
                             v-if="accessDeviceCheck != 'Mobile'"
@@ -354,7 +356,7 @@
                         style="padding-right: 4px"
                         src="@/assets/images/calling/map/ic_position.png"
                     />
-                    <span>{{ t("map")[1] }}</span>
+                    <span>{{ t("사고자 위치") }}</span>
                 </button>
                 <button
                     @click="motionFallClose"
@@ -400,7 +402,7 @@
                         style="padding-right: 4px"
                         src="@/assets/images/calling/map/ic_position.png"
                     />
-                    <span>{{ t("map")[1] }}</span>
+                    <span>{{ t("사고자 위치") }}</span>
                 </button>
             </div>
             <div
@@ -426,7 +428,7 @@
                 <div class="row justify-center items-center">
                     <img src="@/assets/images/calling/ic_photo_140.png" />
                 </div>
-                <div
+                <!-- <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
                 >
@@ -435,12 +437,10 @@
                         @change="changeNickName(props.compData, $event)"
                         class="nickname-text"
                     />
-                </div>
+                </div> -->
             </div>
         </div>
-        <div
-            v-else-if="props.compData && props.compData?.status == 'my'"
-        ></div>
+        <div v-else-if="props.compData && props.compData?.status == 'my'"></div>
         <div
             v-else-if="props.compData && props.compData?.status == 'sending'"
             class="mode sending"
@@ -482,14 +482,9 @@
             v-else-if="props.compData && props.compData?.status == 'receive'"
             class="receive"
         >
-            <div
-                v-if="callingLayoutType == 1"
-                class="receiveBackground"
-            >
+            <div v-if="callingLayoutType == 1" class="receiveBackground">
                 <img src="@/assets/images/calling/ic_call-send-1.png" />
-                <div
-                    class="buttonsLayout1"
-                >
+                <div class="buttonsLayout1">
                     <button
                         @click="setMultiCalling(1)"
                         class="receiveBtnCallingLayoutType3"
@@ -505,15 +500,9 @@
                 </div>
                 <span class="receiveSpan">{{ t("receiving") }}</span>
             </div>
-            <div
-                v-else-if="callingLayoutType == 3 || callingLayoutType == 5"
-                class="receiveBackground slotLayout3"
-            >
-                <div
-                    v-if="callingLayoutType == 3"
-                    class="col-12 row justify-center buttonsLayout3"
-                >
-                    <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
+            <div v-else class="receiveBackground buttonsLayout3">
+                <img src="@/assets/images/calling/ic_call-send-1.png" />
+                <div class="buttonsLayout3">
                     <button
                         @click="setMultiCalling(1)"
                         class="receiveBtnCallingLayoutType3"
@@ -543,16 +532,7 @@
                     </button>
                 </div>
             </div>
-            <div v-else class="receiveBackground">
-                <img src="@/assets/images/calling/ic_receive-4.png" class="big" />
-                <button @click="setMultiCalling(1)" class="receiveBtnCallingLayoutType3">
-                    {{ t("accept") }}
-                </button>
-                <button @click="setMultiCalling(0)" class="receiveBtnCallingLayoutType4">
-                    {{ t("decline") }}
-                </button>
-            </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -563,12 +543,9 @@
                         class="nickname-text"
                     />
                 </div>
-            </div>
+            </div> -->
         </div>
-        <div
-            v-else-if="props.compData && props.compData?.status == 'fail'"
-            class="mode"
-        >
+        <div v-else-if="props.compData && props.compData?.status == 'fail'" class="mode">
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
                 class="row justify-center otherBackground"
@@ -584,7 +561,7 @@
                     }}</span>
                 </div>
             </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -598,12 +575,9 @@
                 <button>
                     <img src="@/assets/images/calling/ic_x_blue.png" />
                 </button>
-            </div>
+            </div> -->
         </div>
-        <div
-            v-else-if="props.compData && props.compData?.status == 'other'"
-            class="mode"
-        >
+        <div v-else-if="props.compData && props.compData?.status == 'other'" class="mode">
             <div
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
                 class="row justify-center otherBackground"
@@ -619,7 +593,7 @@
                     }}</span>
                 </div>
             </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -633,12 +607,9 @@
                 <button>
                     <img src="@/assets/images/calling/ic_x_blue.png" />
                 </button>
-            </div>
+            </div> -->
         </div>
-        <div
-            v-else-if="props.compData && props.compData?.status == 'error'"
-            class="mode"
-        >
+        <div v-else-if="props.compData && props.compData?.status == 'error'" class="mode">
             <div
                 v-if="callingLayoutType == 1"
                 class="row justify-center items-center otherBackground errorLayout1"
@@ -676,7 +647,7 @@
                     }}</span>
                 </div>
             </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -690,7 +661,7 @@
                 <button @click="setErrorClose()">
                     <img src="@/assets/images/calling/ic_x_blue.png" />
                 </button>
-            </div>
+            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'attach'"
@@ -700,14 +671,9 @@
             v-else-if="props.compData && props.compData?.status == 'connecting'"
             class="mode sending"
         >
-            <div
-                v-if="callingLayoutType == 1"
-                class="receiveBackground connectLayout1"
-            >
+            <div v-if="callingLayoutType == 1" class="receiveBackground connectLayout1">
                 <img src="@/assets/images/calling/ic_connect_68.png" />
-                <span class="sendingSpanCallingLayoutType3">{{
-                    t("통화 연결 중")
-                }}</span>
+                <span class="sendingSpanCallingLayoutType3">{{ t("통화 연결 중") }}</span>
             </div>
             <div
                 v-else-if="callingLayoutType == 5"
@@ -718,16 +684,13 @@
                 }}</span>
                 <img src="@/assets/images/calling/ic_connect_68.png" />
             </div>
-            <div
-                v-else
-                class="receiveBackground connectLayout3"
-            >
+            <div v-else class="receiveBackground connectLayout3">
                 <img src="@/assets/images/calling/ic_connect_68.png" />
                 <span class="sendingSpanCallingLayoutType3">{{
                     t("call Connecting")
                 }}</span>
             </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -738,7 +701,7 @@
                         class="nickname-text"
                     />
                 </div>
-            </div>
+            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'unstable'"
@@ -793,7 +756,7 @@
                     t("call Unstable2")
                 }}</span>
             </div>
-            <div class="row items-center windowInfoBar">
+            <!-- <div class="row items-center windowInfoBar">
                 <div
                     v-if="props.compData?.status != 'none'"
                     class="nickname row items-center"
@@ -804,7 +767,7 @@
                         class="nickname-text"
                     />
                 </div>
-            </div>
+            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'unpublished'"
@@ -839,10 +802,7 @@
         </div>
         <div v-else-if="fileStatus" class="receive">
             <div v-if="props.compData?.status == 2" class="col-12 receiveStatus">
-                <div
-                    v-if="callingLayoutType == 1"
-                    class="fileReceptionLayout1"
-                >
+                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
                     <div class="row justify-center content-center">
                         <p style="font-size: 20px" class="requestText">
                             {{ props.compData.fileReceiveInfo.fileSendNickname }}
@@ -911,10 +871,7 @@
                 </div>
             </div>
             <div v-else-if="props.compData?.status == 3" class="col-12 receiveStatus">
-                <div
-                    v-if="callingLayoutType == 1"
-                    class="fileReceptionLayout1"
-                >
+                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
                     <div class="row col-12 justify-center">
                         <div style="margin-bottom: 15px" class="row col-5 prog">
                             <div
@@ -959,10 +916,7 @@
                 </div>
             </div>
             <div v-else-if="props.compData?.status == 5" class="col-12 receiveStatus">
-                <div
-                    v-if="callingLayoutType == 1"
-                    class="fileReceptionLayout1"
-                >
+                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
                     <div class="row col-12 justify-center">
                         <img
                             src="@/assets/images/ic_complete_3.png"
@@ -997,10 +951,7 @@
                 </div>
             </div>
             <div v-else-if="props.compData?.status == 6" class="col-12 receiveStatus">
-                <div
-                    v-if="callingLayoutType == 1"
-                    class="fileReceptionLayout1"
-                >
+                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
                     <div class="row col-12 justify-center">
                         <img
                             src="@/assets/images/ic_complete_3.png"
@@ -1045,17 +996,18 @@
             <img v-else src="@/assets/images/calling/ic_focus.png" />
             <slot></slot>
         </div>
-        <div
-            :class="props.compData.status == 'main'? 'name-wrap main' : 'name-wrap'"
-        >
+        <div :class="props.compData.status == 'main' ? 'name-wrap main' : 'name-wrap'">
             <div
-                v-if="antennaStatus && callingLayoutType == 1 && getMainVideoIdx == props.compData.userListIndex"
+                v-if="
+                    antennaStatus &&
+                    callingLayoutType == 1 &&
+                    getMainVideoIdx == props.compData.userListIndex
+                "
                 @click="antennaInfoStatus = !antennaInfoStatus"
                 :title="t('antennaInfo')"
                 id="antennaStauts"
                 class="cursor-pointer"
             >
-                
                 <img
                     v-if="antennaStep == 1"
                     src="@/assets/images/calling/ic_antenna_1.png"
@@ -1077,7 +1029,15 @@
                     src="@/assets/images/calling/ic_antenna_5.png"
                 />
             </div>
-            <div v-if="antennaInfoStatus && antennaStatus && callingLayoutType == 1 && getMainVideoIdx == props.compData.userListIndex" class="antennaDetailInfoBox">
+            <div
+                v-if="
+                    antennaInfoStatus &&
+                    antennaStatus &&
+                    callingLayoutType == 1 &&
+                    getMainVideoIdx == props.compData.userListIndex
+                "
+                class="antennaDetailInfoBox"
+            >
                 <div class="resolutionBox">
                     <span>Resolution :&nbsp;</span>
                     <span class="antennaDetailValue">{{ calcResolution }} <br /></span>
@@ -1100,24 +1060,53 @@
                 }}</span>
             </div>
             <div
-                v-if="!drawingIframe && callingLayoutType == 1"
-                style="display: none"
-                class="row items-center user-name-wrap"
+                v-if="
+                    isGlassSelected &&
+                    callingLayoutType == 1 &&
+                    getMainVideoIdx == props.compData.userListIndex
+                "
+                id="selectBox"
             >
-                <span
-                    :value="props.compData.text"
-                    id="videoMainCaption"
-                    class="col text-left videoNameSpan"
-                ></span>
+                <button
+                    v-if="streamMode == 0"
+                    @click="streamInfoStatus = !streamInfoStatus"
+                >
+                    <img
+                        v-if="!streamInfoStatus"
+                        src="@/assets/images/calling/ic_set.png"
+                    />
+                    <img
+                        v-else="streamInfoStatus"
+                        src="@/assets/images/calling/ic_set_2.png"
+                    />
+                </button>
+                <button
+                    v-else-if="streamMode == 1"
+                    @click="streamInfoStatus = !streamInfoStatus"
+                >
+                    <img
+                        v-if="!streamInfoStatus"
+                        src="@/assets/images/calling/ic_set_hd.png"
+                    />
+                    <img
+                        v-else="streamInfoStatus"
+                        src="@/assets/images/calling/ic_set_hd_2.png"
+                    />
+                </button>
             </div>
             <div
-                v-if="streamInfoStatus && isGlassSelected"
-                class="selectBoxDetailInfoBox row justify-center items-center"
+                v-if="
+                    streamInfoStatus &&
+                    isGlassSelected &&
+                    callingLayoutType == 1 &&
+                    getMainVideoIdx == props.compData.userListIndex
+                "
+                class="selectBoxDetailInfoBox"
             >
                 <div
-                    @click="changeStreamMode(1)"
-                    :style="{ backgroundColor: streamMode == 0 ? '#000000' : '#282828' }"
-                    class="selectBoxDetailInfoBoxHDplus row"
+                    @click.stop="changeStreamMode(1)"
+                    class="selectBoxDetailInfoBoxHD"
+                    :class="{ selected: streamMode == 1 }"
                 >
                     <button class="selectBoxDetailInfoCheckBoxHDPlus">
                         <img
@@ -1138,13 +1127,28 @@
                     </button>
                 </div>
                 <div
-                    @click="changeStreamMode(0)"
-                    :style="{ backgroundColor: streamMode == 1 ? '#000000' : '#282828' }"
-                    class="selectBoxD"
-                ></div>
+                    @click.stop="changeStreamMode(0)"
+                    class="selectBoxDetailInfoBoxHD"
+                    :class="{ selected: streamMode == 0 }"
+                >
+                    <button class="selectBoxDetailInfoCheckBoxHD">
+                        <img
+                            v-if="streamMode == 0"
+                            src="@/assets/images/calling/ic_check_hd.png"
+                        />
+                        <div
+                            v-else
+                            style="width: 12px; height: 12px"
+                            class="emptySpace"
+                        ></div>
+                    </button>
+                    <button class="selectBoxDetailInfoBoxBtn">
+                        <span>720p</span>
+                    </button>
+                </div>
             </div>
         </div>
-        {{  props.videoTag }}
+        {{ props.videoTag }}
     </div>
 </template>
 
@@ -1166,7 +1170,7 @@ import { useCached } from "@vueuse/core";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useNuxtApp } from "nuxt/app";
-const { locale, t } = useI18n()
+const { locale, t } = useI18n();
 
 // --- Props Definition ---
 const props = defineProps({
@@ -1174,10 +1178,11 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    id: { // id 프롭스 정의 시작
+    id: {
+        // id 프롭스 정의 시작
         type: String, // 타입은 문자열
         required: true, // 이 프롭스는 필수
-    }
+    },
 });
 
 // --- Reactive Data (replacing Vue 2's data()) ---
@@ -1232,7 +1237,7 @@ const getIsDrawing = computed(() => commonStore.isDrawing);
 const getIsShare = computed(() => commonStore.isShare);
 const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
-const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value])
+const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value]);
 const commonStore = useCommonStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
@@ -1547,7 +1552,6 @@ onBeforeUnmount(() => {
     callStore.setEnterenceCheck(0);
 });
 
-
 // --- Watchers (replacing Vue 2's watch) ---
 watch(getChattingShow, () => {
     videoResize();
@@ -1666,11 +1670,10 @@ watch(getMainVideoIdx, (res) => {
     }
 
     if (commonStore.callingLayoutType !== 1) {
-       const mainVideoEle = document.getElementById("videoMain")
-        console.log(callStore.videoStreamArray[res])
-        mainVideoEle.srcObject = callStore.videoStreamArray[res]
+        const mainVideoEle = document.getElementById("videoMain");
+        console.log(callStore.videoStreamArray[res]);
+        mainVideoEle.srcObject = callStore.videoStreamArray[res];
     }
-
 });
 </script>
 
@@ -1703,7 +1706,7 @@ $windowInfoBarHeight: 30px;
         overflow: hidden;
     }
 }
- 
+
 #videoMainDiv {
     height: -webkit-fill-available;
 }
@@ -1726,7 +1729,6 @@ $windowInfoBarHeight: 30px;
     width: 100%;
     height: $windowInfoBarHeight;
     padding: 0 7px;
-    
 
     > span {
         // This looks like a mixin, so I'm commenting it out or assuming it's defined elsewhere.
@@ -1767,7 +1769,7 @@ $windowInfoBarHeight: 30px;
 }
 
 .sending > .windowInfoBar {
-padding-right: 1px;
+    padding-right: 1px;
     z-index: 2;
     position: right;
     position: absolute;
@@ -1777,17 +1779,14 @@ padding-right: 1px;
 }
 
 .receiveBackground {
-    background: transparent linear-gradient(119deg, #C623D2 0%, #004CFF 100%) 0% 0% no-repeat padding-box
-}
-
-.sendingBackground {
+    background: transparent linear-gradient(119deg, #c623d2 0%, #004cff 100%) 0% 0%
+        no-repeat padding-box;
 }
 
 .sendingBackground,
 .receiveBackground,
 .otherBackground {
     width: 100% !important;
-    // aspect-ratio: 16 / 9
     height: 100%;
     max-width: inherit !important;
     max-height: inherit;
@@ -1797,6 +1796,24 @@ padding-right: 1px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    
+
+    >.buttonsLayout1 {
+        margin-top: 35px;
+        button + button {
+            margin-left: 18px;
+        }
+    }
+    >.buttonsLayout3 {
+        margin-top: 10px;
+        gap: 10px;
+        > img {
+            width: 50px;
+        }
+        button + button {
+            margin-left: 18px;
+        }
+    }
 
     > .sendingSpan,
     > .receiveSpan {
@@ -1819,7 +1836,10 @@ padding-right: 1px;
         font-size: 14px;
         border-radius: 20px;
         color: #fff;
-        background-color: #1C8EFF;
+        background-color: #1c8eff;
+        > button {
+            color: #fff;
+        }
     }
 
     > .receiveBtnCallingLayoutType4 {
@@ -1829,18 +1849,22 @@ padding-right: 1px;
         font-size: 14px;
         border-radius: 20px;
         color: #fff;
-        background-color: #E600D7;
+        background-color: #e600d7;
     }
-}
-
-.otherBackground {
-    //border: 1px solid #323232
+    button.receiveBtnCallingLayoutType3 {
+        color: #fff;
+        background-color: #007bff;
+    }
+    button.receiveBtnCallingLayoutType4 {
+        background-color: #e600d7;
+    }
 }
 
 #antennaStauts {
     position: absolute;
     top: 10px;
     right: 10px;
+    cursor: pointer;
 }
 
 .antennaDetailInfoBox {
@@ -1853,7 +1877,7 @@ padding-right: 1px;
     font-size: 14px;
     padding: 9px;
     display: grid;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
 
     > div {
@@ -1873,17 +1897,6 @@ padding-right: 1px;
         border-radius: 20px;
         font-size: 14px;
         font-weight: bold;
-
-    }
-    button.receiveBtnCallingLayoutType3 {
-            background-color: #007bff;
-        }
-    button.receiveBtnCallingLayoutType4 {
-        background-color: #706c6c;
-    }
-
-    >button+button {
-        margin-left: 26px;
     }
 }
 
@@ -1894,6 +1907,7 @@ padding-right: 1px;
     }
 
     > button {
+        color: #fff;
         width: 55px;
         height: 25px;
         border-radius: 20px;
@@ -2022,6 +2036,7 @@ padding-right: 1px;
 .videoMainDivWrap {
     width: inherit;
     height: inherit;
+    aspect-ratio: 16 / 9;
     .nickname {
         bottom: 3px;
         padding-left: 4px;
@@ -2035,7 +2050,7 @@ padding-right: 1px;
     height: 30px;
     z-index: 1;
     color: #fff;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, 0.5);
     line-height: 30px;
     padding-left: 10px;
 }
@@ -2047,7 +2062,7 @@ padding-right: 1px;
     height: 30px;
     z-index: 1;
     color: #fff;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, 0.5);
     line-height: 30px;
     padding-left: 10px;
     box-sizing: border-box;
@@ -2221,6 +2236,7 @@ padding-right: 1px;
     }
 
     > button {
+        color: #fff;
         width: 63px;
         height: 25px;
         border-radius: 20px;
@@ -2233,7 +2249,7 @@ padding-right: 1px;
         }
 
         &:last-child {
-            margin-left: 5px;
+            margin-left: 8px;
         }
     }
 }
@@ -2558,7 +2574,6 @@ padding-right: 1px;
     margin-right: 10px;
 }
 
-
 .boldText {
     font-weight: bold;
 }
@@ -2675,13 +2690,24 @@ padding-right: 1px;
 .selectBoxDetailInfoBoxHD {
     width: 100%;
     height: 50%;
+    background-color: #000;
+    color: #fff;
+}
+
+.selectBoxDetailInfoBoxHD.selected {
     opacity: 0.65;
 }
 
 .selectBoxDetailInfoBoxBtnHDplusImg {
     position: absolute;
     top: 5px;
-    right: 6px;
+    right: 0px;
+}
+
+.selectBoxDetailInfoBoxBtn {
+    > span {
+        color: #fff;
+    }
 }
 
 .selectBoxDetailInfoCheckBoxHDPlus {

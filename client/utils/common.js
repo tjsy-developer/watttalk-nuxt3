@@ -6,14 +6,20 @@ import { useNuxtApp } from "nuxt/app";
 import _ from "lodash";
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
+    // 1. Get the current local date and time.
     const date = new Date();
-    // 거주 지역이 UTC와 어느 정도 차이 나는지 알아낸다.
-    let x = date.getTimezoneOffset() / 60; // UTC - GMT = x (대한민국 기준 x = -9)		주어가 UTC 이기 때문에 -9 라고 나옴
-    x = x * 60 * 60 * 1000; // (시 * 분 * 초 * 밀리초)
 
-    // UTC 값을 timestemp 로 만든다.
-    const timestampUTC = (date.getTime() + x) / 1000; // 밀리초를 초 형식으로 변환
+    // 2. Get the timezone offset in minutes. (e.g., -540 for Korea)
+    const timezoneOffsetMinutes = date.getTimezoneOffset();
 
+    // 3. Convert the offset to milliseconds.
+    const timezoneOffsetMilliseconds = timezoneOffsetMinutes * 60 * 1000;
+
+    // 4. Subtract the offset to get the correct UTC time in milliseconds.
+    //    date.getTime() - (-540 * 60 * 1000) = date.getTime() + (540 * 60 * 1000)
+    const timestampUTC = (date.getTime() - timezoneOffsetMilliseconds) / 1000;
+
+    // 5. Return the rounded UTC timestamp.
     return Math.round(timestampUTC);
 }
 
@@ -207,6 +213,7 @@ export function getChattingTimeZone(standard) {
         leadingZeros(now.getMinutes(), 2) +
         ":" +
         leadingZeros(now.getSeconds(), 2);
+    console.log(strDatetime);
     return strDatetime;
 }
 // 모션 알람 전용 Timezon 생성

@@ -4,21 +4,21 @@
     <VueFinalModal
         v-model="isLoginModalVisible"
         :clickToClose="false"
-        class="modal-container main-modal"
+        class="modal-container"
     >
         <MainModal></MainModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isDeviceModalVisible.visible"
         :clickToClose="false"
-        class="modal-container device-modal"
+        class="modal-container"
     >
         <DeviceSelectModal v-bind="isDeviceModalVisible.props"></DeviceSelectModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isMessageModalVisible"
         :clickToClose="false"
-        class="modal-container message-modal"
+        class="modal-container"
     >
         <MessageModal></MessageModal>
     </VueFinalModal>
@@ -26,23 +26,23 @@
         v-model="isFileSendModalVisible"
         :clickToClose="false"
         :hideOverlay="true"
-        class="modal-container file-modal"
+        class="modal-container"
     >
         <FileSendModal></FileSendModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isAlertModal"
         :clickToClose="false"
-        class="modal-container alert-modal"
+        class="modal-container"
     >
         <AlertModal></AlertModal>
     </VueFinalModal>
     <VueFinalModal
         v-model="isHostModal"
         :clickToClose="false"
-        class="modal-container host-modal"
+        class="modal-container"
     >
-        <HostModal></HostModal>
+        <HostMessageModal></HostMessageModal>
     </VueFinalModal>
     <CallHeader></CallHeader>
     <div class="content">
@@ -75,7 +75,7 @@ import MessageModal from "@/components/modal/MessageModal.vue";
 import { onMounted } from "vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
-import HostModal from "@/components/modal/HostModal.vue";
+import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
@@ -146,6 +146,7 @@ onMounted(() => {
     width: 100%;
     height: 100vh;
     display: flex;
+    flex-wrap: wrap;
     max-width: calc(100vw - $sidebar-width);
     max-height: calc(100vh - $header-height);
     @include tc(background-color, "bg-color");

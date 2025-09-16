@@ -3,10 +3,11 @@ import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
 import { useNuxtApp } from "nuxt/app";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useModal, useModalSlot, useVfm } from "vue-final-modal";
 
 const vfm = useVfm();
+const { $axios } = useNuxtApp();
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
 const loginStore = useLoginStore();
@@ -14,6 +15,14 @@ const tokenStore = useTokenStore();
 const { menuImages } = useImageAssets();
 const { t } = useI18n();
 
+onMounted(async () => {
+    const res = await $axios.post("noticeRest/notice_list", {
+        en_seq: loginStore.sessionEnSeq,
+    });
+    if (res.data.length > 0) {
+        vfm.toggle("notice-modal");
+    }
+})
 const handleClickNotice = () => {
     // open();
     vfm.toggle("notice-modal");

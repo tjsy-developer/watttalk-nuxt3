@@ -8,7 +8,6 @@ import axios from "axios";
 
 export function useAuth() {
     const tokenStore = useTokenStore();
-
     // 암호화.
     function encryptData(data) {
         console.log("function encrypt");
@@ -75,10 +74,9 @@ export function useAuth() {
         }
     };
 
-    async function requestNewToken(currRefereshToken) {
+    async function requestNewToken(currRefereshToken, t) {
         const loginStore = useLoginStore();
         const decRToken = decryptData(currRefereshToken);
-        const { t } = useI18n();
         if (!decRToken) {
             loginStore.setTokenResult(2);
             return Promise.reject(new Error("Invalid refresh token"));
@@ -99,9 +97,9 @@ export function useAuth() {
         } catch (error) {
             if (error.response?.status === 401) {
                 if (error.response.data == "mutated") {
-                    alert(t("loginResult decodeFail"));
+                    alert(("loginResult decodeFail"));
                 } else if (error.response.data == "expired") {
-                    alert(t("loginResult NotValid"));
+                    alert(("loginResult NotValid"));
                 }
                 location.href = "http://localhost:8205";
             }

@@ -235,7 +235,6 @@ const {
 } = useSocketEmitEvents();
 
 onMounted(() => {
-    callStore.setCallingResult("init");
     if (commonStore.alertNum == 8) {
         firstEntry();
     }
@@ -303,6 +302,7 @@ function setCallingResult(callingResult) {
         callStore.setCallingResult(1);
         close();
     }
+    sessionStorage.setItem("m_callWaiting", false)
 }
 
 function setCancelCalling() {
@@ -388,13 +388,13 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .main-container {
-    width: inherit;
-    height: inherit;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     row-gap: 57px;
+    width: 700px;
+    height: 480px;
 }
 
 .notice {

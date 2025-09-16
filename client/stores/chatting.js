@@ -1,4 +1,5 @@
 // stores/chatting.ts
+import { getChattingTimeZone, getWorldTime } from '@/utils/common';
 import { defineStore } from 'pinia';
 
 export const useChattingStore = defineStore("chatting", {
@@ -28,8 +29,8 @@ export const useChattingStore = defineStore("chatting", {
             const messageInfo = {
                 // new Object() 대신 객체 리터럴 사용
                 nickname: payload.nickname,
-                date: payload.date,
-                chattingDate: payload.chattingDate,
+                date: Math.floor(Date.now() / 1000),
+                chattingDate: getChattingTimeZone(Math.floor(Date.now() / 1000)),
                 message: payload.message,
                 level: payload.level,
                 type: payload.type,
@@ -39,6 +40,7 @@ export const useChattingStore = defineStore("chatting", {
                 moveIcon: "", // 기본값 설정
                 directionIcon: "", // 기본값 설정
             };
+            console.log('message 추가되었다', messageInfo)
 
             // type : 긴급
             if (payload.level === 0) {

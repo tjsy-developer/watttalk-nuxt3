@@ -218,7 +218,6 @@
                                 :select-text="t('확인')"
                                 :placeholder="t('날짜 선택')"
                                 :min-date="new Date()"
-                                :max-date="endDate"
                                 auto-apply
                             ></VueDatePicker>
                             <VueDatePicker
@@ -896,7 +895,7 @@ const saveMeeting = async (modifyOnOff) => {
     }
     function formatToKoreanTime(value) {
         console.log(typeof value, value)
-        if (typeof value === "String" && value.includes("T")) {
+        if (typeof value === String && value.includes("T")) {
             const date = new Date(value);
 
             // ✅ 한국 시간 기준
@@ -1110,10 +1109,10 @@ watch(type, (newVal, oldVal) => {
     if (defaultPeriodType.value) {
         // Access ref with .value
         console.log("변경");
-        // startDate.value = "";
-        // startTime.value = "";
-        // endDate.value = "";
-        // endTime.value = "";
+        startDate.value = undefined;
+        startTime.value = undefined;
+        endDate.value = undefined;
+        endTime.value = undefined;
         typeChangeState.value = false; // Reset the state after handling
     }
     console.log("*** watch: type --> before Value", oldVal);
@@ -1191,13 +1190,6 @@ select,
     border: none;
     width: 100%;
     color: #fff;
-}
-
-.makeMain {
-    overflow-x: hidden;
-    background-color: #262627;
-    border: 1px solid #1d1d1d;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.45098);
 }
 
 .invalidTitle {
@@ -1579,8 +1571,12 @@ select,
 }
 
 .makeMain {
-    width: 100%;
-    height: 100%;
+    width: 440px;
+    height: 650px;
+    overflow-x: hidden;
+    background-color: #262627;
+    border: 1px solid #1d1d1d;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.45098);
     padding: 30px 40px 0px 40px;
     display: flex;
     flex-direction: column;

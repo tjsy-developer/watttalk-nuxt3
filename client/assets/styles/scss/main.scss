@@ -48,46 +48,52 @@ button {
 .modal-container.non-overlay {
     background-color: transparent;
 }
-
-.main-modal {
-    width: 700px;
-    height: 480px;
+.non-overlay {
+    pointer-events: none;
+    * {
+        pointer-events: auto;
+    }
 }
 
-.meeting-modal {
-    width: 440px;
-    height: 650px;
-}
+// .main-modal {
+//     width: 700px;
+//     height: 480px;
+// }
 
-.device-modal {
-    width: 430px;
-    height: 514px;
-}
+// .meeting-modal {
+//     width: 440px;
+//     height: 650px;
+// }
 
-.message-modal, .alert-modal {
-    width: 350px;
-    height: 270px;
-}
+// .device-modal {
+//     width: 430px;
+//     height: 514px;
+// }
 
-.file-modal {
-    width: 406px;
-    height: 346px;
-}
+// .message-modal, .alert-modal {
+//     width: 350px;
+//     height: 270px;
+// }
 
-.notice-modal {
-    width: 420px;
-    height: 420px;
-}
+// .file-modal {
+//     width: 406px;
+//     height: 346px;
+// }
 
-.chat-modal {
-    width: 350px;
-    height: 420px;
-}
+// .notice-modal {
+//     width: 420px;
+//     height: 420px;
+// }
 
-.host-modal {
-    width: 410px;
-    height: 310px;
-}
+// .chat-modal {
+//     width: 350px;
+//     height: 420px;
+// }
+
+// .host-modal {
+//     width: 410px;
+//     height: 310px;
+// }
 .row {
     display: flex;
     flex-wrap: wrap;

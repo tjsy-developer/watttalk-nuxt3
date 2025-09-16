@@ -32,7 +32,6 @@ async function getNoticeList() {
     });
 
     if (res.data) {
-        console.log(res);
         const data = res.data.map((value) => {
             console.log(getFormattedDate(value.save_time));
             return {
@@ -66,8 +65,8 @@ watch(
             :is-active="true"
             :w="420"
             :h="420"
-            :x="0"
-            :y="0"
+            :x="-540"
+            :y="-410"
             @resizing="dragResize"
             @dragging="dragResize"
         >
@@ -134,7 +133,7 @@ watch(
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 4px;
+        padding: 0 6px;
     }
 }
 section {

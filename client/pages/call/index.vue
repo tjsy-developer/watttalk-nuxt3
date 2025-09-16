@@ -1110,11 +1110,7 @@ onMounted(() => {
     signallingSocket.on("videoCallHostCheck", function (response) {
         try {
             const json = JSON.parse(response);
-            console.log("Type of json.deviceid:", json.deviceid); // string이 나와야 합니다.
-            console.log(
-                "Type of loginStore.m_local_deviceid:",
-                loginStore.m_local_deviceid,
-            ); // string이 나와야 합니다.
+            console.log("** socket on videoCallHostCheck", json); // string이 나와야 합니다.
 
             // 2. 길이 확인
             if (json.deviceid == loginStore.m_local_deviceid) {
@@ -1138,13 +1134,10 @@ onMounted(() => {
 
                         if (showHostMainIndex == 0) {
                             showHostMainRfid = myid.value;
-                            console.log("내가 호스트");
-                            chattingStore.setVideoCallHost(true);
+                            console.log("내가 메인");
                         } else {
                             showHostMainRfid = feeds.value[showHostMainIndex].rfid;
-                            console.log("나 호스트아님");
-                            console.log("아니여기 안탔어?");
-                            chattingStore.setVideoCallHost(false);
+                            console.log("나 메인 아님");
                         }
 
                         setTimeout(function () {
@@ -2346,7 +2339,7 @@ onMounted(() => {
 
         let url = "";
         if (json.url != null && json.name != null) {
-            url = json.url + json.name;
+            url = `${json.url}/${json.name}`;
             url = await convertImageToBlob(url);
             // 캡쳐 일 경우
             if (callStore.isCapture) {
@@ -6078,7 +6071,7 @@ function contentsBtnClick(seq) {
 function callingLayoutChange(status, text, col) {
     console.log("callingLayoutChange", status, text, col);
     const nickname = getNickname(text);
-    // console.log("*** methods: callingLayoutChange")
+    console.log("*** methods: callingLayoutChange")
     commonStore.setUserListStatus({
         text,
         col,
@@ -6891,8 +6884,6 @@ function addSendMessageList(nickname, message, level, type) {
     const nowDate = getWorldTime();
     chattingStore.sendMessage({
         nickname,
-        date: nowDate,
-        chattingDate: getChattingTimeZone(nowDate),
         message,
         level,
         type,
@@ -7188,6 +7179,8 @@ function previewModal(url) {
         attrs: {
             previewImage: url,
             hideOverlay: true,
+            clickToClose: false,
+            class: 'non-overlay',
             onClose: () => close(),
         },
     });
@@ -9283,7 +9276,7 @@ function setInitUnderStatus(result) {
 // status: 1(파일 송신중), 2(파일 수신중), 3(파일 수신 완료), 4(파일 송신 거절), 5 (파일 전송 완료), 6(파일 수신 거절), 9(송신자 파일 송신 취소), 10(수신자 파일 송신 취소)
 function addChatFileSendMessage(nickname, status, rfIndex, fileChatIndex) {
     // 현재시간 UTC 가져오기
-    const nowDate = getWorldTime();
+    const nowDate = Math.floor(Date.now() / 1000);
 
     // 메세지 만들기
     let fileSendingMessage = "";
@@ -9575,7 +9568,7 @@ function sayHello() {
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
     Janus.init({
-        debug: true,
+        debug: false,
         currentMicId: commonStore.selectedMicID,
         callback() {
             $(this).attr("disabled", true).unbind("click");
@@ -10420,7 +10413,7 @@ function sayHello() {
                                         requestSettingInRoom(
                                             sessionStorage.getItem("m_roomid"),
                                             loginStore.m_local_deviceid,
-                                        ),
+                                        )
                                     );
                                 }
                             }
@@ -10838,7 +10831,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
                 t("님의 통화 요청을 수락하였습니다");
 
             // 현재 UTC 시간 가져오기
-            const nowDate = getWorldTime();
+            const nowDate = Math.floor(Date.now() / 1000);
 
             // vue 배열 감지를 위해 $set 사용
             chattingStore.chattingMessageList[chattingCallingIndex.value] = {
@@ -10872,7 +10865,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
                 t("님의 통화 요청을 거절하였습니다");
 
             // 현재 UTC 시간 가져오기
-            const nowDate = getWorldTime();
+            const nowDate = Math.floor(Date.now() / 1000);
 
             chattingStore.chattingMessageList[chattingCallingIndex.value] = {
                 type: 0,
@@ -10922,8 +10915,8 @@ watch(getCacncelCallingResult, (newValue, oldValue) => {
         // store useList에서 nickname 조회하여 index 가져오기
         // for (let i = 1; i < 15; i++) {
         for (let i = 1; i < callStore.currentRoomNumberCount; i++) {
-            if (!callStore.feeds.value[i]) {
-                callStore.callingLayoutChange("none", "", i);
+            if (!feeds.value[i]) {
+                callingLayoutChange("none", "", i);
                 sessionStorage.setItem("m_callWaiting", "false");
                 break;
             }
@@ -11332,8 +11325,6 @@ watch(getAllMicMuteStatus, (newValue, oldValue) => {
 
         chattingStore.sendMessage({
             nickname,
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message,
             level,
             type,
@@ -12009,7 +12000,15 @@ watch(getMotionNoMoveClickIndex, (newValue, oldValue) => {
 
 watch(getStreamModeFlag, (newValue, oldValue) => {
     console.log("getStreamModeFlag.value 변경됨:", newValue, oldValue);
-    if (result) {
+    if (newValue) {
+        prepareStreamMode(callStore.prepareStreamMode)
+        callStore.setStreamModeFlag(false)
+    }
+});
+
+watch(getAutoDiscallingCancel, (newValue, oldValue) => {
+    console.log("getAutoDiscallingCancel.value 변경됨:", newValue, oldValue);
+    if (newValue) {
         if (funcAutoDiscalling.value != null) {
             // console.log("*** watch: getAutoDiscallingCancel !")
             // 자동통화 기능 삭제
@@ -12019,12 +12018,7 @@ watch(getStreamModeFlag, (newValue, oldValue) => {
             callStore.setAutoDiscallingCancel(false);
             callStore.setAutoDiscallingResult(false);
         }
-    } // streamMode 변경 시 필요한 로직을 여기에 추가합니다.
-});
-
-watch(getAutoDiscallingCancel, (newValue, oldValue) => {
-    console.log("getAutoDiscallingCancel.value 변경됨:", newValue, oldValue);
-    // 자동 통화 종료 취소 플래그 변경 시 필요한 로직을 여기에 추가합니다.
+    }
 });
 
 watch(getFlag, (newValue, oldValue) => {

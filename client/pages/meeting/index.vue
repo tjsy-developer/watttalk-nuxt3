@@ -96,6 +96,8 @@ const router = useRouter();
 import { useModal } from "vue-final-modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
+import { userDataGetInfo } from "@/composables/common";
+import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
@@ -114,6 +116,9 @@ const allView = ref(0);
 const calendar = ref(false);
 
 const checkDirectCall = ref(undefined);
+
+const { requestRefuseCalling, requestJoinMeeting } =
+    useSocketEmitEvents();
 
 // 전화 수신 팝업
 let callingPopupResultData = reactive({
@@ -655,10 +660,10 @@ onMounted(async () => {
     // 2021-05-06 ksh :: 회의실에서도 통화 수락 거절 받을 수 있도록 기능 추가
     signallingSocket.on("calling", (response) => {
         const json = JSON.parse(response);
-        console.log("*** socket.on: calling response, json: " + response);
-        if (sessionStorage.getItem("m_callWaiting") === "true") {
+        console.log("*** socket.on: calling response, json: " + response, sessionStorage.getItem("m_callWaiting"));
+        if (sessionStorage.getItem("m_callWaiting") == "true") {
             const obj = {
-                localdeviceid: sessionStorage.getItem("m_local_deviceid"),
+                localdeviceid: loginStore.m_local_deviceid,
                 remotedeviceid: json.deviceid,
                 roomid: json.roomid,
                 institution: json.institution,
@@ -683,16 +688,13 @@ onMounted(async () => {
                 "*** socket.on: calling >> When not making calls at the same time",
             );
 
-            const remoteInstitution = userListGetInstitution(json.deviceid); // Call the imported function
-            const remoteHeadquarters = userListGetHeadquarters(json.deviceid); // Call the imported function
-            const remoteBranch = userListGetBranch(json.deviceid); // Call the imported function
-            const remoteNickname = userListGetNickname(json.deviceid); // Call the imported function
-
+            const remoteInfo = userDataGetInfo(json.deviceid);
+            console.log(remoteInfo)
             callStore.callingPopupInfo({
-                institution: remoteInstitution,
-                headquarters: remoteHeadquarters,
-                branch: remoteBranch,
-                nickname: remoteNickname,
+                institution: remoteInfo.enName,
+                headquarters: remoteInfo.hqName,
+                branch: remoteInfo.brName,
+                nickname: remoteInfo.nickName,
             });
 
             contentsBtnClick(0); // Call the imported function
@@ -707,19 +709,18 @@ onMounted(async () => {
 
             // Update reactive object directly
             callingPopupResultData.roomid = json.roomid;
-            callingPopupResultData.m_local_deviceid =
-                sessionStorage.getItem("m_local_deviceid");
+            callingPopupResultData.m_local_deviceid = loginStore.m_local_deviceid;
             callingPopupResultData.deviceid = json.deviceid;
             callingPopupResultData.institution = json.institution;
             callingPopupResultData.nickname = json.nickname;
             callingPopupResultData.meetingSeq = json.meeting_seq;
             callingPopupResultData.uniqueRoomid = json.unique_roomid;
 
-            if (getAutoCallAcceptTime.value > 0) {
+            if (autoCallAcceptTime.value > 0) {
                 // Use .value for reactive ref
                 console.log(
-                    "*** socket: calling >> getAutoCallAcceptTime = " +
-                        getAutoCallAcceptTime.value, // Use .value for reactive ref
+                    "*** socket: calling >> autoCallAcceptTime = " +
+                        autoCallAcceptTime.value, // Use .value for reactive ref
                 );
                 // Assign to ref's .value
                 funcAutoCallAceept.value = setTimeout(() => {
@@ -730,9 +731,9 @@ onMounted(async () => {
                     ) {
                         console.log("*** socket: calling >> Start AutoCallAccept");
                         callStore.setCallingResult(1); // Assuming setCallingResult exists in callStore
-                        // hideModal('modal') // Placeholder for modal hiding
+                        modalStore.closeModal("call");
                     }
-                }, getAutoCallAcceptTime.value * 1000); // Use .value for reactive ref
+                }, autoCallAcceptTime.value * 1000); // Use .value for reactive ref
             }
         }
     });
@@ -743,7 +744,7 @@ onMounted(async () => {
         modalStore.closeModal("call");
         sessionStorage.setItem("m_callWaiting", "false");
 
-        if (getAutoCallAcceptTime.value > 0) {
+        if (autoCallAcceptTime.value > 0) {
             if (funcAutoCallAceept.value !== null) {
                 console.log("*** socket: cancelCalling >> AutoCallAccept Cancel");
                 clearTimeout(funcAutoCallAceept.value);
@@ -853,7 +854,7 @@ onMounted(async () => {
 
 // 언마운트되기 전 실행할 작업
 onBeforeUnmount(() => {
-    if (getAutoCallAcceptTime.value > 0) {
+    if (autoCallAcceptTime.value > 0) {
         // Access ref's value
         if (funcAutoCallAceept.value !== null) {
             // Access ref's value
@@ -1285,13 +1286,9 @@ const changedMeeting = () => {
     console.log("*** socket.emit: changedMeeting Request: " + json);
 };
 
-const changeAlertNum = (seq) => {
-    commonStore.setAlert(seq);
-};
-
 // 전화 수신 팝업
 const contentsBtnClick = (seq) => {
-    changeAlertNum(seq);
+    commonStore.setAlert(seq);
 };
 
 // 전화 수락
@@ -1317,25 +1314,6 @@ const callingAccept = (roomid, remotedeviceid) => {
     commonStore.setChangeViewType(2);
 
     router.push("/call"); // Nuxt 3 way to navigate
-};
-
-const noneOverlayModal = (seq) => {
-    commonStore.setNoneOverlayAlertStatus(seq);
-};
-
-// 전화 거절
-const callingReject = (roomid, localdeviceid, remotedeviceid, institution, nickname) => {
-    const obj = {
-        localdeviceid,
-        remotedeviceid,
-        roomid,
-        institution,
-        nickname,
-    };
-    const json = JSON.stringify(obj);
-    signallingSocket.emit("refuseCalling", json);
-    console.log("*** socket.emit: refuseCalling request: ", json);
-    sessionStorage.setItem("m_callWaiting", "false");
 };
 
 // socket sendMessage
@@ -1390,9 +1368,12 @@ const {
 const {
     userData: userList,
     callingPopupResult: getCallingPopupResult,
-    autoCallAcceptTime: getAutoCallAcceptTime,
     sendDurationEnable: getSendDurationEnable,
 } = storeToRefs(callStore);
+
+const {
+    autoCallAcceptTime,
+} = storeToRefs(preferenceStore);
 
 const getMeetingOpenFlag = computed(() =>  meetingStore.meetingOpenFlag)
 // Watch for allView checkbox changes
@@ -1478,7 +1459,7 @@ watch(getMeetingModifyFlag, (newVal) => {
 
 // Watch for calling popup result
 watch(
-    () => getCallingPopupResult,
+    getCallingPopupResult,
     (result) => {
         console.log("*** watch: getCallingPopupResult result =", result);
 

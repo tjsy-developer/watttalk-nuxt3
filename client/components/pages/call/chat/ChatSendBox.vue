@@ -193,6 +193,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useChattingStore } from "@/stores/chatting";
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
+import { getWorldTime } from "@/utils/common";
 const { t } = useI18n();
 
 const chattingStore = useChattingStore();
@@ -311,19 +312,6 @@ const switchMessageType = (e) => {
     messageType.value = e;
 };
 
-// Helper function to get world time (assuming it's a global helper or in another file)
-// You might need to import or define this function based on where it truly resides.
-const getWorldTime = () => {
-    // Placeholder - replace with your actual implementation
-    // Example: return new Date().toISOString();
-    return new Date().toLocaleTimeString("en-US", {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
-};
-
 // Helper function to get chatting time zone (assuming it's a global helper or in another file)
 // You might need to import or define this function based on where it truly resides.
 const getChattingTimeZone = (dateString) => {
@@ -351,8 +339,6 @@ const sendMessage = (iconKey) => {
         }
         chattingStore.sendMessage({
             nickname: sessionStorage.getItem("m_nickname"),
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message: sendMessageText.value,
             level: 0,
             type: 0, // Assuming type 0 for emergency text
@@ -361,8 +347,6 @@ const sendMessage = (iconKey) => {
         // icon Message : emergencyIcons
         chattingStore.sendMessage({
             nickname: sessionStorage.getItem("m_nickname"),
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message: iconKey + 1, // Pass the icon index
             level: 0,
             type: 1, // Assuming type 1 for emergency icons
@@ -371,8 +355,6 @@ const sendMessage = (iconKey) => {
         // icon Message : Move Icon
         chattingStore.sendMessage({
             nickname: sessionStorage.getItem("m_nickname"),
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message: iconKey + 1, // Pass the icon index
             level: 1,
             type: 2, // Assuming type 2 for move icons
@@ -381,8 +363,6 @@ const sendMessage = (iconKey) => {
         // icon Message : Direction Icon
         chattingStore.sendMessage({
             nickname: sessionStorage.getItem("m_nickname"),
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message: iconKey + 1, // Pass the icon index
             level: 1,
             type: 4, // Assuming type 4 for direction icons
@@ -396,8 +376,6 @@ const sendMessage = (iconKey) => {
         }
         chattingStore.sendMessage({
             nickname: sessionStorage.getItem("m_nickname"),
-            date: nowDate,
-            chattingDate: getChattingTimeZone(nowDate),
             message: sendMessageText.value,
             level: 1,
             type: 0, // Assuming type 0 for normal text

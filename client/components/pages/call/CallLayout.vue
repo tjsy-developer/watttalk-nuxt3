@@ -608,10 +608,11 @@ onUnmounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
     > .windowContainer {
-        flex: 50%;
+        flex: 0 0 calc(50% - 8px);
         aspect-ratio: 16 / 9;
-        margin: 6.9px 12px;
         min-width: 315px;
         max-height: -webkit-fill-available;
     }

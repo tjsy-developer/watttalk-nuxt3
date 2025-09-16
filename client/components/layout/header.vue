@@ -1,87 +1,94 @@
 <template>
     <header>
-        <div class="logo">
-            <img :src="headerImages.logo" alt="Hyundai" style="height: 24px" />
-        </div>
-        <div class="welcome">
-            {{
-                `[${loginStore.headquarters} ${loginStore.branch} ${loginStore.nickname}]${t("님")} ${t("반갑습니다")}`
-            }}
-        </div>
-        <div class="relative">
-            <!-- Trigger -->
-            <button @click="toggle" class="arrow-btn">
-                <img
-                    :src="commonImages.dropdown"
-                    :class="isOpen ? 'dropdown active' : 'dropdown'"
-                />
-            </button>
+        <div class="login-container">
+            <div class="logo">
+                <img :src="headerImages.logo" alt="Hyundai" style="height: 24px" />
+            </div>
+            <div class="welcome">
+                {{
+                    `[${loginStore.headquarters} ${loginStore.branch} ${loginStore.nickname}]${t("님")} ${t("반갑습니다")}`
+                }}
+            </div>
+            <div class="relative">
+                <!-- Trigger -->
+                <button @click="toggle" class="arrow-btn">
+                    <img
+                        :src="commonImages.dropdown"
+                        :class="isOpen ? 'dropdown active' : 'dropdown'"
+                    />
+                </button>
 
-            <!-- Dropdown -->
-            <div class="dropdown-wrapper">
-                <ul v-if="isOpen" class="dropdown-menu">
-                    <li
-                        @click.stop="handleToogleDisplay"
-                        class="dropdown-option"
-                        :class="isOpenDisplay ? 'clicked' : ''"
-                    >
-                        <img :src="headerImages.displayMode"/>
-                        <div>
-                            {{ t("화면스타일") }}
-                        </div>
-                        <img :src="commonImages.dropdown" class="dropdown-img" />
-                        <ul v-if="isOpenDisplay" class="dropdown-menu sub">
-                            <li
-                                v-for="option in displayOptions"
-                                :key="option.id"
-                                @click.stop="handleChangeDisplay(option.id)"
-                                class="dropdown-option"
-                                :class="{ active: $colorMode.preference === option.id }"
-                            >
-                                <img :src="option.image" :alt="t(option.name)"/>
-                                <div>
-                                    {{ t(option.name) }}
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                    <li
-                        @click.stop="handleToogleLanguage"
-                        class="dropdown-option"
-                        :class="isOpenLanguage ? 'clicked' : ''"
-                    >
-                        <img :src="headerImages.language" />
-                        <div>
-                            {{ t("언어변경") }}
-                        </div>
-                        <img :src="commonImages.dropdown" class="dropdown-img" />
-                        <ul v-if="isOpenLanguage" class="dropdown-menu sub">
-                            <li
-                                v-for="langOption in languageOptions"
-                                :key="langOption.id"
-                                @click.stop="handleChangeLanguage(langOption.id)"
-                                class="dropdown-option sub"
-                                :class="{ active: preprenceStore.lang === langOption.id }"
-                            >
-                                <img :src="langOption.icon" :alt="t(langOption.name)" />
-                                <div>
-                                    {{ t(langOption.name) }}
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                    <li
-                        @click="logout"
-                        class="dropdown-option"
-                    >
-                        <img :src="headerImages.logout" />
-                        <div>
-                            {{ t("로그아웃") }}
-                        </div>
-                    </li>
-                </ul>
+                <!-- Dropdown -->
+                <div class="dropdown-wrapper">
+                    <ul v-if="isOpen" class="dropdown-menu">
+                        <li
+                            @click.stop="handleToogleDisplay"
+                            class="dropdown-option"
+                            :class="isOpenDisplay ? 'clicked' : ''"
+                        >
+                            <img :src="headerImages.displayMode" />
+                            <div>
+                                {{ t("화면스타일") }}
+                            </div>
+                            <img :src="commonImages.dropdown" class="dropdown-img" />
+                            <ul v-if="isOpenDisplay" class="dropdown-menu sub">
+                                <li
+                                    v-for="option in displayOptions"
+                                    :key="option.id"
+                                    @click.stop="handleChangeDisplay(option.id)"
+                                    class="dropdown-option"
+                                    :class="{
+                                        active: $colorMode.preference === option.id,
+                                    }"
+                                >
+                                    <img :src="option.image"/>
+                                    <div>
+                                        {{ t(option.name) }}
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li
+                            @click.stop="handleToogleLanguage"
+                            class="dropdown-option"
+                            :class="isOpenLanguage ? 'clicked' : ''"
+                        >
+                            <img :src="headerImages.language" />
+                            <div>
+                                {{ t("언어변경") }}
+                            </div>
+                            <img :src="commonImages.dropdown" class="dropdown-img" />
+                            <ul v-if="isOpenLanguage" class="dropdown-menu sub">
+                                <li
+                                    v-for="langOption in languageOptions"
+                                    :key="langOption.id"
+                                    @click.stop="handleChangeLanguage(langOption.id)"
+                                    class="dropdown-option sub"
+                                    :class="{
+                                        active: preprenceStore.lang === langOption.id,
+                                    }"
+                                >
+                                    <img
+                                        :src="langOption.icon"
+                                        :alt="t(langOption.name)"
+                                    />
+                                    <div>
+                                        {{ t(langOption.name) }}
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li @click="logout" class="dropdown-option">
+                            <img :src="headerImages.logout" />
+                            <div>
+                                {{ t("로그아웃") }}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
+        <div></div>
         <div class="auto-save-box">
             <label>{{ t("영상 자동 저장") }}</label>
             <label class="toggleSwitch">
@@ -122,8 +129,8 @@ const isOpenLanguage = ref(false);
 const checked = ref(false);
 
 const displayOptions = [
-    { id: "light", name: "라이트 모드", image: headerImages.displayLightMode },
-    { id: "dark", name: "다크 모드", image: headerImages.displayDarkMode },
+    { id: "light", name: "라이트 모드", image: headerImages.value.displayLightMode },
+    { id: "dark", name: "다크 모드", image: headerImages.value.displayDarkMode },
 ];
 
 // 언어 목록을 배열로 관리
@@ -174,9 +181,18 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-header > :last-child {
-    margin-left: auto;
+header {
+    /* margin-left: auto; */
+    display: flex;
+    justify-content: space-between;
 }
+
+.login-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .welcome {
     @include tc(color, "bg-text-color");
     font-size: 12px;
@@ -200,7 +216,7 @@ header > :last-child {
     left: 0;
     border: 1px solid #3b3b3b;
     width: 140px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
     border-radius: 4px;
     padding-left: 0;
@@ -259,7 +275,7 @@ header > :last-child {
     border: 1px solid #3b3b3b;
     /* margin-top: 8px; */
     width: 140px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
     border-radius: 4px;
     padding-left: 0;
@@ -284,8 +300,6 @@ header > :last-child {
     position: relative;
     display: inline-block;
     width: 60px;
-    height: 34px;
-    margin-bottom: 12px;
 }
 
 /* 숨긴 체크박스 */
@@ -306,6 +320,7 @@ header > :last-child {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 13px;
 }
 
 /* 둥근 슬라이더 원 */

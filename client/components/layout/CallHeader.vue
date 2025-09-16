@@ -12,6 +12,8 @@ import { useChattingStore } from "@/stores/chatting";
 import { useCommonStore } from "@/stores";
 import { commonToastMessage } from "@/composables/common";
 import ContactList from "../pages/dashboard/ContactList.vue";
+import { useModalSlot } from "vue-final-modal";
+import { useModalStore } from "@/stores/modal";
 
 const { $colorMode } = useNuxtApp();
 const { t } = useI18n();
@@ -20,6 +22,7 @@ const callStore = useCallStore();
 const chattingStore = useChattingStore();
 const meetingStore = useMeetingStore();
 const commonStore = useCommonStore();
+const modalStore = useModalStore();
 
 const isOpen = ref(false);
 const isOpenDisplay = ref(false);
@@ -190,6 +193,10 @@ function handleChangeShareOnOff() {
 function toggleContactList() {
   showContactList.value = !showContactList.value
 }
+
+function handleSettingDevice() {
+    modalStore.openModal("device");
+}
 </script>
 
 <template>
@@ -256,7 +263,7 @@ function toggleContactList() {
                 </button>
             </div>
             <div>
-                <button :class="callingLayoutType == 1 ? 'clicked' : 'un-clicked'">
+                <button @click="handleSettingDevice" :class="callingLayoutType == 1 ? 'clicked' : 'un-clicked'">
                     <img src="@/assets/images/darkmode/header/calling/ic_setup_btn.svg" />
                 </button>
             </div>

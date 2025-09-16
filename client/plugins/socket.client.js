@@ -27,6 +27,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     signallingSocket.on("connect", async () => {
         console.log("✅ Signalling Socket Connected:", signallingSocket.id);
 
+        if (["requestVideoRecording"].includes(route.name)) {
+            return;
+        }
         // 이벤트 등록
         bindSocketEvents();
         useSocketEmitEvents();

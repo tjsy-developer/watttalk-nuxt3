@@ -47,7 +47,7 @@
     <CallHeader></CallHeader>
     <div class="content">
         <slot></slot>
-		<ChatBar></ChatBar>
+		<ChatBar @is="onSend"></ChatBar>
     </div>
     <CallSideBar></CallSideBar>
     <div id="toast">
@@ -79,6 +79,8 @@ import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useCommonStore();
+
+const isShowChatBar = ref(false);
 
 // 각 모달의 가시성 상태는 activeModals 배열에 해당 타입이 포함되어 있는지로 확인
 const isLoginModalVisible = computed({

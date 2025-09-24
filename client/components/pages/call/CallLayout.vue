@@ -39,178 +39,6 @@
         >
             <ThumbNail></ThumbNail>
         </CallWindow>
-
-        <!-- <div v-else-if="callingLayoutType === 3" class="row content-start callingLayout3">
-            <div id="callingLayoutWrap3" class="col-auto column callingLayoutWrap3">
-                <div class="callingLayoutForm">
-                    <div
-                        v-for="(window, windowKey) in roomNumberCount - 1"
-                        v-show="userList[windowKey].status !== 'none'"
-                        :key="windowKey"
-                        class="col callingWindowContainer3"
-                    >
-                        <div
-                            v-if="windowKey === 0"
-                            id="videolocal"
-                            :compData="userList[windowKey] || []"
-                            :videoTag="callStore.videoTagArray[0]"
-                            :stream="callStore.videoStreamArray[0]"
-                            :value="windowKey"
-                        >
-                            <CallWindow />
-                        </div>
-                        <div
-                            v-else
-                            :id="`videoremote${windowKey}`"
-                            :compData="userList[windowKey] || []"
-                            :videoTag="callStore.videoTagArray[windowKey]"
-                            :stream="callStore.videoStreamArray[windowKey]"
-                            :value="windowKey"
-                            :style="{ height: '105px', 'object-fit': 'cover' }"
-                        >
-                            <CallWindow />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col z-index-1">
-                <CallWindow
-                    :compData="userList[roomNumberCount - 1] || []"
-                    :calling-layout-type="callingLayoutType"
-                >
-                    <template #default>
-                        <Thumbnail />
-                    </template>
-                </CallWindow>
-            </div>
-        </div>
-
-        <div v-else-if="callingLayoutType === 4" class="row content-start callingLayout4">
-            <div class="col-12 fullTrue">
-                <CallWindow
-                    :compData="userList[roomNumberCount - 1] || []"
-                    :calling-layout-type="callingLayoutType"
-                >
-                    <template #default>
-                        <Thumbnail />
-                    </template>
-                </CallWindow>
-            </div>
-            <button
-                v-if="isShow"
-                id="fixBtn"
-                :style="{
-                    position: 'absolute',
-                    bottom: '179.5px',
-                    left: showBtnWidth + 'px',
-                }"
-                class="memberFixBtn"
-                @click="showMember"
-            >
-                <img
-                    v-if="displayMode === 'darkmode'"
-                    src="@/assets/images/calling/bt_default_2.png"
-                />
-                <img
-                    v-else-if="displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/bt_default_2.svg"
-                />
-                <img
-                    id="upDownArrow"
-                    v-if="displayMode === 'darkmode'"
-                    src="@/assets/images/calling/ic_down_20.png"
-                    class="upDownImg"
-                />
-                <img
-                    id="upDownArrow"
-                    v-else-if="displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/ic_down_20.svg"
-                    class="upDownImg"
-                />
-            </button>
-            <button
-                v-else
-                id="fixBtn"
-                :style="{
-                    position: 'absolute',
-                    bottom: '0px',
-                    left: showBtnWidth + 'px',
-                }"
-                class="memberFixBtn"
-                @click="showMember"
-            >
-                <img
-                    v-if="
-                        (underStatus === 0 || underStatus === 3) &&
-                        displayMode === 'darkmode'
-                    "
-                    src="@/assets/images/calling/bt_default.png"
-                />
-                <img
-                    v-else-if="
-                        (underStatus === 0 || underStatus === 3) &&
-                        displayMode === 'lightmode'
-                    "
-                    src="@/assets/images/lightmode/underbar/bt_default_2.svg"
-                />
-                <img
-                    v-else-if="underStatus === 1 && displayMode === 'darkmode'"
-                    src="@/assets/images/calling/bt_call.png"
-                />
-                <img
-                    v-else-if="underStatus === 1 && displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/bt_call.svg"
-                />
-                <img
-                    v-else-if="underStatus === 2 && displayMode === 'darkmode'"
-                    src="@/assets/images/calling/bt_file.png"
-                />
-                <img
-                    v-else-if="underStatus === 2 && displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/bt_file.svg"
-                />
-                <img
-                    id="upDownArrow"
-                    v-if="
-                        (underStatus === 0 || underStatus === 3) &&
-                        displayMode === 'darkmode'
-                    "
-                    src="@/assets/images/calling/ic_down_20.png"
-                    style="transform: rotate(180deg)"
-                    class="upDownImg"
-                />
-                <img
-                    id="upDownArrow"
-                    v-else-if="
-                        (underStatus === 0 || underStatus === 3) &&
-                        displayMode === 'lightmode'
-                    "
-                    src="@/assets/images/lightmode/underbar/ic_down_20.svg"
-                    style="transform: rotate(180deg)"
-                    class="upDownImg"
-                />
-                <img
-                    v-else-if="underStatus === 1 && displayMode === 'darkmode'"
-                    src="@/assets/images/calling/ic_call_20.png"
-                    class="upDownImg upImg blinking"
-                />
-                <img
-                    v-else-if="underStatus === 1 && displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/ic_call_20.svg"
-                    class="upDownImg upImg blinking"
-                />
-                <img
-                    v-else-if="underStatus === 2 && displayMode === 'darkmode'"
-                    src="@/assets/images/calling/ic_file_20.png"
-                    class="upDownImg upImg blinking"
-                />
-                <img
-                    v-else-if="underStatus === 2 && displayMode === 'lightmode'"
-                    src="@/assets/images/lightmode/underbar/ic_file_20.svg"
-                    class="upDownImg upImg blinking"
-                />
-            </button>
-        </div> -->
     </div>
 </template>
 
@@ -629,6 +457,7 @@ onUnmounted(() => {
     overflow: auto;
     max-width: 227px;
     width: 227px;
+    flex: 0 0 227px;
     gap: 25px;
     box-sizing: content-box;
     /* bottom: 8px; */
@@ -657,7 +486,7 @@ onUnmounted(() => {
     width: -webkit-fill-available;
     position: absolute;
     gap: 10px;
-    bottom: 8px;
+    bottom: 0;
     z-index: 1;
     > .windowContainer + .windowContainer {
         margin-left: 10px;
@@ -671,7 +500,6 @@ onUnmounted(() => {
 
 #mainVideo {
     flex: 1;
-    position: relative;
     display: flex;
     align-items: center;
     object-fit: fill;

@@ -15,6 +15,7 @@
             @input="handleInput"
             placeholder="검색"
             class="searh-input"
+            v-show="menuType == 0 || menuType == 1"
         />
         <div class="contact-container">
             <RecentCallList
@@ -26,6 +27,9 @@
                 v-if="menuType == 1"
                 :data="userListStore.organizationList"
                 :search="searchName"
+            />
+            <NonMemberInvite
+                v-if="menuType == 2"
             />
         </div>
     </div>
@@ -47,6 +51,7 @@ import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
 import { useVfm } from 'vue-final-modal';
 import LoadingModal from "@/components/modal/LoadingModal.vue";
 import { useMeetingStore } from "@/stores/meeting";
+import NonMemberInvite from "./NonMemberInvite.vue";
 
 const vfm = useVfm();
 const userListStore = useUserListStore();

@@ -22,7 +22,7 @@ onMounted(async () => {
     if (res.data.length > 0) {
         vfm.toggle("notice-modal");
     }
-})
+});
 const handleClickNotice = () => {
     // open();
     vfm.toggle("notice-modal");
@@ -45,7 +45,7 @@ const handleClickCloud = () => {
         br_alias: loginStore.branch,
         email: loginStore.sessionEmail,
         device_type: loginStore.sessionDeviceType,
-    }
+    };
     const queryString = new URLSearchParams(params).toString();
     const domain = `http://localhost:8205/login?${queryString}`;
     window.open(domain, "target");
@@ -69,6 +69,7 @@ const handleClickCloud = () => {
         </a>
         <div class="icon-btn bell" title="알림" @click="handleClickNotice">
             <img :src="menuImages.notice" :alt="t('알림')" />
+            <div class="new">&nbsp;</div>
         </div>
         <audio id="calling_bell" loop style="display: none">
             <source src="@/assets/sounds/Wood.ogg" type="audio/ogg" />
@@ -91,3 +92,15 @@ const handleClickCloud = () => {
     </div>
     <canvas id="videoNone" style="display: none"></canvas>
 </template>
+
+<style lang="scss" scoped>
+.new {
+    width: 7px;
+    height: 7px;
+    border-radius: 7px;
+    background-color: red;
+    position: absolute;
+    top: 22px;
+    right: 23px;
+}
+</style>

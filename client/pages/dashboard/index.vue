@@ -257,8 +257,9 @@ const handleCalling = (response) => {
     const json = JSON.parse(response);
     console.log("*** socket: calling response", json);
     console.log(json);
-
-    if (sessionStorage.getItem("m_callWaiting") === "true") {
+    
+    const isWaiting = sessionStorage.getItem("m_callWaiting") === "true";
+    if (isWaiting) {
         const obj = {
             remoteDeviceId: json.deviceid,
             roomID: json.roomid,
@@ -632,7 +633,7 @@ onMounted(() => {
 });
 
 // 언마운트되기 전 실행할 작업
-onUnmounted(() => {
+onBeforeUnmount(() => {
     signallingSocket.off("createRoomID", handleCreateRoomID);
     signallingSocket.off("calling", handleCalling);
     signallingSocket.off("canMakeCall", handleCanMakeCall);

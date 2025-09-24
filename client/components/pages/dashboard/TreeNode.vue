@@ -59,12 +59,12 @@
                 <img
                     v-if="node.status == 1 && !props.useCheckBox"
                     :src="commonImages.useChat"
-                    @click="requestChat(node.deviceId)"
+                    @click="requestChat(node)"
                 />
                 <img
                     v-if="node.status == 0 && !props.useCheckBox"
                     :src="commonImages.useNotChat"
-                    @click="requestChat(node.deviceId)"
+                    @click="requestChat(node)"
                     @mouseover="handleMouseChatOver"
                     @mouseleave="handleMouseChatLeave"
                 />
@@ -92,6 +92,7 @@
 <script setup>
 import { common } from "@/assets/images";
 import { iconLogOffUser, iconLogOnUser } from "@/assets/images/index";
+import ChatModal from "@/components/modal/ChatModal.vue";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useImageAssets } from "@/composables/useImageAssets";
 import { useCommonStore } from "@/stores";
@@ -103,19 +104,12 @@ import { useModalStore } from "@/stores/modal";
 import { useColorMode } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, defineProps, onMounted, reactive, ref, watch } from "vue";
+import { useModal, useModalSlot, useVfm, VueFinalModal } from "vue-final-modal";
 
+const vfm = useVfm();
 const { t, locale } = useI18n();
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
-
-// interface OrgNode {
-//     name: string;
-//     status?: number;
-//     deviceType?: number;
-//     deviceId?: string;
-//     children?: OrgNode[];
-//     checked?: boolean;
-// }
 
 const props = defineProps(["node", "openNodes", "parentPath", "useCheckBox"]);
 const commonStore = useCommonStore();
@@ -209,7 +203,41 @@ function requestCall(remoteDeviceId) {
     }
 }
 
-function requestChat(remoteDeviceId) {}
+function requestChat(remoteUser) {
+    const modalId = "chat-modal-" + remoteUser.deviceId;
+    if (vfm.get(modalId)) {
+        vfm.open(modalId);
+        return;
+    }
+
+    // 최초 등록
+    const { open } = useModal({
+        component: VueFinalModal,
+        keepAlive: true,
+        attrs: {
+            modalId,
+            displayDirective: "show",
+            background: "interactive",
+            contentTransition: "vfm-fade",
+            hideOverlay: true,
+            class: "modal-container chat-modal non-overlay",
+            "onUpdate:modelValue": (val) => {
+                console.log("chat modal open state changed:", val);
+            },
+        },
+        slots: {
+            default: useModalSlot({
+                component: ChatModal,
+                attrs: {
+                    remoteDeviceId: remoteUser.deviceId,
+                    remoteNickName: remoteUser.name,
+                    profile: remoteUser?.image,
+                },
+            }),
+        },
+    });
+    open();
+}
 
 function handleClickCheck(node) {
     console.log(node)

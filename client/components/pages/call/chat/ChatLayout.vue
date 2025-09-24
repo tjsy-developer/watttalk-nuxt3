@@ -1,6 +1,6 @@
 <template>
-    <div class="chat-container" :class="!isShowChatBar ? 'hidden' : ''">
-        <button class="slide-btn" @click="isShowChatBar = !isShowChatBar">
+    <div class="chat-container" :class="!getIsShowChatBar ? 'hidden' : ''">
+        <button class="slide-btn" @click="chattingStore.setChattingShow()">
             <img
                 v-if="callStore.underStatus == 0 || callStore.underStatus == 3"
                 src="@/assets/images/calling/right_bt_default.png"
@@ -18,25 +18,25 @@
                 v-if="callStore.underStatus == 0"
                 src="@/assets/images/calling/ic_right_20.png"
                 class="chat-status arrow"
-                :class="{ hidden: !isShowChatBar }"
+                :class="{ hidden: !getIsShowChatBar }"
             />
             <img
                 v-if="callStore.underStatus == 1"
                 src="@/assets/images/calling/ic_call_20.png"
                 class="chat-status"
-                :class="{ blink: !isShowChatBar }"
+                :class="{ blink: !getIsShowChatBar }"
             />
             <img
                 v-if="callStore.underStatus == 2"
                 src="@/assets/images/calling/ic_file_20.png"
                 class="chat-status"
-                :class="{ blink: !isShowChatBar }"
+                :class="{ blink: !getIsShowChatBar }"
             />
             <img
                 v-if="callStore.underStatus == 3"
                 src="@/assets/images/calling/ic_text.png"
                 class="chat-status"
-                :class="{ blink: !isShowChatBar }"
+                :class="{ blink: !getIsShowChatBar }"
             />
         </button>
         <div class="column content-start layout">
@@ -159,6 +159,7 @@ const setAllMicMuteStatus = (status) => {
     callStore.setAllMicMuteStatus(status);
 };
 
+const getIsShowChatBar = computed(() => chattingStore.chattingShow);
 const chattingMessageList = computed(() => chattingStore.chattingMessageList);
 const getNewMessageConfrim = computed(() => chattingStore.newMessageConfrim);
 const getNewEmergencyConfirm = computed(() => chattingStore.newEmergencyConfirm);

@@ -1,7 +1,11 @@
 <template lang="html">
     <div
         :style="{ border: props.compData?.status == 'none' ? '1px dashed #767676' : '' }"
-        :class="[drawingIframe ? 'draw' : 'video']"
+        :class="[
+            drawingIframe ? 'draw' : 'video',
+            'user-screen',
+            `layout${callingLayoutType}`,
+        ]"
         @click="getMainVideoIndex"
         class="row window"
         :id="props.id"
@@ -18,28 +22,36 @@
                 src="@/assets/images/calling/ic_r_mute.png"
             />
         </div>
+        <div class="windowInfoBar" v-if="props.compData?.status !== 'main'">
+            <div class="user-name">
+                <span>{{ props.compData.text }}</span>
+                <div>
+                    <img
+                        v-if="compData.status == 'calling' && !props.compData.isSounded"
+                        @click="soundedClick"
+                        @mousedown.stop
+                        src="@/assets/images/ic_mic.png"
+                    />
+                    <img
+                        v-else-if="compData.status == 'calling' && props.compData.isSounded"
+                        @click="soundedClick"
+                        @mousedown.stop
+                        src="@/assets/images/ic_mute.png"
+                    />
+                    <img 
+                        v-if="compData.status == 'sending' || compData.status == 'connecting' || compData.status == 'other'"
+                        @click="cancelCallClick"
+                        src="@/assets/images/calling/ic_x_blue.png"
+                    />
+                </div>
+            </div>
+        </div>
         <button
             v-if="props.compData && props.compData?.status == 'calling'"
             @mousedown="windowClick"
+            class="status calling"
         >
             <img :src="props.compData.img" />
-            <div class="row items-center windowInfoBar">
-                <span class="col text-left">{{ props.compData.text }}</span>
-                <button
-                    v-if="!props.compData.isSounded"
-                    @click="soundedClick"
-                    @mousedown.stop
-                >
-                    <img src="@/assets/images/ic_mic.png" />
-                </button>
-                <button
-                    v-else-if="props.compData.isSounded"
-                    @click="soundedClick"
-                    @mousedown.stop
-                >
-                    <img src="@/assets/images/ic_mute.png" />
-                </button>
-            </div>
         </button>
         <div
             v-else-if="props.compData && props.compData?.status == 'main'"
@@ -54,20 +66,6 @@
             id="videoMainDivWrap"
             class="videoMainDivWrap"
         >
-            <span id="videoMainName" style="display: none" class="col text-left">{{
-                props.compData.text
-            }}</span>
-            <div
-                v-if="!drawingIframe && callingLayoutType == 1"
-                style="display: none"
-                class="row items-center user-name-wrap"
-            >
-                <span
-                    :value="props.compData.text"
-                    id="videoMainCaption"
-                    class="col text-left videoNameSpan"
-                ></span>
-            </div>
             <div
                 id="videoMainDiv"
                 class="justify-center"
@@ -203,6 +201,7 @@
                             >
                         </div>
                     </div>
+                    <div class="user-name main">{{ props.compData.text }}</div>
                     <div
                         v-if="pdfUploading"
                         :style="{ right: antennaStatus ? '50px' : '10px' }"
@@ -276,16 +275,6 @@
                         id="laserPointer"
                         class="laserPointer"
                     ></div>
-                    <!-- <div
-                        v-if="props.compData?.status != 'none' && !isDrawing"
-                        class="nickname row items-center"
-                    >
-                        <input
-                            :value="props.compData.nickname"
-                            @change="changeNickName(props.compData, $event)"
-                            class="nickname-text"
-                        />
-                    </div> -->
                 </div>
             </div>
             <div
@@ -358,11 +347,7 @@
                     />
                     <span>{{ t("사고자 위치") }}</span>
                 </button>
-                <button
-                    @click="motionFallClose"
-                    :style="{ width: locale == 'ko' ? '60px' : '100px' }"
-                    class="emergencyBtn"
-                >
+                <button @click="motionFallClose" class="emergencyBtn">
                     {{ t("confirm") }}
                 </button>
             </div>
@@ -405,587 +390,205 @@
                     <span>{{ t("사고자 위치") }}</span>
                 </button>
             </div>
-            <div
-                v-if="props.compData.type == 'unstable'"
-                :style="{ display: 'block' }"
-                class="row justify-center items-center otherBackground"
-            >
-                <div class="row justify-center items-center unstableWrap">
+            <div v-if="props.compData.type == 'unstable'" :style="{ display: 'block' }">
+                <div class="unstableWrap">
                     <img src="@/assets/images/calling/ic_video_send_158.png" />
                 </div>
-                <div class="row justify-center items-center unstableText">
+                <div class="unstableText">
                     {{ t("call Unstable1") }}
                 </div>
-                <div class="row justify-center items-center unstableText">
+                <div class="unstableText">
                     {{ t("call Unstable2") }}
                 </div>
             </div>
-            <div
-                v-else-if="props.compData.type == 'videoOFF'"
-                id="otherBackground"
-                class="row justify-center items-center otherBackground"
-            >
-                <div class="row justify-center items-center">
+            <div v-else-if="props.compData.type == 'videoOFF'" id="otherBackground">
+                <div>
                     <img src="@/assets/images/calling/ic_photo_140.png" />
                 </div>
-                <!-- <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div> -->
             </div>
         </div>
         <div v-else-if="props.compData && props.compData?.status == 'my'"></div>
         <div
             v-else-if="props.compData && props.compData?.status == 'sending'"
-            class="mode sending"
+            class="status sending"
         >
-            <div
-                v-if="callingLayoutType == 1"
-                class="row justify-center sendingBackground sendingLayout1"
-            >
-                <div class="row justify-center items-center">
-                    <img src="@/assets/images/calling/ic_call-send-1.png" />
-                    <span class="sendingSpan">{{ t("발신 중") }}</span>
-                </div>
-            </div>
-            <div
-                v-else-if="callingLayoutType == 3"
-                class="row justify-center items-center sendingBackground sendingLayout3"
-            >
-                <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
-            </div>
-            <div
-                v-else-if="callingLayoutType == 5"
-                class="row justify-center items-center sendingBackground sendingLayout3"
-            >
-                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
-                <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-            </div>
-            <div v-else class="row justify-center items-center sendingBackground">
-                <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3">{{ t("발신 중") }}</span>
-            </div>
-            <div class="windowInfoBar">
-                <button @click="cancelCallClick">
-                    <img src="@/assets/images/calling/ic_x_blue.png" />
-                </button>
+            <div>
+                <img src="@/assets/images/calling/ic_call-send-1.png" class="status img"/>
+                <p class="sendingSpan">{{ t("발신 중") }}</p>
             </div>
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'receive'"
-            class="receive"
+            class="status receive"
         >
-            <div v-if="callingLayoutType == 1" class="receiveBackground">
-                <img src="@/assets/images/calling/ic_call-send-1.png" />
-                <div class="buttonsLayout1">
+            <div>
+                <img src="@/assets/images/calling/ic_call-send-1.png" class="status img"/>
+                <div class="button-container">
                     <button
                         @click="setMultiCalling(1)"
-                        class="receiveBtnCallingLayoutType3"
+                        class="accept-btn"
                     >
                         {{ t("accept") }}
                     </button>
                     <button
                         @click="(setMultiCalling(0), setDeclineStatus())"
-                        class="receiveBtnCallingLayoutType4"
+                        class="decline-btn"
                     >
                         {{ t("decline") }}
                     </button>
                 </div>
-                <span class="receiveSpan">{{ t("receiving") }}</span>
+                <span class="status-text">{{ t("receiving") }}</span>
             </div>
-            <div v-else class="receiveBackground buttonsLayout3">
-                <img src="@/assets/images/calling/ic_call-send-1.png" />
-                <div class="buttonsLayout3">
-                    <button
-                        @click="setMultiCalling(1)"
-                        class="receiveBtnCallingLayoutType3"
-                    >
-                        {{ t("accept") }}
-                    </button>
-                    <button
-                        @click="setMultiCalling(0)"
-                        class="receiveBtnCallingLayoutType4"
-                    >
-                        {{ t("decline") }}
-                    </button>
-                </div>
-                <div v-if="callingLayoutType == 5" class="justify-center buttonsLayout5">
-                    <img src="@/assets/images/calling/ic_call-send-3.png" class="big" />
-                    <button
-                        @click="setMultiCalling(1)"
-                        class="receiveBtnCallingLayoutType3"
-                    >
-                        {{ t("accept") }}
-                    </button>
-                    <button
-                        @click="setMultiCalling(0)"
-                        class="receiveBtnCallingLayoutType4"
-                    >
-                        {{ t("decline") }}
-                    </button>
-                </div>
-            </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-            </div> -->
         </div>
-        <div v-else-if="props.compData && props.compData?.status == 'fail'" class="mode">
-            <div
-                v-if="callingLayoutType == 1 || callingLayoutType == 2"
-                class="row justify-center otherBackground"
-            ></div>
-            <div v-else class="row justify-center items-center otherBackground">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'fail'"
+            class="status fail"
+        >
+            <div>
                 <img src="@/assets/images/calling/ic_popup_cal-3.png" class="big" />
-                <div style="width: 55%" class="row justify-center items-center">
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("fail1")
-                    }}</span>
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("fail2")
-                    }}</span>
+                <div>
+                    <p class="sendingSpanCallingLayoutType3">{{
+                            t("fail1")
+                        }}</p>
+                        <p class="sendingSpanCallingLayoutType3">{{
+                            t("fail2")
+                        }}</p>
                 </div>
             </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-                <button>
-                    <img src="@/assets/images/calling/ic_x_blue.png" />
-                </button>
-            </div> -->
         </div>
-        <div v-else-if="props.compData && props.compData?.status == 'other'" class="mode">
-            <div
-                v-if="callingLayoutType == 1 || callingLayoutType == 2"
-                class="row justify-center otherBackground"
-            ></div>
-            <div v-else class="row justify-center items-center otherBackground">
+        <div
+            v-else-if="props.compData && props.compData?.status == 'other'"
+            class="status other"
+        >
+            <div>
                 <img src="@/assets/images/calling/ic_popup_cal-1.png" class="big" />
-                <div style="width: 50%" class="row justify-center items-center">
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("other1")
-                    }}</span>
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("other2")
-                    }}</span>
+                <div>
+                    <span class="sendingSpanCallingLayoutType3">{{ t("other1") }}</span>
+                    <span class="sendingSpanCallingLayoutType3">{{ t("other2") }}</span>
                 </div>
             </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-                <button>
-                    <img src="@/assets/images/calling/ic_x_blue.png" />
-                </button>
-            </div> -->
         </div>
-        <div v-else-if="props.compData && props.compData?.status == 'error'" class="mode">
-            <div
-                v-if="callingLayoutType == 1"
-                class="row justify-center items-center otherBackground errorLayout1"
-            >
-                <div style="width: 60%" class="row justify-center items-center">
-                    <img src="@/assets/images/calling/ic_popup_error-2.png" class="big" />
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("error1")
-                    }}</span>
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("error2")
-                    }}</span>
-                </div>
-            </div>
-            <div
-                v-else-if="callingLayoutType == 3"
-                class="row justify-center items-center otherBackground errorLayout3"
-            >
+        <div
+            v-else-if="props.compData && props.compData?.status == 'error'"
+            class="status error"
+        >
+            <div>
                 <img src="@/assets/images/calling/ic_popup_error-3.png" class="big" />
-                <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                    t("error1")
-                }}</span>
-                <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                    t("error2")
-                }}</span>
-            </div>
-            <div v-else class="row justify-center items-center otherBackground">
-                <img src="@/assets/images/calling/ic_popup_error-3.png" class="big" />
-                <div style="width: 60%" class="row justify-center items-center">
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("error1")
-                    }}</span>
-                    <span class="sendingSpanCallingLayoutType3 col-12 aligned">{{
-                        t("error2")
-                    }}</span>
+                <div>
+                    <p class="sendingSpanCallingLayoutType3">{{ t("error1") }}</p>
+                    <p class="sendingSpanCallingLayoutType3">{{ t("error2") }}</p>
                 </div>
             </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-                <button @click="setErrorClose()">
-                    <img src="@/assets/images/calling/ic_x_blue.png" />
-                </button>
-            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'attach'"
-            class="mode"
+            class="status attach"
         ></div>
         <div
             v-else-if="props.compData && props.compData?.status == 'connecting'"
-            class="mode sending"
+            class="status connecting"
         >
-            <div v-if="callingLayoutType == 1" class="receiveBackground connectLayout1">
-                <img src="@/assets/images/calling/ic_connect_68.png" />
-                <span class="sendingSpanCallingLayoutType3">{{ t("통화 연결 중") }}</span>
+            <div>
+                <img src="@/assets/images/calling/ic_connect_68.png" class="status img" />
+                <p class="sendingSpanCallingLayoutType3">{{ t("통화 연결 중") }}</p>
             </div>
-            <div
-                v-else-if="callingLayoutType == 5"
-                class="receiveBackground connectLayout5"
-            >
-                <span class="sendingSpanCallingLayoutType3">{{
-                    t("call Connecting")
-                }}</span>
-                <img src="@/assets/images/calling/ic_connect_68.png" />
-            </div>
-            <div v-else class="receiveBackground connectLayout3">
-                <img src="@/assets/images/calling/ic_connect_68.png" />
-                <span class="sendingSpanCallingLayoutType3">{{
-                    t("call Connecting")
-                }}</span>
-            </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'unstable'"
-            style="height: 100%"
-            class="mode"
+            class="status unstable"
         >
-            <div
-                v-if="callingLayoutType == 1"
-                class="row justify-center items-center otherBackground unstableLayout1"
-            >
-                <div style="width: 60%" class="row justify-center items-center">
-                    <img src="@/assets/images/calling/ic_video_send_100.png" />
-                    <span
-                        class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                        >{{ t("call Unstable1") }}</span
-                    >
-                    <span
-                        class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                        >{{ t("call Unstable2") }}</span
-                    >
+            <div>
+                <img src="@/assets/images/calling/ic_video_send_100.png"  class="status img"/>
+                <div>
+                    <p class="longTypeText">{{ t("call Unstable1") }}</p>
+                    <p class="sendingSpanCallingLayoutType3 longTypeText">
+                        {{ t("call Unstable2") }}
+                    </p>
                 </div>
             </div>
-            <div
-                v-else-if="callingLayoutType == 3"
-                class="row justify-center items-center otherBackground"
-            >
-                <img
-                    style="width: 43px"
-                    src="@/assets/images/calling/ic_video_send_68.png"
-                    class="col-12"
-                />
-                <span
-                    style="font-size: 10px"
-                    class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                    >{{ t("call Unstable1") }}</span
-                >
-                <span
-                    style="font-size: 10px"
-                    class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText"
-                    >{{ t("call Unstable2") }}</span
-                >
-            </div>
-            <div
-                v-else
-                class="row justify-center items-center otherBackground unstableLayout4"
-            >
-                <img src="@/assets/images/calling/ic_video_send_68.png" />
-                <span class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText">{{
-                    t("call Unstable1")
-                }}</span>
-                <span class="sendingSpanCallingLayoutType3 col-12 aligned longTypeText">{{
-                    t("call Unstable2")
-                }}</span>
-            </div>
-            <!-- <div class="row items-center windowInfoBar">
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-            </div> -->
         </div>
         <div
             v-else-if="props.compData && props.compData?.status == 'unpublished'"
-            class="mode unpublish"
+            class="status unpublished"
         >
-            <div
-                @click="mainVideoImageChange()"
-                class="row justify-center items-center otherBackground"
-            >
+            <div @click="mainVideoImageChange()">
                 <img
-                    v-if="callingLayoutType == 1"
                     src="@/assets/images/calling/ic_photo_140.png"
                     class="callingLayout1-unpublished"
                 />
-                <img v-else src="@/assets/images/calling/ic_photo_52.png" style="" />
             </div>
-            <!-- <div
-                v-if="props.compData.text != sessionNickname"
-                class="items-center windowInfoBar row"
-            >
-                <div
-                    v-if="props.compData?.status != 'none'"
-                    class="nickname row items-center"
-                >
-                    <input
-                        :value="props.compData.nickname"
-                        @change="changeNickName(props.compData, $event)"
-                        class="nickname-text"
-                    />
-                </div>
-            </div> -->
         </div>
-        <div v-else-if="fileStatus" class="receive">
-            <div v-if="props.compData?.status == 2" class="col-12 receiveStatus">
-                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
-                    <div class="row justify-center content-center">
-                        <p style="font-size: 20px" class="requestText">
-                            {{ props.compData.fileReceiveInfo.fileSendNickname }}
-                            {{ t("fileReceptionRequest1") }}
-                            {{ t("fileReceptionRequest2") }}
-                        </p>
-                    </div>
-                    <div
-                        :style="{ paddingTop: props.compData == 1 ? '37px' : '20px' }"
-                        class="buttonsLayout1"
+        <div v-else-if="props.compData?.status == 2" class="status file">
+            <div class="fileReceptionLayout1">
+                <div>
+                    <p>
+                        <!-- {{ props.compData.fileReceiveInfo.fileSendNickname }} -->
+                        {{ t("fileReceptionRequest1") }}
+                    </p>
+                    <p>
+                        {{ t("fileReceptionRequest2") }}
+                    </p>
+                </div>
+                <div
+                    class="button-container"
+                >
+                    <button
+                        @click="fileReceiveAccept(props.compData.text)"
+                        style="background: #1c8eff"
+                        class="accept-btn"
                     >
-                        <button
-                            @click="fileReceiveAccept(props.compData.text)"
-                            style="background: #1c8eff"
-                            class="receiveBtnCallingLayoutType3"
-                        >
-                            {{ t("accept") }}
-                        </button>
-                        <button
-                            @click="fileReceiveDecline(props.compData.text)"
-                            style="background: #464646"
-                            class="receiveBtnCallingLayoutType4"
-                        >
-                            {{ t("decline") }}
-                        </button>
-                    </div>
-                </div>
-                <div
-                    v-else
-                    style="background: #151515; padding-bottom: 0"
-                    class="row justify-center content-center fileReceptionLayout3"
-                >
-                    <div class="buttonsLayout1">
-                        <div style="text-align: center" class="row">
-                            <p
-                                style="font-size: 12px; margin: auto"
-                                class="col-12 requestText"
-                            >
-                                {{ props.compData.fileReceiveInfo.fileSendNickname }}
-                                {{ t("fileReceptionRequest1") }}
-                            </p>
-                            <p style="font-size: 12px; margin: auto" class="requestText">
-                                {{ t("fileReceptionRequest2") }}
-                            </p>
-                        </div>
-                    </div>
-                    <div
-                        :style="{ paddingTop: props.compData == 1 ? '37px' : '5px' }"
-                        class="col-12 row justify-center acceptbuttons"
+                        {{ t("accept") }}
+                    </button>
+                    <button
+                        @click="fileReceiveDecline(props.compData.text)"
+                        style="background: #464646"
+                        class="cancel-btn"
                     >
-                        <button
-                            @click="fileReceiveAccept(props.compData.text)"
-                            style="background: #1c8eff"
-                            class="receiveBtnCallingLayoutType3"
-                        >
-                            {{ t("accept") }}
-                        </button>
-                        <button
-                            @click="fileReceiveDecline(props.compData.text)"
-                            style="background: #464646"
-                            class="receiveBtnCallingLayoutType4"
-                        >
-                            {{ t("decline") }}
-                        </button>
-                    </div>
+                        {{ t("decline") }}
+                    </button>
                 </div>
             </div>
-            <div v-else-if="props.compData?.status == 3" class="col-12 receiveStatus">
-                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
-                    <div class="row col-12 justify-center">
-                        <div style="margin-bottom: 15px" class="row col-5 prog">
-                            <div
-                                :style="{
-                                    width:
-                                        userListStatus[props.compData.userListIndex]
-                                            .rate + '%',
-                                }"
-                                id="progressing"
-                                class="progs"
-                            ></div>
-                        </div>
-                    </div>
-                    <div class="buttonsLayout1">
-                        <p class="fileReceivingText">{{ t("receivingFile") }}</p>
-                    </div>
-                </div>
-                <div
-                    v-else
-                    class="row justify-center content-center fileReceptionLayout3"
-                >
-                    <div class="buttonsLayout1">
-                        <div style="text-align: center" class="row">
-                            <p class="col-12 fileReceivingText">
-                                {{ t("receivingFile") }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="row col-12 justify-center">
-                        <div style="height: 8px" class="row col-8 prog">
-                            <div
-                                :style="{
-                                    width:
-                                        userListStatus[props.compData.userListIndex]
-                                            .rate + '%',
-                                }"
-                                id="progressing"
-                                class="progs"
-                            ></div>
-                        </div>
-                    </div>
+        </div>
+        <div v-else-if="props.compData?.status == 3" class="status file">
+            <div>
+                <p class="fileReceivingText">{{ t("receivingFile") }}</p>
+                <div class="prog">
+                    <div
+                        :style="{
+                            width:
+                                userListStatus[props.compData.userListIndex]
+                                    .rate + '%',
+                        }"
+                        id="progressing"
+                        class="progs"
+                    ></div>
                 </div>
             </div>
-            <div v-else-if="props.compData?.status == 5" class="col-12 receiveStatus">
-                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
-                    <div class="row col-12 justify-center">
-                        <img
-                            src="@/assets/images/ic_complete_3.png"
-                            class="fileReceptionComplete"
-                        />
-                    </div>
-                    <div class="row justify-center content-center">
-                        <p class="receptionCompleteText">
-                            {{ t("fileReceptionComplete") }}
-                        </p>
-                    </div>
-                </div>
-                <div
-                    v-else
-                    style="padding-bottom: 0"
-                    class="row justify-center content-center fileReceptionLayout3"
-                >
-                    <div class="row col-12 justify-center">
-                        <img
-                            :style="{ width: callingLayoutType == 3 ? '30px' : '40px' }"
-                            src="@/assets/images/ic_complete_3.png"
-                            class="fileReceptionComplete"
-                        />
-                    </div>
-                    <div class="row col-12 justify-center">
-                        <div style="text-align: center" class="row">
-                            <p class="col-12 receptionCompleteText">
-                                {{ t("fileReceptionComplete") }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <div v-else-if="props.compData?.status == 5" class="status file">
+            <div >
+                <img
+                    src="@/assets/images/ic_complete_3.png"
+                    class="status img"
+                />
+                <p>
+                    {{ t("fileReceptionComplete") }}
+                </p>
             </div>
-            <div v-else-if="props.compData?.status == 6" class="col-12 receiveStatus">
-                <div v-if="callingLayoutType == 1" class="fileReceptionLayout1">
-                    <div class="row col-12 justify-center">
-                        <img
-                            src="@/assets/images/ic_complete_3.png"
-                            class="fileReceptionComplete"
-                        />
-                    </div>
-                    <div class="row justify-center content-center">
-                        <p class="receptionCompleteText">
-                            {{ fileSendNickname }} {{ t("fileCancel text1") }}
-                            {{ t("fileCancel text2") }}
-                        </p>
-                    </div>
+        </div>
+        <div v-else-if="props.compData?.status == 6" class="status file">
+            <div>
+                <img
+                    src="@/assets/images/ic_complete_3.png"
+                    class="status img"
+                />
+                <div>
+                    <p>
+                        {{ fileSendNickname }} {{ t("fileCancel text1") }}
+                    </p>
+                    <p>{{ t("fileCancel text2") }}</p>
                 </div>
-                <div
-                    v-else
-                    style="padding-bottom: 0"
-                    class="row justify-center content-center fileReceptionLayout3"
-                >
-                    <div class="row col-12 justify-center">
-                        <img
-                            :style="{ width: callingLayoutType == 3 ? '30px' : '40px' }"
-                            src="@/assets/images/ic_complete_3.png"
-                            class="fileReceptionComplete"
-                        />
-                    </div>
-                    <div class="row col-12 justify-center">
-                        <div style="text-align: center" class="row">
-                            <p class="col-12 receptionCompleteText">
-                                {{ fileSendNickname }} {{ t("fileCancel text1") }}
-                                {{ t("fileCancel text2") }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
         <div v-else class="col-12 row justify-center empty">
@@ -1050,14 +653,6 @@
                     <span>Video bitrate :&nbsp;</span>
                     <span class="antennaDetailValue">{{ calcBitrate }}</span>
                 </div>
-            </div>
-            <div
-                v-if="!drawingIframe && props.compData.status !== 'main'"
-                class="row items-center user-name-wrap"
-            >
-                <span id="videoMainName" class="col text-left videoNameSpan">{{
-                    props.compData.text
-                }}</span>
             </div>
             <div
                 v-if="
@@ -1243,9 +838,16 @@ const callStore = useCallStore();
 const chattingStore = useChattingStore();
 // --- Methods (replacing Vue 2's methods) ---
 const videoResize = () => {
-    // Define the logic for video resizing here.
-    // This was missing in your original code's methods, but called in mounted/watch.
-    console.log("videoResize function needs implementation.");
+    const mainContent = document.getElementById("mainVideo");
+    const target = document.getElementById("videoMainDivWrap");
+    if (mainContent && target) {
+        const clientHeight = mainContent.clientHeight;
+        const clientWidth = mainContent.clientWidth;
+
+        console.log(clientHeight, clientWidth);
+        target.style.width = "inherit";
+        target.style.height = "auto";
+    }
 };
 
 const getMainVideoIndex = () => {
@@ -1456,6 +1058,8 @@ onMounted(() => {
     if (headerElement) {
         headerHeight.value = headerElement.clientHeight;
     }
+
+    videoResize();
 
     // const videolocalElement = document.getElementById("videolocal");
     // if (videolocalElement && videolocalElement.childNodes[5]) {
@@ -1677,7 +1281,7 @@ watch(getMainVideoIdx, (res) => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 $windowInfoBarHeight: 30px;
 
 .window {
@@ -1722,22 +1326,6 @@ $windowInfoBarHeight: 30px;
     overflow: hidden;
     position: relative;
 }
-
-.windowInfoBar {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: $windowInfoBarHeight;
-    padding: 0 7px;
-
-    > span {
-        // This looks like a mixin, so I'm commenting it out or assuming it's defined elsewhere.
-        // +ellipsis
-        font-size: 18px;
-        //padding-left: 12px
-    }
-}
-
 .border {
     width: 100%;
     height: 100%;
@@ -1787,25 +1375,25 @@ $windowInfoBarHeight: 30px;
 .receiveBackground,
 .otherBackground {
     width: 100% !important;
-    height: 100%;
-    max-width: inherit !important;
-    max-height: inherit;
-    padding-bottom: $windowInfoBarHeight;
+    height: calc(100% - 34px);
+    /* max-width: inherit !important; */
+    /* max-height: inherit; */
+    /* padding-bottom: 30px; */
     display: flex;
     flex: column;
-    flex-direction: column;
+    /* flex-direction: column; */
     align-items: center;
     justify-content: center;
-    
+    gap: 15px;
 
-    >.buttonsLayout1 {
+    > .buttonsLayout1 {
         margin-top: 35px;
         button + button {
             margin-left: 18px;
         }
     }
-    >.buttonsLayout3 {
-        margin-top: 10px;
+    > .buttonsLayout3 {
+        margin-top: 5px;
         gap: 10px;
         > img {
             width: 50px;
@@ -1826,7 +1414,7 @@ $windowInfoBarHeight: 30px;
 
     > .sendingSpanCallingLayoutType3 {
         font-size: 15px;
-        padding-left: 20px;
+        /* padding-left: 20px; */
     }
 
     > .receiveBtnCallingLayoutType3 {
@@ -1851,13 +1439,11 @@ $windowInfoBarHeight: 30px;
         color: #fff;
         background-color: #e600d7;
     }
-    button.receiveBtnCallingLayoutType3 {
-        color: #fff;
-        background-color: #007bff;
-    }
-    button.receiveBtnCallingLayoutType4 {
-        background-color: #e600d7;
-    }
+
+}
+
+.receiveBackground {
+    flex-direction: column;
 }
 
 #antennaStauts {
@@ -1887,150 +1473,6 @@ $windowInfoBarHeight: 30px;
             margin-top: 1px;
         }
     }
-}
-
-.buttonsLayout1 {
-    > button {
-        color: #fff;
-        width: 85px;
-        height: 32px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: bold;
-    }
-}
-
-.buttonsLayout3,
-.buttonsLayout5 {
-    > img {
-        width: 40px;
-    }
-
-    > button {
-        color: #fff;
-        width: 55px;
-        height: 25px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: bold;
-        margin-top: 10px;
-
-        &:nth-child(2) {
-            margin-left: 10px;
-        }
-
-        &:last-child {
-            margin-left: 5px;
-        }
-    }
-}
-
-.errorLayout1 {
-    > img {
-    }
-
-    > span {
-        font-size: 19px !important;
-        padding-left: 0px !important;
-    }
-}
-
-.errorLayout3 {
-    > img {
-        width: 30px;
-    }
-
-    > span {
-        font-size: 11px !important;
-        padding-left: 0px !important;
-    }
-}
-
-.sendingLayout1 {
-    > div {
-        > span {
-            margin-left: 27px;
-            font-size: 25px;
-        }
-    }
-}
-
-.sendingLayout3 {
-    > img {
-        width: 35px;
-    }
-
-    > span {
-        padding-left: 12px !important;
-    }
-}
-
-.unstableLayout1 {
-    > div {
-        > img {
-            margin-bottom: 10px;
-        }
-
-        > span {
-            font-size: 19px;
-            margin-top: 3px;
-        }
-    }
-}
-
-.unstableLayout4 {
-    > span {
-        font-size: 12px !important;
-    }
-
-    > img {
-        width: 55px;
-    }
-}
-
-.connectLayout1 {
-    > img {
-        width: 90px;
-    }
-
-    > span {
-        font-size: 25px !important;
-    }
-}
-
-.connectLayout3 {
-    > img {
-        width: 46px;
-    }
-
-    > span {
-        font-size: 14px !important;
-        padding-left: 12px !important;
-    }
-}
-
-.connectLayout5 {
-    > img {
-        width: 34px;
-    }
-
-    > span {
-        font-size: 13px !important;
-        padding-left: 7px !important;
-    }
-}
-
-.callingLayout1-unpublished {
-    max-height: 70%;
-}
-
-.aligned {
-    text-align: center;
-}
-
-.longTypeText {
-    padding: 0 !important;
-    bottom: 5px;
 }
 
 .videoMainDivWrap {
@@ -2160,16 +1602,19 @@ $windowInfoBarHeight: 30px;
 }
 
 .prog {
-    margin-top: 10px;
     padding: 5px auto !important;
-    height: 12px;
+    height: 20px;
     border-radius: 15px;
+    width: 80%;
+    border: 1px solid #3c3c3c;
 }
 
 .progs {
     text-align: center;
     line-height: 50px;
     border-radius: 15px;
+    background-color: #1c8eff;
+    height: 100%;
 }
 
 .receiveStatus {
@@ -2613,10 +2058,6 @@ $windowInfoBarHeight: 30px;
     }
 }
 
-.sendingSpanCallingLayoutType3 {
-    font-size: 12px;
-}
-
 .gpsView {
     width: 100%;
     height: 100%;
@@ -2729,6 +2170,7 @@ $windowInfoBarHeight: 30px;
     width: 100%;
     height: 100%;
     color: #fff;
+    padding-bottom: 10px;
 }
 .mode.unpublish {
     background: #000;
@@ -2754,5 +2196,211 @@ $windowInfoBarHeight: 30px;
     display: flex;
     width: calc(100% - 72px);
     right: 0px;
+}
+
+.windowInfoBar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: $windowInfoBarHeight;
+    z-index: 1;
+}
+
+.user-name {
+    position: absolute;
+    bottom: 0;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    width: 100%;
+    padding: 5px 0 5px 15px;
+    display: flex;
+    justify-content: space-between;
+    &.main {
+        padding: 7px 15px;
+    }
+    > div {
+        display: flex;
+        align-items: center;
+    }
+}
+.layout1, .layout3, .layout4 {
+    font-size: 16px;
+}
+.layout1 {
+    font-size: 20px;
+    p {
+        margin: 0;
+        color: #fff;
+    }
+    .status.img {
+        width: 15%;
+        height: 30%;
+        max-width: 74px;
+        max-height: 74px;
+    }
+    .status-text {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 14px;
+        color: hsla(0,0%,100%,.50196);
+    }
+    .button-container {
+        margin-top: 12px;   
+    }
+}
+.layout3 {
+    font-size: 14px;
+    p {
+        margin: 0;
+        color: #fff;
+    }
+    .status.img {
+        width: 35px;
+        height: 35px;
+    }
+    .status-text {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 12px;
+        color: hsla(0,0%,100%,.50196);
+    }
+}
+
+.layout4 {
+    font-size: 14px;
+    p {
+        margin: 0;
+        color: #fff;
+    }
+    .status.img {
+        width: 35px;
+        height: 35px;
+    }
+    .status-text {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 12px;
+        color: hsla(0,0%,100%,.50196);
+    }
+}
+
+.status {
+    width: 100%;
+    height: 100%;
+    > div {
+        height: calc(100% - 30px);
+    }
+    &.unpublished {
+        background-color: #000;
+    }
+    &.unstable {
+        background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+    &.error {
+        background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+    &.other {
+        background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+    &.fail {
+        background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+    &.receive {
+        background: transparent linear-gradient(119deg, #c623d2 0%, #004cff 100%) 0% 0%
+        no-repeat padding-box;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 18px;
+        }
+    }
+    &.sending {
+        background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
+        padding-box;
+        > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 19px;
+        }
+    }
+    &.connecting {
+        background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
+        padding-box;
+        > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 19px;
+        }
+    }
+    &.file {
+        background: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 12px;
+        }
+    }
+}
+
+.button-container {
+    display: flex;
+    gap: 18px;
+    button {
+        padding: 5px 20px;
+        border-radius: 15px;
+    }
+    button.accept-btn {
+        color: #fff;
+        background-color: #007bff;
+    }
+    button.decline-btn {
+        color: #fff;
+        background-color: #e600d7;
+    }
+    button.cancel-btn {
+        color: #fff;
+        background-color: #646464;
+    }
 }
 </style>

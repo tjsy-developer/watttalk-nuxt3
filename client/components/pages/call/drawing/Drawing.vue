@@ -1907,8 +1907,8 @@ const canvasWidthHeightChange = () => {
             // // 캔버스 크기 설정
             canvas.value.setDimensions(
                 {
-                    width: drawingWidth + "px",
-                    height: drawingHeight + "px",
+                    width: "100%",
+                    height: '100%',
                 },
                 {
                     cssOnly: true,
@@ -1916,7 +1916,7 @@ const canvasWidthHeightChange = () => {
             );
 
             // // 캔버스 Width setting (외부 스토어/상태에 업데이트하는 함수 호출)
-            drawingStore.setCanvasWidth(drawingWidth); // self.setCanvasWidth -> setCanvasWidth
+            drawingStore.setCanvasWidth("100%"); // self.setCanvasWidth -> setCanvasWidth
             // 캔버스에 적용 (렌더링 요청)
             canvas.value.requestRenderAll();
         } else if (callingLayoutType.value == 4) {

@@ -110,7 +110,7 @@ const loginStore = useLoginStore();
 const preferenceStore = useUserPreferenceStore();
 
 // 전체보기 or 내 것만 보기
-const allView = ref(0);
+const allView = ref(undefined);
 
 // 캘린더보기 or 일반 회의 목록 보기
 const calendar = ref(false);
@@ -661,17 +661,20 @@ onMounted(async () => {
     signallingSocket.on("calling", (response) => {
         const json = JSON.parse(response);
         console.log("*** socket.on: calling response, json: " + response, sessionStorage.getItem("m_callWaiting"));
-        if (sessionStorage.getItem("m_callWaiting") == "true") {
+
+        const isWaiting = sessionStorage.getItem("m_callWaiting") === "true";
+        if (isWaiting) {
             const obj = {
-                localdeviceid: loginStore.m_local_deviceid,
-                remotedeviceid: json.deviceid,
-                roomid: json.roomid,
+                remoteDeviceId: json.deviceid,
+                roomID: json.roomid,
                 institution: json.institution,
                 nickname: json.nickname,
             };
             const json2 = JSON.stringify(obj);
-            signallingSocket.emit("refuseCalling", json2);
-            console.log("*** socket.on: m_callWaiting > refuseCalling request: ", json2);
+
+            requestRefuseCalling(json2);
+            console.log("*** socket: emit refuseCalling");
+            console.log(json2);
             return;
         }
 
@@ -849,7 +852,7 @@ onMounted(async () => {
 
     meetingStore.sortArray();
 
-    allView.value = Number(localStorage.getItem("meetingViewType")) || 0
+    allView.value = Number(localStorage.getItem("meetingViewType")) == 1 ? true : false
 });
 
 // 언마운트되기 전 실행할 작업
@@ -1646,8 +1649,7 @@ watch(getReadProcFlag, (newVal) => {
     width: 100%;
     height: 100%;
     margin-top: 4.25rem;
-    padding-right: 1.5rem;
-    padding-left: 1.5rem;
+    padding: 1.5rem;
     .makeMeetingBtn {
         border-radius: 9px;
         width: 76px;

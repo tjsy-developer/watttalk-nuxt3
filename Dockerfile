@@ -42,6 +42,39 @@
 
 # 빌드 단계
 # --- 빌드 단계 ---
+# FROM node:22.15.1 AS builder
+
+# WORKDIR /home/node/app
+
+# COPY package*.json ./
+# COPY tsconfig.json ./
+# COPY nuxt.config.ts ./
+# COPY app.vue ./
+# COPY client ./client
+# COPY configs ./configs
+# COPY config ./config
+# COPY i18n ./i18n
+# COPY nuxt_configs ./nuxt_configs
+# COPY .env .env
+
+# RUN npm ci
+# RUN npm run generate   # 결과물은 .output/public
+
+# # --- 배포 단계 ---
+# FROM nginx:alpine
+
+# # 빌드 산출물 복사
+# COPY --from=builder /home/node/app/.output/public /usr/share/nginx/html
+
+# # Nginx 설정 (SPA 라우팅 포함)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# EXPOSE 3001
+
+# CMD ["nginx", "-g", "daemon off;"]
+
+
+# --- 빌드 단계 소나큐브 처리용 ---
 FROM node:22.15.1 AS builder
 
 WORKDIR /home/node/app
@@ -63,18 +96,18 @@ RUN npm run generate   # 결과물은 .output/public
 # --- 배포 단계 ---
 FROM nginx:alpine
 
-# 빌드 산출물 복사
-COPY --from=builder /home/node/app/.output/public /usr/share/nginx/html
+# 필요한 디렉토리 생성 및 소유권 변경
+RUN mkdir -p /usr/share/nginx/html /run /var/cache/nginx /var/log/nginx \
+    && chown -R nginx:nginx /usr/share/nginx/html /run /var/cache/nginx /var/log/nginx
 
-# Nginx 설정 (SPA 라우팅 포함)
+# 빌드 산출물 복사 (권한 nginx로)
+COPY --chown=nginx:nginx --from=builder /home/node/app/.output/public /usr/share/nginx/html
+
+# Nginx 설정
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# nginx 
-RUN chown -R nginx:nginx /usr/share/nginx/html /etc/nginx/conf.d
-
-# nginx 유저로 실행
+# 비-루트 유저로 실행 (이미 존재하는 nginx 유저 사용)
 USER nginx
 
-EXPOSE 3001
-
+EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]

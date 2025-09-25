@@ -55,14 +55,6 @@
         </button>
         <div
             v-else-if="props.compData && props.compData?.status == 'main'"
-            :style="[
-                accessDeviceCheck == 'Mobile'
-                    ? { display: 'flex', 'align-item': 'center' }
-                    : '',
-                drawingIframe || props.compData.type == 'videoOFF'
-                    ? { height: 'inherit' }
-                    : '',
-            ]"
             id="videoMainDivWrap"
             class="videoMainDivWrap"
         >

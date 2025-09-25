@@ -249,26 +249,26 @@ export function videoResize() {
     const videoMainDiv = document.getElementById("videoMainDiv");
     const otherBackground = document.getElementsByClassName("otherBackground")[0];
 
-    if (
-        videoMainDivWrap &&
-        commonStore.callingLayoutType !== 1 &&
-        callStore.drawingIframe === false
-    ) {
-        videoMainDivWrap.style.width = "100%";
-        const testVal = (videoMainDivWrap.clientWidth / 16) * 9;
-        if (testVal > videoMainDivWrap.clientHeight) {
-            const calcWidth = (videoMainDivWrap.clientHeight / 9) * 16;
-            videoMainDiv.style.width = `${calcWidth}px`;
-            if (otherBackground) otherBackground.style.width = `${calcWidth}px`;
-        } else {
-            videoMainDiv.style.width = `100%`;
-            if (otherBackground) otherBackground.style.width = "100%";
-        }
-        return;
-    } else if (videoMainDiv) {
-        videoMainDiv.style.width = `100%`;
-        if (otherBackground) otherBackground.style.width = "100%";
-    }
+    // if (
+    //     videoMainDivWrap &&
+    //     commonStore.callingLayoutType !== 1 &&
+    //     callStore.drawingIframe === false
+    // ) {
+    //     videoMainDivWrap.style.width = "100%";
+    //     const testVal = (videoMainDivWrap.clientWidth / 16) * 9;
+    //     if (testVal > videoMainDivWrap.clientHeight) {
+    //         const calcWidth = (videoMainDivWrap.clientHeight / 9) * 16;
+    //         videoMainDiv.style.width = `${calcWidth}px`;
+    //         if (otherBackground) otherBackground.style.width = `${calcWidth}px`;
+    //     } else {
+    //         videoMainDiv.style.width = `100%`;
+    //         if (otherBackground) otherBackground.style.width = "100%";
+    //     }
+    //     return;
+    // } else if (videoMainDiv) {
+    //     videoMainDiv.style.width = `100%`;
+    //     if (otherBackground) otherBackground.style.width = "100%";
+    // }
 }
 
 export async function handleFileDownload(url, filename) {

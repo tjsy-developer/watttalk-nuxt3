@@ -9565,7 +9565,7 @@ function sayHello() {
     // -> kyj
     const config = useRuntimeConfig().public;
     console.log('여기확인', config)
-    str_stream_picture_file_path.value = `${"https://meet2dev.watttalk.kr"}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
+    str_stream_picture_file_path.value = `${window.location.origin}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
@@ -9581,9 +9581,9 @@ function sayHello() {
                 server: config.NUXT_PUBLIC_JANUS_SERVER_IP,
                 iceServers:[
                     {
-                        urls: "turn:meet2dev.watttalk.kr:3478",
-                        username: "dykim",
-                        credential: "superman123",
+                        urls: config.NUXT_PUBLIC_ICE_SERVER_URL,
+                        username: config.NUXT_PUBLIC_ICE_SERVER_USER,
+                        credential: config.NUXT_PUBLIC_ICE_SERVER_CREDENTIAL,
                     },
                 ],
                 success() {

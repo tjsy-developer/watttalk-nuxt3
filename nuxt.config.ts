@@ -101,8 +101,10 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_MAIN_LOGO_PATH: process.env.NUXT_PUBLIC_MAIN_LOGO_PATH,
             NUXT_PUBLIC_SIGNALLING_URL: process.env.NUXT_PUBLIC_SIGNALLING_URL,
             NUXT_PUBLIC_TRANSFER_URL: process.env.NUXT_PUBLIC_TRANSFER_URL,
-            NUXT_PUBLIC_SERVER_IP: process.env.NUXT_PUBLIC_SERVER_IP,
+            NUXT_PUBLIC_JANUS_SERVER_IP: process.env.NUXT_PUBLIC_JANUS_SERVER_IP,
             NUXT_PUBLIC_ICE_SERVER_URL: process.env.NUXT_PUBLIC_ICE_SERVER_URL,
+            NUXT_PUBLIC_ICE_SERVER_USER: process.env.ICE_SERVER_USER,
+            NUXT_PUBLIC_ICE_SERVER_CREDENTIAL: process.env.ICE_SERVER_CREDENTIAL,
         },
     },
     // devServer: {

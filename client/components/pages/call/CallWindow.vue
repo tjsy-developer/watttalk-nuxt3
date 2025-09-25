@@ -201,7 +201,7 @@
                             >
                         </div>
                     </div>
-                    <div class="user-name main">{{ props.compData.text }}</div>
+                    <div v-if="!isDrawing" class="user-name main">{{ props.compData.nickname }}</div>
                     <div
                         v-if="pdfUploading"
                         :style="{ right: antennaStatus ? '50px' : '10px' }"
@@ -401,7 +401,7 @@
                     {{ t("call Unstable2") }}
                 </div>
             </div>
-            <div v-else-if="props.compData.type == 'videoOFF'" id="otherBackground">
+            <div v-else-if="props.compData.type == 'videoOFF'" class="status video-off">
                 <div>
                     <img src="@/assets/images/calling/ic_photo_140.png" />
                 </div>
@@ -2295,7 +2295,34 @@ $windowInfoBarHeight: 30px;
     }
     &.unpublished {
         background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            > img {
+                width: 30%;
+
+            }
+        }
     }
+
+    &.video-off {
+        background-color: #000;
+        > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            > img {
+                width: 30%;
+                max-width: 150px;
+            }
+        }
+    }
+
     &.unstable {
         background-color: #000;
         > div {

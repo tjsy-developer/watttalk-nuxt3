@@ -82,15 +82,18 @@ import {
     getWorldTime,
     handleFileDownload,
 } from "@/utils/common";
+// import { jwtDecode } from "jwt-decode";
 const { t } = useI18n();
+const vfm = useVfm();
 import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import CallLayout from "@/components/pages/call/CallLayout.vue";
 import { checkMainVideo, userListGetNickname } from "@/utils/userList";
 import FilePreviewModal from "@/components/modal/FilePreviewModal.vue";
-import { useModal } from "vue-final-modal";
+import { useModal, useModalSlot, VueFinalModal, useVfm } from "vue-final-modal";
 import LoadingModal from "@/components/modal/LoadingModal.vue";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
+import MeetingAlertModal from "@/components/modal/meeting/MeetingAlertModal.vue";
 const { signallingSocket, transferSocket } = useSignallingSocket();
 
 const {
@@ -211,6 +214,9 @@ definePageMeta({
 onMounted(() => {
     console.log("컴포넌트가 마운트되었습니다.");
     nextTick(() => {
+        // const { token } = await $fetch("/api/config");
+        // const decoded = jwtDecode(token);
+        // const iceServers = [decoded.ice];
         const { $Janus } = useNuxtApp();
         Janus = $Janus;
         createLoadingMask("prepairVideoCall");
@@ -450,38 +456,38 @@ onMounted(() => {
                         const currentCallingLayoutType = commonStore.callingLayoutType;
                         // 이동할 위치 찾기
                         const callingScroll = i;
-                        if (currentCallingLayoutType == 4) {
-                            if (callingScroll > 5) {
-                                document.getElementsByClassName(
-                                    "callingLayoutWrap4",
-                                )[0].scrollLeft = 262 * (callingScroll - 5);
-                            } else {
-                                // 스크롤이 뒤에 있을 때 앞에서 들어올 경우 스크롤바 이동
-                                document.getElementsByClassName(
-                                    "callingLayoutWrap4",
-                                )[0].scrollLeft = 0;
-                            }
-                        } else if (currentCallingLayoutType == 3) {
-                            if (callingScroll > 4) {
-                                document.getElementsByClassName(
-                                    "callingLayoutWrap3",
-                                )[0].scrollTop = 122 * (callingScroll - 4);
-                            } else {
-                                document.getElementsByClassName(
-                                    "callingLayoutWrap3",
-                                )[0].scrollTop = 0;
-                            }
-                        } else if (currentCallingLayoutType == 1) {
-                            if (callingScroll > 9) {
-                                document.getElementsByClassName(
-                                    "callingLayout1",
-                                )[0].scrollTop = document.body.scrollHeight;
-                            } else {
-                                document.getElementsByClassName(
-                                    "callingLayout1",
-                                )[0].scrollTop = 0;
-                            }
-                        }
+                        // if (currentCallingLayoutType == 4) {
+                        //     if (callingScroll > 5) {
+                        //         document.getElementsByClassName(
+                        //             "callingLayoutWrap4",
+                        //         )[0].scrollLeft = 262 * (callingScroll - 5);
+                        //     } else {
+                        //         // 스크롤이 뒤에 있을 때 앞에서 들어올 경우 스크롤바 이동
+                        //         document.getElementsByClassName(
+                        //             "callingLayoutWrap4",
+                        //         )[0].scrollLeft = 0;
+                        //     }
+                        // } else if (currentCallingLayoutType == 3) {
+                        //     if (callingScroll > 4) {
+                        //         document.getElementsByClassName(
+                        //             "callingLayoutWrap3",
+                        //         )[0].scrollTop = 122 * (callingScroll - 4);
+                        //     } else {
+                        //         document.getElementsByClassName(
+                        //             "callingLayoutWrap3",
+                        //         )[0].scrollTop = 0;
+                        //     }
+                        // } else if (currentCallingLayoutType == 1) {
+                        //     if (callingScroll > 9) {
+                        //         document.getElementsByClassName(
+                        //             "callingLayout1",
+                        //         )[0].scrollTop = document.body.scrollHeight;
+                        //     } else {
+                        //         document.getElementsByClassName(
+                        //             "callingLayout1",
+                        //         )[0].scrollTop = 0;
+                        //     }
+                        // }
                         // 수락 거절 메세지
                         addReceiveMessageList(
                             json.nickname,
@@ -691,7 +697,7 @@ onMounted(() => {
             // json 중 메인비디오의 이름만 받아오지만, 메인화면은 호스트가 관리하기 때문에 mainIndex가 동일할 것이라고 생각한다.
             // mainVideo가 자신이라면,
             let mainVideoCustomNickname = "";
-            if (json.mainVideoName != undefined) {
+            if (json.mainVideoName) {
                 if (json.mainVideoDeviceid == loginStore.m_local_deviceid) {
                     mainVideoCustomNickname = sessionStorage.getItem("m_nickname");
                 } else {
@@ -704,14 +710,12 @@ onMounted(() => {
             }
 
             addReceiveMessageList(
-                // json.nickname,
-                customNickname,
+                json.nickname,
                 json.datetime,
                 getChattingTimeZone(json.datetime),
                 json.message,
                 json.level,
                 json.type,
-                // json.mainVideoName
                 mainVideoCustomNickname,
             );
         }
@@ -1783,6 +1787,7 @@ onMounted(() => {
             const json = JSON.parse(response);
             console.log("*** socket: micOnOff response. json: " + response);
 
+            // if (!json.rfid) return;
             // 받아온 rfid가 자신일 경우
             // status에 따라 음소거 및 음소거 해제를 한다.
             if (json.rfid == myid.value) {
@@ -2232,12 +2237,6 @@ onMounted(() => {
             // callStore.setUnderStatus", 0)
             setInitUnderStatus(0);
         }
-    });
-
-    // disconnect 시
-    signallingSocket.on("disconnect", function (response) {
-        console.log("socket disconnect !!! ");
-        // signallingToastMessage(t("signallingSocket Disconnect"));
     });
 
     // callingTimer 초기화
@@ -2699,9 +2698,7 @@ onMounted(() => {
                 drawingStore.setDrawingVideo(true);
 
                 // 호스트가 드로잉을 비활성화 했음을 store 에 저장한다
-                commonStore.setIsDrawingEnable({
-                    result: false,
-                });
+                commonStore.setIsDrawingEnable(false);
                 console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
             } else {
                 // 호스트가 드로잉을 시작했고  일반사용자의 #videoMainWrap의 높이를 조정한다 -inherit
@@ -2735,9 +2732,7 @@ onMounted(() => {
                 }
 
                 // 호스트가 드로잉을 활성화 했음을 store 에 저장한다
-                commonStore.setIsDrawingEnable({
-                    result: true,
-                });
+                commonStore.setIsDrawingEnable(true);
                 console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
             }
         }
@@ -6071,7 +6066,7 @@ function contentsBtnClick(seq) {
 function callingLayoutChange(status, text, col) {
     console.log("callingLayoutChange", status, text, col);
     const nickname = getNickname(text);
-    console.log("*** methods: callingLayoutChange")
+    console.log("*** methods: callingLayoutChange");
     commonStore.setUserListStatus({
         text,
         col,
@@ -6088,21 +6083,19 @@ function callingLayoutChange(status, text, col) {
 }
 // 멀티통화 거절
 function multiCallingReject(
-    localdeviceid,
-    remotedeviceid,
-    roomid,
-    institution,
-    nickname,
+    remoteDeviceId,
+    roomID
 ) {
-    const obj = {
-        localdeviceid,
-        remotedeviceid,
-        roomid,
-        institution,
-        nickname,
+    const remoteInfo = userDataGetInfo(remoteDeviceId);
+    const json = {
+        localdeviceid: loginStore.m_local_deviceid,
+        remotedeviceid: remoteDeviceId,
+        roomid: roomID,
+        institution: remoteInfo.enName,
+        nickname: remoteInfo.nickName,
     };
 
-    const sendJson = JSON.stringify(obj);
+    const sendJson = JSON.stringify(json);
     signallingSocket.emit("multiRefuseCalling", sendJson);
     console.log("*** socket: emit multiRefuseCalling. json: ", sendJson);
 
@@ -6119,19 +6112,19 @@ function multiCallingReject(
     }
 }
 // 멀티통화 수락
-function multiCallingAccept(localdeviceid, remotedeviceid, roomid) {
-    const obj = {
-        localdeviceid,
-        remotedeviceid,
-        roomid,
-        // 새로운 사용자에게 현재 방에 몇명 있는지 보내준다.
-        roomNumberCount: currentRoomNumberCount.value,
-        // 새로운 사용자 입장 시 회의실이라면 meeting_seq를 보내어서 meeting에 접속할 수 있게 한다.
-        meeting_seq: meetingStore.meetingSeq,
-        unique_roomid: uniqueRoomid.value, // 2021-07-21 추가
+function multiCallingAccept(
+    remoteDeviceId,
+    roomID,
+    uniqueRoomID,
+) {
+    const json = {
+        localdeviceid: loginStore.m_local_deviceid,
+        remotedeviceid: remoteDeviceId,
+        roomid: roomID,
+        unique_roomid: uniqueRoomID,
     };
 
-    const sendJson = JSON.stringify(obj);
+    const sendJson = JSON.stringify(json);
     signallingSocket.emit("multiCalling", sendJson);
 
     console.log("*** socket: emit multiCalling. json: ", sendJson);
@@ -6919,7 +6912,7 @@ function addReceiveMessageList(
         onOff = true;
     }
 
-    if (mainVideoName != undefined && mainVideoName != null) {
+    if (mainVideoName) {
         chattingStore.receiveMessage({
             nickname,
             date,
@@ -7038,7 +7031,7 @@ function videoCallHostCheck(roomid, localdeviceid) {
 // callingWindow 왕관표시 제거 및 추가
 function setHostIcon(index, hostIcon) {
     // console.log("*** methods: setHostIcon")
-    commonStore.userListStatus[index].hostIcon = hostIcon;
+    commonStore.setHostIcon(index,hostIcon);
 }
 // deviceid로 feeds의 index 구하기
 function findFeedsIndexDeviceid(deviceid) {
@@ -7180,7 +7173,7 @@ function previewModal(url) {
             previewImage: url,
             hideOverlay: true,
             clickToClose: false,
-            class: 'non-overlay',
+            class: "non-overlay",
             onClose: () => close(),
         },
     });
@@ -7194,28 +7187,35 @@ function previewModalHide(result) {
 function meetingAlertModal(seq) {
     escapeFullScreen();
 
-    meetingStore.setMeetingAlertStatus(seq);
+    meetingStore.setMeetingAlertStatus(seq)
+
+    const modalId = "meeting-modal";
     if (seq == 1) {
-        meetingStore.setMeetingAlertStatus(seq);
-        // $modal.show(
-        //     meetingAlertModal,
-        //     {},
-        //     {
-        //         name: "meetingAlertModal",
-        //         width: "350",
-        //         height: "270",
-        //         clickToClose: false,
-        //     },
-        //     {
-        //         "before-close": () => {
-        //             modalsContainerStyle.display = "none";
-        //         },
-        //     },
-        // );
-    } else {
-        meetingStore.setMeetingAlertStatus(seq);
+        if (vfm.get(modalId)) {
+            vfm.open(modalId);
+            return;
+        }
+        const { open } = useModal({
+            component: VueFinalModal,
+            keepAlive: true,
+            attrs: {
+                modalId: modalId,
+                displayDirective: "show",
+                background: "interactive",
+                contentTransition: "vfm-fade",
+                hideOverlay: true,
+                class: "modal-container",
+            },
+            slots: {
+                default: useModalSlot({
+                    component: MeetingAlertModal,
+                }),
+            },
+        });
+        open();
     }
 }
+
 // 호스트 요청 취소
 function hostRequestCancel(roomid, localdeviceid) {
     const obj = {
@@ -9563,7 +9563,9 @@ function sayHello() {
         getQueryStringValue("subscriber-mode") === "true";
 
     // -> kyj
-    str_stream_picture_file_path.value = `${"https://hdcardev.watttalk.kr"}/storage/watttalk/photos/`;
+    const config = useRuntimeConfig().public;
+    console.log('여기확인', config)
+    str_stream_picture_file_path.value = `${"https://meet2dev.watttalk.kr"}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
@@ -9574,13 +9576,16 @@ function sayHello() {
             $(this).attr("disabled", true).unbind("click");
 
             console.log("*** mounted: Media module attach start. ");
-
             // Make sure the browser supports WebRTC
             janus.value = new Janus({
-                // 지정한 서버
-                server: "wss://hdcardev.watttalk.kr:8989",
-
-                // 서버 접속 성공
+                server: config.NUXT_PUBLIC_JANUS_SERVER_IP,
+                iceServers:[
+                    {
+                        urls: "turn:meet2dev.watttalk.kr:3478",
+                        username: "dykim",
+                        credential: "superman123",
+                    },
+                ],
                 success() {
                     // 주요 로직
                     console.log("*** mounted: janus attach success. ");
@@ -10413,7 +10418,7 @@ function sayHello() {
                                         requestSettingInRoom(
                                             sessionStorage.getItem("m_roomid"),
                                             loginStore.m_local_deviceid,
-                                        )
+                                        ),
                                     );
                                 }
                             }
@@ -10818,12 +10823,11 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
         // 0 : 거절,  1: 수락
         if (newValue == 1) {
             console.log("*** watch: multicalling Accept");
-            requestMultiCalling({
-                remoteDeviceId: multiCallingData.remotedeviceid,
-                roomID: multiCallingData.roomid,
-                currentRoomNumberCount: currentRoomNumberCount.value,
-                uniqueRoomID: uniqueRoomid.value,
-            });
+            multiCallingAccept(
+                multiCallingData.remotedeviceid,
+                multiCallingData.roomid,
+                uniqueRoomid.value,
+            );
 
             // 수락 거절 메시지 변경
             const chattingMessage =
@@ -10855,10 +10859,10 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
             }
         } else if (newValue == 0) {
             console.log("*** watch: multiCalling Reject");
-            requestMultiRefuseCalling({
-                remoteDeviceId: multiCallingData.remotedeviceid,
-                roomID: multiCallingData.roomid,
-            });
+            multiCallingReject(
+                multiCallingData.remotedeviceid,
+                multiCallingData.roomid,
+            );
 
             const chattingMessage =
                 chattingStore.chattingMessageList[chattingCallingIndex.value].nickname +
@@ -11450,9 +11454,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         callStore.setMainVideoFullScreen(false);
 
         // 호스트가 드로잉을 활성화 했음을 store 에 저장한다
-        commonStore.setIsDrawingEnable({
-            result: true,
-        });
+        commonStore.setIsDrawingEnable(true);
         // console.log("**** 드로잉 활성화 상태: ", $store.state.isDrawingEnable)
     } else {
         // 드로잉 hide !
@@ -11499,9 +11501,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         callStore.setMainVideoFullScreen(true);
 
         // 호스트가 드로잉을 비활성화 했음을 store 에 저장한다
-        commonStore.setIsDrawingEnable({
-            result: false,
-        });
+        commonStore.setIsDrawingEnable(true);
         console.log("**** 드로잉 활성화 상태: ", commonStore.isDrawingEnable);
         if (
             onlyVoiceID.value.includes(
@@ -12001,8 +12001,8 @@ watch(getMotionNoMoveClickIndex, (newValue, oldValue) => {
 watch(getStreamModeFlag, (newValue, oldValue) => {
     console.log("getStreamModeFlag.value 변경됨:", newValue, oldValue);
     if (newValue) {
-        prepareStreamMode(callStore.prepareStreamMode)
-        callStore.setStreamModeFlag(false)
+        prepareStreamMode(callStore.prepareStreamMode);
+        callStore.setStreamModeFlag(false);
     }
 });
 
@@ -12125,11 +12125,8 @@ onUnmounted(() => {
     signallingSocket.off("loginUserInfo");
     signallingSocket.off("cancelCalling");
     signallingSocket.off("multiRefuseCalling");
-    signallingSocket.off("refuseCalling");
+    // signallingSocket.off("refuseCalling");
     signallingSocket.off("inviteCancelCalling");
-    signallingSocket.off("directMessageReadProcess");
-    signallingSocket.off("directMessage");
-    signallingSocket.off("getPreviousMessage");
     signallingSocket.off("forceLogoutRequest");
     signallingSocket.off("getOverhaul");
 });

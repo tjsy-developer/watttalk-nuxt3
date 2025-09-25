@@ -590,13 +590,7 @@ function Janus(gatewayCallbacks) {
     // var iceServers = gatewayCallbacks.iceServers || [{urls: "turn:27.96.130.6:3478" , username: "dykim" , credential: "superman123"}]; // ex
     // var iceServers = gatewayCallbacks.iceServers || [{urls: "turn:210.97.43.44:3478" , username: "dykim" , credential: "superman123"}]; // 중부발전
     const config = useRuntimeConfig();
-    var iceServers = gatewayCallbacks.iceServers || [
-        {
-            urls: "turn:hdcardev.watttalk.kr:3478",
-            username: "dykim",
-            credential: "superman123",
-        },
-    ];
+    var iceServers = gatewayCallbacks.iceServers;
     console.log('iceServer 설정값', iceServers)
     var iceTransportPolicy = gatewayCallbacks.iceTransportPolicy;
     var bundlePolicy = gatewayCallbacks.bundlePolicy;

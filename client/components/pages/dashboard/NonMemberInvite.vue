@@ -19,12 +19,14 @@
             </option>
         </select>
 		<div>
-			<button class="send-btn">{{ t('메일 전송')}}</button>
+			<button class="send-btn" @click="handleClickNonMemberInvite">{{ t('메일 전송')}}</button>
 		</div>
     </div>
 </template>
 
 <script setup>
+import { useCallStore } from "@/stores/call";
+import { useMeetingStore } from "@/stores/meeting";
 import { ref, computed, watch } from "vue";
 
 const mailOpts = [
@@ -41,6 +43,9 @@ const id = ref("");
 const selectedDomain = ref(mailOpts[1].value); // 초기 select 선택 (naver.com 등)
 const customDomain = ref("");
 
+const meetingStore = useMeetingStore();
+const callStore = useCallStore();
+
 // watch로 "직접입력" 선택 시 input 활성화
 watch(selectedDomain, (val) => {
     if (val === "") {
@@ -53,6 +58,21 @@ const email = computed(() => {
         ? `${id.value}@${customDomain.value}`
         : `${id.value}@${selectedDomain.value}`;
 });
+
+const handleClickNonMemberInvite = () => {
+    alert(email.value)
+    // 메일 아이디 + "@" + 도메인주소
+    const regExp = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+
+    // 이메일 유효성 검사
+    if (!regExp.test(email.value)) {
+        alert(t("enter the correct email format"))
+        return
+    }
+
+    callStore.setInCallingFunctionParams(email.value)
+    callStore.setInCallingFunction("inviteNonMember")
+}
 </script>
 
 <style lang="scss" scoped>

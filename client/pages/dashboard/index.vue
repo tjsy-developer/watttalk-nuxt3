@@ -1,8 +1,37 @@
 <template>
     <div class="dashboard-container">
-        <main class="main-content">
-            <!-- 중앙 대시보드 콘텐츠 -->
-        </main>
+        <section class="left-panel">
+            <div>
+                <div>
+                    <span>{{ t("안녕하세요") }}&nbsp;</span>
+                    <span class="panel bold">{{ loginStore.nickname }}</span>
+                    <span>{{ t("님") }},</span>
+                </div>
+                <span>{{ t("H 톡에 오신 것을 환영합니다") }}</span>
+            </div>
+            <div>
+                <button>내 정보 ></button>
+                <button>로그아웃 ></button>
+            </div>
+            <div class="penel button-group">
+                <button class="panel">
+                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <img src="@/assets/images/darkmode/ic_d_notice.svg" />
+                </button>
+                <button>
+                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <img src="@/assets/images/darkmode/ic_d_meeting.svg" />
+                </button>
+                <button>
+                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <img src="@/assets/images/darkmode/ic_d_camera.svg" />
+                </button>
+                <button>
+                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <img src="@/assets/images/darkmode/ic_d_camera.svg" />
+                </button>
+            </div>
+        </section>
         <section class="right-panel">
             <ContactList></ContactList>
         </section>
@@ -28,6 +57,7 @@ import { ref, onMounted, onUpdated, onBeforeUnmount, computed, onUnmounted } fro
 const router = useRouter();
 
 const count = ref(0);
+const { t } = useI18n();
 
 const meetingStore = useMeetingStore();
 const commonStore = useCommonStore();
@@ -71,7 +101,7 @@ const { sendDMFlag, readProcFlag, previousMessageFlag, previousMessageInfo } =
     storeToRefs(directMessageStore);
 
 definePageMeta({
-    layout: "waiting"
+    layout: "waiting",
 });
 // computed or methods 형태로 사용하려면
 const getCallingPopupResult = computed(() => callStore.callingPopupResult);
@@ -257,7 +287,7 @@ const handleCalling = (response) => {
     const json = JSON.parse(response);
     console.log("*** socket: calling response", json);
     console.log(json);
-    
+
     const isWaiting = sessionStorage.getItem("m_callWaiting") === "true";
     if (isWaiting) {
         const obj = {
@@ -350,7 +380,7 @@ const handleCalling = (response) => {
 const handleCanMakeCall = (response) => {
     if (response) {
         const json = JSON.parse(response);
-        console.log("*** socket: canMakeCall response, json:", json)
+        console.log("*** socket: canMakeCall response, json:", json);
 
         // 통화 가능
         if (json.status == 1) {
@@ -661,6 +691,25 @@ onBeforeUnmount(() => {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+}
+
+.left-panel {
+    * {
+        color: #fff;
+    }
+    font-size: 2.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .bold {
+        font-weight: 700;
+    }
+    button {
+        color: #9d9d9d;
+        &:hover {
+            font-weight: 700;
+        }
+    }
 }
 
 .right-panel {

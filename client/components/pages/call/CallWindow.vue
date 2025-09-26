@@ -33,13 +33,19 @@
                         src="@/assets/images/ic_mic.png"
                     />
                     <img
-                        v-else-if="compData.status == 'calling' && props.compData.isSounded"
+                        v-else-if="
+                            compData.status == 'calling' && props.compData.isSounded
+                        "
                         @click="soundedClick"
                         @mousedown.stop
                         src="@/assets/images/ic_mute.png"
                     />
-                    <img 
-                        v-if="compData.status == 'sending' || compData.status == 'connecting' || compData.status == 'other'"
+                    <img
+                        v-if="
+                            compData.status == 'sending' ||
+                            compData.status == 'connecting' ||
+                            compData.status == 'other'
+                        "
                         @click="cancelCallClick"
                         src="@/assets/images/calling/ic_x_blue.png"
                     />
@@ -193,7 +199,9 @@
                             >
                         </div>
                     </div>
-                    <div v-if="!isDrawing" class="user-name main">{{ props.compData.nickname }}</div>
+                    <div v-if="!isDrawing" class="user-name main">
+                        {{ userListStatus[getMainVideoIdx].nickname }}
+                    </div>
                     <div
                         v-if="pdfUploading"
                         :style="{ right: antennaStatus ? '50px' : '10px' }"
@@ -301,36 +309,26 @@
                     :isOnOff="mapData.isMapOnOff"
                 ></GpsMapView>
             </div>
-            <div
-                v-show="motionFallFlag"
-                id="fallAlarm"
-                class="motionAlarm blinking row justify-center items-center"
-            >
-                <img src="@/assets/images/calling/ic_fall_76.png" class="emergencyImg" />
-                <span class="emergencyFont boldText"
-                    >{{ t("motionAlarm Fall Text1") }}&nbsp;</span
-                >
-                <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
-                <div
-                    v-for="(fallInfo, fallInfoKey) in motionFallInfo"
-                    :key="fallInfoKey"
-                    class="userInfoWrap row justify-center items-center"
-                >
-                    <div
-                        @click="motionFallInfoClick(fallInfoKey)"
-                        class="userInfoBtn row justify-between items-center"
+            <div v-show="motionFallFlag" id="fallAlarm" class="motionAlarm blinking">
+                <div>
+                    <img
+                        src="@/assets/images/calling/ic_fall_76.png"
+                        class="emergencyImg"
+                    />
+                    <span class="emergencyFont boldText"
+                        >{{ t("motionAlarm Fall Text1") }}&nbsp;</span
                     >
-                        <div class="userInfo">{{ fallInfo.nickname }}</div>
-                        <div class="userInfoTime">{{ fallInfo.datetime }}</div>
+                    <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
+                </div>
+                <div :key="fallInfoKey" class="userInfoWrap">
+                    <div @click="motionFallInfoClick(fallInfoKey)" class="userInfoBtn">
+                        <div class="userInfo">{{ fallInfo?.nickname }}</div>
+                        <div class="userInfoTime">{{ fallInfo?.datetime }}</div>
                     </div>
                 </div>
                 <button
                     v-show="myGpsList"
                     @click="mapOpen"
-                    :style="{
-                        right: locale == 'en' ? '120px' : '80px',
-                        width: locale == 'en' ? '155px' : '130px',
-                    }"
                     class="fallMapButton row items-center justify-center"
                 >
                     <img
@@ -343,23 +341,21 @@
                     {{ t("confirm") }}
                 </button>
             </div>
-            <div
-                v-show="motionNoMoveFlag"
-                id="noMoveAlarm"
-                class="motionAlarm blinking row justify-center items-center"
-            >
-                <img
-                    src="@/assets/images/calling/ic_moving_70.png"
-                    class="emergencyImg"
-                />
-                <span class="emergencyFont boldText"
-                    >{{ t("motionAlarm noMove Text1") }}&nbsp;</span
-                >
-                <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
+            <div v-show="motionNoMoveFlag" id="noMoveAlarm" class="motionAlarm blinking">
+                <div>
+                    <img
+                        src="@/assets/images/calling/ic_moving_70.png"
+                        class="emergencyImg"
+                    />
+                    <span class="emergencyFont boldText"
+                        >{{ t("motionAlarm noMove Text1") }}&nbsp;</span
+                    >
+                    <span class="emergencyFont">{{ t("motionAlarm Fall Text2") }}</span>
+                </div>
                 <div
                     v-for="(noMoveInfo, noMoveInfoKey) in motionNoMoveInfo"
                     :key="noMoveInfoKey"
-                    class="userInfoWrap row justify-center items-center"
+                    class="userInfoWrap"
                 >
                     <div
                         @click="motionNoMoveInfoClick(noMoveInfoKey)"
@@ -405,7 +401,10 @@
             class="status sending"
         >
             <div>
-                <img src="@/assets/images/calling/ic_call-send-1.png" class="status img"/>
+                <img
+                    src="@/assets/images/calling/ic_call-send-1.png"
+                    class="status img"
+                />
                 <p class="sendingSpan">{{ t("발신 중") }}</p>
             </div>
         </div>
@@ -414,12 +413,12 @@
             class="status receive"
         >
             <div>
-                <img src="@/assets/images/calling/ic_call-send-1.png" class="status img"/>
+                <img
+                    src="@/assets/images/calling/ic_call-send-1.png"
+                    class="status img"
+                />
                 <div class="button-container">
-                    <button
-                        @click="setMultiCalling(1)"
-                        class="accept-btn"
-                    >
+                    <button @click="setMultiCalling(1)" class="accept-btn">
                         {{ t("accept") }}
                     </button>
                     <button
@@ -439,12 +438,8 @@
             <div>
                 <img src="@/assets/images/calling/ic_popup_cal-3.png" class="big" />
                 <div>
-                    <p class="sendingSpanCallingLayoutType3">{{
-                            t("fail1")
-                        }}</p>
-                        <p class="sendingSpanCallingLayoutType3">{{
-                            t("fail2")
-                        }}</p>
+                    <p class="sendingSpanCallingLayoutType3">{{ t("fail1") }}</p>
+                    <p class="sendingSpanCallingLayoutType3">{{ t("fail2") }}</p>
                 </div>
             </div>
         </div>
@@ -490,7 +485,10 @@
             class="status unstable"
         >
             <div>
-                <img src="@/assets/images/calling/ic_video_send_100.png"  class="status img"/>
+                <img
+                    src="@/assets/images/calling/ic_video_send_100.png"
+                    class="status img"
+                />
                 <div>
                     <p class="longTypeText">{{ t("call Unstable1") }}</p>
                     <p class="sendingSpanCallingLayoutType3 longTypeText">
@@ -514,16 +512,14 @@
             <div class="fileReceptionLayout1">
                 <div>
                     <p>
-                        <!-- {{ props.compData.fileReceiveInfo.fileSendNickname }} -->
+                        {{ props.compData.fileReceiveInfo.fileSendNickname }}
                         {{ t("fileReceptionRequest1") }}
                     </p>
                     <p>
                         {{ t("fileReceptionRequest2") }}
                     </p>
                 </div>
-                <div
-                    class="button-container"
-                >
+                <div class="button-container">
                     <button
                         @click="fileReceiveAccept(props.compData.text)"
                         style="background: #1c8eff"
@@ -548,8 +544,7 @@
                     <div
                         :style="{
                             width:
-                                userListStatus[props.compData.userListIndex]
-                                    .rate + '%',
+                                userListStatus[props.compData.userListIndex].rate + '%',
                         }"
                         id="progressing"
                         class="progs"
@@ -558,11 +553,8 @@
             </div>
         </div>
         <div v-else-if="props.compData?.status == 5" class="status file">
-            <div >
-                <img
-                    src="@/assets/images/ic_complete_3.png"
-                    class="status img"
-                />
+            <div>
+                <img src="@/assets/images/ic_complete_3.png" class="status img" />
                 <p>
                     {{ t("fileReceptionComplete") }}
                 </p>
@@ -570,17 +562,11 @@
         </div>
         <div v-else-if="props.compData?.status == 6" class="status file">
             <div>
-                <img
-                    src="@/assets/images/ic_complete_3.png"
-                    class="status img"
-                />
+                <img src="@/assets/images/ic_complete_3.png" class="status img" />
                 <div>
-                    <p>
-                        {{ fileSendNickname }} {{ t("fileCancel text1") }}
-                    </p>
+                    <p>{{ fileSendNickname }} {{ t("fileCancel text1") }}</p>
                     <p>{{ t("fileCancel text2") }}</p>
                 </div>
-
             </div>
         </div>
         <div v-else class="col-12 row justify-center empty">
@@ -1431,7 +1417,6 @@ $windowInfoBarHeight: 30px;
         color: #fff;
         background-color: #e600d7;
     }
-
 }
 
 .receiveBackground {
@@ -1930,14 +1915,10 @@ $windowInfoBarHeight: 30px;
 }
 
 .motionAlarm {
+    background: #ff1212;
+    color: #fff;
     width: 100%;
     height: 20%;
-    @media (min-height: 484px) {
-        // height: 20%
-    }
-    @media (max-height: 483px) {
-        height: 35%;
-    }
     position: absolute;
     display: flex;
     justify-content: center;
@@ -1945,6 +1926,15 @@ $windowInfoBarHeight: 30px;
     top: 0px;
     z-index: 1;
     user-select: none;
+    font-size: 24px;
+        flex-direction: column;
+    > div {
+        align-items: center;
+        display: flex;
+        width: inherit;
+        /* margin: auto; */
+        justify-content: center;
+    }
 }
 
 .motionAlarm-ly1 {
@@ -1994,16 +1984,9 @@ $windowInfoBarHeight: 30px;
 }
 
 .emergencyImg {
-    @media (min-height: 484px) {
-        margin-right: 1.5773%;
-        max-height: 49%;
-        width: auto;
-    }
-    @media (max-height: 483px) {
-        margin-right: 6.7px;
-        height: 39px;
-        width: auto;
-    }
+    width: 70px;
+    margin-right: 15px;
+    height: 61px;
 }
 
 .emergencyImg-ly1 {
@@ -2027,16 +2010,19 @@ $windowInfoBarHeight: 30px;
     padding-left: 2.192%;
     padding-right: 1.754%;
     border-radius: 12px;
+    border: 1px solid #fff;
 }
 
 .emergencyBtn {
     position: absolute;
-    top: 18px;
-    right: 14px;
+    top: 16px;
+    right: 32px;
     border-radius: 20px;
-    font: normal normal 800 18px / 21px NanumSquare;
+    font: normal normal 800 16px / 21px NanumSquare;
     width: 60px;
     height: 26px;
+    color: #fff;
+    border: 1px solid #fff;
 }
 
 .emergencyBtn-ly1 {
@@ -2059,15 +2045,13 @@ $windowInfoBarHeight: 30px;
 
 .fallMapButton {
     position: absolute;
-    top: 18px;
-    right: 80px;
-    @media (max-height: 483px) {
-        left: 10px;
-    }
+    top: 15px;
+    right: 90px;
     border-radius: 20px;
-    font: normal normal 800 18px / 21px NanumSquare;
+    font: normal normal 800 16px / 21px NanumSquare;
     width: 130px;
     height: 26px;
+    color: #fff;
 }
 
 .noMoveMapButton {
@@ -2215,7 +2199,9 @@ $windowInfoBarHeight: 30px;
         align-items: center;
     }
 }
-.layout1, .layout3, .layout4 {
+.layout1,
+.layout3,
+.layout4 {
     font-size: 16px;
 }
 .layout1 {
@@ -2235,10 +2221,10 @@ $windowInfoBarHeight: 30px;
         top: 6px;
         right: 6px;
         font-size: 14px;
-        color: hsla(0,0%,100%,.50196);
+        color: hsla(0, 0%, 100%, 0.50196);
     }
     .button-container {
-        margin-top: 12px;   
+        margin-top: 12px;
     }
 }
 .layout3 {
@@ -2256,7 +2242,7 @@ $windowInfoBarHeight: 30px;
         top: 6px;
         right: 6px;
         font-size: 12px;
-        color: hsla(0,0%,100%,.50196);
+        color: hsla(0, 0%, 100%, 0.50196);
     }
 }
 
@@ -2275,7 +2261,7 @@ $windowInfoBarHeight: 30px;
         top: 6px;
         right: 6px;
         font-size: 12px;
-        color: hsla(0,0%,100%,.50196);
+        color: hsla(0, 0%, 100%, 0.50196);
     }
 }
 
@@ -2295,7 +2281,6 @@ $windowInfoBarHeight: 30px;
             text-align: center;
             > img {
                 width: 30%;
-
             }
         }
     }
@@ -2357,7 +2342,7 @@ $windowInfoBarHeight: 30px;
     }
     &.receive {
         background: transparent linear-gradient(119deg, #c623d2 0%, #004cff 100%) 0% 0%
-        no-repeat padding-box;
+            no-repeat padding-box;
         > div {
             display: flex;
             flex-direction: column;
@@ -2369,7 +2354,7 @@ $windowInfoBarHeight: 30px;
     }
     &.sending {
         background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
-        padding-box;
+            padding-box;
         > div {
             display: flex;
             align-items: center;
@@ -2380,7 +2365,7 @@ $windowInfoBarHeight: 30px;
     }
     &.connecting {
         background: transparent linear-gradient(119deg, #23d252, #006fff) 0 0 no-repeat
-        padding-box;
+            padding-box;
         > div {
             display: flex;
             align-items: center;

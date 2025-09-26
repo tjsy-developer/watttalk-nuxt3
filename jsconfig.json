@@ -7,22 +7,25 @@
         "./client/*"
       ]
     },
-    "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
     "types": [
       "node"
     ],
     "esModuleInterop": true,
-    "skipLibCheck": true, // ❗ 이 옵션을 켜면 라이브러리 타입 검사 생략
+    "skipLibCheck": true,
     "strict": true
   },
   "include": [
-    "client", // Nuxt 소스 디렉터리
+    "client",
     "nuxt.config.ts",
     "app.vue"
 , "client/components/modal/.vue"  ],
   "exclude": [
     "client/pages/app.vue",
+    "node_modules",
+    ".nuxt",
+    ".output",
+    "dist"
   ]
 }

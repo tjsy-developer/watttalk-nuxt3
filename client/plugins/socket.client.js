@@ -13,6 +13,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const loginStore = useLoginStore();
     const tokenStore = useTokenStore();
     const { encryptData } = useAuth();
+    const router = useRouter();
     const route = useRoute();
 
     if (!process.client) return;
@@ -30,23 +31,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         if (["requestVideoRecording"].includes(route.name)) {
             return;
         }
+        const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
+        if (["dashboard", "meeting", "call"].includes(route.name)) {
+           loginRequest(loginStore.m_local_deviceid);
+        }
         // 이벤트 등록
         bindSocketEvents();
         useSocketEmitEvents();
+    });
 
-        // 로그인 이벤트 등록
-        const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
+    signallingSocket.on("reconnect", async () => {
+        console.log("✅ Signalling Socket reConnected:", signallingSocket.id);
 
-        // 마이그레이션 전 로직대로 진행하기위해 작성
-        nuxtApp.hooks.hook("app:mounted", () => {
-            if (nuxtApp.$router.currentRoute.value.name === "login") {
-                const decodedUserInfo = jwtDecode(tokenStore.accessToken);
-                loginRequest(decodedUserInfo.id);
-            } else if (nuxtApp.$router.currentRoute.value.name !== "call") {
-                loginRequest(loginStore.m_local_deviceid);
-            }
-        });
-        listenLoginEvent();
+        if (["requestVideoRecording"].includes(route.name)) {
+            return;
+        }
+        // 이벤트 등록
+        bindSocketEvents();
+        useSocketEmitEvents();
     });
 
     signallingSocket.on("disconnect", () => {

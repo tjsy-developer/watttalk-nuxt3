@@ -16,6 +16,7 @@
                 "
                 :key="windowKey"
                 class="windowContainer"
+                :class="{ 'mainVideoBorder': getMainVideoIdx && userList[windowKey].userListIndex == getMainVideoIdx}"
             >
                 <CallWindow
                     v-if="windowKey === 0"
@@ -75,6 +76,7 @@ const videoWidth = ref("");
 const videoHeight = ref("");
 const displayMode = ref("darkmode");
 
+const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 const userList = computed(() => commonStore.userListStatus);
 const callingLayoutType = computed(() => commonStore.callingLayoutType);
 const roomNumberCount = computed(() => commonStore.roomNumberCount);
@@ -455,17 +457,17 @@ onUnmounted(() => {
     padding: 18px;
     border-radius: 13px;
     overflow: auto;
-    max-width: 227px;
-    width: 227px;
-    flex: 0 0 227px;
+    max-width:  208px;
+    width: 208px;
+    flex: 0 0  208px;
     gap: 25px;
     box-sizing: content-box;
     /* bottom: 8px; */
     flex-direction: column;
 
     >.windowContainer {
-        width: 227px !important;
-        height: 150px;
+        width: 208px !important;
+        height: 117px;
         flex-shrink: 0;
     }
     [id^="videoremote"] {
@@ -655,5 +657,9 @@ onUnmounted(() => {
     position: absolute;
     left: 20%;
     top: 43%;
+}
+
+.mainVideoBorder {
+    border: 3px solid #f9f9f9;
 }
 </style>

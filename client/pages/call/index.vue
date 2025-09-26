@@ -3534,10 +3534,10 @@ async function setAudioOutput() {
                 console.log("change remote audio out");
                 videoElement = document.getElementById(`remotevideo${iLoop}`);
             }
-            if (typeof videoElement.setSinkId === "undefined") {
-                alert("Browser does not support setSinkId. Please use Chrome or Edge");
-                return;
-            }
+            // if (typeof videoElement.setSinkId === "undefined") {
+            //     alert("Browser does not support setSinkId. Please use Chrome or Edge");
+            //     return;
+            // }
             if (audioOutID != false && audioOutID != "false") {
                 console.log("set audio");
                 videoElement.removeAttribute("muted", false);
@@ -6526,60 +6526,60 @@ function mainVideoBorder(index) {
 				로컬 일 경우 반응 X
 			*/
 
-    // console.log("*** methods: mainVideoBorder")
-    // mainVideoBorder Class를 사용하고 있는 Element가 있는지 확인
-    const initFindClass = document.getElementsByClassName("mainVideoBorder");
+    // // console.log("*** methods: mainVideoBorder")
+    // // mainVideoBorder Class를 사용하고 있는 Element가 있는지 확인
+    // const initFindClass = document.getElementsByClassName("mainVideoBorder");
 
-    // console.log("mainVideoBorder index: ".concat(index))
-    // console.log("initFindClass: ", initFindClass)
+    // // console.log("mainVideoBorder index: ".concat(index))
+    // // console.log("initFindClass: ", initFindClass)
 
-    // local Click 시 mainVideoBorder 숨김
-    if (index == 0) {
-        if (initFindClass.length == 0) {
-            // console.log("index 0 인 경우 initFindClass empty")
-            return;
-        }
+    // // local Click 시 mainVideoBorder 숨김
+    // if (index == 0) {
+    //     if (initFindClass.length == 0) {
+    //         // console.log("index 0 인 경우 initFindClass empty")
+    //         return;
+    //     }
 
-        // console.log("index 0 인 경우 initFindClass[0]: ".concat(initFindClass[0]))
-        const initFindElement = document.getElementById(initFindClass[0].id);
-        initFindElement.classList.remove("mainVideoBorder");
-        // initFindElement.style.border = "none"
-    } else {
-        // if (initFindClass.length == 0) {
-        //  console.log("index 0 이 아닌 경우 initFindClass empty")
-        //  return
-        // }
+    //     // console.log("index 0 인 경우 initFindClass[0]: ".concat(initFindClass[0]))
+    //     const initFindElement = document.getElementById(initFindClass[0].id);
+    //     initFindElement.classList.remove("mainVideoBorder");
+    //     // initFindElement.style.border = "none"
+    // } else {
+    //     // if (initFindClass.length == 0) {
+    //     //  console.log("index 0 이 아닌 경우 initFindClass empty")
+    //     //  return
+    //     // }
 
-        // console.log("index 0 이 아닌 경우 initFindClass[0]: ".concat(initFindClass[0]))
+    //     // console.log("index 0 이 아닌 경우 initFindClass[0]: ".concat(initFindClass[0]))
 
-        // init (기존 테두리 클리어)
-        if (initFindClass.length > 0) {
-            console.log("initFindClass[0].id: ".concat(initFindClass[0].id));
-            const initFindElement = document.getElementById(initFindClass[0].id);
-            initFindElement.classList.remove("mainVideoBorder");
-            // initFindElement.style.border = "none"
-        }
+    //     // init (기존 테두리 클리어)
+    //     if (initFindClass.length > 0) {
+    //         console.log("initFindClass[0].id: ".concat(initFindClass[0].id));
+    //         const initFindElement = document.getElementById(initFindClass[0].id);
+    //         initFindElement.classList.remove("mainVideoBorder");
+    //         // initFindElement.style.border = "none"
+    //     }
 
-        // else {
-        // border Make
-        // const mainVideoElement = document.getElementById("remotevideo" + index)
-        // const mainVideoElement = document.getElementById("videoremote" + index)
+    //     // else {
+    //     // border Make
+    //     // const mainVideoElement = document.getElementById("remotevideo" + index)
+    //     // const mainVideoElement = document.getElementById("videoremote" + index)
 
-        // console.log(mainVideoElement)
+    //     // console.log(mainVideoElement)
 
-        // }
-        let mainVideoElement = "";
-        if (commonStore.callingLayoutType == 1) {
-            mainVideoElement = document.getElementById("videoremote" + index);
-            mainVideoElement.classList.add("mainVideoBorder");
-            // mainVideoElement.style.border = "4px solid white"
-            // mainVideoElement.style.overflow = "hidden"
-        } else {
-            mainVideoElement = document.getElementById("videoremote" + index);
-            mainVideoElement.classList.add("mainVideoBorder");
-            // mainVideoElement.style.border = "4px solid white"
-        }
-    }
+    //     // }
+    //     let mainVideoElement = "";
+    //     if (commonStore.callingLayoutType == 1) {
+    //         mainVideoElement = document.getElementById("videoremote" + index);
+    //         mainVideoElement.classList.add("mainVideoBorder");
+    //         // mainVideoElement.style.border = "4px solid white"
+    //         // mainVideoElement.style.overflow = "hidden"
+    //     } else {
+    //         mainVideoElement = document.getElementById("videoremote" + index);
+    //         mainVideoElement.classList.add("mainVideoBorder");
+    //         // mainVideoElement.style.border = "4px solid white"
+    //     }
+    // }
 }
 function saveVideoInfo() {
     // console.log("*** methods: saveVideoInfo - changeLayoutType")
@@ -12111,24 +12111,24 @@ watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
 });
 
 onUnmounted(() => {
-    signallingSocket.off("login");
-    signallingSocket.off("connect");
-    signallingSocket.off("environment");
-    signallingSocket.off("callReadyStatus");
-    signallingSocket.off("userListAll");
-    signallingSocket.off("lastCallTime");
-    signallingSocket.off("userStatus");
-    signallingSocket.off("canMakeCall");
-    signallingSocket.off("groupRoom");
-    signallingSocket.off("createRoomID");
-    signallingSocket.off("calling");
-    signallingSocket.off("loginUserInfo");
-    signallingSocket.off("cancelCalling");
-    signallingSocket.off("multiRefuseCalling");
-    // signallingSocket.off("refuseCalling");
-    signallingSocket.off("inviteCancelCalling");
-    signallingSocket.off("forceLogoutRequest");
-    signallingSocket.off("getOverhaul");
+    // signallingSocket.off("login");
+    // signallingSocket.off("connect");
+    // signallingSocket.off("environment");
+    // signallingSocket.off("callReadyStatus");
+    // signallingSocket.off("userListAll");
+    // signallingSocket.off("lastCallTime");
+    // signallingSocket.off("userStatus");
+    // signallingSocket.off("canMakeCall");
+    // signallingSocket.off("groupRoom");
+    // signallingSocket.off("createRoomID");
+    // signallingSocket.off("calling");
+    // signallingSocket.off("loginUserInfo");
+    // signallingSocket.off("cancelCalling");
+    // signallingSocket.off("multiRefuseCalling");
+    // // signallingSocket.off("refuseCalling");
+    // signallingSocket.off("inviteCancelCalling");
+    // signallingSocket.off("forceLogoutRequest");
+    // signallingSocket.off("getOverhaul");
 });
 </script>
 

@@ -505,7 +505,6 @@ const openDeviceModal = (meetingType, meetingSeq) => {
 };
 
 const checkMediaDevice = async (type, seq) => {
-    alert(seq)
     if (getCookie("closeDeviceModalPermanant") === "true") {
         deviceSettingFin(type, seq);
     } else {

@@ -814,7 +814,7 @@ const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoId
 const commonStore = useCommonStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
-// --- Methods (replacing Vue 2's methods) ---
+
 const videoResize = () => {
     const mainContent = document.getElementById("mainVideo");
     const target = document.getElementById("videoMainDivWrap");
@@ -822,7 +822,6 @@ const videoResize = () => {
         const clientHeight = mainContent.clientHeight;
         const clientWidth = mainContent.clientWidth;
 
-        console.log(clientHeight, clientWidth);
         target.style.width = "inherit";
         target.style.height = "auto";
     }

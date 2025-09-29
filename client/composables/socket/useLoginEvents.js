@@ -21,6 +21,7 @@ export function useLoginEvents() {
     const modalStore = useModalStore();
     const preferenceStore = useUserPreferenceStore();
     const router = useRouter();
+    const route = useRoute();
 
     // -------------------------
     // 1) 핸들러 정의
@@ -40,7 +41,6 @@ export function useLoginEvents() {
             return;
         }
         if (data.errcode === statusCode.Duplicate) {
-            alert(loginStore.m_local_deviceid);
             commonStore.setNoneOverlayAlertStatus(20);
             return;
         }
@@ -73,8 +73,14 @@ export function useLoginEvents() {
         sessionStorage.setItem("m_nickname", userInfo.nickname);
 
         const isInvited = sessionStorage.getItem("isInvited");
+
         if (isInvited == "false") {
-            router.push("/dashboard");
+            if(route.name == "login") {
+                router.push("/dashboard")
+            } else {
+                router.push(route.name);
+            }
+            
             modalStore.closeModal("noneOverlayModal");
         } else {
             router.push(

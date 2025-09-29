@@ -7,6 +7,7 @@ export const useLoginStore = defineStore("login", {
     state: () => ({
         rfreshToken: "",
         loginType: 1,
+        userSeq: null,
         sessionAuth: "",
         sessionID: "",
         sessionDeviceType: "",
@@ -61,8 +62,9 @@ export const useLoginStore = defineStore("login", {
                 this.sessionEnSeq = payload.en_seq;
                 this.sessionHqSeq = payload.hq_seq;
                 this.sessionBrSeq = payload.br_seq;
-                this.m_local_deviceid = payload.id;
                 this.sessionEmail = payload.email;
+                this.m_local_deviceid = payload.id;
+                this.userSeq = payload.user_seq;
                 this.tokenDecodeResult = 0;
             } catch (e) {
                 console.error("Failed to decode JWT token:", e);

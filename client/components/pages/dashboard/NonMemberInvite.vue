@@ -60,7 +60,6 @@ const email = computed(() => {
 });
 
 const handleClickNonMemberInvite = () => {
-    alert(email.value)
     // 메일 아이디 + "@" + 도메인주소
     const regExp = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 

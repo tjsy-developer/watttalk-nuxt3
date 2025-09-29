@@ -327,7 +327,6 @@ function directCallResult(type) {
         directCallStore.resetDirectCallInfo();
         close();
     } else {
-        alert(directCallStore.directcallList.length);
         if (directCallStore.directcallList.length > 1) {
             directCallStore.clearDirectCallInfo();
         } else if (directCallStore.directcallList.length == 1) {
@@ -346,7 +345,6 @@ function firstEntry() {
 }
 
 function checkMediaDevice(type) {
-    alert(type)
     if (getCookie("closeDeviceModalPermanant") == "true") {
         deviceSettingFin(type);
     } else {

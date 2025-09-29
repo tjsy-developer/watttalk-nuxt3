@@ -14,6 +14,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     let checkToken = route.query.jwt_token || tokenStore.accessToken;
     const { verifyToken, encryptData, requestNewToken } = useAuth();
     // const { t } = useI18n();
+
+    if (["requestVideoRecording"].includes(route.name)) {
+        return;
+    }
     try {
         const result = await verifyToken(checkToken);
         if (result) {

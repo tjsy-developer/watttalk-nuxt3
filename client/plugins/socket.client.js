@@ -32,9 +32,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             return;
         }
         const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
-        if (["dashboard", "meeting", "call"].includes(route.name)) {
-           loginRequest(loginStore.m_local_deviceid);
-        }
+        // if (["dashboard", "meeting", "call"].includes(route.name)) {
+        //    loginRequest(loginStore.m_local_deviceid);
+        // }
         // 이벤트 등록
         bindSocketEvents();
         useSocketEmitEvents();

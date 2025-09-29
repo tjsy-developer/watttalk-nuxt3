@@ -1,7 +1,8 @@
 <template>
     <div class="dashboard-container">
+        <img class="dashboard-bg" src="@/assets/images/darkmode/logo/main_logo_hdcar.svg">
         <section class="left-panel">
-            <div>
+            <div class="panel-user">
                 <div>
                     <span>{{ t("안녕하세요") }}&nbsp;</span>
                     <span class="panel bold">{{ loginStore.nickname }}</span>
@@ -10,24 +11,28 @@
                 <span>{{ t("H 톡에 오신 것을 환영합니다") }}</span>
             </div>
             <div>
-                <button>내 정보 ></button>
-                <button>로그아웃 ></button>
+                <button @click="handleClickCloud('mypage')">내 정보 ></button>
+                <button @click="logout">로그아웃 ></button>
             </div>
             <div class="penel button-group">
-                <button class="panel">
+                <button @click="handleClickNotice" class="panel">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <label>{{ t("공지사항") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_notice.svg" />
                 </button>
-                <button>
+                <router-link to="/meeting" title="회의실">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <label>{{ t("회의실") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_meeting.svg" />
+                </router-link>
+                <button @click="handleClickCloud('login')">
+                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <label>{{ t("클라우드") }}</label>
+                    <img src="@/assets/images/darkmode/ic_d_cloud.svg" />
                 </button>
                 <button>
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
-                    <img src="@/assets/images/darkmode/ic_d_camera.svg" />
-                </button>
-                <button>
-                    <img src="@/assets/images/darkmode/bt_d_bg.svg" />
+                    <label>{{ t("카메라/소리 설정") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_camera.svg" />
                 </button>
             </div>
@@ -48,12 +53,13 @@ import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
 import { callingBell, getDirectMessageTimeZone } from "@/utils/common";
-
+import { useModal, useModalSlot, useVfm } from "vue-final-modal";
 import { userListGetNickname } from "@/utils/userList";
 import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
 import { storeToRefs } from "pinia";
 import { emit } from "process";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed, onUnmounted } from "vue";
+import { useTokenStore } from "@/stores/token";
 const router = useRouter();
 
 const count = ref(0);
@@ -66,6 +72,8 @@ const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const loginStore = useLoginStore();
 const preferenceStore = useUserPreferenceStore();
+const tokenStore = useTokenStore();
+
 // 상태 값 추출
 const {
     contentsViewType,
@@ -103,7 +111,8 @@ const { sendDMFlag, readProcFlag, previousMessageFlag, previousMessageInfo } =
 definePageMeta({
     layout: "waiting",
 });
-// computed or methods 형태로 사용하려면
+const vfm = useVfm();
+
 const getCallingPopupResult = computed(() => callStore.callingPopupResult);
 const getGroupCallCancelFlag = computed(() => callStore.groupCallCancelFlag);
 const getSendDMFlag = computed(() => directMessageStore.sendDMFlag);
@@ -152,6 +161,35 @@ const callingPopupResultData = reactive({
 
 const { requestRefuseCalling, requestCalling, requestJoinMeeting } =
     useSocketEmitEvents();
+
+const handleClickNotice = () => {
+    // open();
+    vfm.toggle("notice-modal");
+    console.log(vfm);
+};
+
+const handleClickCloud = (path) => {
+    const params = {
+        accessToken: tokenStore.accessToken,
+        refreshToken: tokenStore.enRToken,
+        en_seq: loginStore.sessionEnSeq,
+        hq_seq: loginStore.sessionHqSeq,
+        br_seq: loginStore.sessionBrSeq,
+        auth: loginStore.sessionAuth,
+        user_id: loginStore.m_local_deviceid,
+        user_name: loginStore.nickname,
+        user_seq: "",
+        en_alias: loginStore.institution,
+        hq_alias: loginStore.headquarters,
+        br_alias: loginStore.branch,
+        email: loginStore.sessionEmail,
+        device_type: loginStore.sessionDeviceType,
+        redirect: "/" + path
+    };
+    const queryString = new URLSearchParams(params).toString();
+    const domain = `http://localhost:8205/login?${queryString}`;
+    window.open(domain, "target");
+};
 
 watch(getCallingPopupResult, (result) => {
     console.log("*** watch: getCallingPopupResult result =", result);
@@ -639,6 +677,11 @@ function callingAccept(roomid, remotedeviceid) {
     console.log("*** methods: callingAccept");
 }
 
+function logout() {
+    location.href = "http://localhost:8205";
+    sessionStorage.clear();
+}
+
 // 마운트될 때 실행할 작업
 onMounted(() => {
     sessionStorage.setItem("m_callWaiting", false);
@@ -678,15 +721,20 @@ onBeforeUnmount(() => {
 
 <style lang="scss">
 .dashboard-container {
-    /* position: absolute;
-    left: 64px;
-    top: 64px;
-    display: flex;
-    height: 100vh;
-    @include tc(background-color, 'bg-color') */
     display: flex;
     height: inherit;
+    gap: 10%;
+    justify-content: center;
+    
 }
+
+.dashboard-bg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .main-content {
     flex: 1;
     padding: 20px;
@@ -694,13 +742,21 @@ onBeforeUnmount(() => {
 }
 
 .left-panel {
-    * {
-        color: #fff;
+    @media screen and (max-width: 1310px) {
+        display: none;
     }
     font-size: 2.2rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    max-width: 30%;
+    row-gap: 2rem;
+    * {
+        color: #fff;
+    }
+    .panel-user {
+        font-size: 3rem;
+    }
     .bold {
         font-weight: 700;
     }
@@ -721,10 +777,39 @@ onBeforeUnmount(() => {
     z-index: 1;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    position: absolute;
-    right: 230px;
     bottom: 0;
     box-sizing: border-box;
+    align-self: end;
     @include tc(background-color, "component-bg-color");
+}
+
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    column-gap: 2px;
+    row-gap: 8px;
+    button, a {
+        &:hover {
+            box-shadow: 0 11px 17px rgba(0, 0, 0, .329412)
+        }
+        position: relative;
+    }
+    a {
+        padding: 1px 6px;
+    }
+    img:last-child {
+        position: absolute;
+        left: 53px;
+        top: 68px;
+    }
+    label {
+        position: absolute;
+        top: 39px;
+        left: 0;
+        width: 100%;
+        font-size: 14px;
+        text-align: center;
+    }
 }
 </style>

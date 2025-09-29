@@ -39,7 +39,7 @@ const handleClickCloud = () => {
         auth: loginStore.sessionAuth,
         user_id: loginStore.m_local_deviceid,
         user_name: loginStore.nickname,
-        user_seq: "",
+        user_seq: loginStore.userSeq,
         en_alias: loginStore.institution,
         hq_alias: loginStore.headquarters,
         br_alias: loginStore.branch,

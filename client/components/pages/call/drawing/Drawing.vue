@@ -205,12 +205,8 @@ const tools = ref([
         subMenu: [16, 32, 64, 128, 256, 512].map((v) => ({ text: v, value: v })),
         selected: 32,
         tooltip: "텍스트",
-        type: "layer",
-        img: layerImg,
-        fixImg: layerFixImg,
-        selected: "F",
-        tooltip: "레이어 정돈",
     },
+
     {
         type: "photo",
         img: photoImg,
@@ -340,210 +336,176 @@ const fileSize = ref(null);
 const file = ref(null);
 const displayMode = ref("darkmode"); // Initial value 'darkmode' as per original
 let pdfjsLib = null;
+let isMounted = true;
+
 // Replaces `mounted()`
 onMounted(() => {
-    // `process.client`는 이 코드가 브라우저(클라이언트)에서만 실행됨을 보장합니다.
-    if (process.client) {
-        const nuxtApp = useNuxtApp();
-        pdfjsLib = nuxtApp.$pdfjsLib; // 플러그인에서 provide한 pdfjsLib를 가져옵니다.
+  isMounted = true;
 
-        if (!pdfjsLib) {
-            console.error(
-                "PDF.js 라이브러리를 로드할 수 없습니다. `plugins/pdfjs.client.ts` 파일을 확인하세요.",
-            );
-            alert("PDF 기능을 사용할 수 없습니다. 관리자에게 문의하세요.");
-        }
+  if (process.client) {
+    const nuxtApp = useNuxtApp();
+    pdfjsLib = nuxtApp.$pdfjsLib;
+    if (!pdfjsLib) {
+      console.error("PDF.js 라이브러리를 로드할 수 없습니다.");
+      alert("PDF 기능을 사용할 수 없습니다. 관리자에게 문의하세요.");
     }
-    // Set display mode
-    displayMode.value = sessionStorage.getItem("displayMode") || "lightmode";
-    // setTools(displayMode.value); // Call setTools function
+  }
 
-    if (can.value && fabric.Canvas) {
-        // Ensure Fabric.js is loaded
-        const drawingWidth =
-            document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
-        const drawingHeight =
-            document.getElementsByClassName("screen-draw")[0].clientHeight;
-        canvas.value = new fabric.Canvas(can.value, {
-            isDrawingMode: true,
-            preserveObjectStacking: true,
-            backgroundColor: "#ffffff",
-            width: drawingWidth,
-            height: drawingHeight,
-        });
+  displayMode.value = sessionStorage.getItem("displayMode") || "lightmode";
 
-        // Add initial white dot for history management
-        const rect = new fabric.Rect({
-            left: 1,
-            top: 1,
-            fill: "white",
-            width: 1,
-            height: 1,
-        });
-        canvas.value.add(rect);
+  if (can.value && fabric.Canvas) {
+    const drawingWidth =
+      document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
+    const drawingHeight =
+      document.getElementsByClassName("screen-draw")[0].clientHeight;
 
-        // Set Fabric.js fraction digits
-        fabric.Object.NUM_FRACTION_DIGITS = 10;
+    canvas.value = new fabric.Canvas(can.value, {
+      isDrawingMode: true,
+      preserveObjectStacking: true,
+      backgroundColor: "#ffffff",
+      width: drawingWidth,
+      height: drawingHeight,
+    });
 
-        drawingStore.setCanvas(canvas.value); // Set canvas instance
+    // 초기 흰 점
+    const rect = new fabric.Rect({
+      left: 1,
+      top: 1,
+      fill: "white",
+      width: 1,
+      height: 1,
+    });
+    canvas.value.add(rect);
 
-        // Attach Fabric.js event listeners
-        canvas.value.on("mouse:down", beginDrawing);
-        canvas.value.on("mouse:move", keepDrawing);
-        canvas.value.on("mouse:up", stopDrawing);
-        canvas.value.on("mouse:wheel", canvasZoomWheel);
-        canvas.value.on("object:moving", disable);
-        canvas.value.on("object:scaling", disable);
-        canvas.value.on("object:rotating", disable);
-        canvas.value.on("object:added", (e) => {
-            if (
-                (beforeTool.value !== "line" &&
-                    beforeTool.value !== "square" &&
-                    beforeTool.value !== "arrow" &&
-                    beforeTool.value !== "circle" &&
-                    beforeTool.value !== "text") ||
-                nowTool.value == "photo" ||
-                nowTool.value == "pdf" ||
-                thumbnailFileReceive.value
-            ) {
-                updateHistory();
-                drawingStore.setThumbnailFileReceive(false); // Call Vuex mutation
-            }
-        });
-        canvas.value.on("object:selected", (e) => {
-            disable();
-            updateHistory(4);
-        });
-        canvas.value.on("object:modified", (e) => {
-            disable();
-            updateHistory(5);
-        });
-        canvas.value.on("selection:created", (e) => {
-            if (e.target) {
-                objects.value = e.target;
-            }
-            if (nowTool.value !== "text") {
-                updateHistory(6);
-            }
-        });
-        canvas.value.on("selection:updated", (e) => {
-            if (e.target) {
-                objects.value = e.target;
-            }
-        });
+    fabric.Object.NUM_FRACTION_DIGITS = 10;
+    drawingStore.setCanvas(canvas.value);
 
-        // Add global event listeners
-        window.addEventListener("keydown", (e) => {
-            if (e.ctrlKey) {
-                canvas.value.defaultCursor = "grab";
-                canvas.value.hoverCursor = "grab";
-                if (nowTool.value == "pen") {
-                    disable();
-                }
-            }
-            canvasKeyCode(e);
-        });
-        window.addEventListener("keyup", (e) => {
-            if (e.key == "Control") {
-                canvas.value.defaultCursor = "default";
-                if (nowTool.value == "pen") {
-                    enable();
-                }
-            }
-        });
-        window.addEventListener("resize", onResize);
+    // Fabric 이벤트 등록
+    canvas.value.on("mouse:down", beginDrawing);
+    canvas.value.on("mouse:move", keepDrawing);
+    canvas.value.on("mouse:up", stopDrawing);
+    canvas.value.on("mouse:wheel", canvasZoomWheel);
+    canvas.value.on("object:moving", disable);
+    canvas.value.on("object:scaling", disable);
+    canvas.value.on("object:rotating", disable);
+    canvas.value.on("object:added", (e) => {
+      if (
+        (beforeTool.value !== "line" &&
+          beforeTool.value !== "square" &&
+          beforeTool.value !== "arrow" &&
+          beforeTool.value !== "circle" &&
+          beforeTool.value !== "text") ||
+        nowTool.value == "photo" ||
+        nowTool.value == "pdf" ||
+        thumbnailFileReceive.value
+      ) {
+        updateHistory();
+        drawingStore.setThumbnailFileReceive(false);
+      }
+    });
+    canvas.value.on("object:selected", () => {
+      disable();
+      updateHistory(4);
+    });
+    canvas.value.on("object:modified", () => {
+      disable();
+      updateHistory(5);
+    });
+    canvas.value.on("selection:created", (e) => {
+      if (e.target) {
+        objects.value = e.target;
+      }
+      if (nowTool.value !== "text") {
+        updateHistory(6);
+      }
+    });
+    canvas.value.on("selection:updated", (e) => {
+      if (e.target) {
+        objects.value = e.target;
+      }
+    });
 
-        // Set initial canvas dimensions
-        // canvas.value.setWidth(1280);
-        // canvas.value.setHeight(720);
-        canvas.value.requestRenderAll();
+    // 전역 이벤트 리스너
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("resize", onResize);
 
-        // Set initial free drawing brush properties (accessing computed 'tools' via store)
-        // Ensure tools.value[14] and tools.value[0] are available
-        if (tools.value[14]) {
-            canvas.value.freeDrawingBrush.color = tools.value[14].selected;
+    // 초기 brush 속성
+    if (tools.value[14]) {
+      canvas.value.freeDrawingBrush.color = tools.value[14].selected;
+    }
+    if (tools.value[0]) {
+      canvas.value.freeDrawingBrush.width = tools.value[0].selected;
+    }
+
+    canvasWidthHeightChange();
+    allHeight.value = window.innerHeight;
+
+    // 히스토리 복원
+    if (lastCanvasJson.value != null) {
+      if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
+        const lastHistory =
+          vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
+        drawingStore.setCanvasJson(lastHistory);
+      }
+
+      const saveLastJson = lastCanvasJson.value;
+      if (
+        !(
+          vxCanvasHistory.value.state.length === 0 &&
+          vxCanvasHistory.value.state[0] === saveLastJson
+        )
+      ) {
+        updateHistory(7);
+        vxCanvasHistory.value.state.push(saveLastJson);
+      }
+
+      let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
+      for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
+        const ele = vxCanvasHistory.value.state[iLoop];
+        if (ele === saveLastJson) {
+          lastCanvasIndex = iLoop;
+          break;
         }
-        if (tools.value[0]) {
-            canvas.value.freeDrawingBrush.width = tools.value[0].selected;
-        }
+      }
 
-        canvasWidthHeightChange(); // Initial canvas size adjustment
-        allHeight.value = window.innerHeight;
+      drawingStore.setCanvasHistoryFin(true);
+    } else if (vxCanvasHistory.value.state.length === 0) {
+      if (!isGivenThumbnailTransfer.value) {
+        updateHistory(8);
+        drawingStore.setFirstHistory(vxCanvasHistory.value);
+      }
+    }
 
-        // Load last canvas JSON if available
-        if (lastCanvasJson.value != null) {
-            // Check for identical history entry
-            if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
-                const lastHistory =
-                    vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
-                drawingStore.setCanvasJson(lastHistory); // Load JSON
-            }
-
-            // Append lastCanvasJson to history if not already present
-            const saveLastJson = lastCanvasJson.value;
-            if (
-                !(
-                    vxCanvasHistory.value.state.length === 0 &&
-                    vxCanvasHistory.value.state[0] === saveLastJson
-                )
-            ) {
-                updateHistory(7); // updateHistory should add to vxCanvasHistory.state
-                // Explicitly push for this specific case if updateHistory doesn't handle it
-                // Note: Direct mutation of drawingStore.canvasHistory.state is generally discouraged.
-                // It's better to use a mutation: store.commit('drawing/PUSH_HISTORY_STATE', saveLastJson);
-                // For now, assuming updateHistory handles this or direct access is permitted.
-                vxCanvasHistory.value.state.push(saveLastJson); // Direct push to ref, not ideal for Vuex state
-            }
-
-            let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
-            for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
-                const ele = vxCanvasHistory.value.state[iLoop];
-                if (ele === saveLastJson) {
-                    lastCanvasIndex = iLoop;
-                    break;
-                }
-            }
-            console.log("this.redo() is commented out but originally here");
-            // this.redo() // Assuming a redo function exists
-            drawingStore.setCanvasHistoryFin(true); // Call Vuex mutation
-        } else if (vxCanvasHistory.value.state.length === 0) {
-            if (!isGivenThumbnailTransfer.value) {
-                updateHistory(8);
-                drawingStore.setFirstHistory(vxCanvasHistory.value); // Set initial history
-            }
-        }
-
-        console.log(
-            "mounted vsCanvasHistory state 길이를 찍는다",
-            vxCanvasHistory.value.state.length,
-        );
-
-        if (vxCanvasHistory.value.state.length === 0) {
-            canvas.value.add(rect); // Add the initial white dot
-        } else {
-            drawingStore.setLoadImageOnCanvasFinished(false); // Call Vuex mutation
-            const currentIndex = vxCanvasHistory.value.currentStateIndex;
-            if (
-                typeof vxCanvasHistory.value.state[currentIndex] !== "undefined" &&
-                vxCanvasHistory.value.state[currentIndex] !== null
-            ) {
-                vxCanvasHistory.value.state[currentIndex] = setRemoveDuplicates(
-                    vxCanvasHistory.value.state[currentIndex],
-                );
-            }
-            canvas.value.loadFromJSON(vxCanvasHistory.value.state[currentIndex], () => {
-                canvas.value.renderAll.bind(canvas.value);
-                drawingStore.setLoadImageOnCanvasFinished(true); // Call Vuex mutation
-                console.log("canvas renderAll finished in mounted");
-            });
-            console.log("this.canvas.renderAll.bind(this.canvas)");
-        }
-        console.log("여기1");
-        drawingStore.setCanvasHistory(vxCanvasHistory.value); // Set overall canvas history
-        drawingStore.setIsGivenThumbnailTransfer(false); // Call Vuex mutation
+    if (vxCanvasHistory.value.state.length === 0) {
+      canvas.value.add(rect);
     } else {
-        console.error("Canvas element or Fabric.js not found!");
+      drawingStore.setLoadImageOnCanvasFinished(false);
+      const currentIndex = vxCanvasHistory.value.currentStateIndex;
+      const currentState = vxCanvasHistory.value.state[currentIndex];
+      if (typeof currentState !== "undefined" && currentState !== null) {
+        vxCanvasHistory.value.state[currentIndex] =
+          setRemoveDuplicates(currentState);
+      }
+
+      // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
+      canvas.value.loadFromJSON(currentState, () => {
+        if (!isMounted || !canvas.value) return;
+        canvas.value.renderAll();
+        drawingStore.setLoadImageOnCanvasFinished(true);
+      });
     }
+
+    drawingStore.setCanvasHistory(vxCanvasHistory.value);
+    drawingStore.setIsGivenThumbnailTransfer(false);
+
+    // 마지막으로 안전한 render 요청
+    if (canvas.value && !canvas.value.disposed) {
+      canvas.value.requestRenderAll();
+    }
+  } else {
+    console.error("Canvas element or Fabric.js not found!");
+  }
 });
 
 const commonToastMessage = (message) => {
@@ -589,38 +551,43 @@ const selectionMode = (on) => {
 };
 
 const toolClick = (tool) => {
+    if (!tool || !tool.type) return;
+
     console.log(tool.type);
     nowTool.value = tool.type;
 
+    // ========== Layer ==========
     if (tool.type === "layer") {
-        if (tools.value[13].selected === "F") {
-            canvas.value.bringToFront(canvas.value.getActiveObjects()); // Assuming 'objects' refers to active objects
-        } else if (tools.value[13].selected === "f") {
-            canvas.value.bringForward(canvas.value.getActiveObjects());
-        } else if (tools.value[13].selected === "B") {
-            canvas.value.sendToBack(canvas.value.getActiveObjects());
-        } else if (tools.value[13].selected === "b") {
-            canvas.value.sendBackwards(canvas.value.getActiveObjects(), true);
+        const selected = tools.value?.[13]?.selected;
+        const activeObjects = canvas.value?.getActiveObjects?.() || [];
+
+        if (selected && activeObjects.length > 0) {
+            activeObjects.forEach((obj) => {
+                if (selected === "F") {
+                    canvas.value.bringToFront(obj);
+                } else if (selected === "f") {
+                    canvas.value.bringForward(obj);
+                } else if (selected === "B") {
+                    canvas.value.sendToBack(obj);
+                } else if (selected === "b") {
+                    canvas.value.sendBackwards(obj);
+                }
+            });
         }
-        return toolClick(tools.value[10]);
+        return tools.value?.[10] && toolClick(tools.value[10]);
     }
 
+    // ========== beforeTool 저장 ==========
     if (
-        nowTool.value !== "clear" &&
-        nowTool.value !== "color" &&
-        nowTool.value !== "undo" &&
-        nowTool.value !== "redo" &&
-        nowTool.value !== "photo" &&
-        nowTool.value !== "pdf" &&
-        nowTool.value !== "group" &&
-        nowTool.value !== "download"
+        !["clear", "color", "undo", "redo", "photo", "pdf", "group", "download"].includes(nowTool.value)
     ) {
         beforeTool.value = nowTool.value;
     }
 
+    // ========== MoveLayer ==========
     if (nowTool.value === "moveLayer") {
         selectionMode(true);
-        canvas.value.forEachObject((object) => {
+        canvas.value?.forEachObject((object) => {
             object.selectable = true;
         });
         canvas.value.hoverCursor = "grab";
@@ -628,13 +595,14 @@ const toolClick = (tool) => {
         if (nowTool.value === "group") {
             return groupActiveObjects();
         }
-        canvas.value.discardActiveObject();
-        canvas.value.renderAll();
-        canvas.value.forEachObject((object) => {
+        canvas.value?.discardActiveObject();
+        canvas.value?.renderAll();
+        canvas.value?.forEachObject((object) => {
             object.selectable = false;
         });
     }
 
+    // ========== Undo / Redo ==========
     if (nowTool.value === "undo") {
         nowTool.value = beforeTool.value;
         return undo();
@@ -644,22 +612,26 @@ const toolClick = (tool) => {
         return redo();
     }
 
-    drawingMode(); // Apply drawing mode changes based on nowTool
+    drawingMode();
 
+    // ========== Photo ==========
     if (nowTool.value === "photo") {
         resetDrawingFileForm();
         image.value = null;
-        if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
+
+        if (canvas.value?.isDrawingMode && nowTool.value === "moveLayer") {
             nowTool.value = "pen";
         } else if (nowTool.value === "moveLayer") {
-            toolClick(tools.value[10]);
-        } else if (canvas.value.isDrawingMode === false && nowTool.value === "pen") {
+            tools.value?.[10] && toolClick(tools.value[10]);
+        } else if (!canvas.value?.isDrawingMode && nowTool.value === "pen") {
             drawingMode();
         }
-        refImgFile.value.click(); // Trigger file input click
+
+        if (refImgFile.value) refImgFile.value.click();
         return;
     }
 
+    // ========== PDF ==========
     if (nowTool.value === "pdf") {
         if (isPdfUploading.value) {
             commonToastMessage("uploading PDF");
@@ -668,122 +640,114 @@ const toolClick = (tool) => {
         resetrefPdfFileForm();
         pdf.value = null;
         nowTool.value = beforeTool.value;
-        if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
+
+        if (canvas.value?.isDrawingMode && nowTool.value === "moveLayer") {
             nowTool.value = "pen";
         } else if (nowTool.value === "moveLayer") {
-            toolClick(tools.value[10]);
-        } else if (canvas.value.isDrawingMode === false && nowTool.value === "pen") {
+            tools.value?.[10] && toolClick(tools.value[10]);
+        } else if (!canvas.value?.isDrawingMode && nowTool.value === "pen") {
             drawingMode();
         }
-        refPdfFile.value.click(); // Trigger file input click
+
+        if (refPdfFile.value) refPdfFile.value.click();
         return;
     }
 
+    // ========== Clear ==========
     if (nowTool.value === "clear") {
         return clearCanvas();
     }
 
     console.log(nowTool.value);
-    if (
-        nowTool.value === "line" ||
-        nowTool.value === "arrow" ||
-        nowTool.value === "square" ||
-        nowTool.value === "circle" ||
-        nowTool.value === "text"
-    ) {
+
+    // ========== 도형 & 텍스트 ==========
+    if (["line", "arrow", "square", "circle", "text"].includes(nowTool.value)) {
         canvas.value.defaultCursor = "crosshair";
     }
 
+    // ========== Color ==========
     if (nowTool.value === "color") {
         nowTool.value = beforeTool.value;
-        if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
+        if (canvas.value?.isDrawingMode && nowTool.value === "moveLayer") {
             nowTool.value = "pen";
         } else if (nowTool.value === "moveLayer") {
-            toolClick(tools.value[10]);
+            tools.value?.[10] && toolClick(tools.value[10]);
         }
     }
 
+    // ========== Download ==========
     if (nowTool.value === "download") {
         nowTool.value = beforeTool.value;
-        if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
+        if (canvas.value?.isDrawingMode && nowTool.value === "moveLayer") {
             nowTool.value = "pen";
         } else if (nowTool.value === "moveLayer") {
-            toolClick(tools.value[10]);
-        } else if (canvas.value.isDrawingMode === false && nowTool.value === "pen") {
+            tools.value?.[10] && toolClick(tools.value[10]);
+        } else if (!canvas.value?.isDrawingMode && nowTool.value === "pen") {
             drawingMode();
         }
         return canvasSavePng();
     }
-    drawingMode(); // Ensure drawing mode is set correctly after all tool logic
+
+    drawingMode(); // 마지막 보정
 };
 
 const subMenuClick = (subMenu, tool) => {
-    if (tool.type) {
-        nowTool.value = tool.type;
-        if (tool.type === "layer") {
-            selectionMode(false);
-            if (subMenu.value === "F") {
-                canvas.value.getActiveObjects().forEach((obj) => {
-                    canvas.value.bringToFront(obj);
-                });
-                // canvas.value.bringToFront(canvas.value.getActiveObjects());
-            } else if (subMenu.value === "f") {
-                canvas.value.getActiveObjects().forEach((obj) => {
-                    canvas.value.bringForward(obj);
-                });
-                // canvas.value.bringForward(canvas.value.getActiveObjects());
-            } else if (subMenu.value === "B") {
-                canvas.value.getActiveObjects().forEach((obj) => {
-                    canvas.value.sendToBack(obj);
-                });
-                // canvas.value.sendToBack(canvas.value.getActiveObjects());
-            } else if (subMenu.value === "b") {
-                canvas.value.getActiveObjects().forEach((obj) => {
-                    canvas.value.sendBackwards(obj);
-                });
-                // canvas.value.sendBackwards(canvas.value.getActiveObjects());
-            }
-            toolClick(tools.value[10]);
-        }
+    if (!tool || !tool.type) return;
 
-        if (nowTool.value !== "clear" && nowTool.value !== "color") {
-            beforeTool.value = nowTool.value;
-        }
-        if (nowTool.value === "color") {
-            nowTool.value = beforeTool.value;
-            if (canvas.value.isDrawingMode === true && nowTool.value === "moveLayer") {
-                nowTool.value = "pen";
+    nowTool.value = tool.type;
+
+    // ========== Layer ==========
+    if (tool.type === "layer") {
+        selectionMode(false);
+        const activeObjects = canvas.value?.getActiveObjects?.() || [];
+
+        activeObjects.forEach((obj) => {
+            if (subMenu.value === "F") {
+                canvas.value.bringToFront(obj);
+            } else if (subMenu.value === "f") {
+                canvas.value.bringForward(obj);
+            } else if (subMenu.value === "B") {
+                canvas.value.sendToBack(obj);
+            } else if (subMenu.value === "b") {
+                canvas.value.sendBackwards(obj);
             }
-        }
-        drawingMode();
-        if (
-            nowTool.value === "line" ||
-            nowTool.value === "arrow" ||
-            nowTool.value === "square" ||
-            nowTool.value === "circle" ||
-            nowTool.value === "text"
-        ) {
-            drawingMode();
-            canvas.value.defaultCursor = "crosshair";
-            // The original code calls toolClick again here, which might be redundant
-            // if the tool is already set by nowTool.value. Consider if these nested calls are necessary.
-            if (nowTool.value === "line") {
-                toolClick(tools.value[1]);
-            }
-            if (nowTool.value === "arrow") {
-                toolClick(tools.value[2]);
-            }
-            if (nowTool.value === "square") {
-                toolClick(tools.value[3]);
-            }
-            if (nowTool.value === "circle") {
-                toolClick(tools.value[4]);
-            }
-            if (nowTool.value === "text") {
-                toolClick(tools.value[5]);
-            }
+        });
+
+        tools.value?.[10] && toolClick(tools.value[10]);
+    }
+
+    if (!["clear", "color"].includes(nowTool.value)) {
+        beforeTool.value = nowTool.value;
+    }
+
+    if (nowTool.value === "color") {
+        nowTool.value = beforeTool.value;
+        if (canvas.value?.isDrawingMode && nowTool.value === "moveLayer") {
+            nowTool.value = "pen";
         }
     }
+
+    drawingMode();
+
+    // ========== 도형 & 텍스트 ==========
+    if (["line", "arrow", "square", "circle", "text"].includes(nowTool.value)) {
+        drawingMode();
+        canvas.value.defaultCursor = "crosshair";
+
+        // 필요할 때만 toolClick 재호출
+        const toolMap = {
+            line: 1,
+            arrow: 2,
+            square: 3,
+            circle: 4,
+            text: 5,
+        };
+        const idx = toolMap[nowTool.value];
+        if (idx !== undefined && tools.value?.[idx]) {
+            toolClick(tools.value[idx]);
+        }
+    }
+
     tool.selected = subMenu.value;
 };
 
@@ -1943,16 +1907,6 @@ const canvasWidthHeightChange = () => {
     });
 };
 
-const handleKeyUp = (e) => {
-    // console.log(e, "keyup")
-    if (e.key === "Control") {
-        this.canvas.defaultCursor = "default";
-        if (this.nowTool === "pen") {
-            this.enable();
-        }
-    }
-};
-
 const onResize = () => {
     // this.canvasWidthHeightChange() -> canvasWidthHeightChange()
     // 캔버스 크기 변경 로직은 canvasWidthHeightChange에서 처리하므로, 여기서는 관련 변수만 업데이트합니다.
@@ -2003,324 +1957,6 @@ const init = () => {
 
     // 캔버스 크기가 재조정됨에 따라 해당 함수를 실행하지 않으면 좌표값이 망가짐
     canvasWidthHeightChange(); // this.canvasWidthHeightChange() -> canvasWidthHeightChange()
-};
-
-const setTools = (parameter) => {
-    if (parameter === "darkmode") {
-        return;
-    }
-
-    // this.tools -> tools.value 로 변경
-    // require('@/assets/images/...') -> '/images/...' 또는 실제 프로젝트의 정적 파일 경로로 변경
-    // 여기서는 `/images/`를 사용하며, 실제 프로젝트의 public/assets 구조에 맞게 조정해야 합니다.
-    tools.value = [
-        {
-            type: "pen",
-            img: "@/assets/images/lightmode/drawing/bt_1_pen.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_1_pen.svg",
-            subMenu: [
-                {
-                    circle: 1,
-                    value: 1,
-                },
-                {
-                    circle: 3,
-                    value: 3,
-                },
-                {
-                    circle: 6,
-                    value: 6,
-                },
-                {
-                    circle: 10,
-                    value: 10,
-                },
-                {
-                    circle: 13,
-                    value: 13,
-                },
-                {
-                    circle: 16,
-                    value: 16,
-                },
-            ],
-            selected: 3,
-            tooltip: "연필",
-        },
-        {
-            type: "line",
-            img: "@/assets/images/lightmode/drawing/bt_2_line.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_2_line.svg",
-            subMenu: [
-                {
-                    circle: 1,
-                    value: 1,
-                },
-                {
-                    circle: 3,
-                    value: 3,
-                },
-                {
-                    circle: 6,
-                    value: 6,
-                },
-                {
-                    circle: 10,
-                    value: 10,
-                },
-                {
-                    circle: 13,
-                    value: 13,
-                },
-                {
-                    circle: 16,
-                    value: 16,
-                },
-            ],
-            selected: 3,
-            tooltip: "선",
-        },
-        {
-            type: "arrow",
-            img: "@/assets/images/lightmode/drawing/bt_3_arrow.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_3_arrow.svg",
-            subMenu: [
-                {
-                    square: 1,
-                    value: 1,
-                },
-                {
-                    square: 3,
-                    value: 3,
-                },
-                {
-                    square: 6,
-                    value: 6,
-                },
-                {
-                    square: 10,
-                    value: 10,
-                },
-                {
-                    square: 13,
-                    value: 13,
-                },
-                {
-                    square: 16,
-                    value: 16,
-                },
-            ],
-            selected: 3,
-            tooltip: "화살표",
-        },
-        {
-            type: "square",
-            img: "@/assets/images/lightmode/drawing/bt_4_square.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_4_square.svg",
-            subMenu: [
-                {
-                    square: 1,
-                    value: 1,
-                },
-                {
-                    square: 3,
-                    value: 3,
-                },
-                {
-                    square: 6,
-                    value: 6,
-                },
-                {
-                    square: 10,
-                    value: 10,
-                },
-                {
-                    square: 13,
-                    value: 13,
-                },
-                {
-                    square: 16,
-                    value: 16,
-                },
-            ],
-            selected: 3,
-            tooltip: "사각형",
-        },
-        {
-            type: "circle",
-            img: "@/assets/images/lightmode/drawing/bt_5_circle.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_5_circle.svg",
-            subMenu: [
-                {
-                    circle: 1,
-                    value: 1,
-                },
-                {
-                    circle: 3,
-                    value: 3,
-                },
-                {
-                    circle: 6,
-                    value: 6,
-                },
-                {
-                    circle: 10,
-                    value: 10,
-                },
-                {
-                    circle: 13,
-                    value: 13,
-                },
-                {
-                    circle: 16,
-                    value: 16,
-                },
-            ],
-            selected: 3,
-            tooltip: "원",
-        },
-        {
-            type: "text",
-            img: "@/assets/images/lightmode/drawing/bt_6_text.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_6_text.svg",
-            subMenu: [
-                {
-                    text: 16,
-                    value: 16,
-                },
-                {
-                    text: 32,
-                    value: 32,
-                },
-                {
-                    text: 64,
-                    value: 64,
-                },
-                {
-                    text: 128,
-                    value: 128,
-                },
-                {
-                    text: 256,
-                    value: 256,
-                },
-                {
-                    text: 512,
-                    value: 512,
-                },
-            ],
-            selected: 32,
-            tooltip: "텍스트",
-        },
-        {
-            type: "photo",
-            img: "@/assets/images/lightmode/drawing/bt_7_zoom.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_7_zoom.svg",
-            tooltip: "이미지 삽입",
-        },
-        {
-            type: "pdf",
-            img: "@/assets/images/lightmode/drawing/bt_8_pdf.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_8_pdf.svg",
-            tooltip: "PDF 삽입",
-        },
-        {
-            type: "undo",
-            img: "@/assets/images/lightmode/drawing/bt_9_undo.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_9_undo.svg",
-            tooltip: "되돌리기",
-        },
-        {
-            type: "redo",
-            img: "@/assets/images/lightmode/drawing/bt_10_redo.svg",
-            fixImg: "@/assets/images/lightmode/drawing/bt_10_redo.svg",
-            tooltip: "다시실행",
-        },
-        {
-            type: "moveLayer",
-            img: "@/assets/images/lightmode/drawing/ic_layer_move.svg",
-            fixImg: "@/assets/images/lightmode/drawing/ic_layer_move.svg",
-            tooltip: "레이어 선택",
-        },
-        {
-            type: "clear",
-            img: "@/assets/images/lightmode/drawing/ic_fresh_34.svg",
-            fixImg: "@/assets/images/lightmode/drawing/ic_fresh_34.svg",
-            tooltip: "캔버스 초기화",
-        },
-        {
-            type: "group",
-            img: "@/assets/images/lightmode/drawing/ic_grouping.svg",
-            fixImg: "@/assets/images/lightmode/drawing/ic_grouping.svg",
-            tooltip: "레이어 그룹화",
-        },
-        {
-            type: "layer",
-            img: "@/assets/images/lightmode/drawing/ic_z-index.svg",
-            fixImg: "@/assets/images/lightmode/drawing/ic_z-index.svg",
-            subMenu: [
-                {
-                    img: "/images/callAttachment/ic_bring_to_front.png",
-                    value: "F",
-                },
-                {
-                    img: "/images/callAttachment/ic_bring_forward.png",
-                    value: "f",
-                },
-                {
-                    img: "/images/callAttachment/ic_send_backward.png",
-                    value: "B",
-                },
-                {
-                    img: "/images/callAttachment/ic_send_to_back.png",
-                    value: "b",
-                },
-            ],
-            selected: "F",
-            tooltip: "레이어 정돈",
-        },
-        {
-            type: "color",
-            subMenu: [
-                {
-                    color: "#EE324A",
-                    value: "#EE324A",
-                },
-                {
-                    color: "#fe9a2f",
-                    value: "#fe9a2f",
-                },
-                {
-                    color: "#f8e644",
-                    value: "#f8e644",
-                },
-                {
-                    color: "#2ced66",
-                    value: "#2ced66",
-                },
-                {
-                    color: "#349ced",
-                    value: "#349ced",
-                },
-                {
-                    color: "#ADB5BD",
-                    value: "#ADB5BD",
-                },
-                {
-                    color: "#000000",
-                    value: "#000000",
-                },
-            ],
-            selected: "#EE324A",
-            tooltip: "색상 변경",
-        },
-        {
-            type: "download",
-            img: "@/assets/images/lightmode/drawing/ic_save_34.svg",
-            fixImg: "@/assets/images/lightmode/drawing/ic_save_34.svg",
-            tooltip: "캔버스 이미지 저장",
-        },
-    ];
 };
 
 const color = computed(() => {
@@ -2449,71 +2085,60 @@ watch(chattingShow, (res) => {
     canvasWidthHeightChange(); // Call helper function
 });
 
+function handleKeyDown(e) {
+  canvasKeyCode(e);
+  if (canvas.value && e.ctrlKey) {
+    canvas.value.defaultCursor = "grab";
+    canvas.value.hoverCursor = "grab";
+    if (nowTool.value === "pen") {
+      disable();
+    }
+  }
+}
+
+function handleKeyUp(e) {
+  if (canvas.value && e.key === "Control") {
+    canvas.value.defaultCursor = "default";
+    if (nowTool.value === "pen") {
+      enable();
+    }
+  }
+}
+
 onBeforeUnmount(() => {
-    // 1. 전역 이벤트 리스너 제거
-    // 주의: addEventListener와 removeEventListener는 정확히 동일한 함수 참조를 사용해야 합니다.
-    // 익명 함수를 사용하면 제거가 불가능합니다. 따라서, 별도의 명명된 함수로 추출했습니다.
-    window.removeEventListener("keydown", (e) => {
-        canvasKeyCode(e);
-        if (e.ctrlKey == true) {
-            canvas.value.defaultCursor = "grab";
-            canvas.value.hoverCursor = "grab";
-            if (nowTool.value == "pen") {
-                disable();
-            }
-        }
-    });
-    window.removeEventListener("keyup", handleKeyUp);
-    window.removeEventListener("resize", onResize);
+  isMounted = false;
 
-    // 2. Fabric.js 캔버스 리소스 정리
-    if (canvas.value) {
-        // Fabric.js 캔버스와 관련된 모든 이벤트 리스너를 제거합니다.
-        // `off()` 메서드에 인자를 전달하지 않으면 해당 이벤트 타입의 모든 리스너를 제거합니다.
-        canvas.value.off("mouse:down");
-        canvas.value.off("mouse:move");
-        canvas.value.off("mouse:up");
-        canvas.value.off("mouse:wheel");
-        canvas.value.off("object:moving");
-        canvas.value.off("object:scaling");
-        canvas.value.off("object:rotating");
-        canvas.value.off("object:added");
-        canvas.value.off("object:selected");
-        canvas.value.off("object:modified");
-        canvas.value.off("selection:created");
-        canvas.value.off("selection:updated");
+  // 전역 이벤트 제거
+  window.removeEventListener("keydown", handleKeyDown);
+  window.removeEventListener("keyup", handleKeyUp);
+  window.removeEventListener("resize", onResize);
 
-        // 캔버스 인스턴스를 dispose하여 메모리 누수를 방지합니다.
-        canvas.value.dispose();
-        canvas.value = null; // 참조를 null로 설정하여 가비지 컬렉션 대상이 되도록 합니다.
+  // Fabric 자원 해제
+  if (canvas.value) {
+    if (canvas.value.cancelRequestedRender) {
+      canvas.value.cancelRequestedRender();
     }
+    canvas.value.off();
+    canvas.value.dispose();
+    canvas.value = null;
+  }
 
-    // 3. 미디어 디바이스 접근 관련 로직
-    // Vuex 상태는 computed 속성을 통해 접근하고, actions/mutations를 통해 변경해야 합니다.
-    // 여기서는 `callStore.onlyVoiceID` 등을 직접 참조합니다.
-    const onlyVoiceIDs = callStore.onlyVoiceID;
-    const localDeviceID = sessionStorage.getItem("m_local_deviceid");
-    const cameraNotAllowed = callStore.cameraNotAllowed;
+  // 미디어 디바이스 정리
+  const onlyVoiceIDs = callStore.onlyVoiceID;
+  const localDeviceID = sessionStorage.getItem("m_local_deviceid");
+  const cameraNotAllowed = callStore.cameraNotAllowed;
 
-    if ((onlyVoiceIDs && onlyVoiceIDs.includes(localDeviceID)) || cameraNotAllowed) {
-        // `getUserMedia`는 보통 스트림을 시작할 때 사용되며,
-        // 언마운트 시점에 다시 호출하는 것이 의도된 동작인지 확인이 필요합니다.
-        // 일반적인 경우, 언마운트 시에는 스트림을 `stop()`하거나 관련 리소스를 해제합니다.
-        // 현재 로직은 스트림을 재시도하는 것처럼 보이므로, 애플리케이션의 특정 요구사항에 따라 달라질 수 있습니다.
-        navigator.mediaDevices
-            .getUserMedia({ video: false, audio: true })
-            .then((stream) => {
-                // 스트림을 얻었을 때의 처리 (여기서는 특별한 동작 없음)
-                console.log(
-                    "Re-acquired audio stream before unmount (as per original logic).",
-                );
-                // 보통은 여기서 스트림 트랙을 정지시킵니다:
-                // stream.getTracks().forEach(track => track.stop());
-            })
-            .catch((error) => {
-                console.error("Error re-acquiring media devices on unmount:", error);
-            });
-    }
+  if ((onlyVoiceIDs && onlyVoiceIDs.includes(localDeviceID)) || cameraNotAllowed) {
+    navigator.mediaDevices
+      .getUserMedia({ video: false, audio: true })
+      .then((stream) => {
+        console.log("Re-acquired audio stream before unmount.");
+        stream.getTracks().forEach((track) => track.stop());
+      })
+      .catch((error) => {
+        console.error("Error re-acquiring media devices on unmount:", error);
+      });
+  }
 });
 </script>
 <style lang="scss" scoped>
@@ -2527,6 +2152,7 @@ onBeforeUnmount(() => {
     height: 100%;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     // height: $contentsContainerHeight;
     // max-height: calc(100vh - $contentsContainerHeight);
 }
@@ -2536,7 +2162,9 @@ onBeforeUnmount(() => {
     padding: 0px 24px 0px 12px;
     z-index: 2;
     max-height: calc(100vh - 80px);
-
+    position: fixed;
+    top: 88px;
+    left: 336px;
     @media screen and (max-height: 700px) {
         padding: 0px 40px 0px 6px !important;
     }
@@ -2598,7 +2226,7 @@ $toolPaddingSize: 1px;
 .subMenu {
     display: none;
     position: absolute;
-    left: $toolSize + 12;
+    left: $toolSize;
     height: $toolSize;
     display: none;
 }

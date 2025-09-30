@@ -30,7 +30,7 @@ const handleClickNotice = () => {
     console.log(vfm);
 };
 
-const handleClickCloud = () => {
+const handleClickCloud = (path) => {
     const params = {
         accessToken: tokenStore.accessToken,
         refreshToken: tokenStore.enRToken,
@@ -46,6 +46,7 @@ const handleClickCloud = () => {
         br_alias: loginStore.branch,
         email: loginStore.sessionEmail,
         device_type: loginStore.sessionDeviceType,
+        redirect: "/" + path
     };
     const queryString = new URLSearchParams(params).toString();
     const domain = `${getManagerDomain()}/login?${queryString}`;
@@ -64,7 +65,7 @@ const handleClickCloud = () => {
             <img :src="menuImages.meetingRoom" />
             <label class="icon-label">{{ t("회의실") }}</label>
         </router-link>
-        <a @click="handleClickCloud" target="_blank" class="icon-btn" title="클라우드">
+        <a @click="handleClickCloud('videocall')" target="_blank" class="icon-btn" title="클라우드">
             <img :src="menuImages.cloud" />
             <label class="icon-label">{{ t("클라우드") }}</label>
         </a>

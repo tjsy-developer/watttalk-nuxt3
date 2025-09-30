@@ -25,7 +25,7 @@
                     <label>{{ t("회의실") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_meeting.svg" />
                 </router-link>
-                <button @click="handleClickCloud('login')">
+                <button @click="handleClickCloud('videocall')">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
                     <label>{{ t("클라우드") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_cloud.svg" />
@@ -178,7 +178,7 @@ const handleClickCloud = (path) => {
         auth: loginStore.sessionAuth,
         user_id: loginStore.m_local_deviceid,
         user_name: loginStore.nickname,
-        user_seq: "",
+        user_seq: loginStore.userSeq,
         en_alias: loginStore.institution,
         hq_alias: loginStore.headquarters,
         br_alias: loginStore.branch,

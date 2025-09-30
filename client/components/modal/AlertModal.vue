@@ -272,6 +272,7 @@
 <script setup>
 import { useCommonStore } from "@/stores";
 import { useDrawingCanvasStore } from "@/stores/drawing";
+import { getManagerDomain } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { computed, onMounted } from "vue";
 const { t } = useI18n();
@@ -412,7 +413,7 @@ const forceLogout = (result) => {
     } else {
 		loginStore.setForcedLogout(result);
 		modalStore.closeModal("noneOverlayModal");
-		location.href = "http://localhost:8205"
+		location.href = getManagerDomain();
     }
 };
 

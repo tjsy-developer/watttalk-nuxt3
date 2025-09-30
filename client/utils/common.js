@@ -408,6 +408,10 @@ export const getFormattedDate = (timestamp, format = "yyyy-mm-dd") => {
         .replace(/ss/, second);
 };
 
+export const getManagerDomain = () => {
+    return useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_DOMAIN || window.location.origin
+}
+
 export default {
     getWorldTime,
     buildTree,
@@ -423,4 +427,5 @@ export default {
     fileReceiveMessageBell,
     emergencyAlarmBell,
     getFormattedDate,
+    getManagerDomain,
 };

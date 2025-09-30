@@ -4,6 +4,7 @@ import { useTokenStore } from "@/stores/token";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js/core";
 import axios from "axios";
+import { getManagerDomain } from "@/utils/common";
 // import { useTokenStore } from "@/stores/token"; // Pinia 예시
 
 export function useAuth() {
@@ -101,7 +102,7 @@ export function useAuth() {
                 } else if (error.response.data == "expired") {
                     alert(("loginResult NotValid"));
                 }
-                location.href = "http://localhost:8205";
+                location.href = getManagerDomain();
             }
         }
     }

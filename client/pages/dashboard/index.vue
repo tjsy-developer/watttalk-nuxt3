@@ -52,7 +52,7 @@ import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
-import { callingBell, getDirectMessageTimeZone } from "@/utils/common";
+import { callingBell, getDirectMessageTimeZone, getManagerDomain } from "@/utils/common";
 import { useModal, useModalSlot, useVfm } from "vue-final-modal";
 import { userListGetNickname } from "@/utils/userList";
 import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
@@ -187,7 +187,7 @@ const handleClickCloud = (path) => {
         redirect: "/" + path
     };
     const queryString = new URLSearchParams(params).toString();
-    const domain = `http://localhost:8205/login?${queryString}`;
+    const domain = `${getManagerDomain()}/login?${queryString}`;
     window.open(domain, "target");
 };
 
@@ -678,7 +678,7 @@ function callingAccept(roomid, remotedeviceid) {
 }
 
 function logout() {
-    location.href = "http://localhost:8205";
+    location.href = getManagerDomain();
     sessionStorage.clear();
 }
 

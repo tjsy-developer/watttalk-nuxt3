@@ -1,5 +1,6 @@
 // stores/auth.ts (or login.ts, token.ts)
 // eslint-disable-next-line camelcase
+import { getManagerDomain } from "@/utils/common";
 import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
 
@@ -104,7 +105,7 @@ export const useLoginStore = defineStore("login", {
             } else if (payload.logintype == 3) {
                 this.loginType = payload.logintype;
                 sessionStorage.clear();
-                location.href= "http://localhost:8205"
+                location.href = getManagerDomain();
             }
         },
         setLang(payload) {

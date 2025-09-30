@@ -66,6 +66,7 @@ export default defineNuxtConfig({
         // "@nuxt/devtools",
         "@pinia/nuxt",
         "pinia-plugin-persistedstate/nuxt",
+        ["@nuxtjs/i18n", i18n],
         [
             "@nuxtjs/color-mode",
             {
@@ -73,7 +74,6 @@ export default defineNuxtConfig({
                 classSuffix: "",
             },
         ],
-        ["@nuxtjs/i18n", i18n],
     ],
     vite: {
         assetsInclude: ["**/*.svg", "**/*.worker.js"],
@@ -105,6 +105,7 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_URL: process.env.ICE_SERVER_URL,
             NUXT_PUBLIC_ICE_SERVER_USER: process.env.ICE_SERVER_USER,
             NUXT_PUBLIC_ICE_SERVER_CREDENTIAL: process.env.ICE_SERVER_CREDENTIAL,
+            NUXT_PUBLIC_MANAGER_DOMAIN: process.env.NUXT_PUBLIC_MANAGER_DOMAIN,
         },
     },
     // devServer: {

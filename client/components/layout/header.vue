@@ -117,6 +117,7 @@ import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
 import { useCallStore } from "@/stores/call";
 import { useUserPreferenceStore } from "@/stores/common";
+import { getManagerDomain } from "@/utils/common";
 const { $colorMode } = useNuxtApp();
 const { t, setLocale } = useI18n();
 const router = useRouter();
@@ -163,7 +164,7 @@ function handleChangeLanguage(lang) {
 }
 
 function logout() {
-    location.href = "http://localhost:8205";
+    location.href = getManagerDomain();
     sessionStorage.clear();
 }
 

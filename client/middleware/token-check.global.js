@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { useRoute } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { useLoginEvents } from "@/composables/socket/useLoginEvents";
+import { getManagerDomain } from "@/utils/common";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
     if (process.server) return;
@@ -29,7 +30,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
                 loginStore.setTokenResult(0);
             } else {
                 alert(t("loginResult NotValid"));
-                window.location.href = "http://localhost:8205";
+                window.location.href = getManagerDomain();
                 return;
             }
         } else {

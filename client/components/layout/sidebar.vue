@@ -2,6 +2,7 @@
 import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
 import { useTokenStore } from "@/stores/token";
+import { getManagerDomain } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { onMounted, ref } from "vue";
 import { useModal, useModalSlot, useVfm } from "vue-final-modal";
@@ -47,7 +48,7 @@ const handleClickCloud = () => {
         device_type: loginStore.sessionDeviceType,
     };
     const queryString = new URLSearchParams(params).toString();
-    const domain = `http://localhost:8205/login?${queryString}`;
+    const domain = `${getManagerDomain()}/login?${queryString}`;
     window.open(domain, "target");
 };
 </script>

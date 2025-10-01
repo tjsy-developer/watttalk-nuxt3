@@ -80,15 +80,15 @@ FROM node:22.15.1 AS builder
 WORKDIR /home/node/app
 
 COPY package*.json ./
-COPY tsconfig.json ./
-COPY nuxt.config.ts ./
+COPY jsconfig.json ./
+COPY nuxt.config.js ./
 COPY app.vue ./
 COPY client ./client
 COPY configs ./configs
 COPY config ./config
 COPY i18n ./i18n
 COPY nuxt_configs ./nuxt_configs
-COPY .env .env
+COPY ./configs/hdcardev .env
 
 RUN npm ci
 RUN npm run generate   # 결과물은 .output/public

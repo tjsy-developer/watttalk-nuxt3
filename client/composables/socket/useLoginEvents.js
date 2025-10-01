@@ -78,7 +78,7 @@ export function useLoginEvents() {
             if(route.name == "login") {
                 router.push("/dashboard")
             } else {
-                router.push(route.name);
+                router.push({ name: route.name});
             }
             
             modalStore.closeModal("noneOverlayModal");

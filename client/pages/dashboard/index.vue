@@ -771,7 +771,7 @@ onBeforeUnmount(() => {
 .right-panel {
     width: 100%;
     max-width: 616px;
-    height: 100%;
+    height: 80vh;
     max-height: 753px;
     padding: 41px 38px 8px 42px;
     z-index: 1;

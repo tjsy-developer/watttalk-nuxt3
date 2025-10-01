@@ -223,38 +223,6 @@ onMounted(() => {
         sayHello();
     });
 
-    if (sessionStorage.getItem("createRoomFlag") === "true") {
-        // 연락처 -> 통화화면으로 접근시에만 sending 및 통화연결
-        if (callingType.value == "videoCall") {
-            createRoomRequest(
-                loginStore.m_local_deviceid,
-                sessionStorage.getItem("m_roomid"),
-                uniqueRoomid.value, // 2021-07-21 추가
-            );
-
-            // -> kyj 방 생성 후 최초 통화 발신중 메세지 출력
-            // 자신의 언어에 따라 닉네임 변경
-            const customNickname = customUserNickname(
-                sessionStorage.getItem("m_remote_deviceid"),
-            );
-            console.log("*** mounted: sending customNickname: ", customNickname);
-            callingLayoutChange("sending", customNickname, 1);
-        }
-
-        // ksh 추가
-        // videoCallHost Check
-        videoCallHostCheck(
-            sessionStorage.getItem("m_roomid"),
-            loginStore.m_local_deviceid,
-        );
-    } else {
-        joinRoomRequest(
-            loginStore.m_local_deviceid,
-            sessionStorage.getItem("m_roomid"),
-            uniqueRoomid.value, // 2021-07-21 추가
-        );
-    }
-
     // 처음으로 연결된 상대방의 영상을 큰 비디오에 자동으로 담기 위해 calling.vue 입장 Flag 값 기록
     sessionStorage.setItem("otherPartyAccess", "false");
     // console.log(

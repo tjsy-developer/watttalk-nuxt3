@@ -106,6 +106,7 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_USER: process.env.ICE_SERVER_USER,
             NUXT_PUBLIC_ICE_SERVER_CREDENTIAL: process.env.ICE_SERVER_CREDENTIAL,
             NUXT_PUBLIC_MANAGER_DOMAIN: process.env.NUXT_PUBLIC_MANAGER_DOMAIN,
+            NUXT_PUBLIC_MANAGER_BASE_URL: process.env.NUXT_PUBLIC_MANAGER_BASE_URL,
         },
     },
     // devServer: {

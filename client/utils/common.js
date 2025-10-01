@@ -409,7 +409,10 @@ export const getFormattedDate = (timestamp, format = "yyyy-mm-dd") => {
 };
 
 export const getManagerDomain = () => {
-    return useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_DOMAIN || window.location.origin
+    const wattmanagerAccessDomain = useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_DOMAIN || window.location.origin
+    return (
+        wattmanagerAccessDomain + useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_BASE_URL
+    );
 }
 
 export default {

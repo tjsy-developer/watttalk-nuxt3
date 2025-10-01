@@ -1,3 +1,6 @@
+# 매니저 baseurl
+NUXT_PUBLIC_MANAGER_BASE_URL=/wattmanager2
+
 # 업체별 개별 설정
 NUXT_PUBLIC_MAIN_LOGO_PATH=/logos/hdcar_logo.png
 NUXT_PUBLIC_FAVICON_PATH=/favicons/hdcar.png

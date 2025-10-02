@@ -30,14 +30,11 @@ export default defineNuxtConfig({
             script: [
                 {
                     type: "module",
-                    src: "/js/janus.js",
-                    defer: false,
-                },
-                {
                     src: "/js/toastr.min.js",
                     defer: false,
                 },
                 {
+                    type: "module",
                     src: "/js/spin.min.js",
                     defer: false,
                 },
@@ -76,10 +73,20 @@ export default defineNuxtConfig({
         ],
     ],
     vite: {
-        assetsInclude: ["**/*.svg", "**/*.worker.js"],
         optimizeDeps: {
-            include: ["quasar"],
+            include: ['lodash', 'moment'], // 미리 변환할 큰 라이브러리
+            exclude: ['some-big-cjs-lib'], // 변환 제외
+            server: {
+                watch: {
+                    // node_modules, .output, dist 등 불필요한 폴더 제외
+                    ignored: ['**/node_modules/**', '**/.output/**', '**/dist/**']
+                }
+            },
+            build: {
+                sourcemap: false // 개발 시 소스맵 끄면 조금 빨라짐
+            }
         },
+        assetsInclude: ["**/*.svg", "**/*.worker.js"],
         css: {
             preprocessorOptions: {
                 scss: {
@@ -107,6 +114,7 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_CREDENTIAL: process.env.ICE_SERVER_CREDENTIAL,
             NUXT_PUBLIC_MANAGER_DOMAIN: process.env.NUXT_PUBLIC_MANAGER_DOMAIN,
             NUXT_PUBLIC_MANAGER_BASE_URL: process.env.NUXT_PUBLIC_MANAGER_BASE_URL,
+            NUXT_PUBLIC_SAVE_PHOTO_PATH: process.env.NUXT_PUBLIC_SAVE_PHOTO_PATH
         },
     },
     // devServer: {

@@ -2281,7 +2281,7 @@ onMounted(() => {
             drawingStore.setBeforeIndexInitialized(true);
             if (drawingState) {
                 // 썸네일 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
-                // createLoadingMask("ThumnailTransfer")
+                createLoadingMask("ThumnailTransfer")
 
                 // 드로잉을 활성화 시켜준다.
                 commonStore.setIsDrawing(true);
@@ -9534,7 +9534,7 @@ function sayHello() {
     // -> kyj
     const config = useRuntimeConfig().public;
     console.log('여기확인', config)
-    str_stream_picture_file_path.value = `${window.location.origin}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
+    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";

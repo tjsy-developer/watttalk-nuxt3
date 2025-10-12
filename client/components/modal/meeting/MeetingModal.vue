@@ -1450,6 +1450,7 @@ select,
 
     &.third {
         width: 344px;
+        height: 42px;
         font: normal normal normal 14px/16px NanumSquare;
         overflow-x: auto;
         color: #fff;
@@ -1465,7 +1466,6 @@ select,
 
         &:hover:empty {
             position: relative;
-            height: 42px;
         }
 
         &:hover {
@@ -1478,7 +1478,6 @@ select,
             -webkit-hyphens: auto;
             -moz-hyphens: auto;
             hyphens: auto;
-            height: max-content;
             min-height: 35px;
             max-height: 120px;
             overflow-x: auto;

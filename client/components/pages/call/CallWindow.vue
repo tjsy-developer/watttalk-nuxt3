@@ -1291,9 +1291,7 @@ $windowInfoBarHeight: 30px;
 #videoMainDiv {
     height: -webkit-fill-available;
 }
-#videoMainDiv.drawing {
-    height: calc(100% - 94px);
-}
+
 .mainVideoBorder {
     border: 3px solid #fff;
     box-sizing: border-box;

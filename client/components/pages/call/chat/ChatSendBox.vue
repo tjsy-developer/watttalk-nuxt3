@@ -4,73 +4,32 @@
             <div class="col row">
                 <button
                     @click="switchMessageType(1)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 1 && displayType == 'darkmode'
-                                ? '#7E7E7E'
-                                : messageType == 1 && displayType == 'lightmode'
-                                  ? '#D6D6D6'
-                                  : displayType == 'darkmode'
-                                    ? '#4D4D4D'
-                                    : '#fff',
-                    }"
                     class="normal"
+                    :class="{ clicked: messageType == 1}"
                 >
                     {{ t("일반") }}
                 </button>
                 <button
                     @click="switchMessageType(2)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 2
-                                ? '#EE314A'
-                                : displayType == 'lightmode'
-                                  ? '#fff'
-                                  : '#4D4D4D',
-                        color:
-                            messageType == 2 &&
-                            (displayType == 'darkmode' || displayType == 'lightmode')
-                                ? '#fff'
-                                : displayType == 'darkmode'
-                                  ? '#fff'
-                                  : 'black',
-                    }"
                     v-if="!videoCallHost"
                     class="emergency"
+                    :class="{ clicked: messageType == 2}"
                 >
                     {{ t("긴급") }}
                 </button>
                 <button
                     @click="switchMessageType(4)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 4 && displayType == 'darkmode'
-                                ? '#7E7E7E'
-                                : messageType == 4 && displayType == 'lightmode'
-                                  ? '#D6D6D6'
-                                  : displayType == 'darkmode'
-                                    ? '#4D4D4D'
-                                    : '#fff',
-                    }"
                     v-if="videoCallHost && !isDrawing"
                     class="normal"
+                    :class="{ clicked: messageType == 4}"
                 >
                     {{ t("chatting move") }}
                 </button>
                 <button
                     @click="switchMessageType(5)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 5 && displayType == 'darkmode'
-                                ? '#7E7E7E'
-                                : messageType == 5 && displayType == 'lightmode'
-                                  ? '#D6D6D6'
-                                  : displayType == 'darkmode'
-                                    ? '#4D4D4D'
-                                    : '#fff',
-                    }"
                     v-if="videoCallHost && !isDrawing"
-                    class="emergency"
+                    class="normal"
+                    :class="{ clicked: messageType == 5}"
                 >
                     {{ t("chatting direction") }}
                 </button>
@@ -78,16 +37,9 @@
             <div class="col-auto row justify-end iconContainer">
                 <button
                     @click="switchMessageType(3)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 3
-                                ? '#EE314A'
-                                : displayType == 'lightmode'
-                                  ? '#fff'
-                                  : '#4D4D4D',
-                    }"
                     v-if="videoCallHost && !isDrawing"
-                    class="row justify-center items-center icon"
+                    class="emergency"
+                    :class="{ clicked: messageType == 3}"
                 >
                     <img
                         v-if="displayType == 'lightmode' && messageType != 3"
@@ -97,21 +49,6 @@
                 </button>
                 <button
                     @click="switchMessageType(2)"
-                    :style="{
-                        backgroundColor:
-                            messageType == 2
-                                ? '#EE314A'
-                                : displayType == 'lightmode'
-                                  ? '#fff'
-                                  : '#4D4D4D',
-                        color:
-                            messageType == 2 &&
-                            (displayType == 'darkmode' || displayType == 'lightmode')
-                                ? '#fff'
-                                : displayType == 'darkmode'
-                                  ? '#fff'
-                                  : 'black',
-                    }"
                     v-if="videoCallHost"
                     class="emergency"
                 >
@@ -478,12 +415,6 @@ $line1Height: 26px;
     // z-index: 1; // Unlikely to be needed if parent has z-index
 }
 
-.normal {
-    &:first-child {
-        margin-right: 2px;
-    }
-}
-
 .normal,
 .emergency {
     font-size: 12px;
@@ -491,8 +422,22 @@ $line1Height: 26px;
     border-radius: 2px;
 }
 
+.normal {
+    background-color: #4d4d4d;
+    &:first-child {
+        margin-right: 2px;
+    }
+    &.clicked {
+        background-color: #7e7e7e;
+    }
+}
+
 .emergency {
+    background-color: #4d4d4d;
     margin-left: 2px;
+    &.clicked {
+        background-color: #ee314a;
+    }
 }
 
 .iconContainer {
@@ -527,6 +472,7 @@ $line1Height: 26px;
         padding: 8px;
         height: 133px; // Explicit height for textarea, ensure it plays well with mobile focus logic
         margin-bottom: 3px;
+        background-color: #4a4a4a;
     }
 }
 

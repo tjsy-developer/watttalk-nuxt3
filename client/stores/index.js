@@ -133,7 +133,8 @@ export const useCommonStore = defineStore("common", {
             this.isShare = !this.isShare;
         },
         setIsDrawing(payload) {
-            if (!payload) {
+            if (payload === undefined) {
+                // payload가 없을 때만 toggle
                 this.isDrawing = !this.isDrawing;
             } else {
                 this.isDrawing = payload;

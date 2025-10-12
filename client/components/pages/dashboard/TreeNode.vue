@@ -296,7 +296,6 @@ onMounted(() => {});
     align-items: center;
     /* justify-content: space-between; */
     padding-right: 25px;
-    @include tc(color, "text-color");
     .checkbox-label {
         margin-right: 10px;
     }

@@ -1,6 +1,6 @@
 <template>
     <div class="chat-container" :class="!getIsShowChatBar ? 'hidden' : ''">
-        <button class="slide-btn" @click="chattingStore.setChattingShow()">
+        <button class="slide-btn" @click="handleClickToggleChatBar">
             <img
                 v-if="callStore.underStatus == 0 || callStore.underStatus == 3"
                 src="@/assets/images/calling/right_bt_default.png"
@@ -158,6 +158,11 @@ const hostRequest = () => {
 const setAllMicMuteStatus = (status) => {
     callStore.setAllMicMuteStatus(status);
 };
+
+const handleClickToggleChatBar = () => {
+    chattingStore.setChattingShow();
+    callStore.setUnderStatus(0);
+}
 
 const getIsShowChatBar = computed(() => chattingStore.chattingShow);
 const chattingMessageList = computed(() => chattingStore.chattingMessageList);

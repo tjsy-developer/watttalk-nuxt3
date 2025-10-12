@@ -42,7 +42,7 @@
                 >
                     <img src="@/assets/images/conference/ic_date.png" alt="Date Icon" />
                     <span class="spanTitle">{{ t("meetingDate") }}:&nbsp;</span>
-                    <span class="col items-center spanContent timeOverFlow">{{
+                    <span class="timeOverFlow">{{
                         format(props.compData.startDate)
                     }}</span>
                 </div>
@@ -57,10 +57,10 @@
                         src="@/assets/images/lightmode/conference/ic_con_start.svg"
                         alt="Conference Start Icon"
                     />
-                    <span class="row items-center spanTitle"
+                    <span
                         >{{ t("meetingStartPeriod") }} :&nbsp;</span
                     >
-                    <span class="col items-center spanContent timeOverFlow">
+                    <span class="timeOverFlow">
                         {{ format(props.compData.startDate) }}
                         {{ time() ? time().split("-")[0] : "" }}
                     </span>
@@ -74,10 +74,10 @@
                     class="contentView"
                 >
                     <img src="@/assets/images/conference/ic_time.png" alt="Time Icon" />
-                    <span class="row items-center spanTitle"
+                    <span
                         >{{ t("meetingTime") }}:&nbsp;</span
                     >
-                    <span class="col items-center spanContent timeOverFlow">{{
+                    <span class="timeOverFlow">{{
                         time()
                     }}</span>
                 </div>
@@ -92,10 +92,10 @@
                         src="@/assets/images/lightmode/conference/ic_con_end.svg"
                         alt="Conference End Icon"
                     />
-                    <span class="row items-center spanTitle"
+                    <span
                         >{{ t("meetingEndPeriod") }} :&nbsp;</span
                     >
-                    <span class="col items-center spanContent timeOverFlow">
+                    <span class=" timeOverFlow">
                         {{
                             props.compData.customData.type === 3
                                 ? t("meeting validity period")
@@ -111,10 +111,10 @@
                         alt="Participants Icon"
                         class="participantsImg"
                     />
-                    <span class="row items-center participantsTitle"
+                    <span
                         >{{ t("meetingMember") }}:&nbsp;</span
                     >
-                    <span class="spanContent textEllipsisKo">{{
+                    <span class="textEllipsisKo">{{
                         props.compData.customData.member
                     }}</span>
                 </div>
@@ -126,7 +126,7 @@
                         class="cctvIcon"
                     />
                     <span class="participantsTitle">CCTV:&nbsp;</span>
-                    <span class="row itmes-center spanContent textEllipsisKo">{{
+                    <span class="textEllipsisKo">{{
                         cctvList
                     }}</span>
                 </div>
@@ -139,7 +139,7 @@
                     "
                     class="optionTxt"
                 >
-                    <span class="row items-center participantsTitle"
+                    <span
                         >{{ t("추가 기능") }}:&nbsp;</span
                     >
                     <div>
@@ -633,10 +633,12 @@ watch(
     min-height: 32px;
     .operation {
         display: flex;
+        > button {
+            text-decoration-line: underline;
+        }
     }
     button {
         font-size: 1.5rem;
-        color: #fff;
     }
 }
 
@@ -652,6 +654,7 @@ watch(
     height: 32px;
     border-radius: 9px;
     margin-left: 10px;
+    color: #fff;
 }
 
 .contentBox {
@@ -660,6 +663,7 @@ watch(
 
 .contentView {
     display: flex;
+    align-items: center;
     height: 31px;
     padding-left: 2.5rem;
     padding-bottom: 7px;
@@ -737,6 +741,7 @@ watch(
     position: absolute;
     left: 2rem;
     top: 5rem;
+    color:#fff;
 }
 
 .closeMeeting {
@@ -775,7 +780,6 @@ watch(
     width: 100%;
     height: 100%;
     overflow: hidden;
-    color: #fff;
 
     & > button {
         width: 100%;
@@ -788,153 +792,6 @@ watch(
         object-fit: cover;
     }
     // margin-bottom: 50px;
-}
-
-@media screen and (max-height: 478px) {
-    .imageLocation {
-        width: 145px;
-    }
-    .room-status {
-        // Note: original SASS had a comma here, SCSS accepts it but it's redundant. Keeping for direct translation.
-        font: normal normal normal 12px/16px NanumSquare !important;
-    }
-    .font22 {
-        font: normal normal bold 17px/16px NanumSquare !important;
-    }
-    .contentView .spanTitle {
-        font: normal normal bold 12px/9px NanumSquare !important;
-    }
-    .contentBox {
-        padding-top: 10px;
-    }
-    .spanContent {
-        font: normal normal normal 12px/18px NanumSquare !important;
-    }
-    .operation {
-        font: normal normal normal 12px/18px NanumSquare !important;
-        left: auto;
-        right: 20px;
-        // top: 12px;
-    }
-    .contentBtn {
-        width: 66px;
-        height: 28px;
-    }
-    .contentView {
-        padding-left: 10px;
-    }
-    .btnLocation {
-        .operation {
-            display: flex;
-        }
-    }
-    .makeMeetingBtn {
-        font: normal normal bold 12px/16px NanumSquare !important;
-    }
-    .contentBtn,
-    .makeMeetingBtn {
-        width: 64px !important;
-        height: 25px !important;
-        @media screen and (max-width: 370px) {
-            width: 54px !important;
-            height: 25px !important;
-        }
-    }
-    .btm {
-        width: 100%;
-        justify-content: center;
-    }
-    .font20 {
-        padding-left: 10px !important;
-    }
-    // This selector `[data-v-94781cd8]` looks like a Vue scoped CSS hash.
-    // In SCSS, you'd typically write this as `input[type=checkbox] + label:before`
-    // and let Vue add the scope hash during compilation.
-    // I'm keeping it as is for direct translation, but consider removing the hash for cleaner source.
-    .topCheckBoxLabel input[type="checkbox"] + label[data-v-94781cd8]:before {
-        margin-left: 5px !important;
-    }
-    @media screen and (max-width: 400px) {
-        .contentView {
-            & > img {
-                // Changed `> img` to `& > img` for proper nesting with parent selector
-                width: 30px;
-            }
-        }
-    }
-}
-
-// The following media query block is an exact duplicate of the one above.
-// I've kept it as is based on your input, but in a real project, you would
-// likely consolidate these if they target the same conditions and apply the same styles.
-@media screen and (max-width: 478px) {
-    .imageLocation {
-        width: 145px;
-    }
-    .room-status {
-        font: normal normal normal 12px/16px NanumSquare !important;
-    }
-    .font22 {
-        font: normal normal bold 17px/16px NanumSquare !important;
-    }
-    .contentView .spanTitle {
-        font: normal normal bold 12px/9px NanumSquare !important;
-    }
-    .contentBox {
-        padding-top: 10px;
-    }
-    .spanContent {
-        font: normal normal normal 12px/18px NanumSquare !important;
-    }
-    .operation {
-        font: normal normal normal 12px/18px NanumSquare !important;
-        left: auto;
-        right: 20px;
-        // top: 12px;
-    }
-    .contentBtn {
-        width: 66px;
-        height: 28px;
-    }
-    .contentView {
-        padding-left: 10px;
-    }
-    .btnLocation {
-        font-size: 12px;
-        @media screen and (max-width: 370px) {
-            right: 7px;
-            bottom: 19px;
-        }
-    }
-    .makeMeetingBtn {
-        font: normal normal bold 12px/16px NanumSquare !important;
-    }
-    .contentBtn,
-    .makeMeetingBtn {
-        width: 64px !important;
-        height: 25px !important;
-        @media screen and (max-width: 370px) {
-            width: 54px !important;
-            height: 25px !important;
-        }
-    }
-    .btm {
-        width: 100%;
-        justify-content: center;
-    }
-    .font20 {
-        padding-left: 10px !important;
-    }
-    .topCheckBoxLabel input[type="checkbox"] + label[data-v-94781cd8]:before {
-        margin-left: 5px !important;
-    }
-    @media screen and (max-width: 400px) {
-        .contentView {
-            & > img {
-                width: 30px;
-            }
-        }
-    }
 }
 
 .optionTxt {

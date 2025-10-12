@@ -8,19 +8,18 @@ header {
     left: $sidebar-width;
     right: 0;
     height: $header-height;
-    border-width: 1px;
-    border-style: solid;
-    @include tc(border-bottom-color, 'border-color');
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    @include tc(border-bottom-color, 'border-color'); // ✅ 이거 유지
     display: flex;
     align-items: center;
     padding: 0 0 0 20px;
     font-size: 14px;
     color: $text-color;
     user-select: none;
-    display: flex;
     gap: 12px;
     z-index: 2;
-    @include tc(background-color, "bg-color");
+    @include tc(background-color, 'bg-color');
 }
 
 header .logo {

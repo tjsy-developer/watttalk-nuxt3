@@ -75,6 +75,7 @@
 </template>
 
 <script setup>
+import { common } from "@/assets/images";
 import { useCommonStore } from "@/stores";
 import { useCallStore } from "@/stores/call";
 import { useModalStore } from "@/stores/modal";
@@ -96,7 +97,7 @@ let camList = ref([]);
 let selectedAudio = ref("");
 let selectedMic = ref("");
 let selectedCam = ref("");
-let checked = ref(false);
+let checked = ref(true);
 let showCloseBtn = ref(true);
 let savedAudioId = ref(false);
 let savedMicId = ref(false);
@@ -142,22 +143,25 @@ function getMediaList() {
         // communications의 경우에는 통화 전용으로 discord의 경우에는 살려두지만, zoom의 경우에는 제거함. 나는 communications의 음질에서 이질감이 느껴져서 제거함
         filterAudio = devices.filter(
             (device) =>
-                device.kind === "audiooutput" && device.deviceId != "communications",
+                device.kind === "audiooutput" && device.deviceId != "communications" && device.deviceId,
         );
         filterMic = devices.filter(
             (device) =>
-                device.kind === "audioinput" && device.deviceId != "communications",
+                device.kind === "audioinput" && device.deviceId != "communications"&& device.deviceId,
         );
         filterCam = devices.filter(
             (device) =>
-                device.kind === "videoinput" && device.deviceId != "communications",
+                device.kind === "videoinput" && device.deviceId != "communications" && device.deviceId,
         );
 
-        console.log(devices);
+
 
         audioList.value = removeDuplicated(filterAudio, 1);
         micList.value = removeDuplicated(filterMic, 2);
         camList.value = removeDuplicated(filterCam, 3);
+        selectedAudio.value = commonStore.selectedAudioID
+        selectedMic.value = commonStore.selectedMicID
+        selectedCam.value = commonStore.selectedCamIndex
         checkDevices();
     });
 }
@@ -170,10 +174,11 @@ function removeDuplicated(deviceList, type) {
         switch (type) {
             case 1:
                 selectedAudioIdExist.value = false;
-                selectedAudioID.value = false;
+                selectedAudio.value = false;
                 return;
             case 2:
                 selectedMicIdExist.value = false;
+                selectedMic.value = false;
                 return;
             case 3:
                 selectedCam.value = -1;
@@ -402,6 +407,8 @@ function checkParameter() {
         .selectBox {
             width: 334px;
             height: 40px;
+            background-color: #323232;
+            border: 1px solid #3d3d3d;
         }
         &:last-child {
             margin-bottom: 18px;

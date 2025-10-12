@@ -1602,7 +1602,6 @@ watch(getReadProcFlag, (newVal) => {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    color: #fff;
     .font20,
     .btm {
         padding-bottom: 15px;

@@ -459,6 +459,11 @@ $windowInfoBarHeight: 30px;
     padding: 0 15px;
 }
 
+.receivebubblyLeft {
+    background: transparent linear-gradient(119deg,#c623d2,#004cff) 0 0 no-repeat padding-box;
+    border-radius: 7px;
+}
+
 .receivebubblyLeft:before {
     content: "";
     position: absolute;

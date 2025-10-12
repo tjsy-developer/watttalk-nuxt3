@@ -27,22 +27,29 @@ function dragResize(newRect) {
 }
 
 async function getNoticeList() {
-    const res = await $axios.post("noticeRest/notice_list", {
-        en_seq: loginStore.sessionEnSeq,
+  const res = await $axios.post("noticeRest/notice_list", {
+    en_seq: loginStore.sessionEnSeq,
+  });
+
+  if (res.data) {
+    const now = Date.now(); // 현재 시간 (ms)
+    const threeDays = 3 * 24 * 60 * 60 * 1000; // 3일 (ms)
+
+    const data = res.data.map((value) => {
+      const saveTimeMs = value.save_time * 1000; // 초 → 밀리초 변환
+      const isNew = now - saveTimeMs <= threeDays; // 3일 이내면 true
+
+      return {
+        ...value,
+        save_time: getFormattedDate(value.save_time),
+        effective_date: getFormattedDate(value.effective_date),
+        isOpen: false,
+        new: isNew, // ✅ 새로 추가된 항목
+      };
     });
 
-    if (res.data) {
-        const data = res.data.map((value) => {
-            console.log(getFormattedDate(value.save_time));
-            return {
-                ...value,
-                save_time: getFormattedDate(value.save_time),
-                effective_date: getFormattedDate(value.effective_date),
-                isOpen: false,
-            };
-        });
-        noticeList.value = [...data];
-    }
+    noticeList.value = [...data];
+  }
 }
 
 const isFetching = ref(false);
@@ -86,6 +93,7 @@ watch(
                                 <div>
                                     <span>{{ notice.content }}</span>
                                     <img
+                                        v-if="notice.new"
                                         src="@/assets/images/ic_new.png"
                                         class="new-ico"
                                     />

@@ -415,6 +415,30 @@ export const getManagerDomain = () => {
     );
 }
 
+export const getImage = (name) => {
+    const { $colorMode } = useNuxtApp();
+    const theme = $colorMode.value === 'dark' ? 'dark' : 'light'
+    const images = import.meta.glob('~/assets/images/*.{png,jpg,jpeg,svg,webp}', {
+      eager: true,
+      import: 'default',
+    })
+
+    // 가능한 확장자 목록
+    const exts = ['png', 'jpg', 'jpeg', 'svg', 'webp']
+
+    console.log('여기', images)
+    // 존재하는 확장자를 찾아서 반환
+    for (const ext of exts) {
+      const path = `/assets/images/${name}_${theme}.${ext}`
+      console.log('path', path)
+      if (images[path]) {
+        return images[path]
+      }
+    }
+
+    console.warn(`[useImage] Image not found for ${name}_${theme}`)
+    return ''
+  }
 export default {
     getWorldTime,
     buildTree,
@@ -431,4 +455,5 @@ export default {
     emergencyAlarmBell,
     getFormattedDate,
     getManagerDomain,
+    getImage
 };

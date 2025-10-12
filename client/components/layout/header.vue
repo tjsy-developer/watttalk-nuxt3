@@ -2,7 +2,7 @@
     <header>
         <div class="login-container">
             <div class="logo">
-                <img :src="headerImages.logo" alt="Hyundai" style="height: 24px" />
+                <img :src="getImage('logo')" alt="Hyundai" style="height: 24px" />
             </div>
             <div class="welcome">
                 {{
@@ -117,7 +117,7 @@ import { useImageAssets } from "@/composables/useImageAssets";
 import { useLoginStore } from "@/stores/login";
 import { useCallStore } from "@/stores/call";
 import { useUserPreferenceStore } from "@/stores/common";
-import { getManagerDomain } from "@/utils/common";
+import { getManagerDomain, getImage } from "@/utils/common";
 const { $colorMode } = useNuxtApp();
 const { t, setLocale } = useI18n();
 const router = useRouter();

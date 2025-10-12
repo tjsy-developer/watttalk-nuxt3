@@ -187,163 +187,18 @@ const fileClick = (e, type) => {
     // console.log("fileClick e:", e)
     // console.log("*****##****** fileClick lastJSON", store.state.drawing.lastCanvasJson)
 
-    if (files.value[e].type == "pdf") {
-        console.log("fileClick return because pdf");
-        // console.log("*******##** fileClick Test: #1")
-        return;
+    if (files.value[e].type == 'canvas') {
+        //현재 캔버스에 있는 걸 history 에 옮겨준다
+        drawingStore.setSelectedFileIndex(e)
+        drawingStore.setFilesHistory({
+            num: e,
+            history: drawingStore.canvasHistory
+        })
+        drawingStore.setFilesImgChange({
+            num: e,
+            image: drawingStore.canvas.toDataURL("png")
+        })
     }
-
-    if (isDelete.value) {
-        isDelete.value = false;
-        console.log("fileClick return because isDelete = true");
-        // console.log("*******##** fileClick Test: #2")
-        return;
-    } else {
-        // 최종 console.log("fileClick pass because isDelete = false")
-
-        // 원본
-        // if (this.files[this.selectedFileIndex].type != "pdf") {
-        // if (files.value[e].type != "pdf") {
-        // this.beforeSuperIndex = this.files[this.selectedFileIndex].index
-        // beforeSuperIndex.value = files.value[e].index
-        // console.log("fileClick set beforeSuperIndex = ", files.value[e].index)
-        // } else {
-        // this.beforeSuperIndex = this.files[this.selectedFileIndex].pdf[this.pdfIndex].index
-        // beforeSuperIndex.value = files.value[e].pdf[pdfIndex.value].index
-        // console.log("fileClick set beforeSuperIndex = ", files.value[e].pdf[pdfIndex.value].index)
-        // }
-
-        // 시도 위에서 type이 pdf 인 경우 return 하였으므로 아래와 같이 코드 변경
-        // beforeSuperIndex.value = files.value[e].index
-        // console.log("fileClick set beforeSuperIndex = ", files.value[e].index)
-
-        if (files.value[selectedFileIndex.value].type != "pdf") {
-            beforeSuperIndex.value = files.value[selectedFileIndex.value].index;
-            // console.log("fileClick set beforeSuperIndex =", files.value[selectedFileIndex.value].index)
-            // console.log("*******##** fileClick Test: #3", files.value[selectedFileIndex.value].index)
-        } else {
-            beforeSuperIndex.value =
-                files.value[selectedFileIndex.value].pdf[pdfIndex.value].index;
-            // console.log("fileClick set beforeSuperIndex =", files.value[selectedFileIndex.value].pdf[pdfIndex.value].index)
-            // console.log("*******##** fileClick Test: #4")
-        }
-
-        // beforeSelectedState : 호스트 변경으로 인한 썸네일 이관 시
-        // beforeSuperIndex가 0으로 초기화 되는 현상 발생으로 인해 false일 경우에만 적용
-        // moveThumbnail 소켓이벤트를 받았을 때 true 로 변경 (calling.vue)
-        // 최종 console.log("fileClick related values => beforeSelectedState: ".concat(beforeSelectedState.value, ", selectedFileIndex: ", selectedFileIndex.value, ", beforeSuperIndex: ", beforeSuperIndex.value))
-        // console.log(beforeSelectedState.value, selectedFileIndex.value, beforeSuperIndex.value)
-        if (beforeSelectedState.value == false) {
-            // 최종 console.log("fileClick quarter beforeSelectedState == false")
-            // console.log("beforeSelectedState is false", selectedFileIndex.value, beforeSuperIndex.value, files.value[selectedFileIndex.value].type)
-            canvasImgChange(
-                selectedFileIndex.value,
-                // files.value.length - 1,
-                beforeSuperIndex.value,
-                files.value[selectedFileIndex.value].type,
-                // files.value[files.value.length - 1].type
-            );
-        } else {
-            // 최종 console.log("fileClick quarter beforeSelectedState == true")
-            console.log("beforeSelectedState is true");
-            canvasImgChange(
-                selectedFileIndex.value,
-                selectedFileIndex.value,
-                files.value[selectedFileIndex.value].type,
-            );
-        }
-        // console.log("*******##** fileClick Test: #5")
-    }
-
-    drawingStore.setSelectedFileIndex(e);
-    // console.log("####test3")
-    drawingStore.setFilesHistory({
-        num: beforeSuperIndex.value,
-        history: canvasHistory.value,
-    });
-
-    superIndex.value = files.value[e].index; // You might use an ES module import like `import lodash from 'lodash';` in a modern setup
-    const cloneFileHistory = lodash.cloneDeep(files.value);
-    // 최종 console.log("fileClick canvasHistory.currentStateIndex = ", canvasHistory.value.currentStateIndex)
-    // console.log("files.value History", canvasHistory.value.currentStateIndex)
-    if (files.value[e].type == "img") {
-        console.log("fileClick start, file.type == img");
-        console.log("여기2");
-        drawingStore.setCanvasHistory(files.value[e].history);
-
-        if (canvasHistory.value.state.length > 0) {
-            // console.log("canvasHistory.value.currentStateIndex:", canvasHistory.value.currentStateIndex)
-            if (
-                canvasHistory.value.state.length <= canvasHistory.value.currentStateIndex
-            ) {
-                canvasHistory.value.currentStateIndex =
-                    canvasHistory.value.state.length - 1;
-                console.log(
-                    "canvasHistory.value.currentStateIndex:",
-                    canvasHistory.value.currentStateIndex,
-                );
-            }
-            // console.log("canvasHistory.value.state[canvasHistory.value.currentStateIndex]:", canvasHistory.value.state[canvasHistory.value.currentStateIndex])
-            // console.log("canvasHistory.value.state:", canvasHistory.value.state)
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
-                setRemoveDuplicates(
-                    canvasHistory.value.state[canvasHistory.value.currentStateIndex],
-                );
-        }
-
-        canvas.value.loadFromJSON(
-            canvasHistory.value.state[canvasHistory.value.state.length - 1],
-            () => {
-                canvas.value.renderAll.bind(canvas.value);
-                console.log("fileClick finished, file.type == img");
-            },
-        );
-        // console.log("*******##** fileClick Test: #6")
-
-        // console.log("*******##** files.value[e].history.state[0]".concat(files.value[e].history.state[0]))
-        // console.log("*******##** firstFiles.value[0].history.state[0]".concat(firstFiles.value[0].history.state[0]))
-
-        // console.log("files.value after splice History", cloneFileHistory, files.value)
-
-        // 기존에 주석처리된것을 드로잉 썸네일 문제로 인해 meet 소스와 동일하게 수정 ->
-        if (
-            files.value[e].history.state[0] == firstFiles.value[0].history.state[0] &&
-            files.value[e].history.length > 1
-        ) {
-            drawingStore.setHistorySplice(e);
-        }
-        // <-
-        console.log("여기3");
-        drawingStore.setCanvasHistory(files.value[e].history);
-        // 최종 console.log("fileClick drawingStore.setCanvasHistory = ", files.value[e].history)
-
-        // console.log("img FileClick", files.value[e].history)
-        // console.log("*******##** fileClick Test: #8")
-    } else if (files.value[e].type == "canvas") {
-        // 최종 console.log("fileClick quarter file.type == canvas")
-        console.log("여기4");
-        drawingStore.setCanvasHistory(files.value[e].history);
-        if (canvasHistory.value.state.length > 0) {
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex] =
-                setRemoveDuplicates(
-                    canvasHistory.value.state[canvasHistory.value.currentStateIndex],
-                );
-        }
-
-        canvas.value.loadFromJSON(
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex],
-            () => {
-                canvas.value.renderAll.bind(canvas.value);
-                console.log("fileClick finished, file.type == canvas");
-            },
-        );
-
-        // console.log("canvas FileClick", files.value[e].history)
-    }
-
-    // 최종 console.log("fileClick finish")
-    // console.log("files.value after History", files.value)
-
     drawingStore.setBeforeIndexInitialized(false);
 };
 
@@ -514,11 +369,14 @@ const pdfClick = (fileKey, pdfKey) => {
 };
 
 const newCanvasAdd = () => {
+    fileClick(drawingStore.selectedFileIndex);
+
     if (!isPdfUploading.value) {
         drawingStore.setSrc({
             type: "canvas",
             src: firstFiles.value[0].img,
         });
+        drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex + 1)
     } else {
         commonToastMessage("uploading PDF");
     }
@@ -622,10 +480,6 @@ const clearThumbnail = () => {
     if (!isPdfUploading.value) {
         drawingStore.clearFiles();
         drawingStore.setSuperIndex(1);
-        canvas.value.loadFromJSON(
-            canvasHistory.value.state[0],
-            canvas.value.renderAll.bind(canvas.value),
-        );
         canvasImgChange(0, beforeSuperIndex.value, "canvas");
         drawingStore.setSelectedFileIndex(0);
         beforeSuperIndex.value = 0;
@@ -903,6 +757,7 @@ watch(src, (newVal) => {
         }
         console.log("drawingStore.setFiles");
         drawingStore.setFiles(newVal);
+        drawingStore.canvas()
     }
 });
 

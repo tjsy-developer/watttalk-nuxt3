@@ -20,17 +20,17 @@
                     <label>{{ t("공지사항") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_notice.svg" />
                 </button>
-                <router-link to="/meeting" title="회의실">
+                <button @click="router.push('meeting')" title="회의실">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
                     <label>{{ t("회의실") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_meeting.svg" />
-                </router-link>
+                </button>
                 <button @click="handleClickCloud('videocall')">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
                     <label>{{ t("클라우드") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_cloud.svg" />
                 </button>
-                <button>
+                <button @click="handleSettingDevice">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
                     <label>{{ t("카메라/소리 설정") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_camera.svg" />
@@ -295,6 +295,10 @@ watch(
         }
     },
 );
+
+const handleSettingDevice = () => {
+    modalStore.openModal("device");
+}
 
 const handleCreateRoomID = (response) => {
     if (response) {
@@ -751,9 +755,6 @@ onBeforeUnmount(() => {
     justify-content: center;
     max-width: 30%;
     row-gap: 2rem;
-    * {
-        color: #fff;
-    }
     .panel-user {
         font-size: 3rem;
     }

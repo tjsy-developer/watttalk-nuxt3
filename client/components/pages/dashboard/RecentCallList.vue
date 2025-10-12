@@ -226,7 +226,6 @@ function contactDateFormat(datetime) {
 }
 .recent-list > div > div:not(.button-box) {
     display: flex;
-    color: #fff;
     align-items: center;
     height: 53px;
     gap: 20px;
@@ -242,7 +241,6 @@ function contactDateFormat(datetime) {
 
 .call-time,
 .user-name {
-    color: #d3d3d3;
     font-size: 1.4rem;
 }
 .status img {
@@ -252,16 +250,19 @@ function contactDateFormat(datetime) {
 .user-name {
     font-weight: 800;
 }
+
 .button-box {
     display: flex;
     gap: 8px;
     align-items: center;
+    
     > img {
         height: 33px;
         width: 38px;
         cursor: pointer;
     }
 }
+
 .status {
     position: relative;
 }

@@ -180,7 +180,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
                 // firstFiles가 비어있다면 canvasHistory를 기본값으로 재설정
                 this.canvasHistory = {
                     state: [],
-                    currentStateIndex: -1,
+                    currentStateIndex: 0,
                     undoStatus: false,
                     redoStatus: false,
                     undoFinishedStatus: true,
@@ -205,6 +205,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.totalPages = payload;
         },
         setCanvasHistory(payload) {
+            console.log(payload)
             this.canvasHistory = deepClone(payload);
         },
         setFirstHistory(payload) {

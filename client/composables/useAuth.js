@@ -24,17 +24,10 @@ export function useAuth() {
 	async function verifyToken(token) {
         let result = false;
         const decodeResult = decodeToken(token);
-        console.log(decodeResult);
         if (decodeResult === "effective") {
             result = true;
         } else if (decodeResult === "expired") {
-            const requestResult = await requestNewToken(tokenStore.enRToken);
-            if (requestResult) {
-                tokenStore.setTokenDecodeState(true);
-                result = true;
-            } else {
-                tokenStore.setTokenDecodeState("expired");
-            }
+            tokenStore.setTokenDecodeState("expired");
         } else if (decodeResult === "mutated") {
             tokenStore.setTokenDecodeState("mutated");
         }

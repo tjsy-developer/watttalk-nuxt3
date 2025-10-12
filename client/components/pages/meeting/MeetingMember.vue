@@ -133,8 +133,11 @@ onMounted(() => {
     height: 235px;
     z-index: 2;
     position: relative;
-    background-color: black;
+    background-color: #323232;
     padding-left: 10px;
+    * {
+        color: #fff;
+    }
 }
 
 .memberSearchBox {

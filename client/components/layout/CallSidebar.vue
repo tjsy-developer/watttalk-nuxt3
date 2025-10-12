@@ -191,7 +191,7 @@ function handleClickDrawingOnOff() {
     }
 
     // 드로잉 종료
-    if (isDrawing) {
+    if (isDrawing.value) {
         drawingStore.setBeforeCloseCanvas(false)
         drawingStore.setDrawingVideo(true)
         setTimeout(() => {

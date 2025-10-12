@@ -8020,7 +8020,6 @@ function janusAndCallingDestroy() {
 
         // 통화 종료 시 watch 부분에 빼고 여기 넣음. -> 회의실 종료
         leaveMeeting();
-        alert("1번")
     }, 1000);
 
     clearInterval(setIntervalStream.value);
@@ -10601,7 +10600,6 @@ function sayHello() {
 
                         // 통화 종료 시 watch 부분에 빼고 여기 넣음. -> 회의실 종료
                         leaveMeeting();
-                        alert("2번")
                     }, 1000);
 
                     clearInterval(setIntervalStream.value);
@@ -11570,7 +11568,6 @@ watch(getMeetingLeaveFlag, (newValue, oldValue) => {
         if (callStore.callingType == "meetingCall") {
             // console.log("회의실에서 입장한 사람입니다.")
             leaveMeeting();
-            alert("3번")
             meetingStore.setMeetingLeaveFlag(false);
         } else {
             // console.log("영상통화에서 입장한 사람입니다.")
@@ -11589,7 +11586,7 @@ watch(changePersonnelInRoom, (newValue, oldValue) => {
             callStore.setSendDurationEnable(true);
         }
     } else if (sendDurationEnable.value && resultMaxNum.value < 2) {
-        sendDurationEnableFlag.value = true;
+        sendDurationEnableFlag.value = false;
         callStore.setSendDurationEnable(false);
     }
 

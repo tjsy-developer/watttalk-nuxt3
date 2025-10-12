@@ -39,7 +39,7 @@ button {
         position: fixed;
     }
     > .vfm__content {
-        position: absolute;
+        position: fixed;
         width: inherit;
         height: inherit;
     }
@@ -55,6 +55,12 @@ button {
     }
 }
 
+.dark * {
+    color: #fff;
+}
+.light * {
+    color: #3b5794;
+}
 // .main-modal {
 //     width: 700px;
 //     height: 480px;

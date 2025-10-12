@@ -314,7 +314,7 @@ const refPdfFile = ref(null);
 // Using `reactive` means you access properties directly without `.value` on `canvasHistory` itself.
 const canvasHistory = ref({
     state: [],
-    currentStateIndex: -1,
+    currentStateIndex: 0,
     undoStatus: false,
     redoStatus: false,
     undoFinishedStatus: true,
@@ -366,16 +366,6 @@ onMounted(() => {
       width: drawingWidth,
       height: drawingHeight,
     });
-
-    // 초기 흰 점
-    const rect = new fabric.Rect({
-      left: 1,
-      top: 1,
-      fill: "white",
-      width: 1,
-      height: 1,
-    });
-    canvas.value.add(rect);
 
     fabric.Object.NUM_FRACTION_DIGITS = 10;
     drawingStore.setCanvas(canvas.value);
@@ -441,72 +431,90 @@ onMounted(() => {
     canvasWidthHeightChange();
     allHeight.value = window.innerHeight;
 
-    // 히스토리 복원
-    if (lastCanvasJson.value != null) {
-      if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
-        const lastHistory =
-          vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
-        drawingStore.setCanvasJson(lastHistory);
-      }
+    // // 히스토리 복원
+    // if (lastCanvasJson.value != null) {
+    //   if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
+    //     const lastHistory =
+    //       vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
+    //     drawingStore.setCanvasJson(lastHistory);
+    //   }
 
-      const saveLastJson = lastCanvasJson.value;
-      if (
-        !(
-          vxCanvasHistory.value.state.length === 0 &&
-          vxCanvasHistory.value.state[0] === saveLastJson
-        )
-      ) {
-        updateHistory(7);
-        vxCanvasHistory.value.state.push(saveLastJson);
-      }
+    //   const saveLastJson = lastCanvasJson.value;
+    //   if (
+    //     !(
+    //       vxCanvasHistory.value.state.length === 0 &&
+    //       vxCanvasHistory.value.state[0] === saveLastJson
+    //     )
+    //   ) {
+    //     updateHistory(7);
+    //     vxCanvasHistory.value.state.push(saveLastJson);
+    //   }
 
-      let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
-      for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
-        const ele = vxCanvasHistory.value.state[iLoop];
-        if (ele === saveLastJson) {
-          lastCanvasIndex = iLoop;
-          break;
-        }
-      }
+    //   let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
+    //   for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
+    //     const ele = vxCanvasHistory.value.state[iLoop];
+    //     if (ele === saveLastJson) {
+    //       lastCanvasIndex = iLoop;
+    //       break;
+    //     }
+    //   }
 
-      drawingStore.setCanvasHistoryFin(true);
-    } else if (vxCanvasHistory.value.state.length === 0) {
-      if (!isGivenThumbnailTransfer.value) {
-        updateHistory(8);
-        drawingStore.setFirstHistory(vxCanvasHistory.value);
-      }
-    }
+    //   drawingStore.setCanvasHistoryFin(true);
+    // } else if (vxCanvasHistory.value.state.length === 0) {
+    //   if (!isGivenThumbnailTransfer.value) {
+    //     updateHistory(8);
+    //     drawingStore.setFirstHistory(vxCanvasHistory.value);
+    //   }
+    // }
 
-    if (vxCanvasHistory.value.state.length === 0) {
-      canvas.value.add(rect);
-    } else {
-      drawingStore.setLoadImageOnCanvasFinished(false);
-      const currentIndex = vxCanvasHistory.value.currentStateIndex;
-      const currentState = vxCanvasHistory.value.state[currentIndex];
-      if (typeof currentState !== "undefined" && currentState !== null) {
-        vxCanvasHistory.value.state[currentIndex] =
-          setRemoveDuplicates(currentState);
-      }
+    // if (vxCanvasHistory.value.state.length === 0) {
+    //   canvas.value.add(rect);
+    // } else {
+    //   drawingStore.setLoadImageOnCanvasFinished(false);
+    //   const currentIndex = vxCanvasHistory.value.currentStateIndex;
+    //   const currentState = vxCanvasHistory.value.state[currentIndex];
+    //   if (typeof currentState !== "undefined" && currentState !== null) {
+    //     vxCanvasHistory.value.state[currentIndex] =
+    //       setRemoveDuplicates(currentState);
+    //   }
 
-      // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
-      canvas.value.loadFromJSON(currentState, () => {
-        if (!isMounted || !canvas.value) return;
-        canvas.value.renderAll();
-        drawingStore.setLoadImageOnCanvasFinished(true);
-      });
-    }
-
-    drawingStore.setCanvasHistory(vxCanvasHistory.value);
+    //   // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
+    //   canvas.value.loadFromJSON(currentState, () => {
+    //     if (!isMounted || !canvas.value) return;
+    //     canvas.value.renderAll();
+    //     drawingStore.setLoadImageOnCanvasFinished(true);
+    //   });
+    // }
+    initCanvasAdd()
     drawingStore.setIsGivenThumbnailTransfer(false);
 
     // 마지막으로 안전한 render 요청
-    if (canvas.value && !canvas.value.disposed) {
-      canvas.value.requestRenderAll();
-    }
+    // if (canvas.value && !canvas.value.disposed) {
+    //   canvas.value.requestRenderAll();
+    // }
   } else {
     console.error("Canvas element or Fabric.js not found!");
   }
 });
+
+const initCanvasAdd = () => {
+    if (vxCanvasHistory.value.state.length === 0) {
+        // 초기 흰 점
+        const rect = new fabric.Rect({
+            left: 1,
+            top: 1,
+            fill: "white",
+            width: 1,
+            height: 1,
+        });
+        canvas.value.add(rect);
+        canvas.value.add(rect);
+        canvas.value.requestRenderAll();
+        const canvasJSON = canvas.value.toJSON()
+        canvasHistory.value.state.push(canvasJSON)
+        drawingStore.setCanvasHistory(canvasHistory.value);
+    }
+}
 
 const commonToastMessage = (message) => {
     console.log("Toast:", message);
@@ -2022,6 +2030,7 @@ watch(allHeight, (newVal) => {
 watch(vxCanvasHistory, (newVal) => {
     canvasHistory.value = newVal; // Update local ref
     console.log(newVal, "vxCanvasHistory");
+    initCanvasAdd()
 });
 
 // Watch for 'update' changes (from Vuex)

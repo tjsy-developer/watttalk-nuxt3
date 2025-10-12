@@ -11,6 +11,7 @@ const vfm = useVfm();
 const { $axios } = useNuxtApp();
 const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
+const isNewNotice = ref(false);
 const loginStore = useLoginStore();
 const tokenStore = useTokenStore();
 const { menuImages } = useImageAssets();
@@ -20,10 +21,24 @@ onMounted(async () => {
     const res = await $axios.post("noticeRest/notice_list", {
         en_seq: loginStore.sessionEnSeq,
     });
-    if (res.data.length > 0) {
-        vfm.toggle("notice-modal");
+    // res.data 배열이 비어있지 않은 경우
+    if (res.data?.length > 0) {
+        const now = Date.now(); // 현재 시간 (ms)
+        const threeDays = 3 * 24 * 60 * 60 * 1000; // 3일 (ms)
+
+        const hasRecent = res.data.some(item => {
+        // save_time이 초 단위 → 밀리초 단위로 변환
+        const saveTimeMs = item.save_time * 1000;
+        return now - saveTimeMs <= threeDays;
+        });
+
+        if (hasRecent) {
+            vfm.toggle("notice-modal");
+        }
+        isNewNotice.value = hasRecent;
     }
 });
+
 const handleClickNotice = () => {
     // open();
     vfm.toggle("notice-modal");
@@ -71,7 +86,7 @@ const handleClickCloud = (path) => {
         </a>
         <div class="icon-btn bell" title="알림" @click="handleClickNotice">
             <img :src="menuImages.notice" :alt="t('알림')" />
-            <div class="new">&nbsp;</div>
+            <div v-if="isNewNotice" class="new">&nbsp;</div>
         </div>
         <audio id="calling_bell" loop style="display: none">
             <source src="@/assets/sounds/Wood.ogg" type="audio/ogg" />

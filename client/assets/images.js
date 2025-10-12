@@ -1,5 +1,5 @@
-import logoDark from "@/assets/images/darkmode/logo/logo_hdcar.svg";
-import logoLight from "@/assets/images/lightmode/logo/logo_hdcar.svg";
+import logoDark from "@/assets/images/logo_dark.svg";
+import logoLight from "@/assets/images/logo_light.svg";
 
 import icCallDark from "@/assets/images/ic_call.png";
 import icCallLight from "@/assets/images/lightmode/leftsidebar/ic_concatlist.svg";

@@ -193,6 +193,7 @@
                 <div class="content">
                     <p class="msg alert-text">{{ t("메인화면 글라스에게 고화질 캡쳐를 요청하였습니다") }}</p>
 					<p class="msg alert-text">{{ t("잠시 후 고화질 캡쳐 사진이 자동으로 수신됩니다") }}</p>
+                    <p class="msg alert-text">{{ t("이 창은 5초뒤에 자동으로 사라집니다") }}</p>
                 </div>
 				<div class="control-buttons">
                     <button @click="closeNoneOverlayAlert" class="decline-btn">

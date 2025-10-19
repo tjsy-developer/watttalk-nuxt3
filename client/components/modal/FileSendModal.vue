@@ -206,14 +206,14 @@
 </template>
 
 <script setup>
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useModalStore } from "@/stores/modal";
 import { useNuxtApp } from "nuxt/app";
 import { onBeforeMount, onMounted, ref } from "vue";
 const { t } = useI18n();
 const callStore = useCallStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 
 const userSelectNone = ref(false);

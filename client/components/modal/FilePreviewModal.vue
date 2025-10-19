@@ -57,14 +57,14 @@
 </template>
 
 <script setup>
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { computed, onMounted, ref } from "vue";
 import { VueFinalModal } from "vue-final-modal";
 
 const { t } = useI18n();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 

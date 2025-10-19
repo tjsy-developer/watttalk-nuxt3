@@ -8,7 +8,7 @@ export default defineNuxtConfig({
         enabled: false,
     },
     imports: {
-        dirs: ["utils"], // 또는 'composables', 'stores', 'utils' 등
+        dirs: ["utils", 'composables'], // 또는 'composables', 'stores', 'utils' 등
     },
     app: {
         baseURL: "/watttalk",
@@ -73,18 +73,24 @@ export default defineNuxtConfig({
         ],
     ],
     vite: {
-        optimizeDeps: {
-            include: ['lodash', 'moment'], // 미리 변환할 큰 라이브러리
-            exclude: ['some-big-cjs-lib'], // 변환 제외
-            server: {
-                watch: {
-                    // node_modules, .output, dist 등 불필요한 폴더 제외
-                    ignored: ['**/node_modules/**', '**/.output/**', '**/dist/**']
-                }
+        server: {
+            watch: {
+                interval: 1000,
+                // node_modules, .output, dist 등 불필요한 폴더 제외
+                ignored: [
+                    "**/node_modules/**",
+                    "**/.nuxt/**",
+                    "**/.output/**",
+                    "**/dist/**",
+                ],
             },
-            build: {
-                sourcemap: false // 개발 시 소스맵 끄면 조금 빨라짐
-            }
+        },
+        build: {
+            sourcemap: false, // 개발 시 소스맵 끄면 조금 빨라짐
+        },
+        optimizeDeps: {
+            include: ["lodash", "moment"], // 미리 변환할 큰 라이브러리
+            exclude: ["some-big-cjs-lib"], // 변환 제외
         },
         assetsInclude: ["**/*.svg", "**/*.worker.js"],
         css: {
@@ -96,9 +102,6 @@ export default defineNuxtConfig({
                     `,
                 },
             },
-        },
-        server: {
-            hmr: false,
         },
     },
     runtimeConfig: {
@@ -114,14 +117,7 @@ export default defineNuxtConfig({
             NUXT_PUBLIC_ICE_SERVER_CREDENTIAL: process.env.ICE_SERVER_CREDENTIAL,
             NUXT_PUBLIC_MANAGER_DOMAIN: process.env.NUXT_PUBLIC_MANAGER_DOMAIN,
             NUXT_PUBLIC_MANAGER_BASE_URL: process.env.NUXT_PUBLIC_MANAGER_BASE_URL,
-            NUXT_PUBLIC_SAVE_PHOTO_PATH: process.env.NUXT_PUBLIC_SAVE_PHOTO_PATH
+            NUXT_PUBLIC_SAVE_PHOTO_PATH: process.env.NUXT_PUBLIC_SAVE_PHOTO_PATH,
         },
-    },
-    // devServer: {
-    //     https: {
-    //         key: "../_wildcard.local+3-key.pem", // 생성한 개인 키 파일 경로
-    //         cert: "../_wildcard.local+3.pem", // 생성한 인증서 파일 경로
-    //     },
-    //     host: "0.0.0.0",
-    // },
+    }
 });

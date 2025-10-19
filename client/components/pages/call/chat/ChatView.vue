@@ -125,14 +125,14 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useChattingStore } from "@/stores/chatting";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
 const { locale } = useI18n();
 const { t } = useI18n();
 
 const callStore = useCallStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const props = defineProps({
     compData: {
         type: Object,

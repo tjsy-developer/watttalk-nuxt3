@@ -203,7 +203,7 @@
 // import noneOverlayModal from "@/components/noneOverlayAlert";
 // import deviceSelectModal from "@/components/modals/deviceSelectModal";
 import { onMounted } from "vue";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useDirectCallStore } from "@/stores/directCall";
 import { useNuxtApp } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
@@ -213,7 +213,7 @@ import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const { t } = useI18n();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const directCallStore = useDirectCallStore();
 const callStore = useCallStore();
 const meetingStore = useMeetingStore();

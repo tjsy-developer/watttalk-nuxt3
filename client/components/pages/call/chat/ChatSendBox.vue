@@ -135,7 +135,7 @@ const { t } = useI18n();
 
 const chattingStore = useChattingStore();
 const callStore = useCallStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 
 // Reactive state (formerly 'data' in Options API)
 const messageType = ref(1);

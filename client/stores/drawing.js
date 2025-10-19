@@ -26,6 +26,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         files: [], // 현재 활성 파일 목록 (이미지, PDF, 캔버스 등)
         pdfNum: 0,
         pdfGroup: -1,
+        beforeSelectedFileIndex: 0,
         selectedFileIndex: 0,
         selectCount: 0,
         index: 0, // 전체 파일 인덱스 (img, pdf 페이지, canvas 포함)
@@ -34,7 +35,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         canvasHistory: {
             // 현재 캔버스의 히스토리
             state: [],
-            currentStateIndex: -1,
+            currentStateIndex: 0,
             undoStatus: false,
             redoStatus: false,
             undoFinishedStatus: true,
@@ -234,6 +235,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             }
         },
         setSelectedFileIndex(payload) {
+            this.beforeSelectedFileIndex = this.selectedFileIndex
             this.selectedFileIndex = payload;
         },
         setPdfFirstHistoryState(payload) {

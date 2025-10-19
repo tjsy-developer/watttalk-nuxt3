@@ -78,7 +78,7 @@ import AlertModal from "@/components/modal/AlertModal.vue";
 import HostMessageModal from "@/components/modal/HostMessageModal.vue";
 
 const modalStore = useModalStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 
 const isShowChatBar = ref(false);
 

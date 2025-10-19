@@ -96,14 +96,14 @@
 import { fabric } from "fabric";
 import _ from "lodash";
 
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { setRemoveDuplicates } from "@/utils/common";
 import { computed, nextTick, reactive, ref, watch } from "vue";
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 const drawingStore = useDrawingCanvasStore();
@@ -485,7 +485,11 @@ onMounted(() => {
     //     drawingStore.setLoadImageOnCanvasFinished(true);
     //   });
     // }
-    initCanvasAdd()
+
+    if (vxCanvasHistory.value.state.length == 0) {
+        initCanvasAdd()
+    }
+    
     drawingStore.setIsGivenThumbnailTransfer(false);
 
     // 마지막으로 안전한 render 요청
@@ -508,11 +512,11 @@ const initCanvasAdd = () => {
             height: 1,
         });
         canvas.value.add(rect);
-        canvas.value.add(rect);
         canvas.value.requestRenderAll();
         const canvasJSON = canvas.value.toJSON()
         canvasHistory.value.state.push(canvasJSON)
         drawingStore.setCanvasHistory(canvasHistory.value);
+        drawingStore.setFirstHistory(vxCanvasHistory.value);
     }
 }
 
@@ -1376,6 +1380,7 @@ const multiSelect = () => {
 };
 
 const updateHistory = (type) => {
+    console.log('history', type)
     if (!canvas.value) return;
 
     if (
@@ -1396,7 +1401,7 @@ const updateHistory = (type) => {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex - 1] !=
                 canvasAsJson
         ) {
-            // console.log("updateHistory quarter fit")
+            console.log("updateHistory quarter fit")
             const indexToBeInserted = canvasHistory.value.currentStateIndex + 1;
             canvasHistory.value.state[indexToBeInserted] = canvasAsJson;
             const elementsToKeep = indexToBeInserted + 1;
@@ -1408,7 +1413,7 @@ const updateHistory = (type) => {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] !==
             canvasAsJson
         ) {
-            // console.log("updateHistory quarter another fit")
+            console.log("updateHistory quarter another fit")
             canvasHistory.value.state.push(canvasAsJson);
         }
 

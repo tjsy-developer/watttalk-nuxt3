@@ -66,7 +66,7 @@ const count = ref(0);
 const { t } = useI18n();
 
 const meetingStore = useMeetingStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
@@ -723,7 +723,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .dashboard-container {
     display: flex;
     height: inherit;

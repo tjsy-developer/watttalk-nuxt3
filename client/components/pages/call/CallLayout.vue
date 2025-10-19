@@ -45,14 +45,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import CallWindow from "./CallWindow.vue";
 import ThumbNail from "./drawing/ThumbNail.vue";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 
@@ -504,6 +504,7 @@ onUnmounted(() => {
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     object-fit: fill;
     padding: 15px;
     > .videoMainWrap {
@@ -533,6 +534,10 @@ onUnmounted(() => {
 }
 
 #panel-inner-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
     position: relative;

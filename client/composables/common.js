@@ -1,4 +1,4 @@
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 
 // userData 검색
@@ -179,7 +179,7 @@ export function emergencyAlarmBell(type) {
 }
 
 export function getNickname(res) {
-    const commonStore = useCommonStore();
+    const commonStore = useRoomStore();
     const userList = commonStore.userListStatus;
     let nickname;
     for (let iLoop = 0; iLoop < userList.length - 1; ++iLoop) {

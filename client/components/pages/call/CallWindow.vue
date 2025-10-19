@@ -738,7 +738,7 @@ import {
 // --- Component Imports ---
 import Drawing from "@/components/pages/call/drawing/Drawing.vue";
 import GpsMapView from "@/components/pages/call/GpsMapView.vue";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCached } from "@vueuse/core";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
@@ -811,7 +811,7 @@ const getIsShare = computed(() => commonStore.isShare);
 const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
 const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value]);
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 
@@ -1289,7 +1289,7 @@ $windowInfoBarHeight: 30px;
 }
 
 #videoMainDiv {
-    height: -webkit-fill-available;
+    height: 100%;
 }
 
 .mainVideoBorder {
@@ -1485,11 +1485,14 @@ $windowInfoBarHeight: 30px;
 }
 
 #videoMain {
-    width: 100%;
-    height: 100%;
     position: absolute;
     top: 0px;
     left: 0px;
+    scale: 1;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
 }
 
 .videoNameSpan {
@@ -2163,12 +2166,11 @@ $windowInfoBarHeight: 30px;
 }
 
 .drawing-iframe {
-    position: absolute;
-    left: 72px !important;
     /* bottom: 0px !important; */
     display: flex;
     width: calc(100% - 72px);
     right: 0px;
+    align-self: flex-end;
 }
 
 .windowInfoBar {

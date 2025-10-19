@@ -271,14 +271,14 @@
 </template>
 
 <script setup>
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { getManagerDomain } from "@/utils/common";
 import { useNuxtApp } from "nuxt/app";
 import { computed, onMounted } from "vue";
 const { t } = useI18n();
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const loginStore = useLoginStore();
 const callStore = useCallStore();
 const modalStore = useModalStore();

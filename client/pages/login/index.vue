@@ -10,7 +10,7 @@ import { useLoginStore } from "@/stores/login";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 
 const loginStore = useLoginStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const prefrenceStore = useUserPreferenceStore();
 
 const { signallingSocket } = useSignallingSocket();

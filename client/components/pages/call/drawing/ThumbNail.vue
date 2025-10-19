@@ -164,6 +164,7 @@ import { useCallStore } from "@/stores/call";
 import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
 const { t } = useI18n();
+import { fabric } from "fabric";
 import lodash from "lodash";
 import { useNuxtApp } from "nuxt/app";
 
@@ -179,6 +180,7 @@ const isPdfOpen = ref(false);
 const pdfNum = ref(0);
 const isEscape = ref(false);
 const displayMode = ref("darkmode");
+
 const fileClick = (e, type) => {
     // 원본 console.log("fileClick type", this.files[this.selectedFileIndex].type)
     // 시도 console.log("fileClick Enter => type: ".concat(this.files[e].type, ", files index: ", e, ", lastCanvasJson: ", this.$store.state.drawing.lastCanvasJson))
@@ -376,7 +378,28 @@ const newCanvasAdd = () => {
             type: "canvas",
             src: firstFiles.value[0].img,
         });
+        // const rect = new fabric.Rect({
+        //     left: 1,
+        //     top: 1,
+        //     fill: "white",
+        //     width: 1,
+        //     height: 1,
+        // });
+        // drawingStore.canvas.add(rect);
+        // drawingStore.canvas.requestRenderAll();
+        // const canvasJSON = drawingStore.canvas.toJSON()
+        // const canHistory = {
+        //     state: [],
+        //     currentStateIndex: 0,
+        //     undoStatus: false,
+        //     redoStatus: false,
+        //     undoFinishedStatus: true,
+        //     redoFinishedStatus: true,
+        // }
+        // canHistory.state.push(canvasJSON)
+        // drawingStore.setCanvasHistory(canHistory);
         drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex + 1)
+        
     } else {
         commonToastMessage("uploading PDF");
     }
@@ -688,7 +711,13 @@ const getLastCanvasInfo = computed(() => {
 //         thumbBody.style.width = newVal - 30 + "px";
 //     }
 // });
-
+watch(selectedFileIndex, () => {
+    console.log("추가됨 바ㄱ뀜", files.value.length)
+    canvas.value.loadFromJSON(
+        canvasHistory.value.state[0],
+        canvas.value.renderAll.bind(canvas.value),
+    );
+})
 // files 감시 (배열 전체 변경 감지)
 watch(files, (newFiles) => {
     const beforeCount = filesNumCount.value; // ref 접근 시 .value
@@ -757,7 +786,6 @@ watch(src, (newVal) => {
         }
         console.log("drawingStore.setFiles");
         drawingStore.setFiles(newVal);
-        drawingStore.canvas()
     }
 });
 
@@ -1222,6 +1250,7 @@ onUnmounted(() => {
 
 .thumbnailOptions {
     height: 94px;
+    width: min-content;
 }
 
 .clearThumb {

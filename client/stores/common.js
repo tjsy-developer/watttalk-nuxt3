@@ -41,6 +41,6 @@ export const useUserPreferenceStore = defineStore("userPreference", {
         },
     },
     persist: {
-        storage: process.client ? sessionStorage : undefined,
+        storage: process.client ? window.sessionStorage : undefined,
     },
 });

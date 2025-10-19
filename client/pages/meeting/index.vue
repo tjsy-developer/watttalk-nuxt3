@@ -101,7 +101,7 @@ import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
@@ -117,8 +117,13 @@ const calendar = ref(false);
 
 const checkDirectCall = ref(undefined);
 
-const { requestRefuseCalling, requestJoinMeeting } =
-    useSocketEmitEvents();
+const {
+    requestRefuseCalling,
+    requestJoinMeeting,
+    requestUserListAll,
+    requestLastCallTime,
+    requestMeetingList,
+} = useSocketEmitEvents();
 
 // 전화 수신 팝업
 let callingPopupResultData = reactive({
@@ -138,10 +143,12 @@ const funcAutoCallAceept = ref(null);
 const checkOptions = ref("");
 
 definePageMeta({
-    layout: "waiting"
+    layout: "waiting",
 });
 // 마운트될 때 실행할 작업
 onMounted(async () => {
+    requestLastCallTime();
+    requestUserListAll();
     // Use `signallingSocket` directly. No `this.` prefix needed.
     sessionStorage.setItem("m_callWaiting", false);
     sessionStorage.setItem("inRoomFlag", false);
@@ -152,7 +159,7 @@ onMounted(async () => {
     sessionStorage.removeItem("m_remote_status");
     sessionStorage.removeItem("m_remote_deviceid");
     commonStore.makeUserListStatus();
-    getMeetingList(allView.value)
+
     // Socket meetingList 받기
     signallingSocket.on("meetingList", (response) => {
         console.log("*** socket.on: meetingList res ");
@@ -296,7 +303,7 @@ onMounted(async () => {
                         optionTxt = optionTxt + "   " + t("스마트글라스 다이렉트콜 입장");
                     }
                 } else {
-                    optionTxt = optionTxt + " " +  t("스마트글라스 다이렉트콜 입장");
+                    optionTxt = optionTxt + " " + t("스마트글라스 다이렉트콜 입장");
                 }
             }
             if (everyoneStartYN == 1) {
@@ -412,9 +419,9 @@ onMounted(async () => {
             } else {
                 if (allView.value) {
                     // Use .value for reactive ref
-                    getMeetingList(1);
+                    requestMeetingList(1);
                 } else {
-                    getMeetingList(0);
+                    requestMeetingList(0);
                 }
             }
         } else {
@@ -446,9 +453,9 @@ onMounted(async () => {
             } else {
                 if (allView.value) {
                     // Use .value for reactive ref
-                    getMeetingList(1);
+                    requestMeetingList(1);
                 } else {
-                    getMeetingList(0);
+                    requestMeetingList(0);
                 }
             }
         } else {
@@ -468,11 +475,11 @@ onMounted(async () => {
 
             // if (allView.value) {
             //     // Use .value for reactive ref
-            //     getMeetingList(1);
+            //     requestMeetingList(1);
             // } else {
-            //     getMeetingList(0);
+            //     requestMeetingList(0);
             // }
-            getMeetingList(allView.value)
+            requestMeetingList(allView.value);
         } else {
             console.log("*** socket.on: 회의 삭제 실패");
         }
@@ -569,7 +576,7 @@ onMounted(async () => {
                     // Use .value for reactive ref
                     meetingCalendarList(allView.value);
                 } else {
-                    getMeetingList(allView.value);
+                    requestMeetingList(allView.value);
                 }
             } else {
                 console.log("*** socket.on: 알 수 없는 에러 발생.");
@@ -617,7 +624,7 @@ onMounted(async () => {
             if (calendar.value) {
                 meetingCalendarList(allView.value);
             } else {
-                getMeetingList(allView.value);
+                requestMeetingList(allView.value);
             }
         } else {
             console.log(
@@ -660,7 +667,10 @@ onMounted(async () => {
     // 2021-05-06 ksh :: 회의실에서도 통화 수락 거절 받을 수 있도록 기능 추가
     signallingSocket.on("calling", (response) => {
         const json = JSON.parse(response);
-        console.log("*** socket.on: calling response, json: " + response, sessionStorage.getItem("m_callWaiting"));
+        console.log(
+            "*** socket.on: calling response, json: " + response,
+            sessionStorage.getItem("m_callWaiting"),
+        );
 
         const isWaiting = sessionStorage.getItem("m_callWaiting") === "true";
         if (isWaiting) {
@@ -692,7 +702,7 @@ onMounted(async () => {
             );
 
             const remoteInfo = userDataGetInfo(json.deviceid);
-            console.log(remoteInfo)
+            console.log(remoteInfo);
             callStore.callingPopupInfo({
                 institution: remoteInfo.enName,
                 headquarters: remoteInfo.hqName,
@@ -852,7 +862,7 @@ onMounted(async () => {
 
     meetingStore.sortArray();
 
-    allView.value = Number(localStorage.getItem("meetingViewType")) == 1 ? true : false
+    allView.value = Number(localStorage.getItem("meetingViewType")) == 1 ? true : false;
 });
 
 // 언마운트되기 전 실행할 작업
@@ -927,34 +937,12 @@ const setupMeetingModal = () => {
         },
     });
     return { open, close };
-}
+};
 const { open, close } = setupMeetingModal();
 
 const makingBtnClick = async () => {
     console.log("*** methods: makingBtnClick");
     open();
-};
-
-// 시그널링 회의실 목록 요청 (meetingList 명을 이미 사용 중이므로 getMeeingList 로 지정)
-// type = 0: 내 회의실 목록, 1: 전체 회의실 목록
-const getMeetingList = (type) => {
-    console.log("*** methods: getMeetingList::");
-
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-
-    const timestampUTC = String(Math.round(date.getTime() / 1000));
-    console.log("안녕하세요 timestampUTC = ", timestampUTC);
-
-    const obj = {
-        deviceid: loginStore.m_local_deviceid,
-        current_date: timestampUTC,
-        view_type: type, // 0: 내 회의실 목록, 1: 전체 회의실 목록
-        en_seq: loginStore.sessionEnSeq,
-    };
-    const json = JSON.stringify(obj);
-    signallingSocket.emit("meetingList", json);
-    console.log("*** socket.emit: meetingList Request: " + json);
 };
 
 // 월력 요청
@@ -1374,21 +1362,19 @@ const {
     sendDurationEnable: getSendDurationEnable,
 } = storeToRefs(callStore);
 
-const {
-    autoCallAcceptTime,
-} = storeToRefs(preferenceStore);
+const { autoCallAcceptTime } = storeToRefs(preferenceStore);
 
-const getMeetingOpenFlag = computed(() =>  meetingStore.meetingOpenFlag)
+const getMeetingOpenFlag = computed(() => meetingStore.meetingOpenFlag);
 // Watch for allView checkbox changes
 watch(allView, (newVal) => {
     console.log("*** watch: allView():: newVal = ", newVal);
-    const meetingViewType = newVal ? 1 : 0
+    const meetingViewType = newVal ? 1 : 0;
     localStorage.setItem("meetingViewType", meetingViewType); // localStorage stores strings
 
     if (calendar.value) {
-        meetingCalendarList(meetingViewType)
+        meetingCalendarList(meetingViewType);
     } else {
-        getMeetingList(meetingViewType)
+        requestMeetingList(meetingViewType);
     }
 });
 
@@ -1397,7 +1383,7 @@ watch(calendar, (newVal) => {
     console.log("*** watch: calendar():: newVal = ", newVal);
 
     if (!newVal) {
-        allView.value ? getMeetingList(1) : getMeetingList(0);
+        allView.value ? requestMeetingList(1) : requestMeetingList(0);
     }
 });
 
@@ -1437,7 +1423,7 @@ watch(getMeetingJoinFlag, (newVal) => {
         if (calendar.value) {
             newVal ? meetingCalendarList(1) : meetingCalendarList(0);
         } else {
-            newVal ? getMeetingList(1) : getMeetingList(0);
+            newVal ? requestMeetingList(1) : requestMeetingList(0);
         }
     }
 });
@@ -1461,66 +1447,60 @@ watch(getMeetingModifyFlag, (newVal) => {
 });
 
 // Watch for calling popup result
-watch(
-    getCallingPopupResult,
-    (result) => {
-        console.log("*** watch: getCallingPopupResult result =", result);
+watch(getCallingPopupResult, (result) => {
+    console.log("*** watch: getCallingPopupResult result =", result);
 
-        if (result == 1) {
-            callingBell("stop");
-            console.log("*** watch: accept");
+    if (result == 1) {
+        callingBell("stop");
+        console.log("*** watch: accept");
 
-            callStore.setUniqueRoomid(callingPopupResultData.uniqueRoomid);
+        callStore.setUniqueRoomid(callingPopupResultData.uniqueRoomid);
 
-            if (callingPopupResultData.meetingSeq != undefined) {
-                if (callingPopupResultData.meetingSeq != null) {
-                    console.log("*** watch: meetingSeq is Not Null !!");
-                    // @ts-ignore
-                    meetingStore.setMeetingSeq(callingPopupResultData.meetingSeq);
-                    requestJoinMeeting({
-                        meetingSeq: meetingStore.meetingSeq,
-                        roomID: callingPopupResultData.roomid,
-                        uniqueRoomID: callStore.uniqueRoomid,
-                    });
-                } else {
-                    meetingStore.setMeetingSeq(null);
-                    callingAccept(
-                        callingPopupResultData.roomid,
-                        callingPopupResultData.deviceid,
-                    );
-                }
+        if (callingPopupResultData.meetingSeq != undefined) {
+            if (callingPopupResultData.meetingSeq != null) {
+                console.log("*** watch: meetingSeq is Not Null !!");
+                // @ts-ignore
+                meetingStore.setMeetingSeq(callingPopupResultData.meetingSeq);
+                requestJoinMeeting({
+                    meetingSeq: meetingStore.meetingSeq,
+                    roomID: callingPopupResultData.roomid,
+                    uniqueRoomID: callStore.uniqueRoomid,
+                });
             } else {
-                console.log("1. meetingSeq == undefined.");
                 meetingStore.setMeetingSeq(null);
                 callingAccept(
                     callingPopupResultData.roomid,
                     callingPopupResultData.deviceid,
                 );
             }
-        } else if (result === 0) {
-            callingBell("stop");
-            console.log("*** watch: reject");
-
-            requestRefuseCalling({
-                remoteDeviceId: callingPopupResultData.deviceid,
-                roomID: callingPopupResultData.roomid,
-                institution: callingPopupResultData.institution,
-                nickname: callingPopupResultData.nickname,
-            });
-
-            callStore.setUniqueRoomid("");
-
-            if (autoCallAcceptTime.value > 0 && funcAutoCallAceept.value != null) {
-                console.log("*** socket: calling Reject >> AutoCallAccept Cancel");
-                clearTimeout(funcAutoCallAceept.value);
-                funcAutoCallAceept.value = null;
-            }
+        } else {
+            console.log("1. meetingSeq == undefined.");
+            meetingStore.setMeetingSeq(null);
+            callingAccept(callingPopupResultData.roomid, callingPopupResultData.deviceid);
         }
+    } else if (result === 0) {
+        callingBell("stop");
+        console.log("*** watch: reject");
 
-        callingPopupResultData.value = [];
-        callStore.setCallingResult("init");
-    },
-);
+        requestRefuseCalling({
+            remoteDeviceId: callingPopupResultData.deviceid,
+            roomID: callingPopupResultData.roomid,
+            institution: callingPopupResultData.institution,
+            nickname: callingPopupResultData.nickname,
+        });
+
+        callStore.setUniqueRoomid("");
+
+        if (autoCallAcceptTime.value > 0 && funcAutoCallAceept.value != null) {
+            console.log("*** socket: calling Reject >> AutoCallAccept Cancel");
+            clearTimeout(funcAutoCallAceept.value);
+            funcAutoCallAceept.value = null;
+        }
+    }
+
+    callingPopupResultData.value = [];
+    callStore.setCallingResult("init");
+});
 
 // Watch for send direct message flag
 watch(getSendDMFlag, (newVal) => {

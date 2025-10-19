@@ -378,7 +378,7 @@ import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
 import { useI18n } from "vue-i18n";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useModal } from "vue-final-modal";
 import LoadingModal from "@/components/modal/LoadingModal.vue";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
@@ -409,7 +409,7 @@ const maskLoading = ref(true);
 const type = ref(null);
 
 // Store
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const loginStore = useLoginStore();
 const meetingStore = useMeetingStore();
 const callStore = useCallStore();

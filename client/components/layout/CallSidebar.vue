@@ -1,7 +1,7 @@
 <script setup>
 import { commonToastMessage } from "@/composables/common";
 import { useImageAssets } from "@/composables/useImageAssets";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useDrawingCanvasStore } from "@/stores/drawing";
@@ -13,7 +13,7 @@ const isMainMenuOpen = ref(false);
 const isSubMenuOpen = ref(false);
 
 const { menuImages } = useImageAssets();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 const modalStore = useModalStore();

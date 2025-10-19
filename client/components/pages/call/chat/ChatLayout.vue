@@ -130,14 +130,14 @@ import ChatView from "@/components/pages/call/chat/ChatView.vue"; // Make sure t
 import ChatSendBox from "@/components/pages/call/chat/ChatSendBox.vue";
 
 import { useChattingStore } from "@/stores/chatting";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useNuxtApp } from "nuxt/app";
 const { t } = useI18n();
 
 const chattingStore = useChattingStore();
 const callStore = useCallStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 
 const headerHeight = ref(0);
 const isShowChatBar = ref(true);

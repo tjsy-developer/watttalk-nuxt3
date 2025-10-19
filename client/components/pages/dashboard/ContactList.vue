@@ -41,7 +41,7 @@ import OrganizationList from "@/components/pages/dashboard/OrganizationList.vue"
 import RecentCallList from "@/components/pages/dashboard//RecentCallList.vue";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
 
@@ -55,7 +55,7 @@ import NonMemberInvite from "./NonMemberInvite.vue";
 
 const vfm = useVfm();
 const userListStore = useUserListStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const meetingStore = useMeetingStore();

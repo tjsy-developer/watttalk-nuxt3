@@ -51,7 +51,7 @@ function newNoticeDateCompare(saveDate) {
 // 간단한 전역 변수라면 그대로 유지할 수 있습니다.
 // 여기서는 `userDevice`를 상태에 직접 통합하고, `moduleA`는 제거합니다.
 // 만약 `moduleA`가 더 복잡한 로직을 가진다면 별도의 Pinia 스토어로 만드는 것이 좋습니다.
-export const useCommonStore = defineStore("common", {
+export const useRoomStore = defineStore("room", {
     state: () => ({
         contentsViewType: 0,
         callingLayoutType: 1,
@@ -98,9 +98,9 @@ export const useCommonStore = defineStore("common", {
         videoState: false,
         mainVideoIndex: "",
         mainVideoInfo: "",
-        selectedAudioID: undefined,
-        selectedMicID: undefined,
-        selectedCamIndex: undefined,
+        selectedAudioID: null,
+        selectedMicID: null,
+        selectedCamIndex: null,
         mediaDeviceModified: false,
         devicedSelection: false,
         powerManagerOpen: null,
@@ -584,6 +584,10 @@ export const useCommonStore = defineStore("common", {
         },
         init() {
             this.$reset();
+        },
+        persist: {
+            storage: process.client ? window.sessionStorage : undefined,
+            paths: ["selectedAudioID", "selectedMicID", "selectedCamIndex"],
         },
     },
 });

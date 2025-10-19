@@ -95,7 +95,7 @@ import { iconLogOffUser, iconLogOnUser } from "@/assets/images/index";
 import ChatModal from "@/components/modal/ChatModal.vue";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useImageAssets } from "@/composables/useImageAssets";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useDirectCallStore } from "@/stores/directCall";
 import { useDirectMessageStore } from "@/stores/directMessage";
@@ -112,7 +112,7 @@ const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
 
 const props = defineProps(["node", "openNodes", "parentPath", "useCheckBox"]);
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();

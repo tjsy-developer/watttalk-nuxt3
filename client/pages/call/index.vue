@@ -47,7 +47,7 @@
 
 <script setup>
 import $ from "jquery";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useDirectMessageStore } from "@/stores/directMessage";
@@ -111,7 +111,7 @@ const router = useRouter();
 
 let Janus;
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const loginStore = useLoginStore();
 const chattingStore = useChattingStore();
@@ -2281,7 +2281,7 @@ onMounted(() => {
             drawingStore.setBeforeIndexInitialized(true);
             if (drawingState) {
                 // 썸네일 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
-                createLoadingMask("ThumnailTransfer")
+                createLoadingMask("ThumnailTransfer");
 
                 // 드로잉을 활성화 시켜준다.
                 commonStore.setIsDrawing(true);
@@ -4082,6 +4082,7 @@ function fileSend(result) {
         const rfidIndex = findFeedsIndexNickname(
             receiveFileResFlag.value.selectedUserName,
         );
+        console.log("파일수락 시 ", feeds.value, receiveFileResFlag.value);
         let rfdeviceid = feeds.value[rfidIndex].rfdeviceid;
         // console.log("*** methods: fileSend - 수락했을 때, remote deviceid = " + rfdeviceid)
         // console.log("*** methods: fileSend - fileReceiver handleId = " + feeds.value[rfidIndex].rfid)
@@ -5294,51 +5295,54 @@ function newRemoteFeed(id, display, audio, video) {
                 }
 
                 // janus destroy 시 이전 사용자들은 남겨야 하기 때문에 다시 한번 remoteStream을 호출한다.
-                video.addEventListener("click", function () {
-                    // video_change(
-                    console.log("상대방 Viedo 클릭");
+                if (video)
+                    video.addEventListener("click", function () {
+                        // video_change(
+                        console.log("상대방 Viedo 클릭");
 
-                    // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
-                    if (commonStore.isDrawing) {
-                        commonToastMessage(t("toastMessage Drawing NoChangeMainVideo"));
-                        return;
-                    }
-
-                    if (videoCallHost.value) {
-                        // 바둑판이 아닐 경우
-                        if (commonStore.callingLayoutType != 1) {
-                            $("#videoMainCaption").html(customNickname); // 사용자의 언어에 따라 닉네임 변경
-
-                            // MainVideo Check
-                            if (callStore.videoMainIndex != remoteFeed.rfindex) {
-                                mainVideoChangeFunc(1, customNickname);
-                            }
-
-                            // Main Index 관리
-                            callStore.setVideoMainIndex(remoteFeed.rfindex);
-
-                            // MainVideo Border Change
-                            mainVideoBorder(remoteFeed.rfindex);
-
-                            // host가 바라보는 메인 화면으로 변경
-                            console.log("hostSelectedMainVideo 13");
-                            hostSelectedMainVideo(remoteFeed.rfid);
-                        } else if (commonStore.callingLayoutType == 1) {
-                            // 바둑판 일 경우에도 메인화면을 변경할 수 있도록 수정한다.
-                            // 실제로 메인 비디오가 존재하지 않기 때문에 mainIndex만 변경하도록 한다.
-
-                            // Main Index 관리
-                            callStore.setVideoMainIndex(remoteFeed.rfindex);
-
-                            // MainVideo Border Change
-                            mainVideoBorder(remoteFeed.rfindex);
-
-                            // host가 바라보는 메인 화면으로 변경
-                            console.log("hostSelectedMainVideo 14");
-                            hostSelectedMainVideo(remoteFeed.rfid);
+                        // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
+                        if (commonStore.isDrawing) {
+                            commonToastMessage(
+                                t("toastMessage Drawing NoChangeMainVideo"),
+                            );
+                            return;
                         }
-                    }
-                });
+
+                        if (videoCallHost.value) {
+                            // 바둑판이 아닐 경우
+                            if (commonStore.callingLayoutType != 1) {
+                                $("#videoMainCaption").html(customNickname); // 사용자의 언어에 따라 닉네임 변경
+
+                                // MainVideo Check
+                                if (callStore.videoMainIndex != remoteFeed.rfindex) {
+                                    mainVideoChangeFunc(1, customNickname);
+                                }
+
+                                // Main Index 관리
+                                callStore.setVideoMainIndex(remoteFeed.rfindex);
+
+                                // MainVideo Border Change
+                                mainVideoBorder(remoteFeed.rfindex);
+
+                                // host가 바라보는 메인 화면으로 변경
+                                console.log("hostSelectedMainVideo 13");
+                                hostSelectedMainVideo(remoteFeed.rfid);
+                            } else if (commonStore.callingLayoutType == 1) {
+                                // 바둑판 일 경우에도 메인화면을 변경할 수 있도록 수정한다.
+                                // 실제로 메인 비디오가 존재하지 않기 때문에 mainIndex만 변경하도록 한다.
+
+                                // Main Index 관리
+                                callStore.setVideoMainIndex(remoteFeed.rfindex);
+
+                                // MainVideo Border Change
+                                mainVideoBorder(remoteFeed.rfindex);
+
+                                // host가 바라보는 메인 화면으로 변경
+                                console.log("hostSelectedMainVideo 14");
+                                hostSelectedMainVideo(remoteFeed.rfid);
+                            }
+                        }
+                    });
 
                 // remote의 이름을 보여주는 div
                 // $("#panel-inner" + remoteFeed.rfindex).append(
@@ -6050,10 +6054,7 @@ function callingLayoutChange(status, text, col) {
     // )
 }
 // 멀티통화 거절
-function multiCallingReject(
-    remoteDeviceId,
-    roomID
-) {
+function multiCallingReject(remoteDeviceId, roomID) {
     const remoteInfo = userDataGetInfo(remoteDeviceId);
     const json = {
         localdeviceid: loginStore.m_local_deviceid,
@@ -6080,11 +6081,7 @@ function multiCallingReject(
     }
 }
 // 멀티통화 수락
-function multiCallingAccept(
-    remoteDeviceId,
-    roomID,
-    uniqueRoomID,
-) {
+function multiCallingAccept(remoteDeviceId, roomID, uniqueRoomID) {
     const json = {
         localdeviceid: loginStore.m_local_deviceid,
         remotedeviceid: remoteDeviceId,
@@ -6331,92 +6328,100 @@ function videoLayoutChange() {
                     // mainVideo Change click event 생성
                     const video = document.getElementById("remotevideo" + i);
 
-                    video.addEventListener("click", function () {
-                        // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
-                        if (commonStore.isDrawing) {
-                            commonToastMessage(
-                                t("toastMessage Drawing NoChangeMainVideo"),
-                            );
-                            return;
-                        }
-
-                        // video_change(
-                        if (videoCallHost.value) {
-                            // 바둑판 형식일 경우
-                            if (commonStore.callingLayoutType != 1) {
-                                // eslint-disable-next-line camelcase
-                                const main_video = document.getElementById("videoMain");
-
-                                // // mainVideo가 videoOff가 아닐 경우(video가 off이면 해당 영상이 숨겨져있으므로 return 처리만 하게 됨) && mainVideo와 현재 클릭한 video가 같다면 변경하지 않도록 하기. (중복클릭 방지)
-                                // if (
-                                //  !commonStore.isVideo &&
-                                //  main_video.srcObject == srcObject
-                                // ) {
-                                //  return
-                                // }
-
-                                main_video.srcObject = srcObject;
-                                // 사용자의 언어에 따라 닉네임 변경
-                                const customNickname = customUserNickname(
-                                    feeds.value[i].rfdeviceid,
+                    if (video)
+                        video.addEventListener("click", function () {
+                            // 드로잉 할 때는, 메인화면을 변경할 수 없습니다 출력.
+                            if (commonStore.isDrawing) {
+                                commonToastMessage(
+                                    t("toastMessage Drawing NoChangeMainVideo"),
                                 );
-                                console.log(
-                                    "*** methods: videoLayoutChange > customNickname: ",
-                                    customNickname,
-                                );
-                                // $("#videoMainCaption").html(feeds.value[i].rfdisplay)
-                                $("#videoMainCaption").html(customNickname);
-
-                                // MainVideo Check
-                                if (callStore.videoMainIndex != feeds.value[i].rfindex) {
-                                    // $("#videoMainOff").remove()
-                                    // $("#videoMain").show()
-                                    // mainVideoChangeFunc(1, feeds.value[i].rfdisplay)
-                                    mainVideoChangeFunc(1, customNickname);
-                                }
-                                // const beforeMainIndex = callStore.videoMainIndex
-                                // if (beforeMainIndex == 0 && feeds.value.length !== 0) {
-                                //  document.getElementById("myvideo").style.scale = 1
-                                // } else if (beforeMainIndex !== 0 && feeds.value.length !== 0) {
-                                //  document.getElementById("remotevideo" + beforeMainIndex).style.scale = 1
-                                // }
-
-                                // Main Index 관리
-                                callStore.setVideoMainIndex(feeds.value[i].rfindex);
-
-                                // MainVideo border Change
-                                mainVideoBorder(feeds.value[i].rfindex);
-
-                                // host가 바라보는 메인 화면으로 변경
-                                console.log("hostSelectedMainVideo 17");
-                                hostSelectedMainVideo(feeds.value[i].rfid);
-                            } else if (commonStore.callingLayoutType == 1) {
-                                const beforeMainIndex = callStore.videoMainIndex;
-                                if (beforeMainIndex == 0 && feeds.value.length !== 0) {
-                                    document.getElementById("myvideo").style.scale = 1;
-                                } else if (
-                                    beforeMainIndex !== 0 &&
-                                    feeds.value.length !== 0
-                                ) {
-                                    document.getElementById(
-                                        "remotevideo" + beforeMainIndex,
-                                    ).style.scale = 1;
-                                }
-                                // 바둑판 일 경우에도 메인화면을 변경할 수 있도록 수정한다.
-                                // 실제로 메인 비디오가 존재하지 않기 때문에 mainIndex만 변경하도록 한다.
-
-                                // Main Index 관리
-                                callStore.setVideoMainIndex(feeds.value[i].rfindex);
-
-                                // MainVideo border Change
-                                mainVideoBorder(feeds.value[i].rfindex);
-
-                                // host가 바라보는 메인 화면으로 변경
-                                console.log("hostSelectedMainVideo 18");
-                                hostSelectedMainVideo(feeds.value[i].rfid);
+                                return;
                             }
-                        }
-                    });
+
+                            // video_change(
+                            if (videoCallHost.value) {
+                                // 바둑판 형식일 경우
+                                if (commonStore.callingLayoutType != 1) {
+                                    // eslint-disable-next-line camelcase
+                                    const main_video =
+                                        document.getElementById("videoMain");
+
+                                    // // mainVideo가 videoOff가 아닐 경우(video가 off이면 해당 영상이 숨겨져있으므로 return 처리만 하게 됨) && mainVideo와 현재 클릭한 video가 같다면 변경하지 않도록 하기. (중복클릭 방지)
+                                    // if (
+                                    //  !commonStore.isVideo &&
+                                    //  main_video.srcObject == srcObject
+                                    // ) {
+                                    //  return
+                                    // }
+
+                                    main_video.srcObject = srcObject;
+                                    // 사용자의 언어에 따라 닉네임 변경
+                                    const customNickname = customUserNickname(
+                                        feeds.value[i].rfdeviceid,
+                                    );
+                                    console.log(
+                                        "*** methods: videoLayoutChange > customNickname: ",
+                                        customNickname,
+                                    );
+                                    // $("#videoMainCaption").html(feeds.value[i].rfdisplay)
+                                    $("#videoMainCaption").html(customNickname);
+
+                                    // MainVideo Check
+                                    if (
+                                        callStore.videoMainIndex != feeds.value[i].rfindex
+                                    ) {
+                                        // $("#videoMainOff").remove()
+                                        // $("#videoMain").show()
+                                        // mainVideoChangeFunc(1, feeds.value[i].rfdisplay)
+                                        mainVideoChangeFunc(1, customNickname);
+                                    }
+                                    // const beforeMainIndex = callStore.videoMainIndex
+                                    // if (beforeMainIndex == 0 && feeds.value.length !== 0) {
+                                    //  document.getElementById("myvideo").style.scale = 1
+                                    // } else if (beforeMainIndex !== 0 && feeds.value.length !== 0) {
+                                    //  document.getElementById("remotevideo" + beforeMainIndex).style.scale = 1
+                                    // }
+
+                                    // Main Index 관리
+                                    callStore.setVideoMainIndex(feeds.value[i].rfindex);
+
+                                    // MainVideo border Change
+                                    mainVideoBorder(feeds.value[i].rfindex);
+
+                                    // host가 바라보는 메인 화면으로 변경
+                                    console.log("hostSelectedMainVideo 17");
+                                    hostSelectedMainVideo(feeds.value[i].rfid);
+                                } else if (commonStore.callingLayoutType == 1) {
+                                    const beforeMainIndex = callStore.videoMainIndex;
+                                    if (
+                                        beforeMainIndex == 0 &&
+                                        feeds.value.length !== 0
+                                    ) {
+                                        document.getElementById("myvideo").style.scale =
+                                            1;
+                                    } else if (
+                                        beforeMainIndex !== 0 &&
+                                        feeds.value.length !== 0
+                                    ) {
+                                        document.getElementById(
+                                            "remotevideo" + beforeMainIndex,
+                                        ).style.scale = 1;
+                                    }
+                                    // 바둑판 일 경우에도 메인화면을 변경할 수 있도록 수정한다.
+                                    // 실제로 메인 비디오가 존재하지 않기 때문에 mainIndex만 변경하도록 한다.
+
+                                    // Main Index 관리
+                                    callStore.setVideoMainIndex(feeds.value[i].rfindex);
+
+                                    // MainVideo border Change
+                                    mainVideoBorder(feeds.value[i].rfindex);
+
+                                    // host가 바라보는 메인 화면으로 변경
+                                    console.log("hostSelectedMainVideo 18");
+                                    hostSelectedMainVideo(feeds.value[i].rfid);
+                                }
+                            }
+                        });
 
                     if (i == callStore.videoMainIndex) {
                         // console.log("main")
@@ -6493,21 +6498,17 @@ function mainVideoBorder(index) {
 				class를 init 구분자로 사용
 				로컬 일 경우 반응 X
 			*/
-
     // // console.log("*** methods: mainVideoBorder")
     // // mainVideoBorder Class를 사용하고 있는 Element가 있는지 확인
     // const initFindClass = document.getElementsByClassName("mainVideoBorder");
-
     // // console.log("mainVideoBorder index: ".concat(index))
     // // console.log("initFindClass: ", initFindClass)
-
     // // local Click 시 mainVideoBorder 숨김
     // if (index == 0) {
     //     if (initFindClass.length == 0) {
     //         // console.log("index 0 인 경우 initFindClass empty")
     //         return;
     //     }
-
     //     // console.log("index 0 인 경우 initFindClass[0]: ".concat(initFindClass[0]))
     //     const initFindElement = document.getElementById(initFindClass[0].id);
     //     initFindElement.classList.remove("mainVideoBorder");
@@ -6517,9 +6518,7 @@ function mainVideoBorder(index) {
     //     //  console.log("index 0 이 아닌 경우 initFindClass empty")
     //     //  return
     //     // }
-
     //     // console.log("index 0 이 아닌 경우 initFindClass[0]: ".concat(initFindClass[0]))
-
     //     // init (기존 테두리 클리어)
     //     if (initFindClass.length > 0) {
     //         console.log("initFindClass[0].id: ".concat(initFindClass[0].id));
@@ -6527,14 +6526,11 @@ function mainVideoBorder(index) {
     //         initFindElement.classList.remove("mainVideoBorder");
     //         // initFindElement.style.border = "none"
     //     }
-
     //     // else {
     //     // border Make
     //     // const mainVideoElement = document.getElementById("remotevideo" + index)
     //     // const mainVideoElement = document.getElementById("videoremote" + index)
-
     //     // console.log(mainVideoElement)
-
     //     // }
     //     let mainVideoElement = "";
     //     if (commonStore.callingLayoutType == 1) {
@@ -6999,7 +6995,7 @@ function videoCallHostCheck(roomid, localdeviceid) {
 // callingWindow 왕관표시 제거 및 추가
 function setHostIcon(index, hostIcon) {
     // console.log("*** methods: setHostIcon")
-    commonStore.setHostIcon(index,hostIcon);
+    commonStore.setHostIcon(index, hostIcon);
 }
 // deviceid로 feeds의 index 구하기
 function findFeedsIndexDeviceid(deviceid) {
@@ -7039,6 +7035,7 @@ function findFeedsIndexNickname(nickname) {
 }
 // feeds.value 에서 deviceid 로 nickname 가져오기
 function findFeedsNicknameByDeviceid(deviceid) {
+    console.log("feed.value 확인", feeds.value);
     let nickname = "";
     for (let i = 1; i < feeds.value.length; i++) {
         if (feeds.value[i] != null && feeds.value[i].rfdeviceid == deviceid) {
@@ -7155,7 +7152,7 @@ function previewModalHide(result) {
 function meetingAlertModal(seq) {
     escapeFullScreen();
 
-    meetingStore.setMeetingAlertStatus(seq)
+    meetingStore.setMeetingAlertStatus(seq);
 
     const modalId = "meeting-modal";
     if (seq == 1) {
@@ -8052,6 +8049,7 @@ function janusAndCallingDestroy() {
         sessionStorage.removeItem("createRoomFlag");
         sessionStorage.removeItem("otherPartyAccess");
 
+        alert(callingType.value)
         // guest가 입장 시 윈도우 창 닫기
         if (callingType.value == "joinGuestCall") {
             // 비회원 참가 시 window close
@@ -9173,43 +9171,18 @@ function fileReceiveReset(deviceid, rfIndex) {
     // 고화질 캡쳐가 아닌 경우
     if (!callStore.HQCaptureFlag) {
         // 2초 뒤에 내 화면을 카메라로 변경
-        setTimeout(() => {
-            // 내 화면을 비디오로 변환
-            // callingLayoutChange("attach", sessionStorage.getItem("m_nickname"), 0)
-            // $("#myvideo").show()
-
-            // 송신자 화면을 비디오로 변환
-
-            if (rfFeedsIndex) {
-                let status =
-                    commonStore.userListStatus[rfFeedsIndex].fileReceiveInfo.beforeStatus;
-                // 송신자화면 videoOFF상태에서 파일수신 > 수신완료 시 기존 화면 상태값 유지 ksy
-                callingLayoutChange(
-                    status,
-                    commonStore.userListStatus[rfFeedsIndex].text,
-                    rfFeedsIndex,
-                );
-                $("#remotevideo" + rfFeedsIndex).show();
-                $("#panel-inner" + rfFeedsIndex).show();
-            }
-
-            // if (status == "attach") {
-            //  callingLayoutChange(
-            //      status,
-            //      commonStore.userListStatus[rfFeedsIndex].text,
-            //      findFeedsIndexDeviceid(deviceid)
-            //  )
-            //  $("#remotevideo" + findFeedsIndexDeviceid(deviceid)).show()
-            //  $("#panel-inner" + findFeedsIndexDeviceid(deviceid)).show()
-            // } else {
-            //  callingLayoutChange(
-            //      commonStore.userListStatus[rfFeedsIndex].status,
-            //      commonStore.userListStatus[rfFeedsIndex].text,
-            //      findFeedsIndexDeviceid(deviceid)
-            //  )
-            // }
-            // callingLayoutChange(5, commonStore.userListStatus[rfFeedsIndex].text, findFeedsIndexDeviceid(deviceid))
-        }, 2000);
+        if (rfFeedsIndex) {
+            let status =
+                commonStore.userListStatus[rfFeedsIndex].fileReceiveInfo.beforeStatus;
+            // 송신자화면 videoOFF상태에서 파일수신 > 수신완료 시 기존 화면 상태값 유지 ksy
+            callingLayoutChange(
+                status,
+                commonStore.userListStatus[rfFeedsIndex].text,
+                rfFeedsIndex,
+            );
+            $("#remotevideo" + rfFeedsIndex).show();
+            $("#panel-inner" + rfFeedsIndex).show();
+        }
     } else {
         // 고화질 수신완료 시 초기화
         callStore.setHQCaptrueFlag(false);
@@ -9532,8 +9505,8 @@ function sayHello() {
 
     // -> kyj
     const config = useRuntimeConfig().public;
-    console.log('여기확인', config)
-    str_stream_picture_file_path.value = `${'https://hdcardev.watttalk.kr'}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
+    console.log("여기확인", config);
+    str_stream_picture_file_path.value = `${"https://hdcardev.watttalk.kr"}${config.NUXT_PUBLIC_SAVE_PHOTO_PATH}`;
 
     console.log("*** mounted: Media module 초기화 ");
     setIntervalStream.value = "";
@@ -9547,7 +9520,7 @@ function sayHello() {
             // Make sure the browser supports WebRTC
             janus.value = new Janus({
                 server: config.NUXT_PUBLIC_JANUS_SERVER_IP,
-                iceServers:[
+                iceServers: [
                     {
                         urls: config.NUXT_PUBLIC_ICE_SERVER_URL,
                         username: config.NUXT_PUBLIC_ICE_SERVER_USER,
@@ -10637,6 +10610,7 @@ function sayHello() {
                         sessionStorage.removeItem("createRoomFlag");
                         sessionStorage.removeItem("otherPartyAccess");
 
+                        alert(callingType.value)
                         // guest가 입장 시 윈도우 창 닫기
                         if (callingType.value == "joinGuestCall") {
                             // 비회원 참가 시 window close
@@ -10827,10 +10801,7 @@ watch(getMultiCallingPopupResult, (newValue, oldValue) => {
             }
         } else if (newValue == 0) {
             console.log("*** watch: multiCalling Reject");
-            multiCallingReject(
-                multiCallingData.remotedeviceid,
-                multiCallingData.roomid,
-            );
+            multiCallingReject(multiCallingData.remotedeviceid, multiCallingData.roomid);
 
             const chattingMessage =
                 chattingStore.chattingMessageList[chattingCallingIndex.value].nickname +
@@ -12103,6 +12074,7 @@ onUnmounted(() => {
 <style lang="scss">
 .calling {
     width: inherit;
+    max-height: calc(100vh - $header-height);
     flex: 1;
 }
 </style>

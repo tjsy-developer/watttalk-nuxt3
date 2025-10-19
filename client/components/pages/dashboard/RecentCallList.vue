@@ -76,7 +76,7 @@
 import { ref, watch } from "vue";
 import TreeNode from "@/components/pages/dashboard/TreeNode.vue";
 import { useImageAssets } from "@/composables/useImageAssets";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useModalStore } from "@/stores/modal";
 import { useCallStore } from "@/stores/call";
 import { useDirectMessageStore } from "@/stores/directMessage";
@@ -92,7 +92,7 @@ const { t, locale } = useI18n();
 const { commonImages } = useImageAssets();
 const { requestUserStatus } = useSocketEmitEvents();
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();

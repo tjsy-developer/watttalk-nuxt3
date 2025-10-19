@@ -57,9 +57,7 @@
                         src="@/assets/images/lightmode/conference/ic_con_start.svg"
                         alt="Conference Start Icon"
                     />
-                    <span
-                        >{{ t("meetingStartPeriod") }} :&nbsp;</span
-                    >
+                    <span>{{ t("meetingStartPeriod") }} :&nbsp;</span>
                     <span class="timeOverFlow">
                         {{ format(props.compData.startDate) }}
                         {{ time() ? time().split("-")[0] : "" }}
@@ -74,12 +72,8 @@
                     class="contentView"
                 >
                     <img src="@/assets/images/conference/ic_time.png" alt="Time Icon" />
-                    <span
-                        >{{ t("meetingTime") }}:&nbsp;</span
-                    >
-                    <span class="timeOverFlow">{{
-                        time()
-                    }}</span>
+                    <span>{{ t("meetingTime") }}:&nbsp;</span>
+                    <span class="timeOverFlow">{{ time() }}</span>
                 </div>
                 <div v-else class="contentView">
                     <img
@@ -92,10 +86,8 @@
                         src="@/assets/images/lightmode/conference/ic_con_end.svg"
                         alt="Conference End Icon"
                     />
-                    <span
-                        >{{ t("meetingEndPeriod") }} :&nbsp;</span
-                    >
-                    <span class=" timeOverFlow">
+                    <span>{{ t("meetingEndPeriod") }} :&nbsp;</span>
+                    <span class="timeOverFlow">
                         {{
                             props.compData.customData.type === 3
                                 ? t("meeting validity period")
@@ -111,9 +103,7 @@
                         alt="Participants Icon"
                         class="participantsImg"
                     />
-                    <span
-                        >{{ t("meetingMember") }}:&nbsp;</span
-                    >
+                    <span>{{ t("meetingMember") }}:&nbsp;</span>
                     <span class="textEllipsisKo">{{
                         props.compData.customData.member
                     }}</span>
@@ -126,9 +116,7 @@
                         class="cctvIcon"
                     />
                     <span class="participantsTitle">CCTV:&nbsp;</span>
-                    <span class="textEllipsisKo">{{
-                        cctvList
-                    }}</span>
+                    <span class="textEllipsisKo">{{ cctvList }}</span>
                 </div>
 
                 <div
@@ -139,23 +127,28 @@
                     "
                     class="optionTxt"
                 >
-                    <span
-                        >{{ t("추가 기능") }}:&nbsp;</span
-                    >
+                    <span>* {{ t("추가 기능") }}&nbsp;:&nbsp;</span>
                     <div>
-                        <span v-if="props.compData.customData.entry_notification_yn">{{  t('회의 초대 알림 발송') }}</span>
-                        <span v-if="props.compData.customData.direct_call_yn">{{  t('스마트글라스 다이렉트콜 입장') }}</span>
-                        <span v-if="props.compData.customData.everyone_start_yn">{{  t('누구나 회의 시작 가능') }}</span>
+                        <span v-if="props.compData.customData.entry_notification_yn">{{
+                            t("회의 초대 알림 발송")
+                        }}</span>
+                        <span v-if="props.compData.customData.direct_call_yn">{{
+                            t("스마트글라스 다이렉트콜 입장")
+                        }}</span>
+                        <span v-if="props.compData.customData.everyone_start_yn">{{
+                            t("누구나 회의 시작 가능")
+                        }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="btnLocation">
                 <div
-                    v-if="
-                        props.compData.customData.master == device_id &&
-                        props.compData.customData.status == 0
-                    "
+                    :class="{
+                        hidden:
+                            props.compData.customData.master !== device_id ||
+                            props.compData.customData.status !== 0,
+                    }"
                     class="operation"
                 >
                     <button
@@ -304,7 +297,7 @@ const props = defineProps({
 const loginStore = useLoginStore();
 const meetingStore = useMeetingStore();
 const modalStore = useModalStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const preprenceStore = useUserPreferenceStore();
 
 const device_id = ref("");
@@ -337,21 +330,19 @@ const openMeetingCheck = (meetingSeq) => {
 
     signallingSocket.emit("openMeetingChecking", json);
     signallingSocket.on("openMeetingChecking", (response) => {
-
-    const resJson = JSON.parse(response);
-    console.log(resJson);
-    if (resJson.start_status === 0) {
-        console.log("openMeeting");
-        openMeeting(meetingSeq);
-    } else if (resJson.start_status === 1) {
-        console.log("joinMeeting");
-        joinMeeting(meetingSeq, 1);
-    } else if (resJson.start_status === 3) {
-        console.log("회의실이 삭제되어있다.");
-        commonStore.setNoneOverlayAlertStatus(8);
-    }
-});
-
+        const resJson = JSON.parse(response);
+        console.log(resJson);
+        if (resJson.start_status === 0) {
+            console.log("openMeeting");
+            openMeeting(meetingSeq);
+        } else if (resJson.start_status === 1) {
+            console.log("joinMeeting");
+            joinMeeting(meetingSeq, 1);
+        } else if (resJson.start_status === 3) {
+            console.log("회의실이 삭제되어있다.");
+            commonStore.setNoneOverlayAlertStatus(8);
+        }
+    });
 };
 
 const openMeeting = (meetingSeq) => {
@@ -533,11 +524,8 @@ const setCctvList = () => {
     });
     cctvList.value = list; // Assign to ref once
 };
-const { requestUserListAll, requestLastCallTime } = useSocketEmitEvents();
 // --- Lifecycle Hooks ---
 onMounted(() => {
-    requestLastCallTime();
-    requestUserListAll();
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
     window.addEventListener("resize", onResize);
@@ -545,8 +533,6 @@ onMounted(() => {
     device_id.value = loginStore.m_local_deviceid;
     nickname.value = loginStore.nickname;
     setCctvList();
-
-
 });
 
 onUnmounted(() => {
@@ -627,9 +613,8 @@ watch(
 
 .btnLocation {
     display: flex;
-    justify-content: flex-end;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    justify-content: space-between;
+    padding: 10px;
     min-height: 32px;
     .operation {
         display: flex;
@@ -637,8 +622,8 @@ watch(
             text-decoration-line: underline;
         }
     }
-    button {
-        font-size: 1.5rem;
+    .operation.hidden {
+        visibility: hidden;
     }
 }
 
@@ -741,7 +726,7 @@ watch(
     position: absolute;
     left: 2rem;
     top: 5rem;
-    color:#fff;
+    color: #fff;
 }
 
 .closeMeeting {
@@ -753,18 +738,24 @@ watch(
 
 .nonplaying {
     width: 100%;
-    height: 97px;
+    flex: 0 0 97px;
     position: relative;
     background: #4c4c4c 0 0 no-repeat padding-box;
 }
 
 .playing {
     width: 100%;
-    height: 97px;
+    flex: 0 0 97px;
     position: relative;
     background: #1068ac 0% 0% no-repeat padding-box;
 }
 
+.mtConten {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 .empty {
     width: 100%;
     min-height: 274px;
@@ -780,6 +771,8 @@ watch(
     width: 100%;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     & > button {
         width: 100%;
@@ -799,10 +792,9 @@ watch(
     width: 90%;
     height: 31px;
     padding-left: 30px;
-    padding-top: 7px;
-    font-size:1.5rem;
+    font-size: 14px;
     align-items: flex-start;
-    >div {
+    > div {
         display: flex;
         flex-direction: column;
         gap: 4px;

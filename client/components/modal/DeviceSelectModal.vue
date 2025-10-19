@@ -76,7 +76,7 @@
 
 <script setup>
 import { common } from "@/assets/images";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useModalStore } from "@/stores/modal";
 import { deleteCookie, setCookie } from "@/utils/common";
@@ -107,7 +107,7 @@ let loaded = ref(false);
 let selectedAudioIdExist = ref(true);
 let selectedMicIdExist = ref(true);
 
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const modalStore = useModalStore();
 
@@ -326,6 +326,7 @@ function compare() {
     }
 }
 function checkParameter() {
+    alert(props.type)
     if (props.type == "request") {
         // 1:1 통화를 걸 경우
         props.requestCall();

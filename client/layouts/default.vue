@@ -89,7 +89,7 @@ import ChatModal from "@/components/modal/ChatModal.vue";
 import NoticeModal from "@/components/modal/NoticeModal.vue";
 import { useCallStore } from "@/stores/call";
 const modalStore = useModalStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 
 function onUpdateModelValue(val) {

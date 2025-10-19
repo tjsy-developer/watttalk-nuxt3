@@ -1,4 +1,4 @@
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useChattingStore } from "@/stores/chatting";
 import { useTokenStore } from "@/stores/token";
@@ -242,7 +242,7 @@ export function getMotionTimeZone(standard, country) {
 }
 
 export function videoResize() {
-    const commonStore = useCommonStore();
+    const commonStore = useRoomStore();
     const callStore = useCallStore();
 
     const videoMainDivWrap = document.getElementsByClassName("videoMainDivWrap")[0];
@@ -304,7 +304,7 @@ export function escapeFullScreen() {
 }
 
 export function getPersonnelInRoom() {
-    const commonStore = useCommonStore();
+    const commonStore = useRoomStore();
     const chattingStore = useChattingStore();
     const personnelInRoomCalc = commonStore.userListStatus.filter((element) => {
         return ![

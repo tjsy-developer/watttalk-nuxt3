@@ -262,6 +262,28 @@ export default function useSocketEmitEvents() {
         signallingSocket.emit("forceLogoutResult", JSON.stringify(json));
     };
 
+    const requestMeetingList = (type) => {
+        // 시그널링 회의실 목록 요청 (meetingList 명을 이미 사용 중이므로 getMeeingList 로 지정)
+        // type = 0: 내 회의실 목록, 1: 전체 회의실 목록
+        console.log("*** methods: getMeetingList::");
+
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+
+        const timestampUTC = String(Math.round(date.getTime() / 1000));
+        console.log("안녕하세요 timestampUTC = ", timestampUTC);
+
+        const obj = {
+            deviceid: loginStore.m_local_deviceid,
+            current_date: timestampUTC,
+            view_type: type, // 0: 내 회의실 목록, 1: 전체 회의실 목록
+            en_seq: loginStore.sessionEnSeq,
+        };
+        const json = JSON.stringify(obj);
+        signallingSocket.emit("meetingList", json);
+        console.log("*** socket.emit: meetingList Request: " + json);
+    };
+
     return {
         requestCreateFixRoomID,
         requestRefuseCalling,
@@ -286,5 +308,6 @@ export default function useSocketEmitEvents() {
         requestScreenSharing,
         requestForceLeave,
         requestForceLogoutResult,
+        requestMeetingList,
     };
 }

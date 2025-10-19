@@ -12,7 +12,7 @@ import { useModalStore } from "@/stores/modal";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import useSocketEmitEvents from "./useSocketEmit";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { emitter } from "@/utils/eventBus";
 import { useRouter } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
@@ -33,7 +33,7 @@ export function bindSocketEvents() {
     const modalStore = useModalStore();
     const callStore = useCallStore();
     const userListStore = useUserListStore();
-    const commonStore = useCommonStore();
+    const commonStore = useRoomStore();
     const meetingStore = useMeetingStore();
     const directCallStore = useDirectCallStore();
     const directMessageStore = useDirectMessageStore();

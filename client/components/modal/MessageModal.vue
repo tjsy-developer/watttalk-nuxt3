@@ -67,11 +67,11 @@
     </div>
 </template>
 <script setup>
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useNuxtApp } from "nuxt/app";
 import { useModalSlot } from "vue-final-modal";
 const { t } = useI18n();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const callStore = useCallStore();
 const modalStore = useModalStore();
 const alertStatus = computed(() => commonStore.alertStatus);

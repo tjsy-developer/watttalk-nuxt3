@@ -1,4 +1,4 @@
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
 import { useUserListStore } from "@/stores/userList";
 
@@ -94,7 +94,7 @@ export const userListSetNewNotificationCount = (deviceid, value) => {
 };
 
 export const checkMainVideo = () => {
-    const commonStore = useCommonStore(); // ✨
+    const commonStore = useRoomStore(); // ✨
     const userListStatus = commonStore.userListStatus;
     if (userListStatus[userListStatus.length - 1]?.text === "") {
         for (const user of userListStatus) {

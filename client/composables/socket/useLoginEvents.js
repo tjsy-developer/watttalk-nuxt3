@@ -1,6 +1,6 @@
 import { useNuxtApp, useRouter } from "nuxt/app";
 import { useLoginStore } from "@/stores/login";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { useModalStore } from "@/stores/modal";
 import { useSignallingSocket } from "./useSignallingSocket";
 import { tryOnScopeDispose } from "@vueuse/core";
@@ -17,7 +17,7 @@ const statusCode = {
 export function useLoginEvents() {
     const { signallingSocket, transferSocket } = useSignallingSocket();
     const loginStore = useLoginStore();
-    const commonStore = useCommonStore();
+    const commonStore = useRoomStore();
     const modalStore = useModalStore();
     const preferenceStore = useUserPreferenceStore();
     const router = useRouter();

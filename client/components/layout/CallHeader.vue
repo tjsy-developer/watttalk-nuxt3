@@ -9,7 +9,7 @@ import { computed } from "vue";
 import { useCallStore } from "@/stores/call";
 import { useMeetingStore } from "@/stores/meeting";
 import { useChattingStore } from "@/stores/chatting";
-import { useCommonStore } from "@/stores";
+import { useRoomStore } from "@/stores/room";
 import { commonToastMessage } from "@/composables/common";
 import ContactList from "../pages/dashboard/ContactList.vue";
 import { useModalSlot } from "vue-final-modal";
@@ -21,7 +21,7 @@ const loginStore = useLoginStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 const meetingStore = useMeetingStore();
-const commonStore = useCommonStore();
+const commonStore = useRoomStore();
 const modalStore = useModalStore();
 
 const isOpen = ref(false);

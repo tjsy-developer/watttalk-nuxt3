@@ -11,7 +11,6 @@
                     <span>{{ t("오디오") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedAudio">
-                    <option :value="false">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in audioList"
                         :key="index"
@@ -26,7 +25,6 @@
                     <span>{{ t("마이크") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedMic">
-                    <option :value="false">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in micList"
                         :key="index"
@@ -41,7 +39,6 @@
                     <span>{{ t("카메라") }}:</span>
                 </div>
                 <select class="selectBox" v-model="selectedCam" id="camInput">
-                    <option :value="-1">{{ t("없음") }}</option>
                     <option
                         v-for="(text, index) in camList"
                         :key="index"
@@ -214,50 +211,95 @@ function removeDuplicated(deviceList, type) {
     return uniqueGroup;
 }
 function checkDevices() {
-    if (selectedAudio.value == "") {
-        let deviceId = undefined;
-        // 기존에 선택한 오디오값이 있고, 해당 오디오가 존재하는 경우
-        if (selectedAudioIdExist.value && savedAudioId.value) {
-            deviceId = savedAudioId.value;
-        } else {
-            deviceId =
-                audioList.value && audioList.value[0]
-                    ? audioList.value[0].deviceId
-                    : false;
+    console.log("선택된거", selectedAudio.value, selectedMic.value, selectedCam.value)
+    console.log("옵션리스트", audioList.value, micList.value, camList.value)
+
+    if (selectedAudio.value) {
+        const findAudioIndx = audioList.value?.findIndex((item) => {
+            return item.deviceId === selectedAudio.value;
+        });
+        if (findAudioIndx == -1) {
+            selectedAudio.value = false;
+            audioList.value.unshift({ deviceId: false, label: t("없음") });
         }
-        selectedAudio.value = deviceId;
+    } else {
+        console.log('audio 기본선택', audioList.value[0].deviceId)
+        selectedAudio.value = audioList.value[0].deviceId
     }
-    if (selectedMic.value == "") {
-        let deviceId = undefined;
-        // 기존에 선택한 마이크가 있고, 해당 마이크가 존재하는 경우
-        if (selectedMicIdExist.value && savedMicId.value) {
-            deviceId = savedMicId.value;
-        } else {
-            deviceId =
-                micList.value && micList.value[0] ? micList.value[0].deviceId : false;
+
+    if (selectedMic.value) {
+        const findMicIndx = micList.value?.findIndex((item) => {
+            return item.deviceId === selectedMic.value;
+        });
+
+        if (findMicIndx == -1) {
+            selectedMic.value = false;
+            micList.value.unshift({ deviceId: false, label: t("없음") });
         }
-        selectedMic.value = deviceId;
+    } else {
+        console.log('mic 기본선택', micList.value[0].deviceId)
+        selectedMic.value = micList.value[0].deviceId
     }
-    if (selectedCam.value == "") {
-        let deviceIndex = 0;
-        if (savedCamIndex.value && savedCamIndex.value != "undefined") {
-            console.log(savedCamIndex);
-            deviceIndex = savedCamIndex.value;
-        }
-        // -1은 선택안함임
-        if (deviceIndex == -1 || deviceIndex == undefined) {
+
+    if (selectedCam.value != -1) {
+        const findCamIndx = camList.value?.findIndex((item) => {
+            return item.deviceId === selectedCam.value;
+        });
+
+        if (findCamIndx == -1) {
             selectedCam.value = -1;
-        } else {
-            if (camList.value[deviceIndex].deviceId) {
-                selectedCam.value = camList.value[deviceIndex].deviceId;
-            } else {
-                selectedCam.value =
-                    camList.value && camList.value[0]
-                        ? camList.value[deviceIndex].deviceId
-                        : -1;
-            }
+            camList.value.unshift({ deviceId: -1, label: t("없음") });
         }
+    } else {
+        console.log('cam 기본선택', camList.value[0].deviceId)
+        selectedCam.value = camList.value[0].deviceId
     }
+
+
+    // if (selectedAudio.value == "") {
+    //     let deviceId = undefined;
+    //     // 기존에 선택한 오디오값이 있고, 해당 오디오가 존재하는 경우
+    //     if (selectedAudioIdExist.value && savedAudioId.value) {
+    //         deviceId = savedAudioId.value;
+    //     } else {
+    //         deviceId =
+    //             audioList.value && audioList.value[0]
+    //                 ? audioList.value[0].deviceId
+    //                 : false;
+    //     }
+    //     selectedAudio.value = deviceId;
+    // }
+    // if (selectedMic.value == "") {
+    //     let deviceId = undefined;
+    //     // 기존에 선택한 마이크가 있고, 해당 마이크가 존재하는 경우
+    //     if (selectedMicIdExist.value && savedMicId.value) {
+    //         deviceId = savedMicId.value;
+    //     } else {
+    //         deviceId =
+    //             micList.value && micList.value[0] ? micList.value[0].deviceId : false;
+    //     }
+    //     selectedMic.value = deviceId;
+    // }
+    // if (selectedCam.value == "") {
+    //     let deviceIndex = 0;
+    //     if (savedCamIndex.value && savedCamIndex.value != "undefined") {
+    //         console.log(savedCamIndex);
+    //         deviceIndex = savedCamIndex.value;
+    //     }
+    //     // -1은 선택안함임
+    //     if (deviceIndex == -1 || deviceIndex == undefined) {
+    //         selectedCam.value = -1;
+    //     } else {
+    //         if (camList.value[deviceIndex].deviceId) {
+    //             selectedCam.value = camList.value[deviceIndex].deviceId;
+    //         } else {
+    //             selectedCam.value =
+    //                 camList.value && camList.value[0]
+    //                     ? camList.value[deviceIndex].deviceId
+    //                     : -1;
+    //         }
+    //     }
+    // }
     loaded.value = true;
 }
 function apply() {

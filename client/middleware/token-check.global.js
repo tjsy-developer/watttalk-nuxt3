@@ -29,7 +29,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             if (res.data) {
                 loginStore.setTokenResult(0);
             } else {
-                alert(t("loginResult NotValid"));
+                alert(t("유효한 로그인 토큰이 아닙니다\n 로그인을 다시 진행해주시기 바랍니다."));
                 window.location.href = getManagerDomain();
                 return;
             }

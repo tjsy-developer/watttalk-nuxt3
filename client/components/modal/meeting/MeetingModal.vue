@@ -20,7 +20,6 @@
             <div class="inputBox">
                 <div class="label-box">
                     <span class="firstLabel">{{ t("회의 제목") }}</span>
-                    <span class="invalidTitle">{{ errors.meetingTitle }}</span>
                 </div>
                 <input
                     type="text"

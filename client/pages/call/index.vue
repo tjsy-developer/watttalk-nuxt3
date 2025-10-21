@@ -197,7 +197,7 @@ let maskLoading = ref(false);
 let autoPictureModal = ref(false);
 let funcAutoCallAceept = ref(null);
 let motionFailCheck = ref(false);
-let sendDurationEnableFlag = ref(false);
+let sendDurationEnableFlag = ref(preferenceStore.recordingStatus);
 let resultMaxNum = ref(0);
 let funcAutoDiscalling = ref(null);
 let rateStopper = ref(null);
@@ -8048,7 +8048,6 @@ function janusAndCallingDestroy() {
         sessionStorage.removeItem("createRoomFlag");
         sessionStorage.removeItem("otherPartyAccess");
 
-        alert(callingType.value)
         // guest가 입장 시 윈도우 창 닫기
         if (callingType.value == "joinGuestCall") {
             // 비회원 참가 시 window close
@@ -10609,7 +10608,6 @@ function sayHello() {
                         sessionStorage.removeItem("createRoomFlag");
                         sessionStorage.removeItem("otherPartyAccess");
 
-                        alert(callingType.value)
                         // guest가 입장 시 윈도우 창 닫기
                         if (callingType.value == "joinGuestCall") {
                             // 비회원 참가 시 window close
@@ -11553,8 +11551,7 @@ watch(changePersonnelInRoom, (newValue, oldValue) => {
     resultMaxNum.value = Math.max(newValue, resultMaxNum.value);
 
     if (resultMaxNum.value > 1) {
-        if (preferenceStore.recordingStatus || sendDurationEnableFlag.value) {
-            sendDurationEnableFlag.value = true;
+        if (sendDurationEnableFlag.value) {
             callStore.setSendDurationEnable(true);
         }
     } else {

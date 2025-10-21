@@ -368,7 +368,6 @@ function compare() {
     }
 }
 function checkParameter() {
-    alert(props.type)
     if (props.type == "request") {
         // 1:1 통화를 걸 경우
         props.requestCall();

@@ -26,7 +26,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         files: [], // 현재 활성 파일 목록 (이미지, PDF, 캔버스 등)
         pdfNum: 0,
         pdfGroup: -1,
-        beforeSelectedFileIndex: 0,
+        beforeSelectedFileIndex: -1,
         selectedFileIndex: 0,
         selectCount: 0,
         index: 0, // 전체 파일 인덱스 (img, pdf 페이지, canvas 포함)
@@ -196,7 +196,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
                 this.files[num].pdf[pdfNum].img = image;
             } else {
                 // console.log("setFilesImgChange num:", num, "image:", image)
-                this.files[num].img = image;
+                if (this.files[num]) this.files[num].img = image;
             }
         },
         clearPdfNum() {
@@ -206,7 +206,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.totalPages = payload;
         },
         setCanvasHistory(payload) {
-            console.log(payload)
+            console.log(payload);
             this.canvasHistory = deepClone(payload);
         },
         setFirstHistory(payload) {
@@ -217,12 +217,6 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         },
         setFilesDelete(payload) {
             for (let i = 0; i < this.files.length; i++) {
-                if (payload === this.files[i].index) {
-                    this.files.splice(i, 1);
-                    this.index--;
-                    this.canvasNumber--;
-                    return;
-                }
                 if (this.files[i].pdf) {
                     if (payload === this.files[i].pdf[0].index) {
                         // PDF 그룹의 첫 번째 인덱스만 체크하는 로직
@@ -231,11 +225,16 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
                         this.canvasNumber--;
                         return;
                     }
+                } else {
+                    this.files.splice(payload, 1);
                 }
             }
         },
+        setBeforeSelectedFileIndex(payload) {
+            this.beforeSelectedFileIndex = payload;
+        },
         setSelectedFileIndex(payload) {
-            this.beforeSelectedFileIndex = this.selectedFileIndex
+            this.beforeSelectedFileIndex = this.selectedFileIndex;
             this.selectedFileIndex = payload;
         },
         setPdfFirstHistoryState(payload) {

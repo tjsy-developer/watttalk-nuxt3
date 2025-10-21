@@ -91,9 +91,11 @@ export function useAuth() {
         } catch (error) {
             if (error.response?.status === 401) {
                 if (error.response.data == "mutated") {
-                    alert(("loginResult decodeFail"));
+                    alert(
+                        "토큰 복호화에 실패하였습니다.\n로그인을 다시 진행해주시기 바랍니다",
+                    );
                 } else if (error.response.data == "expired") {
-                    alert(("loginResult NotValid"));
+                    alert(("유효한 로그인 토큰이 아닙니다\n로그인을 다시 진행해주시기 바랍니다"));
                 }
                 location.href = getManagerDomain();
             }

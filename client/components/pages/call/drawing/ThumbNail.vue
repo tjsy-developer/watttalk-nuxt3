@@ -189,17 +189,10 @@ const fileClick = (e, type) => {
     // console.log("fileClick e:", e)
     // console.log("*****##****** fileClick lastJSON", store.state.drawing.lastCanvasJson)
 
+    // 새로운 캔버스
     if (files.value[e].type == 'canvas') {
         //현재 캔버스에 있는 걸 history 에 옮겨준다
         drawingStore.setSelectedFileIndex(e)
-        drawingStore.setFilesHistory({
-            num: e,
-            history: drawingStore.canvasHistory
-        })
-        drawingStore.setFilesImgChange({
-            num: e,
-            image: drawingStore.canvas.toDataURL("png")
-        })
     }
     drawingStore.setBeforeIndexInitialized(false);
 };
@@ -439,7 +432,6 @@ const eachCanvasDelete = (e, pdfKey, group) => {
     if (!isPdfUploading.value) {
         if (files.value[e - 1].type != "pdf") {
             console.log("fileClick 1");
-            fileClick(e - 1);
             isDelete.value = true;
             let deleteIndex = null;
             let deleteWidth = 0;
@@ -463,7 +455,8 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 deleteIndex = files.value[e].index;
                 deleteWidth = 148;
             }
-            drawingStore.setFilesDelete(deleteIndex);
+            drawingStore.setFilesDelete(e);
+            drawingStore.setSelectedFileIndex(e - 1)
             drawingStore.setUpdate(true);
             drawingStore.setThumbnailWidth(thumbnailWidth.value - deleteWidth);
         } else {
@@ -502,12 +495,12 @@ const eachCanvasDelete = (e, pdfKey, group) => {
 const clearThumbnail = () => {
     if (!isPdfUploading.value) {
         drawingStore.clearFiles();
-        drawingStore.setSuperIndex(1);
-        canvasImgChange(0, beforeSuperIndex.value, "canvas");
         drawingStore.setSelectedFileIndex(0);
-        beforeSuperIndex.value = 0;
-        drawingStore.setCanvasJson(null);
-        drawingStore.setUpdate(true);
+        drawingStore.setBeforeSelectedFileIndex(-1);
+        drawingStore.setFilesImgChange({
+            num: 0,
+            image: canvas.value.toDataURL("png"),
+        });
 
         for (let i = 1; i < pdfUploadQueArray.value.length; i++) {
             if (pdfUploading.value == true) {
@@ -675,6 +668,7 @@ const {
     index,
     firstFiles,
     selectedFileIndex,
+    beforeSelectedFileIndex,
     canvasNumber,
     pdfNumber,
     totalPages,
@@ -711,13 +705,34 @@ const getLastCanvasInfo = computed(() => {
 //         thumbBody.style.width = newVal - 30 + "px";
 //     }
 // });
-watch(selectedFileIndex, () => {
-    console.log("추가됨 바ㄱ뀜", files.value.length)
-    canvas.value.loadFromJSON(
-        canvasHistory.value.state[0],
-        canvas.value.renderAll.bind(canvas.value),
-    );
+
+watch(beforeSelectedFileIndex, (newVal, prevVal) => {
+    console.log("추가됨 바ㄱ뀜", newVal)
+    // 이전 선택된 파일을 저장한다
+    drawingStore.setFilesHistory({
+        num: newVal,
+        history: drawingStore.canvasHistory
+    })
+
+    drawingStore.setFilesImgChange({
+        num: newVal,
+        image: drawingStore.canvas.toDataURL("png")
+    })
 })
+
+watch(selectedFileIndex, (newVal, prevVal) => {
+    console.log("추가됨 바ㄱ뀜", files.value.length)
+    // 현재 캔버스의 history를 가져온다
+    drawingStore.setCanvasHistory(files.value[newVal].history)
+    drawingStore.canvas.loadFromJSON(
+        files.value[newVal].history.state[files.value[newVal].history.currentStateIndex],
+        () => {
+            drawingStore.canvas.renderAll.bind(drawingStore.canvas)
+            console.log("fileClick finished, file.type == canvas")
+        }
+    )
+})
+
 // files 감시 (배열 전체 변경 감지)
 watch(files, (newFiles) => {
     const beforeCount = filesNumCount.value; // ref 접근 시 .value
@@ -778,13 +793,14 @@ watch(files, (newFiles) => {
 
 // src 감시
 watch(src, (newVal) => {
+    console.log(newVal)
     if (newVal != null) {
         if (files.value.length == 0) {
             // ref 접근 시 .value
             console.log("drawingStore.setFirstFiles");
             drawingStore.setFirstFiles(newVal);
         }
-        console.log("drawingStore.setFiles");
+        console.log("drawingStore.setFiles", newVal);
         drawingStore.setFiles(newVal);
     }
 });

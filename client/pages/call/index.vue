@@ -1474,9 +1474,8 @@ onMounted(() => {
             /* 스마트글라스 -> PC 에게 전화 시 영상녹화 여부에 대해 알려주는 내용을 저장한다. */
             /* 호스트가 없는 방에 PC가 들어가서, 호스트가 된 경우 스마트 글라스에서 영상 저장 여부를 보낸다. */
             if (json.sendDurationEnable != undefined && json.sendDurationEnable != null) {
-                callStore.setSendDurationEnable(json.sendDurationEnable);
-
                 sendDurationEnableFlag.value = json.sendDurationEnable;
+                callStore.setSendDurationEnable(json.sendDurationEnable);
             }
 
             // 현재 방이 전체 음소거 인지 아닌지 체크하여 요청자에게 보내주기
@@ -1741,7 +1740,7 @@ onMounted(() => {
 
         /* 영상 녹화 저장 여부 저장 */
         callStore.setSendDurationEnable(json.sendDurationEnable);
-
+        sendDurationEnableFlag.value = json.sendDurationEnable;
         // 메인 비디오 스크린 크기 조정
         // videoResize()
         // } catch (e) {
@@ -7252,7 +7251,7 @@ function resultSettingInRoom(
         videoOffRfid,
         useScreenShare,
         useDrawing,
-        sendDurationEnable: sendDurationEnableFlag.value, // false
+        sendDurationEnable: preferenceStore.recordingStatus, // false
         zoomLevelObj,
     };
 
@@ -7996,7 +7995,7 @@ function janusAndCallingDestroy() {
         roomid: sessionStorage.getItem("m_roomid"),
         curr_time: getWorldTime(),
         meeting_seq: meetingStore.meetingSeq, // 룸에 아무도 존재하지 않는다면 회의를 종료 시키기 위해서.
-        sendDurationEnable: sendDurationEnable.value, // flag를 통하여 미디어 서버에 보낼지 안보낼지 체크 (혼자인 경우 미디어서버에 보내지 않음)
+        sendDurationEnable: callStore.sendDurationEnable, // flag를 통하여 미디어 서버에 보낼지 안보낼지 체크 (혼자인 경우 미디어서버에 보내지 않음)
         unique_roomid: uniqueRoomid.value, // 2021-07-21 추가
     };
 
@@ -10552,7 +10551,7 @@ function sayHello() {
                         roomid: sessionStorage.getItem("m_roomid"),
                         curr_time: getWorldTime(),
                         meeting_seq: meetingStore.meetingSeq, // 룸에 아무도 존재하지 않는다면 회의를 종료 시키기 위해서.
-                        sendDurationEnable: sendDurationEnable.value, // flag를 통하여 미디어 서버에 보낼지 안보낼지 체크 (혼자인 경우 미디어서버에 보내지 않음)
+                        sendDurationEnable: callStore.sendDurationEnable, // flag를 통하여 미디어 서버에 보낼지 안보낼지 체크 (혼자인 경우 미디어서버에 보내지 않음)
                         unique_roomid: uniqueRoomid.value, // 2021-07-21 추가
                     };
 
@@ -11550,14 +11549,15 @@ watch(getMeetingLeaveFlag, (newValue, oldValue) => {
 watch(changePersonnelInRoom, (newValue, oldValue) => {
     console.log("changePersonnelInRoom 변경됨:", newValue, oldValue);
 
-    console.log("*** watch: changePersonnelInRoom");
+    console.log("*** watch: changePersonnelInRoom", newValue, resultMaxNum.value );
     resultMaxNum.value = Math.max(newValue, resultMaxNum.value);
+
     if (resultMaxNum.value > 1) {
-        if (sendDurationEnableFlag.value) {
+        if (preferenceStore.recordingStatus || sendDurationEnableFlag.value) {
+            sendDurationEnableFlag.value = true;
             callStore.setSendDurationEnable(true);
         }
-    } else if (sendDurationEnable.value && resultMaxNum.value < 2) {
-        sendDurationEnableFlag.value = false;
+    } else {
         callStore.setSendDurationEnable(false);
     }
 

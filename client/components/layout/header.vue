@@ -94,12 +94,12 @@
             <label class="toggleSwitch">
                 <input
                     type="checkbox"
-                    v-model="callStore.autoVideoSaveChange"
+                    v-model="preprenceStore.recordingStatus"
                     @change="handleChangeAutoSave"
                 />
                 <span class="slider">
                     <span class="labelText">
-                        {{ callStore.autoVideoSaveChange ? "on" : "off" }}
+                        {{ preprenceStore.recordingStatus ? "on" : "off" }}
                     </span>
                 </span>
             </label>
@@ -174,6 +174,8 @@ function handleChangeAutoSave(e) {
     const res = isChecked ? true : false; // 예시
     callStore.setSendDurationEnable(res);
     callStore.setAutoVideoSaveChange(res);
+    preprenceStore.setRecordingStatus(res);
+
 }
 
 onMounted(() => {

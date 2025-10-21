@@ -6,21 +6,10 @@ import { useNuxtApp } from "nuxt/app";
 import _ from "lodash";
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
-    // 1. Get the current local date and time.
-    const date = new Date();
-
-    // 2. Get the timezone offset in minutes. (e.g., -540 for Korea)
-    const timezoneOffsetMinutes = date.getTimezoneOffset();
-
-    // 3. Convert the offset to milliseconds.
-    const timezoneOffsetMilliseconds = timezoneOffsetMinutes * 60 * 1000;
-
-    // 4. Subtract the offset to get the correct UTC time in milliseconds.
-    //    date.getTime() - (-540 * 60 * 1000) = date.getTime() + (540 * 60 * 1000)
-    const timestampUTC = (date.getTime() - timezoneOffsetMilliseconds) / 1000;
-
-    // 5. Return the rounded UTC timestamp.
-    return Math.round(timestampUTC);
+      const now = new Date();
+      const standard = now.getTime() / 1000;
+      const returnDate = new String(Math.round(standard));
+      return returnDate;
 }
 
 export function buildTree(users) {

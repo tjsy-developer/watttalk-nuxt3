@@ -7904,15 +7904,15 @@ function inviteNonMember(nonMemberEmail) {
             email: nonMemberEmail,
             domain: "http://localhost:3000/watttalk",
             // 'http://localhost:3000' + "/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr", // 파워매니저 URL - 20210923 추가
+            domain: window.location.origin, // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
             email: nonMemberEmail,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr", // 파워매니저 URL - 20210923 추가
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin, // 파워매니저 URL - 20210923 추가
             en_seq: loginStore.sessionEnSeq, // 20211014 - 회원인지 존재 여부 확인 시 필요
         };
     }

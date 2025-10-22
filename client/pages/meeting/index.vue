@@ -1042,8 +1042,8 @@ const createMeeting = () => {
             maker: meetingInfo.maker,
             members,
             en_seq: loginStore.sessionEnSeq,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1058,8 +1058,8 @@ const createMeeting = () => {
             maker: meetingInfo.maker,
             members,
             en_seq: loginStore.sessionEnSeq,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1126,8 +1126,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1142,8 +1142,8 @@ const modifyMeeting = () => {
             type: meetingInfo.type,
             maker: meetingInfo.maker,
             members,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
             entry_notification_yn: meetingInfo.entry_notification_yn,
             direct_call_yn: meetingInfo.direct_call_yn,
             everyone_start_yn: meetingInfo.everyone_start_yn,
@@ -1166,14 +1166,14 @@ const deleteMeeting = () => {
     if (process.env.renewal == "true") {
         obj = {
             meeting_seq: meetingSeq,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
         };
     } else {
         obj = {
             meeting_seq: meetingSeq,
-            domain: "https://hdcardev.watttalk.kr/watttalk",
-            PMDomain: "https://hdcardev.watttalk.kr",
+            domain: `${window.location.origin}/watttalk`,
+            domain: window.location.origin,
         };
     }
     const json = JSON.stringify(obj);

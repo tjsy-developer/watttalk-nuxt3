@@ -48,6 +48,7 @@ export function bindSocketEvents() {
     } = useSocketEmitEvents();
 
     const { loginRequest } = useLoginEvents();
+    const { requestUserListAll, requestLastCallTime } = useSocketEmitEvents();
 
     // ---------- Handlers ----------
     function handleUserListAll(response) {
@@ -67,7 +68,6 @@ export function bindSocketEvents() {
     function handleLastCallTime(response) {
         const json = JSON.parse(response);
         console.log(response);
-        userListStore.init();
         callStore.setRecentData([]);
         callStore.setRecentDataAll([]);
         const sortOrgList = json.users.sort((a, b) => b.status - a.status);
@@ -90,19 +90,21 @@ export function bindSocketEvents() {
             status: json.status,
         });
 
-        const updateRecentCallList = updateStatusByDeviceId(
-            userListStore.recentCallList,
-            json.deviceid,
-            json.status,
-        );
-        const updateOrgCallList = updateStatusByDeviceId(
-            userListStore.organizationList,
-            json.deviceid,
-            json.status,
-        );
-        console.log(updateRecentCallList);
-        userListStore.setRecentCallList(updateRecentCallList);
-        userListStore.setOrganizationList(updateOrgCallList);
+        requestLastCallTime();
+        requestUserListAll();
+        // const updateRecentCallList = updateStatusByDeviceId(
+        //     userListStore.recentCallList,
+        //     json.deviceid,
+        //     json.status,
+        // );
+        // const updateOrgCallList = updateStatusByDeviceId(
+        //     userListStore.organizationList,
+        //     json.deviceid,
+        //     json.status,
+        // );
+        // console.log(updateRecentCallList);
+        // userListStore.setRecentCallList(updateRecentCallList);
+        // userListStore.setOrganizationList(updateOrgCallList);
     }
 
     function handleUserStatus(response) {

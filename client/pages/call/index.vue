@@ -899,35 +899,6 @@ onMounted(() => {
 
     // ========= 통화 중 연락처 화면 관련 function ===========
 
-    // User Call Ready Status on/off Event
-    signallingSocket.on("callReadyStatus", (response) => {
-        try {
-            const json = JSON.parse(response);
-            console.log("*** socket: callReadyStatus. json: ", json);
-            const buttonIndex = sessionStorage.getItem("ListViewType");
-
-            if (buttonIndex == 1) {
-                const userIndex = userDataGetIndex(json.deviceid);
-
-                // set(callStore.userData[userIndex], "status", json.status);
-                callStore.userData[userIndex].status = json.status;
-
-                // 조직도 목록 갱신
-                // userListAllRequest(m_local_deviceid, m_en_seq)
-            } else {
-                const userIndex = recentDataGetIndex(json.deviceid);
-
-                callStore.recentData[userIndex].status = json.status;
-                // set(callStore.recentData[userIndex], "status", json.status);
-
-                // 최근통화 목록 갱신
-                // recentListAllRequest(m_local_deviceid)
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    });
-
     // userStatus :: calling에서는 상대방을 초대하는 것 외에는 없음.
     signallingSocket.on("userStatus", (response) => {
         if (response) {

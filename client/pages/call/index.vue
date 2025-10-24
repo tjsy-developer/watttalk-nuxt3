@@ -320,7 +320,7 @@ onMounted(() => {
 
                 // contactList.vue 로 이동
                 commonStore.setChangeViewType(0);
-                router.push("/dashboard");
+                router.back();
                 modalStore.closeModal("call");
             }, 3000);
         }
@@ -1892,54 +1892,6 @@ onMounted(() => {
             const json = JSON.parse(response);
 
             const rfidIndex = findFeedsIndexDeviceid(json.deviceid);
-            // console.log("*** socket: fileTransfer response - fileReceiver handleId: " + feeds.value[rfidIndex].rfid)
-            // console.log("*** socket: fileTransfer response - fileReceiver handleId: " + myid.value)
-
-            // 누군가 나에게 파일 전송을 요청했을 때 callingWindow 수락 거절 창으로 변경되어야
-            // 이미 내가 파일 송수신을 하고 있을 경우 보낸 사람에게 거절로 보낸다.
-            // 파일 중복 수신으로 인하여 주석 ksy
-            // if (sessionStorage.getItem("fileSendingFlag") == "true") {
-            //  // status : 0 Decline, 1 Access
-            //  const obj = {
-            //      localdeviceid: loginStore.m_local_deviceid,
-            //      remotedeviceid: json.deviceid,
-            //      status: 0,
-            //      // handleId: myid.value
-            //      handleId: feeds.value[rfidIndex].rfid
-            //  }
-            //  const sendJson = JSON.stringify(obj)
-            //  signallingSocket.emit("fileReceiver", sendJson)
-            //  console.log(
-            //      "*** socket: emit fileReceiver - 다른 사용자와 파일 송신 중 -> 거절 처리. json: " +
-            //          sendJson
-            //  )
-            //  return
-            // }
-
-            // // 고화질 캡쳐 요청 중에도 파일 송수신을 거절처리 해야한다.
-            // // 파일 송수신 상태가 아니며, HQCaptrue 요청했을 경우
-            // // HQcapture 요청 후 답변이 돌아오면 FileSendingFlag는 true가 된다.
-            // if (
-            //  sessionStorage.getItem("fileSendingFlag") == "false" &&
-            //  callStore.HQCaptureFlag
-            // ) {
-            //  // status : 0 Decline, 1 Access
-            //  const obj = {
-            //      localdeviceid: loginStore.m_local_deviceid,
-            //      remotedeviceid: json.deviceid,
-            //      status: 0,
-            //      // handleId: myid.value
-            //      handleId: feeds.value[rfidIndex].rfid
-            //  }
-            //  const sendJson = JSON.stringify(obj)
-            //  signallingSocket.emit("fileReceiver", sendJson)
-            //  console.log(
-            //      "*** socket: emit fileReceiver - 고화질 캡쳐 중 -> 거절 처리. json: " +
-            //          sendJson
-            //  )
-            //  return
-            // }
-
             // fileReceiver 저장
             commonStore.setFileReceiver(json.deviceid);
 
@@ -1954,17 +1906,28 @@ onMounted(() => {
                     flag: true,
                     selectedUserName: nickname,
                 });
-                commonStore.setFileSendStatus(3);
-                commonStore.setFileSendFlag(true);
+                // commonStore.setFileSendStatus(3);
+                // commonStore.setFileSendFlag(true);
 
-                $("#remotevideo" + rfidIndex).hide();
-                $("#panel-inner" + rfidIndex).hide();
+                // $("#remotevideo" + rfidIndex).hide();
+                // $("#panel-inner" + rfidIndex).hide();
 
                 // $("#myvideo").hide()
 
                 // 수신 파일 정보를 저장
-                fileReceiveTotalSize.value = json.filelength;
-                receiveFileType.value = getFileExtension(json.filetype);
+                // fileReceiveTotalSize.value = json.filelength;
+                // receiveFileType.value = getFileExtension(json.filetype);
+
+                const obj = {
+					localdeviceid: loginStore.m_local_deviceid,
+					remotedeviceid: json.deviceid, //-ksy
+					status: 1,
+					handleId: feeds.value[rfidIndex].rfid
+				}
+				const sendJson = JSON.stringify(obj)
+				signallingSocket.emit("fileReceiver", sendJson)
+				console.log("emit fileReceiver")
+                callStore.setHQCaptureFiles({ deviceid: json.deviceid });
             } else {
                 // 내 화면을 파일 수락/거절 질의로 callingWindow 변경
                 // callingLayoutChange(2, sessionStorage.getItem("m_nickname"), 0)
@@ -2386,7 +2349,7 @@ onMounted(() => {
                 /***** 파일 수신 완료 처리 *****/
 
                 // 고화질 캡쳐인 경우
-                if (callStore.HQCaptureFlag) {
+                if (json.HQCapture) {
                     // 고화질 캡쳐 버튼 초기화
                     // callStore.setHQCaptrueFlag", false)
 
@@ -2399,7 +2362,7 @@ onMounted(() => {
                     );
 
                     /***** 파일 수신 초기화 *****/
-                    fileReceiveReset(json.deviceid, rfIndex);
+                    callStore.setReceiveHQCaptureFile({ deviceid: json.deviceid })
                 }
                 // 파일 수신인 경우
                 else {
@@ -6014,14 +5977,9 @@ function callingLayoutChange(status, text, col) {
         col,
         status,
         nickname,
+        deviceid: feeds.value[col]?.rfdeviceid
     });
     videoResize();
-    // console.log(
-    //  "callingLayoutChange: " + commonStore.userListStatus[col].text
-    // )
-    // console.log(
-    //  "callingLayoutChange: " + commonStore.userListStatus[col].status
-    // )
 }
 // 멀티통화 거절
 function multiCallingReject(remoteDeviceId, roomID) {
@@ -8023,14 +7981,8 @@ function janusAndCallingDestroy() {
         if (callingType.value == "joinGuestCall") {
             // 비회원 참가 시 window close
             window.location.href = "https://wattsolution.co.kr/";
-        } else if (callingType.value == "meetingCall") {
-            commonStore.setChangeViewType(1);
-            router.push("/meeting");
-        } else {
-            commonStore.setChangeViewType(0);
-            router.push("/dashboard");
         }
-
+        router.back();
         setTimeout(function () {
             window.location.reload();
         }, 500);
@@ -10583,13 +10535,9 @@ function sayHello() {
                         if (callingType.value == "joinGuestCall") {
                             // 비회원 참가 시 window close
                             window.location.href = "https://wattsolution.co.kr/";
-                        } else if (callingType.value == "meetingCall") {
-                            commonStore.setChangeViewType(1);
-                            router.push("/meeting");
-                        } else {
-                            commonStore.setChangeViewType(0);
-                            router.push("/dashboard");
                         }
+                        router.back()
+
                         setTimeout(function () {
                             window.location.reload();
                         }, 500);
@@ -10685,6 +10633,7 @@ const getDrawingGetPDFUploadFlag = computed(() => callStore.drawingGetPDFUploadF
 const getLaserPointerFlag = computed(() => callStore.laserPointerFlag);
 const getCaptureSaveFlag = computed(() => callStore.captureSaveFlag);
 const getHQCaptureFlag = computed(() => callStore.HQCaptureFlag);
+const getHQCaptureCount = computed(() => callStore.HQCaptureCount);
 const getPreviousMessageFlag = computed(() => directMessageStore.previousMessageFlag);
 const getMotionFallCloseBtnClick = computed(() => callStore.motionFallCloseBtnClick);
 const getMotionFallClickIndex = computed(() => callStore.motionFallClickIndex);
@@ -10721,6 +10670,15 @@ const changePersonnelInRoom = computed(() => chattingStore.personnelInRoom); // 
 const getHangupCallingConfirmFlag = computed(() => callStore.hangupCallingConfirmFlag);
 // --- watch 로직들 ---
 // 위에 정의된 computed 값들이 변경될 때 실행될 함수들입니다.
+
+watch(
+  feeds, // ref 자체를 감시
+    (newFeeds, oldFeeds) => {
+        console.log("🪶 feeds changed:", newFeeds)
+        callStore.setFeeds(newFeeds)
+    },
+    { deep: true }
+)
 
 watch(getMultiCallingPopupResult, (newValue, oldValue) => {
     console.log("MultiCallingPopupResult 변경됨:", newValue, oldValue);
@@ -11737,12 +11695,11 @@ watch(getCaptureSaveFlag, (newValue, oldValue) => {
     // 캡처 저장 플래그 변경 시 필요한 로직을 여기에 추가합니다.
 });
 
-watch(getHQCaptureFlag, (newValue, oldValue) => {
+watch(getHQCaptureCount, (newValue, oldValue) => {
     console.log("getHQCaptureFlag.value 변경됨:", newValue, oldValue);
     if (newValue) {
         requestHQCapture();
     }
-    // 고화질 캡처 플래그 변경 시 필요한 로직을 여기에 추가합니다.
 });
 
 watch(getPreviousMessageFlag, (newValue, oldValue) => {
@@ -11751,7 +11708,6 @@ watch(getPreviousMessageFlag, (newValue, oldValue) => {
         getPreviousMessage();
         directMessageStore.setPreviousMessageFlag(false);
     }
-    // 다이렉트 메시지 - 이전 메시지 버튼 클릭 시 필요한 로직을 여기에 추가합니다.
 });
 
 watch(getMotionFallCloseBtnClick, (newValue, oldValue) => {

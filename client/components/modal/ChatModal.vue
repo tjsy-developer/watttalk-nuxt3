@@ -319,7 +319,7 @@ section {
     justify-content: left;
     align-items: end;
     gap: 4px;
-    .msg {
+    .msg * {
         padding: 5px 10px;
         background: #fff;
         border-radius: 6px;

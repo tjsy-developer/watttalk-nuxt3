@@ -129,6 +129,9 @@ export const useCallStore = defineStore("call", {
         onlyVoiceIDFileSent: false,
         cctvInfo: [],
         cameraNotAllowed: false,
+        feeds: [],
+        HQCaptureCount: 0,
+        HQCaptureFiles: [],
     }),
 
     // Getters (게터) - computed 속성과 유사하게 상태를 계산합니다.
@@ -148,7 +151,11 @@ export const useCallStore = defineStore("call", {
     actions: {
         // Vuex의 mutations가 모두 이곳으로 이동합니다.
         // `this`를 사용하여 스토어의 state 및 다른 actions에 접근할 수 있습니다.
-
+        setFeeds(payload) {
+            this.feeds = Array.isArray(payload)
+                ? payload.filter((item) => item != null)
+                : [];
+        },
         setPreviousWorking(payload) {
             console.log("payload값 들어왔다");
             this.previousWorkingStatus = payload;
@@ -452,6 +459,29 @@ export const useCallStore = defineStore("call", {
         setHQCaptrueFlag(payload) {
             this.HQCaptureFlag = payload;
         },
+        setHQCaptureCount(state, payload) {
+            this.HQCaptureCount = this.HQCaptureCount += 1;
+        },
+        setHQCaptureFiles(payload) {
+            const target = this.HQCaptureFiles.find(
+                (value) => value.deviceid === payload.deviceid,
+            );
+
+            if (target) {
+                target.count += 1;
+            } else {
+                this.HQCaptureFiles.push({ deviceid: payload.deviceid, count: 1 });
+            }
+        },
+        setReceiveHQCaptureFile(payload) {
+            const target = this.HQCaptureFiles.find(
+                (value) => value.deviceid === payload.deviceid,
+            );
+
+            if (target) {
+                target.count -= 1;
+            }
+        },
         setAutoCallAcceptTime(payload) {
             this.autoCallAcceptTime = payload;
         },
@@ -616,7 +646,7 @@ export const useCallStore = defineStore("call", {
         },
         init() {
             this.$reset();
-        }
+        },
     },
     // persist: {
     //     key: "call-store",

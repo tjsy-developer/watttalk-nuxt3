@@ -243,6 +243,9 @@
                                 src="@/assets/images/calling/ic_set_hd_2.png"
                             />
                         </button>
+                        <div v-show="captureCount > 0" class="HQcapture-text ">
+                            <span>{{ t("고화질 수신중..") }} {{ captureCount }}</span>
+                        </div>
                     </div>
                     <div v-if="drawingIframe" class="drawing-iframe">
                         <slot></slot>
@@ -771,6 +774,7 @@ const mapData = reactive({
 });
 const streamInfoStatus = ref(false);
 const fileReceptionRate = ref(0);
+const captureCount = ref(0);
 
 // --- Computed Properties (replacing Vue 2's computed) ---
 const videoCallHost = computed(() => chattingStore.videoCallHost);
@@ -811,6 +815,7 @@ const getIsShare = computed(() => commonStore.isShare);
 const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
 const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value]);
+const HQCaptureReceiveFiles = computed(() => callStore.HQCaptureFiles)
 const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
@@ -1133,7 +1138,15 @@ onBeforeUnmount(() => {
     callStore.setEnterenceCheck(0);
 });
 
-// --- Watchers (replacing Vue 2's watch) ---
+watch(
+    () => HQCaptureReceiveFiles.value,
+    (newVal) => {
+        captureCount.value =
+            newVal.find((v) => v.deviceid === props.compData.deviceid)?.count || 0;
+    },
+    { deep: true },
+);
+
 watch(getChattingShow, () => {
     videoResize();
 });
@@ -1927,7 +1940,7 @@ $windowInfoBarHeight: 30px;
     z-index: 1;
     user-select: none;
     font-size: 24px;
-        flex-direction: column;
+    flex-direction: column;
     > div {
         align-items: center;
         display: flex;
@@ -2405,5 +2418,12 @@ $windowInfoBarHeight: 30px;
         color: #fff;
         background-color: #646464;
     }
+}
+
+.HQcapture-text {
+    position: absolute;
+    top: 45px;
+    right: 7px;
+    font-size: 14px;
 }
 </style>

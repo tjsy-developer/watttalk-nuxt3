@@ -45,24 +45,25 @@
             <span>{{ locale == "ko" ? node.name : node.enName || node.name }}</span>
             <div v-if="!hasChildren" class="button-box">
                 <img
-                    v-if="node.status == 1 && !props.useCheckBox"
+                    v-show="node.status == 1 && !props.useCheckBox"
+                    :class="{ 'hidden-but-space': inRoom }"
                     :src="commonImages.useCall"
                     @click="requestCall(node.deviceId)"
                 />
                 <img
-                    v-if="node.status == 0 && !props.useCheckBox"
+                    v-show="node.status == 0 && !props.useCheckBox"
                     :src="commonImages.useNotCall"
                     @click="requestCall(node.deviceId)"
                     @mouseover="handleMouseCallOver"
                     @mouseleave="handleMouseCallLeave"
                 />
                 <img
-                    v-if="node.status == 1 && !props.useCheckBox"
+                    v-show="node.status == 1 && !props.useCheckBox"
                     :src="commonImages.useChat"
                     @click="requestChat(node)"
                 />
                 <img
-                    v-if="node.status == 0 && !props.useCheckBox"
+                    v-show="node.status == 0 && !props.useCheckBox"
                     :src="commonImages.useNotChat"
                     @click="requestChat(node)"
                     @mouseover="handleMouseChatOver"
@@ -124,6 +125,16 @@ const hasChildren = computed(() => !!props.node.children?.length);
 const currentPath = [...props.parentPath, props.node.name];
 
 const isOpen = computed(() => props.openNodes.has(getNodeKey(currentPath)));
+const feeds = toRef(callStore, 'feeds') // ✅ ref 형태로 다시 감싸줌
+
+const inRoom = computed(() => {
+    const result = feeds.value.some(feed => {
+        console.log("feed.rfdeviceid:", feed.rfdeviceid, "node.deviceId:", props.node.deviceId)
+        return feed.rfdeviceid === props.node.deviceId
+    })
+    console.log('📡 inRoom 계산됨:', result)
+    return result
+})
 
 function getNodeKey(path) {
     return path.join(">");
@@ -285,6 +296,9 @@ onMounted(() => {});
         > .button-box {
             flex: 0 0 145px;
             margin-left: auto;
+            > img.hidden-but-space {
+                visibility: hidden;
+            }
         }
     }
 }

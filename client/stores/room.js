@@ -215,6 +215,7 @@ export const useRoomStore = defineStore("room", {
             this.userListStatus[payload.col].status = payload.status;
             this.userListStatus[payload.col].userListIndex = payload.col;
             this.userListStatus[payload.col].nickname = payload.nickname;
+            this.userListStatus[payload.col].deviceid = payload.deviceid;
         },
         setUserOne(payload) {
             if (payload.index) {

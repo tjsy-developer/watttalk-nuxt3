@@ -97,17 +97,8 @@ function handleChangeShareOnOff() {
 }
 function handleClickHDVideoCapture() {
     console.log("*** methods: leftSideBar - HQvideoCapture")
-
-    // 이전에 고화질 캡쳐 진행 중에는 못하도록 예외처리
-    if (callStore.HQCaptureFlag) {
-        commonToastMessage(t("toastMessage exist HQCapture"))
-        return
-    }
-
-    // true 변경 시 calling에서 반응
-    callStore.setHQCaptrueFlag(true)
-
     // 모달 출력 - 고화질 촬영을 요청하였습니다.
+    callStore.setHQCaptureCount();
     commonStore.setNoneOverlayAlertStatus(17);
 }
 

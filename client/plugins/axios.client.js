@@ -80,10 +80,10 @@ export default defineNuxtPlugin((nuxtApp) => {
                 if (error.status == 401) {
                     if (error.response.data == "none") {
                         alert("잘못된 접근입니다");
-                        return;
+                        location.href = getManagerDomain();
                     } else if (error.response.data == "mutated") {
                         alert("유효한 토큰이 아닙니다");
-                        return;
+                        location.href = getManagerDomain();
                     } else if (error.response.data == "expired") {
                         if (!isRefresh) {
                             isRefresh = true;

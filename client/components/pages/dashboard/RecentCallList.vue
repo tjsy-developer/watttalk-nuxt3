@@ -45,6 +45,7 @@
             <div class="button-box">
                 <img
                     v-if="user.status == 1"
+                    :class="{ 'hidden-but-space': isInRoom(user.deviceid) }"
                     :src="commonImages.useCall"
                     @click="requestCall(user.deviceid)"
                 />
@@ -100,6 +101,11 @@ const meettingStore = useMeetingStore();
 
 const vfm = useVfm();
 const props = defineProps(["data", "search"]);
+const feeds = toRef(callStore, 'feeds') // ✅ ref 형태로 다시 감싸줌
+
+const isInRoom = (deviceId) => {
+  return feeds.value.some(feed => feed.rfdeviceid === deviceId)
+}
 
 const { contentsViewType } = storeToRefs(commonStore);
 
@@ -255,11 +261,13 @@ function contactDateFormat(datetime) {
     display: flex;
     gap: 8px;
     align-items: center;
-    
     > img {
         height: 33px;
         width: 38px;
         cursor: pointer;
+    }
+    > img.hidden-but-space {
+        visibility: hidden;
     }
 }
 

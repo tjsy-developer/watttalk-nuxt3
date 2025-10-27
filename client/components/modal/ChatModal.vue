@@ -234,7 +234,7 @@ section {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 7px;
+        padding: 7px 0;
         margin: 0;
         gap: 6px;
         list-style: none;
@@ -319,10 +319,13 @@ section {
     justify-content: left;
     align-items: end;
     gap: 4px;
-    .msg * {
+    .msg > div {
         padding: 5px 10px;
         background: #fff;
         border-radius: 6px;
+        text-align: left;
+    }
+    .msg > div > span {
         color: #000;
         font-size: 11px;
         word-break: break-all;

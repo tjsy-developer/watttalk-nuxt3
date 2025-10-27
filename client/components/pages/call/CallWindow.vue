@@ -22,6 +22,9 @@
                 src="@/assets/images/calling/ic_r_mute.png"
             />
         </div>
+        <div v-show="captureCount > 0" class="HQcapture-text ">
+            <span>{{ t("고화질 수신중..") }} {{ captureCount }}</span>
+        </div>
         <div class="windowInfoBar" v-if="props.compData?.status !== 'main'">
             <div class="user-name">
                 <span>{{ props.compData.text }}</span>
@@ -243,9 +246,6 @@
                                 src="@/assets/images/calling/ic_set_hd_2.png"
                             />
                         </button>
-                        <div v-show="captureCount > 0" class="HQcapture-text ">
-                            <span>{{ t("고화질 수신중..") }} {{ captureCount }}</span>
-                        </div>
                     </div>
                     <div v-if="drawingIframe" class="drawing-iframe">
                         <slot></slot>
@@ -2238,7 +2238,16 @@ $windowInfoBarHeight: 30px;
     .button-container {
         margin-top: 12px;
     }
+    .HQcapture-text {
+        position: absolute;
+        top: 45px;
+        right: 10px;
+        font-size: 14px;
+        z-index: 1;
+        text-shadow: 1px -1px 6px #000;
+    }
 }
+
 .layout3 {
     font-size: 14px;
     p {
@@ -2255,6 +2264,14 @@ $windowInfoBarHeight: 30px;
         right: 6px;
         font-size: 12px;
         color: hsla(0, 0%, 100%, 0.50196);
+    }
+    .HQcapture-text {
+        position: absolute;
+        top: 6px;
+        right: 7px;
+        font-size: 12px;
+        z-index: 1;
+        text-shadow: 1px -1px 6px #000;
     }
 }
 
@@ -2275,6 +2292,14 @@ $windowInfoBarHeight: 30px;
         font-size: 12px;
         color: hsla(0, 0%, 100%, 0.50196);
     }
+    .HQcapture-text {
+        position: absolute;
+        top: 6px;
+        right: 7px;
+        font-size: 14px;
+        z-index: 1;
+        text-shadow: 1px -1px 6px #000;
+    }
 }
 
 .status {
@@ -2292,7 +2317,8 @@ $windowInfoBarHeight: 30px;
             justify-content: center;
             text-align: center;
             > img {
-                width: 30%;
+                width: 28%;
+                margin-top: 10%;
             }
         }
     }
@@ -2418,12 +2444,5 @@ $windowInfoBarHeight: 30px;
         color: #fff;
         background-color: #646464;
     }
-}
-
-.HQcapture-text {
-    position: absolute;
-    top: 45px;
-    right: 7px;
-    font-size: 14px;
 }
 </style>

@@ -104,9 +104,11 @@
                         class="participantsImg"
                     />
                     <span>{{ t("meetingMember") }}:&nbsp;</span>
-                    <span class="textEllipsisKo">{{
-                        props.compData.customData.member
-                    }}</span>
+                    <span
+                        class="participant"
+                        :data-tooltip="props.compData.customData.member"
+                        >{{ props.compData.customData.member }}</span
+                    >
                 </div>
 
                 <div v-if="showCctvList" class="contentView">
@@ -116,7 +118,7 @@
                         class="cctvIcon"
                     />
                     <span class="participantsTitle">CCTV:&nbsp;</span>
-                    <span class="textEllipsisKo">{{ cctvList }}</span>
+                    <span class="participant">{{ cctvList }}</span>
                 </div>
 
                 <div
@@ -524,7 +526,7 @@ const setCctvList = () => {
     });
     cctvList.value = list; // Assign to ref once
 };
-// --- Lifecycle Hooks ---
+
 onMounted(() => {
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
@@ -542,12 +544,9 @@ onUnmounted(() => {
     if (signallingSocket) {
         console.log("*** onUnmounted: Socket Event Remove Started !!");
         console.log("*** onUnmounted: All socket event listeners removed.");
-        // signallingSocket.disconnect(); // Only if this component is responsible for disconnecting
     }
 });
 
-// --- Watchers (beforeUpdate can often be replaced by computed properties or watchers) ---
-// Using a watcher for device_id and nickname changes
 watch(
     [() => loginStore.m_local_deviceid, () => loginStore.nickname],
     ([newDeviceId, newNickname]) => {
@@ -557,7 +556,6 @@ watch(
     { immediate: true },
 ); // immediate: true makes it run on initial setup too
 
-// You might consider watching props.compData for setCctvList if compData changes after initial mount
 watch(
     () => props.compData,
     () => {
@@ -568,7 +566,7 @@ watch(
 </script>
 
 <style lang="scss">
-.textEllipsisKo {
+.participant {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -577,20 +575,62 @@ watch(
     margin-top: 3px;
     cursor: pointer;
     width: 69%;
-    &:hover {
-        /* 호버 시 확대 */
-        transform: scale(1.1);
-        z-index: 10; /* 다른 요소 위로 올라오도록 설정 */
-        overflow: visible; /* 잘린 텍스트가 보이도록 변경 */
-        white-space: normal; /* 줄 바꿈 허용 */
-        background-color: rgba(255, 255, 255, 0.9); /* 배경색 추가하여 겹치지 않게 함 */
-        color: #1f2937;
-        padding: 5px;
-        border-radius: 4px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        /* 호버 시 전체 텍스트가 보이도록 너비를 자동으로 설정 */
-        width: max-content;
-    }
+}
+
+/* 툴팁 본체 */
+.participant::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: -38%;
+    transform: scale(0.95) translateY(6px); /* 등장 시 부드럽게 올라오게 */
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    background: rgba(34, 34, 34, 0.92); /* 완전한 블랙 대신 살짝 투명한 다크 */
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.4;
+    border-radius: 10px;
+    /* ✨ 이중 그림자: 깊이감 + 부드러움 */
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.25),
+        0 2px 6px rgba(150, 150, 150, 0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+    z-index: 20;
+    max-width: 62%;
+    white-space: normal;
+    text-align: left;
+    left: 114px;
+}
+
+/* 화살표 */
+.participant::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% - 2px);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #222 transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    z-index: 20;
+}
+
+/* Hover 시 표시 및 확대 효과 */
+.participant:hover::after,
+.participant:focus::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.participant:hover::before,
+.participant:focus::before {
+    opacity: 1;
 }
 
 .textEllipsisEn {
@@ -652,6 +692,7 @@ watch(
     height: 31px;
     padding-left: 2.5rem;
     padding-bottom: 7px;
+    position: relative;
 
     img {
         padding-right: 11px;

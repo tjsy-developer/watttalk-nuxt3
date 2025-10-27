@@ -294,8 +294,10 @@ onMounted(() => {});
             flex: 0 0 168px;
         }
         > .button-box {
+            display: flex;
             flex: 0 0 145px;
             margin-left: auto;
+            gap: 10px;
             > img.hidden-but-space {
                 visibility: hidden;
             }
@@ -319,12 +321,6 @@ onMounted(() => {});
     }
     .status img {
         width: 45px;
-    }
-
-    .button-box {
-        img + img {
-            margin-left: 10px;
-        }
     }
 }
 

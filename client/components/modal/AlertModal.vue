@@ -156,7 +156,7 @@
                 <div class="content">
 					<img
 						:src="callStore.captureImageInfo.fileSrc"
-						style="min-width: 500px; width: 100%; height: 100%; margin: 10px 0;"
+						style="max-width: 700px; width: 100%; height: 100%; margin: 10px 0;"
 					/>
 					<p class="msg alert-text">{{ t("capture Image Save") }}</p>
                 </div>

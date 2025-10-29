@@ -472,13 +472,6 @@ onMounted(async () => {
         if (json.satus) {
             // Typo `satus` from original code
             console.log("*** socket.on: 회의 삭제 성공");
-
-            // if (allView.value) {
-            //     // Use .value for reactive ref
-            //     requestMeetingList(1);
-            // } else {
-            //     requestMeetingList(0);
-            // }
             requestMeetingList(allView.value);
         } else {
             console.log("*** socket.on: 회의 삭제 실패");
@@ -1422,8 +1415,6 @@ watch(getMeetingJoinFlag, (newVal) => {
 
         if (calendar.value) {
             newVal ? meetingCalendarList(1) : meetingCalendarList(0);
-        } else {
-            newVal ? requestMeetingList(1) : requestMeetingList(0);
         }
     }
 });

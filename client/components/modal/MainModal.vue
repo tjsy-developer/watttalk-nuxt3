@@ -105,7 +105,7 @@
                 {{ callStore.callingPopupNickname }}
             </span>
             <div class="button-container">
-                <button @click="setCancelCalling()" class="button cancel">
+                <button @click="setCancelCalling" class="button cancel">
                     <img src="@/assets/images/ic_popup_finish.png" />
                     <span>{{ t("취소") }}</span>
                 </button>

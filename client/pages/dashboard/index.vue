@@ -247,11 +247,14 @@ watch(getCallingPopupResult, (result) => {
 });
 
 watch(
-    () => getGroupCallCancelFlag,
+    getGroupCallCancelFlag,
     (result) => {
         console.log("*** watch: getGroupCallCancelFlag");
         if (result === "cancel") {
-            requestCancelCalling();
+            requestCancelCalling({
+                remoteDeviceId: sessionStorage.getItem("m_remote_deviceid"),
+                roomID: sessionStorage.getItem("m_roomid"),
+            });
         }
         callStore.setGroupCallCancelFlag("");
     },

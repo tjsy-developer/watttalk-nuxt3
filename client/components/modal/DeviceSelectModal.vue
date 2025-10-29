@@ -63,7 +63,7 @@
                 <button class="closeBtn" v-if="showCloseBtn" @click.stop="close()">
                     {{ t("취소") }}
                 </button>
-                <button class="applyBtn" @click="apply()">
+                <button class="applyBtn" @click="apply()" :disabled="!loaded">
                     <span>{{ t("적용") }}</span>
                 </button>
             </div>
@@ -152,10 +152,9 @@ function getMediaList() {
         );
 
 
-
-        audioList.value = removeDuplicated(filterAudio, 1);
-        micList.value = removeDuplicated(filterMic, 2);
-        camList.value = removeDuplicated(filterCam, 3);
+        audioList.value = removeDuplicated(filterAudio, 1) || [];
+        micList.value = removeDuplicated(filterMic, 2) || [];
+        camList.value = removeDuplicated(filterCam, 3) || [];
         selectedAudio.value = commonStore.selectedAudioID
         selectedMic.value = commonStore.selectedMicID
         selectedCam.value = commonStore.selectedCamIndex
@@ -214,7 +213,10 @@ function checkDevices() {
     console.log("선택된거", selectedAudio.value, selectedMic.value, selectedCam.value)
     console.log("옵션리스트", audioList.value, micList.value, camList.value)
 
-    if (selectedAudio.value) {
+    if (audioList.value.length == 0) {
+        selectedAudio.value = false;
+        audioList.value.unshift({ deviceId: false, label: t("없음") });
+    } else if (selectedAudio.value) {
         const findAudioIndx = audioList.value?.findIndex((item) => {
             return item.deviceId === selectedAudio.value;
         });
@@ -223,15 +225,16 @@ function checkDevices() {
             audioList.value.unshift({ deviceId: false, label: t("없음") });
         }
     } else {
-        console.log('audio 기본선택', audioList.value[0].deviceId)
         selectedAudio.value = audioList.value[0].deviceId
     }
 
-    if (selectedMic.value) {
+    if (micList.value.length == 0) {
+        selectedMic.value = false;
+        micList.value.unshift({ deviceId: false, label: t("없음") });
+    } else if (selectedMic.value) {
         const findMicIndx = micList.value?.findIndex((item) => {
             return item.deviceId === selectedMic.value;
         });
-
         if (findMicIndx == -1) {
             selectedMic.value = false;
             micList.value.unshift({ deviceId: false, label: t("없음") });
@@ -241,7 +244,10 @@ function checkDevices() {
         selectedMic.value = micList.value[0].deviceId
     }
 
-    if (selectedCam.value != -1) {
+    if (camList.value.length == 0) {
+        selectedCam.value = -1;
+        camList.value.unshift({ deviceId: -1, label: t("없음") });
+    } else if (selectedCam.value != -1) {
         const findCamIndx = camList.value?.findIndex((item) => {
             return item.deviceId === selectedCam.value;
         });
@@ -303,11 +309,6 @@ function checkDevices() {
     loaded.value = true;
 }
 function apply() {
-    if (!loaded.value)
-        setTimeout(() => {
-            loaded.value = true;
-            apply();
-        });
     const modified = compare();
     console.log(`*** modified: ${modified}`);
     console.log(selectedAudio.value);

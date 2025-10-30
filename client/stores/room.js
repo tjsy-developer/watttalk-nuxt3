@@ -100,6 +100,7 @@ export const useRoomStore = defineStore("room", {
         mainVideoInfo: "",
         selectedAudioID: false,
         selectedMicID: false,
+        selectedCamID: false,
         selectedCamIndex: -1,
         mediaDeviceModified: false,
         devicedSelection: false,
@@ -526,6 +527,7 @@ export const useRoomStore = defineStore("room", {
                 console.log(
                     `*** media device mutated type: ${payload.type}, id: ${payload.index}`,
                 );
+                this.selectedCamID = payload.id;
                 this.selectedCamIndex = payload.index;
                 window.localStorage.setItem("selectedCamIndex", payload.index);
             }

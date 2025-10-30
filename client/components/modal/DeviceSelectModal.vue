@@ -85,7 +85,7 @@ const props = defineProps({
     type: String,
     deviceId: String,
     requestCall: Function,
-    func: Function
+    func: Function,
 });
 
 let audioList = ref([]);
@@ -110,7 +110,6 @@ const modalStore = useModalStore();
 
 onMounted(() => {
     getMediaList();
-    console.log(props.func)
 });
 function close(type) {
     if (!type) {
@@ -131,35 +130,49 @@ function close(type) {
     modalStore.closeModal("device");
 }
 
-function getMediaList() {
-    console.log("*** get media devices");
-    let filterAudio;
-    let filterMic;
-    let filterCam;
-    navigator.mediaDevices.enumerateDevices({ audio: true, video: true}).then((devices) => {
-        // communications의 경우에는 통화 전용으로 discord의 경우에는 살려두지만, zoom의 경우에는 제거함. 나는 communications의 음질에서 이질감이 느껴져서 제거함
-        filterAudio = devices.filter(
-            (device) =>
-                device.kind === "audiooutput" && device.deviceId != "communications" && device.deviceId,
-        );
-        filterMic = devices.filter(
-            (device) =>
-                device.kind === "audioinput" && device.deviceId != "communications"&& device.deviceId,
-        );
-        filterCam = devices.filter(
-            (device) =>
-                device.kind === "videoinput" && device.deviceId != "communications" && device.deviceId,
-        );
+async function getMediaList() {
+    try {
+        // ✅ 1. 권한 요청 (이미 허용된 상태라면 바로 통과)
+        await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
+        // ✅ 2. 장치 목록 불러오기
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        console.log("devices", devices);
+
+        const filterAudio = devices.filter(
+            (device) =>
+                device.kind === "audiooutput" &&
+                device.deviceId !== "communications" &&
+                device.deviceId,
+        );
+        const filterMic = devices.filter(
+            (device) =>
+                device.kind === "audioinput" &&
+                device.deviceId !== "communications" &&
+                device.deviceId,
+        );
+        const filterCam = devices.filter(
+            (device) =>
+                device.kind === "videoinput" &&
+                device.deviceId !== "communications" &&
+                device.deviceId,
+        );
 
         audioList.value = removeDuplicated(filterAudio, 1) || [];
         micList.value = removeDuplicated(filterMic, 2) || [];
         camList.value = removeDuplicated(filterCam, 3) || [];
-        selectedAudio.value = commonStore.selectedAudioID
-        selectedMic.value = commonStore.selectedMicID
-        selectedCam.value = commonStore.selectedCamIndex
+
+        selectedAudio.value = commonStore.selectedAudioID;
+        selectedMic.value = commonStore.selectedMicID;
+        selectedCam.value = commonStore.selectedCamID;
+
+        // ✅ 3. 반응형 데이터 반영 후 실행
+        await nextTick();
+    } catch (error) {
+        console.error("장치 불러오기 실패:", error);
+    } finally {
         checkDevices();
-    });
+    }
 }
 function removeDuplicated(deviceList, type) {
     const seenGroupId = new Set();
@@ -169,11 +182,9 @@ function removeDuplicated(deviceList, type) {
     if (deviceList.length == 0) {
         switch (type) {
             case 1:
-                selectedAudioIdExist.value = false;
                 selectedAudio.value = false;
                 return;
             case 2:
-                selectedMicIdExist.value = false;
                 selectedMic.value = false;
                 return;
             case 3:
@@ -191,27 +202,12 @@ function removeDuplicated(deviceList, type) {
         }
     });
 
-    // 기존에 지정해둔 device가 사라진 경우 체크
-    if (type == 1) {
-        if (savedAudioId != false) {
-            selectedAudioIdExist.value = seenDeviceId.includes(savedAudioId)
-                ? true
-                : false;
-        } else {
-            selectedAudioIdExist.value = true;
-        }
-    } else if (type == 2) {
-        if (savedMicId != false) {
-            selectedMicIdExist.value = seenDeviceId.includes(savedMicId) ? true : false;
-        } else {
-            selectedMicIdExist.value = true;
-        }
-    }
     return uniqueGroup;
 }
+
 function checkDevices() {
-    console.log("선택된거", selectedAudio.value, selectedMic.value, selectedCam.value)
-    console.log("옵션리스트", audioList.value, micList.value, camList.value)
+    console.log("선택된거", selectedAudio.value, selectedMic.value, selectedCam.value);
+    console.log("옵션리스트", audioList.value, micList.value, camList.value);
 
     if (audioList.value.length == 0) {
         selectedAudio.value = false;
@@ -225,7 +221,7 @@ function checkDevices() {
             audioList.value.unshift({ deviceId: false, label: t("없음") });
         }
     } else {
-        selectedAudio.value = audioList.value[0].deviceId
+        selectedAudio.value = audioList.value[0].deviceId;
     }
 
     if (micList.value.length == 0) {
@@ -240,72 +236,23 @@ function checkDevices() {
             micList.value.unshift({ deviceId: false, label: t("없음") });
         }
     } else {
-        console.log('mic 기본선택', micList.value[0].deviceId)
-        selectedMic.value = micList.value[0].deviceId
+        selectedMic.value = micList.value[0].deviceId;
     }
 
     if (camList.value.length == 0) {
-        selectedCam.value = -1;
-        camList.value.unshift({ deviceId: -1, label: t("없음") });
-    } else if (selectedCam.value != -1) {
-        const findCamIndx = camList.value?.findIndex((item) => {
+        selectedCam.value = false;
+        camList.value.unshift({ deviceId: false, label: t("없음") });
+    } else if (selectedCam.value) {
+        const findMicIndx = camList.value?.findIndex((item) => {
             return item.deviceId === selectedCam.value;
         });
-
-        if (findCamIndx == -1) {
-            selectedCam.value = -1;
-            camList.value.unshift({ deviceId: -1, label: t("없음") });
+        if (findMicIndx == -1) {
+            selectedCam.value = false;
+            camList.value.unshift({ deviceId: false, label: t("없음") });
         }
     } else {
-        console.log('cam 기본선택', camList.value[0].deviceId)
-        selectedCam.value = camList.value[0].deviceId
+        selectedCam.value = camList.value[0].deviceId;
     }
-
-
-    // if (selectedAudio.value == "") {
-    //     let deviceId = undefined;
-    //     // 기존에 선택한 오디오값이 있고, 해당 오디오가 존재하는 경우
-    //     if (selectedAudioIdExist.value && savedAudioId.value) {
-    //         deviceId = savedAudioId.value;
-    //     } else {
-    //         deviceId =
-    //             audioList.value && audioList.value[0]
-    //                 ? audioList.value[0].deviceId
-    //                 : false;
-    //     }
-    //     selectedAudio.value = deviceId;
-    // }
-    // if (selectedMic.value == "") {
-    //     let deviceId = undefined;
-    //     // 기존에 선택한 마이크가 있고, 해당 마이크가 존재하는 경우
-    //     if (selectedMicIdExist.value && savedMicId.value) {
-    //         deviceId = savedMicId.value;
-    //     } else {
-    //         deviceId =
-    //             micList.value && micList.value[0] ? micList.value[0].deviceId : false;
-    //     }
-    //     selectedMic.value = deviceId;
-    // }
-    // if (selectedCam.value == "") {
-    //     let deviceIndex = 0;
-    //     if (savedCamIndex.value && savedCamIndex.value != "undefined") {
-    //         console.log(savedCamIndex);
-    //         deviceIndex = savedCamIndex.value;
-    //     }
-    //     // -1은 선택안함임
-    //     if (deviceIndex == -1 || deviceIndex == undefined) {
-    //         selectedCam.value = -1;
-    //     } else {
-    //         if (camList.value[deviceIndex].deviceId) {
-    //             selectedCam.value = camList.value[deviceIndex].deviceId;
-    //         } else {
-    //             selectedCam.value =
-    //                 camList.value && camList.value[0]
-    //                     ? camList.value[deviceIndex].deviceId
-    //                     : -1;
-    //         }
-    //     }
-    // }
     loaded.value = true;
 }
 function apply() {
@@ -341,6 +288,7 @@ function apply() {
     }
     const camParams = {
         type: 2,
+        id: selectedCam.value,
         index: camIndex,
     };
     commonStore.setMediaDevices(audioPrams);

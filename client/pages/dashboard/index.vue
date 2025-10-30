@@ -20,7 +20,7 @@
                     <label>{{ t("공지사항") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_notice.svg" />
                 </button>
-                <button @click="router.push('meeting')" title="회의실">
+                <button @click="router.push({ path: '/meeting' })" title="회의실">
                     <img src="@/assets/images/darkmode/bt_d_bg.svg" />
                     <label>{{ t("회의실") }}</label>
                     <img src="@/assets/images/darkmode/ic_d_meeting.svg" />

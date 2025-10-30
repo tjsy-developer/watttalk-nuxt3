@@ -71,12 +71,12 @@ const handleClickCloud = (path) => {
 
 <template>
     <div class="leftbar">
-        <router-link to="dashboard" class="icon-btn" title="연락처">
+        <router-link :to="{ path: '/dashboard' }" class="icon-btn" title="연락처">
             <img :src="menuImages.call" />
             <label class="icon-label">{{ t("연락처") }}</label>
         </router-link>
 
-        <router-link to="meeting" class="icon-btn" title="회의실">
+        <router-link :to="{ path: '/meeting' }" class="icon-btn" title="회의실">
             <img :src="menuImages.meetingRoom" />
             <label class="icon-label">{{ t("회의실") }}</label>
         </router-link>

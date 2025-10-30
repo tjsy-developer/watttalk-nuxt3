@@ -690,7 +690,9 @@ function logout() {
 }
 
 // 마운트될 때 실행할 작업
-onMounted(() => {
+onMounted(async () => {
+    await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+
     sessionStorage.setItem("m_callWaiting", false);
     sessionStorage.setItem("inRoomFlag", false);
     sessionStorage.removeItem("m_inviting");

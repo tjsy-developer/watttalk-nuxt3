@@ -84,7 +84,6 @@
                         "
                     >
                         <img
-                            v-show="!compData.mute"
                             src="@/assets/images/calling/bt_close.png"
                         />
                     </button>

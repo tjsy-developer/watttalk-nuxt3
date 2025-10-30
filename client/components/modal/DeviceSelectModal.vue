@@ -132,9 +132,6 @@ function close(type) {
 
 async function getMediaList() {
     try {
-        // ✅ 1. 권한 요청 (이미 허용된 상태라면 바로 통과)
-        await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-
         // ✅ 2. 장치 목록 불러오기
         const devices = await navigator.mediaDevices.enumerateDevices();
         console.log("devices", devices);

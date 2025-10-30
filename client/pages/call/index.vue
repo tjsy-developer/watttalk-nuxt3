@@ -11999,5 +11999,8 @@ onUnmounted(() => {
     width: inherit;
     max-height: calc(100vh - $header-height);
     flex: 1;
+    padding: 8px;
+    min-width: 0;
+    overflow: hidden;
 }
 </style>

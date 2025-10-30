@@ -147,6 +147,7 @@ definePageMeta({
 });
 // 마운트될 때 실행할 작업
 onMounted(async () => {
+    await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     requestLastCallTime();
     requestUserListAll();
     // Use `signallingSocket` directly. No `this.` prefix needed.

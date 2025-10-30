@@ -209,11 +209,11 @@ const onResize = () => {
 // callingLayout이 1인 경우 타는 resize
 const callingLayout1Resize = () => {
     if (callingLayoutType.value === 1) {
-        const container = document.querySelector('.callingLayout1');
+        const container = document.querySelector('.calling');
         const windowContainers = container.querySelectorAll('.grid');
 
-        const cw = container.clientWidth - 64;
-        const ch = container.clientHeight - 50; // 👈 여기서 50px 뺌
+        const cw = container.clientWidth - 16;
+        const ch = window.innerHeight - 50 - 24;
 
         const cols = 2;
         const rows = 2;
@@ -371,9 +371,9 @@ watch(getDeclineStatus, (res) => {
     }
 });
 
-watch(chattingShow, () => {
-    const participantsCount = personnelInRoom.value; // Access the reactive computed ref
-    calcWidth(participantsCount);
+watch(chattingShow, async () => {
+    await nextTick();
+    callingLayout1Resize();
 });
 
 // --- Lifecycle Hooks (beforeDestroy equivalent) ---
@@ -442,8 +442,7 @@ onUnmounted(() => {
     grid-auto-rows: 1fr;
     gap: 8px;
     width: 100%;
-    height: calc(100vh - 50px);
-    padding: 8px;
+    height: inherit;
     box-sizing: border-box;
     place-items: center;
     justify-content: center;

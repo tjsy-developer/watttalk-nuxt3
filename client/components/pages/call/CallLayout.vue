@@ -11,12 +11,8 @@
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
-                    (callingLayout != 1 &&
-                        userList[windowKey]?.status !== 'none' &&
-                        userList[windowKey]?.status !== 'main') ||
-                    (callingLayout == 1 &&
-                        userList[windowKey]?.status !== 'main' &&
-                        windowKey < Math.ceil((chattingStore.personnelInRoom + 1) / 2) * 2)
+                    userList[windowKey]?.status !== 'none' &&
+                    userList[windowKey]?.status !== 'main'
                 "
                 :key="windowKey"
                 class="windowContainer"
@@ -226,7 +222,10 @@ const callingLayout1Resize = () => {
         const windowContainers = container.querySelectorAll(".grid");
 
         const cw = container.clientWidth - 16;
-        const ch = window.innerHeight - 50 - (getCustomValue(chattingStore.personnelInRoom / 2) * 12);
+        const ch =
+            window.innerHeight -
+            50 -
+            getCustomValue(chattingStore.personnelInRoom / 2) * 12;
 
         const cols = 2;
         const rows = 2;

@@ -4453,7 +4453,7 @@ function insert_main_video(mainVideo) {
                 // console.log("----- main 화면에 넣어줄 remote 가 아무도 없다.")
                 $("#videoMainCaption").html("");
             } else {
-                if (commonStore.isVideo) {
+                if (!commonStore.isVideo) {
                     // videoOFF 일 경우 예외처리 mainVideo Change
                     mainVideoChangeFunc(0, "localstream");
                 } else {
@@ -6361,6 +6361,7 @@ function videoLayoutChange() {
                         // console.log(mainType)
                         // console.log(mainText)
                         if (mainType == "unpublished") {
+                            conosole.log("여기")
                             // Main Video 태그를 jauns에서 만들어주기 때문에, 생성 전 일 수도 있으므로 1초뒤 실행
                             mainVideoChangeFunc(0, mainText);
                         } else {
@@ -7450,7 +7451,6 @@ function hostViewMainVideo(feedsIndex) {
         // 메인화면에 선택된 사람의 상태로 mainVideo 상태를 변경한다.
         // console.log("@@@@@ 여기는 내가 메인이다.")
         if (!commonStore.isVideo) {
-            console.log("여기");
             mainVideoChangeFunc(0, "localstream");
         } else if (
             !(
@@ -10879,6 +10879,7 @@ watch(getMainVideoImage, (newValue, oldValue) => {
         // Main Name 변경
         console.log("*** watch: getMainVideoImage - videoOFF 사용자 클릭");
         // $("#videoMainCaption").html(callStore.mainVideoText)
+        console.log("여기")
         mainVideoChangeFunc(0, callStore.mainVideoText);
         console.log(callStore.videoMainIndex);
         // host가 바라보는 화면으로 만들기

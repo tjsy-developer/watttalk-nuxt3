@@ -216,6 +216,7 @@ onMounted(() => {
     position: relative;
     transform: translateX(0);
     opacity: 1;
+    z-index: 1;
 }
 
 .chat-container.hidden {

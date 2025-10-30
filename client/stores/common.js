@@ -5,7 +5,7 @@ export const useUserPreferenceStore = defineStore("userPreference", {
     state: () => ({
         lang: "ko",
         theme: "light", // 또는 'dark'
-        recordingStatus: false,
+        recordingStatus: null,
         useAutoPictureAccept: false,
         useAutoDiscalling: false,
         useDirectCall: false,
@@ -29,6 +29,10 @@ export const useUserPreferenceStore = defineStore("userPreference", {
             this.onlyVoiceCallId = payload.onlyVoiceCallId;
             this.videoRecording = payload.videoRecording;
             this.roomNumber = payload.roomNumber;
+
+            if (this.recordingStatus == null) {
+                this.recordingStatus = payload.videoRecording;
+            }
         },
         setRecordingStatus(payload) {
             this.recordingStatus = payload;

@@ -2204,9 +2204,11 @@ $windowInfoBarHeight: 30px;
     color: #fff;
     background: rgba(0, 0, 0, 0.6);
     width: 100%;
+    min-height: 25px;
     padding: 2px 0 1px 7px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     &.main {
         padding: 7px 15px;
     }
@@ -2219,6 +2221,9 @@ $windowInfoBarHeight: 30px;
             display: flex;
             align-items: center;
             padding: 0;
+        }
+        button.forceLeaveIcon {
+            height: 22px;
         }
     }
 }

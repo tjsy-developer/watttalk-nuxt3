@@ -1926,7 +1926,7 @@ onMounted(() => {
 				}
 				const sendJson = JSON.stringify(obj)
 				signallingSocket.emit("fileReceiver", sendJson)
-				console.log("emit fileReceiver")
+				console.log("*** socket: emit fileReceiver. json: " + sendJson);
                 callStore.setHQCaptureFiles({ deviceid: json.deviceid });
             } else {
                 // 내 화면을 파일 수락/거절 질의로 callingWindow 변경

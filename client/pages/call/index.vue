@@ -4624,7 +4624,7 @@ function screenShare(type) {
 
         // 화면 공유 전 나의 상태가 video OFF 였다면 videoOFF 상태로 돌려주기.
         if (callStore.myVideoStatus == "videoOFF") {
-            commonStore.setIsVideo();
+            commonStore.setIsVideo(false);
         }
     }
 
@@ -4670,9 +4670,9 @@ function screenShare(type) {
                 const hostSelectedMainIndex = callStore.videoMainIndex;
                 if (hostSelectedMainIndex == 0) {
                     // video가 Off일 경우 비디오를 켜준다. - 임시
-                    if (commonStore.isVideo == true) {
+                    if (commonStore.isVideo == false) {
                         callStore.setMyVideoStatus("videoOFF");
-                        commonStore.setIsVideo();
+                        commonStore.setIsVideo(false);
                     }
                 } else {
                     // 다른사용자(videoOFF상태)가 메인인 경우 - 호스트가 화면 공유를 시작할 때 videoOFF화면이 사라지지않는 버그 처리 ksy
@@ -6923,7 +6923,7 @@ function videoCallHostCheck(roomid, localdeviceid) {
 // callingWindow 왕관표시 제거 및 추가
 function setHostIcon(index, hostIcon) {
     // console.log("*** methods: setHostIcon")
-    commonStore.setHostIcon(index, hostIcon);
+    commonStore.setHostIcon({ index, hostIcon });
 }
 // deviceid로 feeds의 index 구하기
 function findFeedsIndexDeviceid(deviceid) {
@@ -8691,9 +8691,9 @@ function canvasCreateOffer(type) {
                 // // 내 자신이 videoOFF 일 경우 MyVideoStatus를 videoOFF로 저장하고,
                 // // 현재 비디오를 attach로 변경한다.
                 // // 저장하는 이유는, 드로잉을 종료할 때 MyVideoStatus가 videoOFF이면 자신의 카메라 비디오 오프를 해주기 위해서.
-                if (commonStore.isVideo == true) {
+                if (commonStore.isVideo == false) {
                     // callStore.setMyVideoStatus", "videoOFF")
-                    commonStore.setIsVideo();
+                    commonStore.setIsVideo(false);
                 }
 
                 // // main Index 변경
@@ -9609,13 +9609,8 @@ function sayHello() {
                                     ) ||
                                     callStore.cameraNotAllowed
                                 ) {
-                                    const test = setInterval(() => {
-                                        commonStore.setIsVideoFalse();
-                                        commonStore.setIsVideoTrue();
-                                    }, 100);
                                     setTimeout(() => {
-                                        clearInterval(test);
-                                        commonStore.setIsVideoTrue();
+                                        commonStore.setIsVideo(false);
                                     }, 1000);
                                 }
                             }
@@ -9882,6 +9877,7 @@ function sayHello() {
                                                 .hide();
 
                                             // $("#videoremote" + remoteFeed.rfindex).empty()
+                                            console.log("videooff 1")
                                             callingLayoutChange(
                                                 "none",
                                                 "",
@@ -9900,6 +9896,7 @@ function sayHello() {
 
                                             remoteFeed.detach();
                                         } else {
+                                            console.log("videooff 2")
                                             callingLayoutChange("none", "", 1);
 
                                             // 참여자 계산
@@ -10785,6 +10782,7 @@ watch(getCacncelCallingResult, (newValue, oldValue) => {
         // for (let i = 1; i < 15; i++) {
         for (let i = 1; i < callStore.currentRoomNumberCount; i++) {
             if (!feeds.value[i]) {
+                console.log("videooff 3")
                 callingLayoutChange("none", "", i);
                 sessionStorage.setItem("m_callWaiting", "false");
                 break;
@@ -10836,14 +10834,11 @@ watch(getCacncelCallFlag, (newValue, oldValue) => {
 watch(getisVideoResult, (newValue, oldValue) => {
     console.log("getisVideoResult 변경됨:", newValue, oldValue);
 
-    if (newValue) {
+    if (!newValue) {
         muteVideoCustom();
-        // console.log("보여지지 않는다.")
     } else {
         unmuteVideoCustom();
-        // console.log("보여진다.")
     }
-    // getisVideoResult 값 변경 시 필요한 로직을 여기에 추가합니다.
 });
 
 watch(getFileSendFlag, (newValue, oldValue) => {
@@ -10865,6 +10860,7 @@ watch(getErrorCloseResult, (newValue, oldValue) => {
         // for (let i = 1; i < 15; i++) {
         for (let i = 1; i < currentRoomNumberCount.value; i++) {
             if (!feeds.value[i]) {
+                console.log("videooff 1")
                 callingLayoutChange("none", "", i);
                 break;
             }
@@ -11286,7 +11282,6 @@ watch(getIsDrawing, (newValue, oldValue) => {
         }
         // callingLayoutType.value == 1인 상태에서 drawing 접근 시 mainVideo설정이 되어있지 않아, drawing 종료 시 nickname 표기가 안되는 현상 fix
         checkMainVideo();
-        commonStore.setIsVideoTrue();
         commonStore.setIsVideo();
         // 드로잉 클릭 시 열려있던 모달 닫기
         for (let i = 1; i <= previewModalInfo.value.previewModalcnt; i++) {
@@ -11924,14 +11919,6 @@ watch(getMediaDeviceModified, (newValue, oldValue) => {
     console.log("*** media device modified");
     streamMediaChange();
     // 미디어 장치 수정 플래그 변경 시 필요한 로직을 여기에 추가합니다.
-});
-
-watch(getCameraAllowedState, (newValue, oldValue) => {
-    console.log("getCameraAllowedState.value 변경됨:", newValue, oldValue);
-    if (newValue == true) {
-        commonStore.setIsVideoTrue();
-    }
-    // 카메라 허용 상태 변경 시 필요한 로직을 여기에 추가합니다.
 });
 
 watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {

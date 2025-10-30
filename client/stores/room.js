@@ -150,8 +150,10 @@ export const useRoomStore = defineStore("room", {
         setIsSoundedFalse() {
             this.isSounded = false;
         },
-        setIsVideo() {
-            this.isVideo = !this.isVideo;
+        setIsVideo(payload) {
+            if (payload) {
+                this.isVideo = payload;
+            } else  this.isVideo = !this.isVideo;
         },
         setIsVideoTrue() {
             this.isVideo = true;
@@ -327,7 +329,6 @@ export const useRoomStore = defineStore("room", {
             this.videoLayoutChangeResult = payload;
         },
         setHostIcon(payload) {
-            // Vue 3에서는 `Vue.set`이 필요 없이 직접 할당 가능
             if (this.userListStatus[payload.index]) {
                 this.userListStatus[payload.index].hostIcon = payload.hostIcon;
             }

@@ -607,7 +607,7 @@
                 </div>
             </div>
         </div>
-        <div v-else class="col-12 row justify-center empty">
+        <div v-else class="empty">
             <img
                 v-if="callingLayoutType == 1 || callingLayoutType == 2"
                 src="@/assets/images/calling/ic_focus_2.png"
@@ -2459,5 +2459,14 @@ $windowInfoBarHeight: 30px;
         color: #fff;
         background-color: #646464;
     }
+}
+
+.empty {
+    width: 100%;
+    height: 100%;
+    display: flex
+;
+    justify-content: center;
+    align-items: center; 
 }
 </style>

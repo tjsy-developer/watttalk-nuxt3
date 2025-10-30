@@ -265,8 +265,10 @@ function apply() {
     if (selectedCam.value == -1) {
         console.log("*** no cam selected set no cam !");
         callStore.setCameraNotAllowed(true);
+        commonStore.setIsVideo(false);
     } else {
         callStore.setCameraNotAllowed(false);
+        commonStore.setIsVideo(true);
     }
     const audioPrams = {
         type: 0,

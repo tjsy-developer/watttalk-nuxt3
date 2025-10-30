@@ -11,14 +11,20 @@
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
-                    userList[windowKey]?.status !== 'none' &&
-                    userList[windowKey]?.status !== 'main'
+                    (callingLayout != 1 &&
+                        userList[windowKey]?.status !== 'none' &&
+                        userList[windowKey]?.status !== 'main') ||
+                    (callingLayout == 1 &&
+                        userList[windowKey]?.status !== 'main' &&
+                        windowKey < Math.ceil((chattingStore.personnelInRoom + 1) / 2) * 2)
                 "
                 :key="windowKey"
                 class="windowContainer"
                 :class="{
-                    'mainVideoBorder': getMainVideoIdx && userList[windowKey].userListIndex == getMainVideoIdx,
-                    'grid': callingLayoutType == 1
+                    mainVideoBorder:
+                        getMainVideoIdx &&
+                        userList[windowKey].userListIndex == getMainVideoIdx,
+                    grid: callingLayoutType == 1,
                 }"
             >
                 <CallWindow
@@ -89,7 +95,7 @@ const getDeclineStatus = computed(() => callStore.declineStatus);
 const chattingShow = computed(() => chattingStore.chattingShow);
 const getLoadingMask = computed(() => callStore.loadingMask);
 const mainUser = computed(() => {
-  return userList.value[commonStore.mainVideoIndex] || null;
+    return userList.value[commonStore.mainVideoIndex] || null;
 });
 // No need for separate computed properties like `getCallingLayoutType` etc.
 // when directly using the computed refs from the store as above.
@@ -209,11 +215,18 @@ const onResize = () => {
 // callingLayout이 1인 경우 타는 resize
 const callingLayout1Resize = () => {
     if (callingLayoutType.value === 1) {
-        const container = document.querySelector('.calling');
-        const windowContainers = container.querySelectorAll('.grid');
+        function getCustomValue(n) {
+            if (n % 2 === 0) {
+                return n / 2;
+            } else {
+                return Math.floor(n / 2) + 2;
+            }
+        }
+        const container = document.querySelector(".calling");
+        const windowContainers = container.querySelectorAll(".grid");
 
         const cw = container.clientWidth - 16;
-        const ch = window.innerHeight - 50 - 24;
+        const ch = window.innerHeight - 50 - (getCustomValue(chattingStore.personnelInRoom / 2) * 12);
 
         const cols = 2;
         const rows = 2;
@@ -223,7 +236,7 @@ const callingLayout1Resize = () => {
         let itemHeight = ch / rows;
 
         // 비율 유지 조정
-        if (itemWidth / ratio * rows > ch) {
+        if ((itemWidth / ratio) * rows > ch) {
             itemHeight = ch / rows;
             itemWidth = itemHeight * ratio;
         } else {
@@ -356,7 +369,7 @@ watch(callingLayoutType, (result) => {
         nextTick(() => {
             calcWidth(personnelInRoom.value);
         });
-        videoWidth.value =  "263.5px"
+        videoWidth.value = "263.5px";
     }
 });
 
@@ -468,15 +481,15 @@ onUnmounted(() => {
     padding: 18px;
     border-radius: 13px;
     overflow: auto;
-    max-width:  208px;
+    max-width: 208px;
     width: 208px;
-    flex: 0 0  208px;
+    flex: 0 0 208px;
     gap: 25px;
     box-sizing: content-box;
     /* bottom: 8px; */
     flex-direction: column;
 
-    >.windowContainer {
+    > .windowContainer {
         width: 208px !important;
         height: 117px !important;
         flex-shrink: 0;
@@ -504,7 +517,7 @@ onUnmounted(() => {
     > .windowContainer + .windowContainer {
         margin-left: 10px;
     }
-    >.windowContainer {
+    > .windowContainer {
         width: 227px !important;
         height: 150px !important;
         flex-shrink: 0;
@@ -529,7 +542,6 @@ onUnmounted(() => {
     height: 243px;
     margin: 10px;
 }
-
 
 #videolocal {
     border: 3px solid red;

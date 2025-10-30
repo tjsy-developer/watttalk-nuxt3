@@ -25,7 +25,7 @@ const isHQCapture = computed(() => callStore.HQCaptureShow);
 const isFileSend = computed(() => commonStore.fileModalFlag);
 const isShare = computed(() => commonStore.isShare);
 const isSoundMute = computed(() => commonStore.isSounded);
-const isVideoOff = computed(() => commonStore.isVideo);
+const isVideo = computed(() => commonStore.isVideo);
 
 const getAllMicMuteFlag = computed(() => callStore.allMicMuteFlag);
 const getCallingType = computed(() => callStore.callingType);
@@ -261,9 +261,9 @@ function handleClickFileSend() {
         <div
             @click="handleChangeVideoOnOff"
             class="icon-btn func-img"
-            :title="`${isVideoOff ? t('내 화면 활성화') : t('내 화면 비활성화')}`"
+            :title="`${isVideo ? t('내 화면 비활성화') : t('내 화면 활성화')}`"
         >
-            <img v-if="!isVideoOff" src="@/assets/images/leftSideBar/ic_video.png" />
+            <img v-if="isVideo" src="@/assets/images/leftSideBar/ic_video.png" />
             <img v-else src="@/assets/images/leftSideBar/ic_video-2.png" />
         </div>
         <div

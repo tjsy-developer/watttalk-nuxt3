@@ -11415,7 +11415,6 @@ watch(getForceLeaveClickResult, (newValue, oldValue) => {
         // console.log("forceLeaveDeviceid : " + forceLeaveDeviceid)
 
         requestForceLeave(forceLeaveDeviceid);
-        console.log("*** socket: emit forceLeave. json: " + json);
 
         // forceLeaveBtnClick vuex 초기화
         callStore.setForceLeaveClickResult(false);

@@ -16,7 +16,10 @@
                 "
                 :key="windowKey"
                 class="windowContainer"
-                :class="{ 'mainVideoBorder': getMainVideoIdx && userList[windowKey].userListIndex == getMainVideoIdx}"
+                :class="{
+                    'mainVideoBorder': getMainVideoIdx && userList[windowKey].userListIndex == getMainVideoIdx,
+                    'grid': callingLayoutType == 1
+                }"
             >
                 <CallWindow
                     v-if="windowKey === 0"
@@ -206,26 +209,39 @@ const onResize = () => {
 // callingLayout이 1인 경우 타는 resize
 const callingLayout1Resize = () => {
     if (callingLayoutType.value === 1) {
-        calcWidth(chattingStore.personnelInRoom);
+        const container = document.querySelector('.callingLayout1');
+        const windowContainers = container.querySelectorAll('.grid');
+
+        const cw = container.clientWidth - 64;
+        const ch = container.clientHeight - 50; // 👈 여기서 50px 뺌
+
+        const cols = 2;
+        const rows = 2;
+        const ratio = 16 / 9;
+
+        let itemWidth = cw / cols;
+        let itemHeight = ch / rows;
+
+        // 비율 유지 조정
+        if (itemWidth / ratio * rows > ch) {
+            itemHeight = ch / rows;
+            itemWidth = itemHeight * ratio;
+        } else {
+            itemWidth = cw / cols;
+            itemHeight = itemWidth / ratio;
+        }
+
+        windowContainers.forEach((el) => {
+            el.style.width = `${itemWidth}px`;
+            el.style.height = `${itemHeight}px`;
+        });
     }
 };
 
-// --- Lifecycle Hooks (mounted equivalent) ---
 onMounted(() => {
-    // Dynamically import SASS/CSS is often handled differently in Nuxt 3/Vite.
-    // For production, you typically import your styles directly in a <style> block
-    // or via a Nuxt module (e.g., nuxt/modules/style-resources).
-    // If this is for a specific, conditional style, you might need a different approach
-    // or ensure the path is resolved correctly for Nuxt's build process.
     try {
         const displayModeSetting = sessionStorage.getItem("displayMode") || "darkmode";
         displayMode.value = displayModeSetting;
-        // This `require` statement is for Nuxt 2 / Webpack.
-        // For Nuxt 3 (Vite), dynamic imports usually look like this:
-        // `import(`@/assets/styles/${displayModeSetting}/components/call/callingLayout/4.sass`)`
-        // However, dynamic stylesheet loading at runtime is often discouraged.
-        // Consider using CSS variables or class toggling for themes.
-        // eval(`require('@/assets/styles/${displayModeSetting}/components/call/callingLayout/4.sass')`);
     } catch (e) {
         console.error("Failed to load stylesheet:", e);
     }
@@ -239,29 +255,19 @@ onMounted(() => {
 
         if (fixBtn) fixBtn.style.transition = "1s";
 
-        // Ensure wrapDiv exists before accessing its clientWidth
         if (wrapDiv) {
             callingLayoutWrap4Width.value = wrapDiv.clientWidth;
             showBtnWidth.value = callingLayoutWrap4Width.value / 2 - 52;
         } else {
             console.warn("Element with id 'fixBg' not found during mount for layout 4.");
         }
-
-        // nextTick(() => {
-        //     window.addEventListener("resize", onResize);
-        //     document.addEventListener("wheel", handleWheelScroll);
-        // });
     }
 
-    // Initial setup for layout 1
     if (callingLayoutType.value === 1) {
         window.addEventListener("resize", callingLayout1Resize);
     }
 
-    // Socket.io setup
-    // Nuxt 3 typically uses `useNuxtApp().$nuxtSocket` or imports directly
-    // if you've configured a plugin. Assuming `@nuxtjs/websocket` or similar.
-    const { signallingSocket } = useSignallingSocket(); // Get $nuxtSocket from Nuxt app instance
+    const { signallingSocket } = useSignallingSocket();
 
     signallingSocket.on("multiCalling", (response) => {
         if (response) {
@@ -355,7 +361,7 @@ watch(callingLayoutType, (result) => {
 });
 
 watch(personnelInRoom, (res) => {
-    calcWidth(res);
+    callingLayout1Resize();
 });
 
 watch(getDeclineStatus, (res) => {
@@ -431,20 +437,26 @@ onUnmounted(() => {
 }
 
 .callingLayout1 {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-auto-rows: 1fr;
+    gap: 8px;
     width: 100%;
-    height: 100%;
-    padding: 5px;
-    overflow-y: auto;
-    display: flex;
+    height: calc(100vh - 50px);
+    padding: 8px;
+    box-sizing: border-box;
+    place-items: center;
     justify-content: center;
     align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
     > .windowContainer {
-        flex: 0 0 calc(50% - 8px);
-        aspect-ratio: 16 / 9;
         min-width: 315px;
         max-height: -webkit-fill-available;
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        height: auto;
+        background: #333;
+        border-radius: 8px;
+        object-fit: cover;
     }
 }
 
@@ -467,7 +479,7 @@ onUnmounted(() => {
 
     >.windowContainer {
         width: 208px !important;
-        height: 117px;
+        height: 117px !important;
         flex-shrink: 0;
     }
     [id^="videoremote"] {
@@ -495,7 +507,7 @@ onUnmounted(() => {
     }
     >.windowContainer {
         width: 227px !important;
-        height: 150px;
+        height: 150px !important;
         flex-shrink: 0;
     }
 }

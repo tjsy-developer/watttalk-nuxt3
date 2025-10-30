@@ -22,7 +22,7 @@
                 src="@/assets/images/calling/ic_r_mute.png"
             />
         </div>
-        <div v-show="captureCount > 0" class="HQcapture-text ">
+        <div v-show="captureCount > 0" class="HQcapture-text">
             <span>{{ t("고화질 수신중..") }} {{ captureCount }}</span>
         </div>
         <div class="windowInfoBar" v-if="props.compData?.status !== 'main'">
@@ -52,6 +52,42 @@
                         @click="cancelCallClick"
                         src="@/assets/images/calling/ic_x_blue.png"
                     />
+                    <button
+                        class="muteIcon"
+                        @click="muteIconClick(compData.userListIndex)"
+                        v-if="
+                            videoCallHost &&
+                            compData.userListIndex !== 0 &&
+                            (compData.status == 'attach' ||
+                                compData.status == 'unstable' ||
+                                compData.status == 'unpublished')
+                        "
+                    >
+                        <img
+                            v-show="!compData.mute"
+                            src="@/assets/images/calling/ic_mute.png"
+                        />
+                        <img
+                            v-show="compData.mute"
+                            src="@/assets/images/calling/ic_mute_ac.png"
+                        />
+                    </button>
+                    <button
+                        class="forceLeaveIcon"
+                        @click="forceLeaveClick(compData.userListIndex)"
+                        v-if="
+                            videoCallHost &&
+                            compData.userListIndex !== 0 &&
+                            (compData.status == 'attach' ||
+                                compData.status == 'unstable' ||
+                                compData.status == 'unpublished')
+                        "
+                    >
+                        <img
+                            v-show="!compData.mute"
+                            src="@/assets/images/calling/bt_close.png"
+                        />
+                    </button>
                 </div>
             </div>
         </div>
@@ -815,7 +851,7 @@ const getIsShare = computed(() => commonStore.isShare);
 const getMainVideoIdx = computed(() => commonStore.mainVideoIndex);
 
 const mainVideoStream = computed(() => callStore.videoStreamArray[getMainVideoIdx.value]);
-const HQCaptureReceiveFiles = computed(() => callStore.HQCaptureFiles)
+const HQCaptureReceiveFiles = computed(() => callStore.HQCaptureFiles);
 const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
@@ -893,28 +929,14 @@ const mainVideoImageChange = (event) => {
 };
 
 const muteIconClick = (e) => {
-    let videoRemoteIndex = "";
-    if (e.target.offsetParent?.offsetParent?.attributes[2] === undefined) {
-        videoRemoteIndex = e.target.offsetParent?.attributes[2]?.value;
-    } else {
-        videoRemoteIndex = e.target.offsetParent.offsetParent.attributes[2].value;
-    }
-
     callStore.setForceMicMuteIndex("");
-    callStore.setForceMicMuteIndex(videoRemoteIndex);
+    callStore.setForceMicMuteIndex(e);
     callStore.setForceMicMuteBtnClick(true);
 };
 
 const forceLeaveClick = (e) => {
-    let videoRemoteIndex = "";
-    if (e.target.offsetParent?.offsetParent?.attributes[2] === undefined) {
-        videoRemoteIndex = e.target.offsetParent?.attributes[2]?.value;
-    } else {
-        videoRemoteIndex = e.target.offsetParent.offsetParent.attributes[2].value;
-    }
-
     callStore.setForceLeaveIndex("");
-    callStore.setForceLeaveIndex(videoRemoteIndex);
+    callStore.setForceLeaveIndex(e);
     callStore.setForceLeaveBtnClick(true);
 };
 
@@ -1549,15 +1571,6 @@ $windowInfoBarHeight: 30px;
     z-index: 1 !important;
 }
 
-.muteIcon {
-    width: auto !important;
-    height: auto !important;
-    position: absolute;
-    bottom: 7px;
-    right: 32px;
-    z-index: 1;
-}
-
 .chatMessageIcon {
     width: auto !important;
     height: auto !important;
@@ -1569,15 +1582,6 @@ $windowInfoBarHeight: 30px;
 
 .msgMuteBtn {
     margin: auto !important;
-}
-
-.forceLeaveIcon {
-    // width: auto !important
-    // height: auto !important
-    position: absolute;
-    bottom: -1px;
-    right: -2px;
-    z-index: 1;
 }
 
 .forceLeaveBtn {
@@ -2200,7 +2204,7 @@ $windowInfoBarHeight: 30px;
     color: #fff;
     background: rgba(0, 0, 0, 0.6);
     width: 100%;
-    padding: 5px 0 5px 15px;
+    padding: 2px 0 1px 7px;
     display: flex;
     justify-content: space-between;
     &.main {
@@ -2209,6 +2213,13 @@ $windowInfoBarHeight: 30px;
     > div {
         display: flex;
         align-items: center;
+        gap: 4px;
+
+        button {
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
     }
 }
 .layout1,

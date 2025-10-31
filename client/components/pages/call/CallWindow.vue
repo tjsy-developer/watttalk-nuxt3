@@ -1595,11 +1595,12 @@ $windowInfoBarHeight: 30px;
 }
 
 .prog {
-    padding: 5px auto !important;
-    height: 20px;
+    height: 15%;
     border-radius: 15px;
     width: 80%;
     border: 1px solid #3c3c3c;
+    max-height: 21px;
+    max-width: 400px;
 }
 
 .progs {
@@ -2261,6 +2262,13 @@ $windowInfoBarHeight: 30px;
         z-index: 1;
         text-shadow: 1px -1px 6px #000;
     }
+
+    .button-container {
+        gap: 30px;
+        > button {
+            padding: 7px 37px;
+        }
+    }
 }
 
 .layout3 {
@@ -2287,6 +2295,12 @@ $windowInfoBarHeight: 30px;
         font-size: 12px;
         z-index: 1;
         text-shadow: 1px -1px 6px #000;
+    }
+    .button-container {
+        gap: 15px;
+        > button {
+            padding: 3px 15px;
+        }
     }
 }
 
@@ -2315,13 +2329,19 @@ $windowInfoBarHeight: 30px;
         z-index: 1;
         text-shadow: 1px -1px 6px #000;
     }
+    .button-container {
+        gap: 15px;
+        > button {
+            padding: 3px 15px;
+        }
+    }
 }
 
 .status {
     width: 100%;
     height: 100%;
     > div {
-        height: calc(100% - 30px);
+        height: calc(100% - 24px);
     }
     &.unpublished {
         background-color: #000;
@@ -2444,8 +2464,7 @@ $windowInfoBarHeight: 30px;
     display: flex;
     gap: 18px;
     button {
-        padding: 5px 20px;
-        border-radius: 15px;
+        border-radius: 18px;
     }
     button.accept-btn {
         color: #fff;

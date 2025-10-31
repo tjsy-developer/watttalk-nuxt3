@@ -339,166 +339,195 @@ let pdfjsLib = null;
 let isMounted = true;
 
 // Replaces `mounted()`
-onMounted(() => {
-  isMounted = true;
+onMounted(async () => {
+    isMounted = true;
 
-  if (process.client) {
-    const nuxtApp = useNuxtApp();
-    pdfjsLib = nuxtApp.$pdfjsLib;
-    if (!pdfjsLib) {
-      console.error("PDF.js 라이브러리를 로드할 수 없습니다.");
-      alert("PDF 기능을 사용할 수 없습니다. 관리자에게 문의하세요.");
-    }
-  }
-
-  displayMode.value = sessionStorage.getItem("displayMode") || "lightmode";
-
-  if (can.value && fabric.Canvas) {
-    const drawingWidth =
-      document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
-    const drawingHeight =
-      document.getElementsByClassName("screen-draw")[0].clientHeight;
-
-    canvas.value = new fabric.Canvas(can.value, {
-      isDrawingMode: true,
-      preserveObjectStacking: true,
-      backgroundColor: "#ffffff",
-      width: drawingWidth,
-      height: drawingHeight,
-    });
-
-    fabric.Object.NUM_FRACTION_DIGITS = 10;
-    drawingStore.setCanvas(canvas.value);
-
-    // Fabric 이벤트 등록
-    canvas.value.on("mouse:down", beginDrawing);
-    canvas.value.on("mouse:move", keepDrawing);
-    canvas.value.on("mouse:up", stopDrawing);
-    canvas.value.on("mouse:wheel", canvasZoomWheel);
-    canvas.value.on("object:moving", disable);
-    canvas.value.on("object:scaling", disable);
-    canvas.value.on("object:rotating", disable);
-    canvas.value.on("object:added", (e) => {
-      if (
-        (beforeTool.value !== "line" &&
-          beforeTool.value !== "square" &&
-          beforeTool.value !== "arrow" &&
-          beforeTool.value !== "circle" &&
-          beforeTool.value !== "text") ||
-        nowTool.value == "photo" ||
-        nowTool.value == "pdf" ||
-        thumbnailFileReceive.value
-      ) {
-        updateHistory();
-        drawingStore.setThumbnailFileReceive(false);
-      }
-    });
-    canvas.value.on("object:selected", () => {
-      disable();
-      updateHistory(4);
-    });
-    canvas.value.on("object:modified", () => {
-      disable();
-      updateHistory(5);
-    });
-    canvas.value.on("selection:created", (e) => {
-      if (e.target) {
-        objects.value = e.target;
-      }
-      if (nowTool.value !== "text") {
-        updateHistory(6);
-      }
-    });
-    canvas.value.on("selection:updated", (e) => {
-      if (e.target) {
-        objects.value = e.target;
-      }
-    });
-
-    // 전역 이벤트 리스너
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("resize", onResize);
-
-    // 초기 brush 속성
-    if (tools.value[14]) {
-      canvas.value.freeDrawingBrush.color = tools.value[14].selected;
-    }
-    if (tools.value[0]) {
-      canvas.value.freeDrawingBrush.width = tools.value[0].selected;
+    if (process.client) {
+        const nuxtApp = useNuxtApp();
+        pdfjsLib = nuxtApp.$pdfjsLib;
+        if (!pdfjsLib) {
+            console.error("PDF.js 라이브러리를 로드할 수 없습니다.");
+            alert("PDF 기능을 사용할 수 없습니다. 관리자에게 문의하세요.");
+        }
     }
 
-    canvasWidthHeightChange();
-    allHeight.value = window.innerHeight;
+    displayMode.value = sessionStorage.getItem("displayMode") || "lightmode";
 
-    // // 히스토리 복원
-    // if (lastCanvasJson.value != null) {
-    //   if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
-    //     const lastHistory =
-    //       vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
-    //     drawingStore.setCanvasJson(lastHistory);
-    //   }
+    if (can.value && fabric.Canvas) {
+        const drawingWidth =
+            document.getElementsByClassName("screen-draw")[0].clientWidth - 72;
+        const drawingHeight =
+            document.getElementsByClassName("screen-draw")[0].clientHeight;
 
-    //   const saveLastJson = lastCanvasJson.value;
-    //   if (
-    //     !(
-    //       vxCanvasHistory.value.state.length === 0 &&
-    //       vxCanvasHistory.value.state[0] === saveLastJson
-    //     )
-    //   ) {
-    //     updateHistory(7);
-    //     vxCanvasHistory.value.state.push(saveLastJson);
-    //   }
+        canvas.value = new fabric.Canvas(can.value, {
+            isDrawingMode: true,
+            preserveObjectStacking: true,
+            backgroundColor: "#ffffff",
+            width: drawingWidth,
+            height: drawingHeight,
+        });
 
-    //   let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
-    //   for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
-    //     const ele = vxCanvasHistory.value.state[iLoop];
-    //     if (ele === saveLastJson) {
-    //       lastCanvasIndex = iLoop;
-    //       break;
-    //     }
-    //   }
+        fabric.Object.NUM_FRACTION_DIGITS = 10;
+        drawingStore.setCanvas(canvas.value);
 
-    //   drawingStore.setCanvasHistoryFin(true);
-    // } else if (vxCanvasHistory.value.state.length === 0) {
-    //   if (!isGivenThumbnailTransfer.value) {
-    //     updateHistory(8);
-    //     drawingStore.setFirstHistory(vxCanvasHistory.value);
-    //   }
-    // }
+        // Fabric 이벤트 등록
+        canvas.value.on("mouse:down", beginDrawing);
+        canvas.value.on("mouse:move", keepDrawing);
+        canvas.value.on("mouse:up", stopDrawing);
+        canvas.value.on("mouse:wheel", canvasZoomWheel);
+        canvas.value.on("object:moving", disable);
+        canvas.value.on("object:scaling", disable);
+        canvas.value.on("object:rotating", disable);
+        canvas.value.on("object:added", (e) => {
+            if (
+                (beforeTool.value !== "line" &&
+                    beforeTool.value !== "square" &&
+                    beforeTool.value !== "arrow" &&
+                    beforeTool.value !== "circle" &&
+                    beforeTool.value !== "text") ||
+                nowTool.value == "photo" ||
+                nowTool.value == "pdf" ||
+                thumbnailFileReceive.value
+            ) {
+                console.log("여기를 왜탸?");
+                // updateHistory();
+                drawingStore.setThumbnailFileReceive(false);
+            }
+        });
+        canvas.value.on("object:selected", () => {
+            disable();
+            updateHistory(4);
+        });
+        canvas.value.on("object:modified", () => {
+            disable();
+            updateHistory(5);
+        });
+        canvas.value.on("selection:created", (e) => {
+            if (e.target) {
+                objects.value = e.target;
+            }
+            if (nowTool.value !== "text") {
+                updateHistory(6);
+            }
+        });
+        canvas.value.on("selection:updated", (e) => {
+            if (e.target) {
+                objects.value = e.target;
+            }
+        });
 
-    // if (vxCanvasHistory.value.state.length === 0) {
-    //   canvas.value.add(rect);
-    // } else {
-    //   drawingStore.setLoadImageOnCanvasFinished(false);
-    //   const currentIndex = vxCanvasHistory.value.currentStateIndex;
-    //   const currentState = vxCanvasHistory.value.state[currentIndex];
-    //   if (typeof currentState !== "undefined" && currentState !== null) {
-    //     vxCanvasHistory.value.state[currentIndex] =
-    //       setRemoveDuplicates(currentState);
-    //   }
+        // 전역 이벤트 리스너
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+        window.addEventListener("resize", onResize);
 
-    //   // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
-    //   canvas.value.loadFromJSON(currentState, () => {
-    //     if (!isMounted || !canvas.value) return;
-    //     canvas.value.renderAll();
-    //     drawingStore.setLoadImageOnCanvasFinished(true);
-    //   });
-    // }
+        // 초기 brush 속성
+        if (tools.value[14]) {
+            canvas.value.freeDrawingBrush.color = tools.value[14].selected;
+        }
+        if (tools.value[0]) {
+            canvas.value.freeDrawingBrush.width = tools.value[0].selected;
+        }
 
-    if (vxCanvasHistory.value.state.length == 0) {
-        initCanvasAdd()
+        canvasWidthHeightChange();
+        allHeight.value = window.innerHeight;
+
+        // // 히스토리 복원
+        // if (lastCanvasJson.value != null) {
+        //   if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
+        //     const lastHistory =
+        //       vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
+        //     drawingStore.setCanvasJson(lastHistory);
+        //   }
+
+        //   const saveLastJson = lastCanvasJson.value;
+        //   if (
+        //     !(
+        //       vxCanvasHistory.value.state.length === 0 &&
+        //       vxCanvasHistory.value.state[0] === saveLastJson
+        //     )
+        //   ) {
+        //     updateHistory(7);
+        //     vxCanvasHistory.value.state.push(saveLastJson);
+        //   }
+
+        //   let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
+        //   for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
+        //     const ele = vxCanvasHistory.value.state[iLoop];
+        //     if (ele === saveLastJson) {
+        //       lastCanvasIndex = iLoop;
+        //       break;
+        //     }
+        //   }
+
+        //   drawingStore.setCanvasHistoryFin(true);
+        // } else if (vxCanvasHistory.value.state.length === 0) {
+        //   if (!isGivenThumbnailTransfer.value) {
+        //     updateHistory(8);
+        //     drawingStore.setFirstHistory(vxCanvasHistory.value);
+        //   }
+        // }
+
+        // if (vxCanvasHistory.value.state.length === 0) {
+        //   canvas.value.add(rect);
+        // } else {
+        //   drawingStore.setLoadImageOnCanvasFinished(false);
+        //   const currentIndex = vxCanvasHistory.value.currentStateIndex;
+        //   const currentState = vxCanvasHistory.value.state[currentIndex];
+        //   if (typeof currentState !== "undefined" && currentState !== null) {
+        //     vxCanvasHistory.value.state[currentIndex] =
+        //       setRemoveDuplicates(currentState);
+        //   }
+
+        //   // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
+        //   canvas.value.loadFromJSON(currentState, () => {
+        //     if (!isMounted || !canvas.value) return;
+        //     canvas.value.renderAll();
+        //     drawingStore.setLoadImageOnCanvasFinished(true);
+        //   });
+        // }
+
+        console.log("canvas?", drawingStore.canvas);
+        console.log("canvas ready?", !!drawingStore.canvas?.loadFromJSON);
+        if (vxCanvasHistory.value.state.length === 0) {
+            initCanvasAdd();
+        } else {
+            await nextTick(); // Vue DOM, store 반영 완료 후 실행
+
+            const canvas = drawingStore.canvas;
+            const file = files.value[drawingStore.selectedFileIndex];
+            const rawJson = file.history.state[file.history.currentStateIndex];
+
+            if (!canvas) {
+                console.error("❌ Canvas not initialized yet");
+                return;
+            }
+
+            try {
+                const json = typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+
+                canvas.loadFromJSON(json, () => {
+                    canvas.renderAll();
+                    console.log("✅ fileClick finished, file.type == canvas");
+
+                    drawingStore.setFilesImgChange({
+                        num: drawingStore.selectedFileIndex,
+                        image: canvas.toDataURL("png"),
+                    });
+                });
+            } catch (err) {
+                console.error("❌ Failed to load canvas JSON:", err);
+            }
+        }
+        drawingStore.setIsGivenThumbnailTransfer(false);
+
+        // 마지막으로 안전한 render 요청
+        // if (canvas.value && !canvas.value.disposed) {
+        //   canvas.value.requestRenderAll();
+        // }
+    } else {
+        console.error("Canvas element or Fabric.js not found!");
     }
-    
-    drawingStore.setIsGivenThumbnailTransfer(false);
-
-    // 마지막으로 안전한 render 요청
-    // if (canvas.value && !canvas.value.disposed) {
-    //   canvas.value.requestRenderAll();
-    // }
-  } else {
-    console.error("Canvas element or Fabric.js not found!");
-  }
 });
 
 const initCanvasAdd = () => {
@@ -513,12 +542,12 @@ const initCanvasAdd = () => {
         });
         canvas.value.add(rect);
         canvas.value.requestRenderAll();
-        const canvasJSON = canvas.value.toJSON()
-        canvasHistory.value.state.push(canvasJSON)
+        const canvasJSON = canvas.value.toJSON();
+        canvasHistory.value.state.push(canvasJSON);
         drawingStore.setCanvasHistory(canvasHistory.value);
         drawingStore.setFirstHistory(vxCanvasHistory.value);
     }
-}
+};
 
 const commonToastMessage = (message) => {
     console.log("Toast:", message);
@@ -591,7 +620,9 @@ const toolClick = (tool) => {
 
     // ========== beforeTool 저장 ==========
     if (
-        !["clear", "color", "undo", "redo", "photo", "pdf", "group", "download"].includes(nowTool.value)
+        !["clear", "color", "undo", "redo", "photo", "pdf", "group", "download"].includes(
+            nowTool.value,
+        )
     ) {
         beforeTool.value = nowTool.value;
     }
@@ -1380,7 +1411,7 @@ const multiSelect = () => {
 };
 
 const updateHistory = (type) => {
-    console.log('history', type)
+    console.log("history", type);
     if (!canvas.value) return;
 
     if (
@@ -1401,7 +1432,7 @@ const updateHistory = (type) => {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex - 1] !=
                 canvasAsJson
         ) {
-            console.log("updateHistory quarter fit")
+            console.log("updateHistory quarter fit");
             const indexToBeInserted = canvasHistory.value.currentStateIndex + 1;
             canvasHistory.value.state[indexToBeInserted] = canvasAsJson;
             const elementsToKeep = indexToBeInserted + 1;
@@ -1413,7 +1444,7 @@ const updateHistory = (type) => {
             canvasHistory.value.state[canvasHistory.value.currentStateIndex] !==
             canvasAsJson
         ) {
-            console.log("updateHistory quarter another fit")
+            console.log("updateHistory quarter another fit");
             canvasHistory.value.state.push(canvasAsJson);
         }
 
@@ -1885,7 +1916,7 @@ const canvasWidthHeightChange = () => {
             canvas.value.setDimensions(
                 {
                     width: "100%",
-                    height: '100%',
+                    height: "100%",
                 },
                 {
                     cssOnly: true,
@@ -2035,7 +2066,7 @@ watch(allHeight, (newVal) => {
 watch(vxCanvasHistory, (newVal) => {
     canvasHistory.value = newVal; // Update local ref
     console.log(newVal, "vxCanvasHistory");
-    initCanvasAdd()
+    initCanvasAdd();
 });
 
 // Watch for 'update' changes (from Vuex)
@@ -2100,59 +2131,59 @@ watch(chattingShow, (res) => {
 });
 
 function handleKeyDown(e) {
-  canvasKeyCode(e);
-  if (canvas.value && e.ctrlKey) {
-    canvas.value.defaultCursor = "grab";
-    canvas.value.hoverCursor = "grab";
-    if (nowTool.value === "pen") {
-      disable();
+    canvasKeyCode(e);
+    if (canvas.value && e.ctrlKey) {
+        canvas.value.defaultCursor = "grab";
+        canvas.value.hoverCursor = "grab";
+        if (nowTool.value === "pen") {
+            disable();
+        }
     }
-  }
 }
 
 function handleKeyUp(e) {
-  if (canvas.value && e.key === "Control") {
-    canvas.value.defaultCursor = "default";
-    if (nowTool.value === "pen") {
-      enable();
+    if (canvas.value && e.key === "Control") {
+        canvas.value.defaultCursor = "default";
+        if (nowTool.value === "pen") {
+            enable();
+        }
     }
-  }
 }
 
 onBeforeUnmount(() => {
-  isMounted = false;
+    isMounted = false;
 
-  // 전역 이벤트 제거
-  window.removeEventListener("keydown", handleKeyDown);
-  window.removeEventListener("keyup", handleKeyUp);
-  window.removeEventListener("resize", onResize);
+    // 전역 이벤트 제거
+    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("keyup", handleKeyUp);
+    window.removeEventListener("resize", onResize);
 
-  // Fabric 자원 해제
-  if (canvas.value) {
-    if (canvas.value.cancelRequestedRender) {
-      canvas.value.cancelRequestedRender();
+    // Fabric 자원 해제
+    if (canvas.value) {
+        if (canvas.value.cancelRequestedRender) {
+            canvas.value.cancelRequestedRender();
+        }
+        canvas.value.off();
+        canvas.value.dispose();
+        canvas.value = null;
     }
-    canvas.value.off();
-    canvas.value.dispose();
-    canvas.value = null;
-  }
 
-  // 미디어 디바이스 정리
-  const onlyVoiceIDs = callStore.onlyVoiceID;
-  const localDeviceID = sessionStorage.getItem("m_local_deviceid");
-  const cameraNotAllowed = callStore.cameraNotAllowed;
+    // 미디어 디바이스 정리
+    const onlyVoiceIDs = callStore.onlyVoiceID;
+    const localDeviceID = sessionStorage.getItem("m_local_deviceid");
+    const cameraNotAllowed = callStore.cameraNotAllowed;
 
-  if ((onlyVoiceIDs && onlyVoiceIDs.includes(localDeviceID)) || cameraNotAllowed) {
-    navigator.mediaDevices
-      .getUserMedia({ video: false, audio: true })
-      .then((stream) => {
-        console.log("Re-acquired audio stream before unmount.");
-        stream.getTracks().forEach((track) => track.stop());
-      })
-      .catch((error) => {
-        console.error("Error re-acquiring media devices on unmount:", error);
-      });
-  }
+    if ((onlyVoiceIDs && onlyVoiceIDs.includes(localDeviceID)) || cameraNotAllowed) {
+        navigator.mediaDevices
+            .getUserMedia({ video: false, audio: true })
+            .then((stream) => {
+                console.log("Re-acquired audio stream before unmount.");
+                stream.getTracks().forEach((track) => track.stop());
+            })
+            .catch((error) => {
+                console.error("Error re-acquiring media devices on unmount:", error);
+            });
+    }
 });
 </script>
 <style lang="scss" scoped>

@@ -2281,6 +2281,7 @@ onMounted(() => {
                         drawingStore.setSrc(saveThumbnailImg.value);
                         drawingStore.setIsOpenSaveThumbnail(true);
                         drawingStore.setThumbnailFileReceive(true);
+                        drawingStore.setSelectedFileIndex(drawingStore.files.length - 1);
                     } else {
                         // const previewManageIndex = commonStore.previewModalInfo.previewModalcnt
                         // 미리보기
@@ -11283,7 +11284,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
         }
         // callingLayoutType.value == 1인 상태에서 drawing 접근 시 mainVideo설정이 되어있지 않아, drawing 종료 시 nickname 표기가 안되는 현상 fix
         checkMainVideo();
-        commonStore.setIsVideo();
+        // commonStore.setIsVideo();
         // 드로잉 클릭 시 열려있던 모달 닫기
         for (let i = 1; i <= previewModalInfo.value.previewModalcnt; i++) {
             commonStore.setPreviewModalFlag({ modalIndex: i, url: "", show: "hide" });

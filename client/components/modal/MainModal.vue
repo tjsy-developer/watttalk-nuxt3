@@ -248,7 +248,7 @@ onMounted(() => {
                 meetingStore.setMeetingSeq(directcallSeq.value)
                 callStore.setUniqueRoomid(json.unique_roomid)
                 requestCreateRoomID(json.unique_roomid);
-                this.$store.commit("directcall/clearDirectCallInfo");
+                directCallStore.clearDirectCallInfo();
             } else {
                 noneOverlayModal(6)
             }

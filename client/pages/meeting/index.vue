@@ -856,7 +856,7 @@ onMounted(async () => {
 
     meetingStore.sortArray();
 
-    allView.value = Number(localStorage.getItem("meetingViewType")) == 1 ? true : false;
+    allView.value = Number(localStorage.getItem("meetingViewType")) == 1 ? 1 : 0;
 });
 
 // 언마운트되기 전 실행할 작업
@@ -1587,7 +1587,7 @@ watch(getReadProcFlag, (newVal) => {
 }
 
 .yHidden {
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 .y {
     overflow-y: auto;

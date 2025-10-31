@@ -184,7 +184,8 @@ export default function useSocketEmitEvents() {
             roomid: roomID,
             unique_roomid: uniqueRoomID, //추가
         };
-
+        
+        if (!meetingSeq) return;
         signallingSocket.emit("joinMeeting", JSON.stringify(json));
     };
 

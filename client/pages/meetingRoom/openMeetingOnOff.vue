@@ -503,6 +503,7 @@ const joinMeeting = (roomid) => {
         roomid,
     };
     const json = JSON.stringify(obj);
+    if (!meetingSeq) return;
     signallingSocket.emit("joinMeeting", json);
     console.log("*** socket.emit: joinMeeting Request: " + json);
 };

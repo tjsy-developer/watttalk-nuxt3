@@ -1221,7 +1221,7 @@ const openMeeting = (res) => {
     // meeting_seq.value = null; // if meeting_seq is a ref
 
     const json = JSON.stringify(obj);
-
+    if (!meetingSeq) return;
     signallingSocket.emit("openMeeting", json);
     console.log("*** socket.emit: openMeeting Request: " + json);
 };
@@ -1241,6 +1241,7 @@ const joinMeeting = (res) => {
 
     const json = JSON.stringify(obj);
 
+    if (!meetingSeq) return;
     signallingSocket.emit("joinMeeting", json);
     console.log("*** socket.emit: joinMeeting Request: " + json);
 };

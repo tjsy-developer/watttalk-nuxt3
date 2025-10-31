@@ -190,10 +190,21 @@ const fileClick = (e, type) => {
     // console.log("*****##****** fileClick lastJSON", store.state.drawing.lastCanvasJson)
 
     // 새로운 캔버스
-    if (files.value[e].type == 'canvas') {
-        //현재 캔버스에 있는 걸 history 에 옮겨준다
-        console.log("1번")
-        drawingStore.setSelectedFileIndex(e)
+    if (files.value[e].type == "canvas") {
+        //동일한 index일 경우 watch에서 감지 불가이므로 여기서 처리
+        if (drawingStore.selectedFileIndex == e) {
+            drawingStore.setFilesHistory({
+                num: e,
+                history: drawingStore.canvasHistory,
+            });
+
+            drawingStore.setFilesImgChange({
+                num: e,
+                image: drawingStore.canvas.toDataURL("png"),
+            });
+            return;
+        }
+        drawingStore.setSelectedFileIndex(e);
     }
     drawingStore.setBeforeIndexInitialized(false);
 };
@@ -267,7 +278,7 @@ const pdfClick = (fileKey, pdfKey) => {
         }
     }
     drawingStore.setPdfIndex(pdfKey);
-    console.log("2번")
+    console.log("2번");
     drawingStore.setSelectedFileIndex(fileKey);
     // 20221122 - 수정해야할 부분
     drawingStore.setFilesHistory({
@@ -393,9 +404,8 @@ const newCanvasAdd = () => {
         // }
         // canHistory.state.push(canvasJSON)
         // drawingStore.setCanvasHistory(canHistory);
-        console.log("3번")
-        drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex + 1)
-        
+        console.log("3번");
+        drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex + 1);
     } else {
         commonToastMessage("uploading PDF");
     }
@@ -459,8 +469,8 @@ const eachCanvasDelete = (e, pdfKey, group) => {
                 deleteWidth = 148;
             }
             drawingStore.setFilesDelete(e);
-            console.log("4번")
-            drawingStore.setSelectedFileIndex(e - 1)
+            console.log("4번");
+            drawingStore.setSelectedFileIndex(e - 1);
             drawingStore.setUpdate(true);
             drawingStore.setThumbnailWidth(thumbnailWidth.value - deleteWidth);
         } else {
@@ -499,7 +509,7 @@ const eachCanvasDelete = (e, pdfKey, group) => {
 const clearThumbnail = () => {
     if (!isPdfUploading.value) {
         drawingStore.clearFiles();
-        console.log("5번")
+        console.log("5번");
         drawingStore.setSelectedFileIndex(0);
         drawingStore.setBeforeSelectedFileIndex(-1);
         drawingStore.setFilesImgChange({
@@ -712,94 +722,77 @@ const getLastCanvasInfo = computed(() => {
 // });
 
 watch(beforeSelectedFileIndex, (newVal, prevVal) => {
-    console.log("추가됨 바ㄱ뀜", newVal)
+    console.log("추가됨 바ㄱ뀜", newVal);
+    if (newVal == -1) return;
     // 이전 선택된 파일을 저장한다
     drawingStore.setFilesHistory({
         num: newVal,
-        history: drawingStore.canvasHistory
-    })
+        history: drawingStore.canvasHistory,
+    });
 
     drawingStore.setFilesImgChange({
         num: newVal,
-        image: drawingStore.canvas.toDataURL("png")
-    })
-})
+        image: drawingStore.canvas.toDataURL("png"),
+    });
+});
 
 watch(selectedFileIndex, (newVal, prevVal) => {
-    console.log("추가됨 바ㄱ뀜", files.value.length)
+    console.log("추가됨 바ㄱ뀜", files.value.length);
     // 현재 캔버스의 history를 가져온다
-    drawingStore.setCanvasHistory(files.value[newVal].history)
+    drawingStore.setCanvasHistory(files.value[newVal].history);
     drawingStore.canvas.loadFromJSON(
         files.value[newVal].history.state[files.value[newVal].history.currentStateIndex],
         () => {
-            drawingStore.canvas.renderAll.bind(drawingStore.canvas)
-            console.log("fileClick finished, file.type == canvas")
-        }
-    )
-})
+            drawingStore.canvas.renderAll.bind(drawingStore.canvas);
+            console.log("fileClick finished, file.type == canvas");
+        },
+    );
+});
 
 // files 감시 (배열 전체 변경 감지)
-watch(files, (newFiles) => {
-    const beforeCount = filesNumCount.value; // ref 접근 시 .value
-    filesNumCount.value = newFiles.length; // ref 접근 시 .value
-    const beforeWidth = thumbnailWidth.value; // ref 접근 시 .value
+watch(
+    () => files.value.length, // ✅ 배열의 길이만 감시
+    (newLength, oldLength) => {
+        const beforeCount = filesNumCount.value;
+        filesNumCount.value = newLength;
 
-    if (filesNumCount.value == 1) {
-        drawingStore.setThumbnailWidth(148);
-    }
-
-    for (let i = 0; i < newFiles.length; i++) {
-        // superIndex는 drawingStore.index로 가정합니다.
-        if (index.value - 1 == newFiles[i].index) {
-            // ref 접근 시 .value
-            console.log("6번")
-            drawingStore.setSelectedFileIndex(i);
-            break;
-        }
-    }
-
-    if (canvas.value != null) {
-        // ref 접근 시 .value
-        let fileType = "canvas";
-
-        if (beforeSelectedState.value) {
-            // ref 접근 시 .value
-            fileType = newFiles[selectedFileIndex.value].type; // ref 접근 시 .value
-        } else {
-            fileType = newFiles[newFiles.length - 1].type;
+        if (newLength == 1) {
+            drawingStore.setThumbnailWidth(148);
         }
 
-        if (fileType != "pdf") {
-            drawingStore.setThumbnailWidth(thumbnailWidth.value + 148); // ref 접근 시 .value
-            if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
-                // ref 접근 시 .value
-                console.log("fileClick 2");
-                fileClick(newFiles.length - 1);
+        drawingStore.setSelectedFileIndex(newLength - 1);
+
+        if (canvas.value != null) {
+            let fileType = "canvas";
+
+            if (beforeSelectedState.value) {
+                fileType = files.value[selectedFileIndex.value].type;
+            } else {
+                fileType = files.value[newLength - 1].type;
             }
-            const scrollElement = document.getElementById("thumbBody");
-            if (scrollElement) {
-                setTimeout(() => {
-                    scrollElement.scrollLeft = scrollElement.scrollWidth;
-                }, 50);
+
+            if (fileType != "pdf") {
+                drawingStore.setThumbnailWidth(thumbnailWidth.value + 148);
+                if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
+                    console.log("fileClick 2");
+                    fileClick(newLength - 1);
+                }
+                const scrollElement = document.getElementById("thumbBody");
+                if (scrollElement) {
+                    setTimeout(() => {
+                        scrollElement.scrollLeft = scrollElement.scrollWidth;
+                    }, 50);
+                }
+            } else {
+                drawingStore.setThumbnailWidth(thumbnailWidth.value + 32);
             }
-        } else {
-            drawingStore.setThumbnailWidth(thumbnailWidth.value + 32); // ref 접근 시 .value
-            nextTick(() => {
-                // $nextTick 대신 nextTick 사용
-                // this.pdfClick(this.files.length - 1, 0)
-                // isDelete는 어디서 오는지 불분명하여 추정해서 추가하거나 제거해야 합니다.
-                // if (!isDelete.value && beforeCount < filesNumCount.value) {
-                //   // console.log("OPEN PDF", newFiles.length - 1, newFiles[newFiles.length - 1].group)
-                //   // None
-                // }
-            });
         }
-    }
-}); // files 배열 내부의 변경도 감지하기 위해 deep 옵션 추가
+    },
+);
 
 // src 감시
 watch(src, (newVal) => {
-    console.log(newVal)
+    console.log(newVal);
     if (newVal != null) {
         if (files.value.length == 0) {
             // ref 접근 시 .value
@@ -843,12 +836,12 @@ watch(isDrawing, (newVal) => {
     if (newVal == false) {
         if (selectCount.value == 0) {
             // ref 접근 시 .value
-            console.log("7번")
+            console.log("7번");
             drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
         }
         if (files.value[selectedFileIndex.value].type != "pdf") {
             // ref 접근 시 .value
-            console.log("fileClick 8")
+            console.log("fileClick 8");
             fileClick(selectedFileIndex.value); // ref 접근 시 .value
         }
         drawingStore.setSelectCount(false);
@@ -1044,7 +1037,7 @@ watch(beforeCloseCanvas, (newVal) => {
     if (newVal) {
         if (canvas.value != null) {
             // ref 접근 시 .value
-            console.log("8번")
+            console.log("8번");
             drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
                 // ref 접근 시 .value
@@ -1169,7 +1162,7 @@ onUnmounted(() => {
             ) {
                 if (files.value[currentSelectedFileIndex].type !== "pdf") {
                     // superIndex.value는 현재 활성화된 파일의 index를 나타낸다고 가정
-                    drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex)
+                    drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex);
                     console.log(
                         `onUnmounted: Saving non-PDF canvas state for index ${superIndex.value}.`,
                     );

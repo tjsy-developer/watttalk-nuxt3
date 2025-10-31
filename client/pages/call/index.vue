@@ -322,6 +322,9 @@ onMounted(() => {
                 commonStore.setChangeViewType(0);
                 router.back();
                 modalStore.closeModal("call");
+                setTimeout(function () {
+                    window.location.reload();
+                }, 500);
             }, 3000);
         }
 

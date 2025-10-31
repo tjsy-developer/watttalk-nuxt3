@@ -182,6 +182,7 @@ export const useMeetingStore = defineStore("meeting", {
         },
         // 회의실의 시퀀스를 저장해둔다.
         setMeetingSeq(payload) {
+            this.meetingSeq = null;
             this.meetingSeq = payload;
         },
         // 회의실 삭제 시 부모의 소켓을 실행시켜야하기 때문에 vuex 생성

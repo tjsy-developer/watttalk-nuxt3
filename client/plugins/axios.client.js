@@ -26,7 +26,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         // Axios 인스턴스 생성
         const api = axios.create({
             baseURL,
-            timeout: 10000,
+            timeout: 300000,
             headers: { "Content-Type": "application/json" },
         });
 

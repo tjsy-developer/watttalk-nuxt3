@@ -105,6 +105,7 @@ export function useAuth() {
 
     return {
         encryptData,
+        decryptData,
         verifyToken,
         decodeToken,
         requestNewToken,

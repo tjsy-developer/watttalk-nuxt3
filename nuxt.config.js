@@ -8,7 +8,7 @@ export default defineNuxtConfig({
         enabled: false,
     },
     imports: {
-        dirs: ["utils", 'composables'], // 또는 'composables', 'stores', 'utils' 등
+        dirs: ["utils", "composables"], // 또는 'composables', 'stores', 'utils' 등
     },
     app: {
         baseURL: "/watttalk",
@@ -73,6 +73,9 @@ export default defineNuxtConfig({
         ],
     ],
     vite: {
+        esbuild: {
+            drop: ["console", "debugger"],
+        },
         server: {
             watch: {
                 interval: 1000,

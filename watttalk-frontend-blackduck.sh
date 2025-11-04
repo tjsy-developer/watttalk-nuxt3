@@ -34,7 +34,7 @@ echo "📁 디렉토리 이동: $APPLICATION_PATH"
 cd "$APPLICATION_PATH" || { echo "❌ 디렉토리 이동 실패"; exit 1; }
 
 echo "🛠️ Docker 이미지 빌드 중..."
-docker build --no-cache -t $APPLICATION:$VERSION .
+docker build -t $APPLICATION:$VERSION .
 if [ $? -ne 0 ]; then
     echo "❌ Docker 빌드 실패"
     exit 1
@@ -55,18 +55,12 @@ if [ $? -ne 0 ]; then
 else echo "docker cp 성공"
 fi
 
-echo "🔑 실행 권한 부여: $JAVA_BIN"
-docker exec -u root "$VERSION" bash -c "ls -l \"$JAVA_BIN\" && chmod +x \"$JAVA_BIN\""
-if [ $? -ne 0 ]; then
-    echo "❌ chmod 실패"
-    docker exec -u root "$VERSION" bash -c "ls -l \"$JAVA_BIN\""
-    exit 1
-else
-    echo "chmod 성공"
-fi
+echo "🔑 실행 권한 확인 및 부여: $JAVA_BIN"
+docker exec -u root "$VERSION" sh -c "if [ ! -x \"$JAVA_BIN\" ]; then chmod +x \"$JAVA_BIN\"; fi"
+
 
 echo "🔍 Black Duck 스캔 시작..."
-docker exec $VERSION bash -c "\
+docker exec $VERSION sh -c "\
     \"$JAVA_BIN\" -jar \"$BLACK_DUCK_JAR\" \
     --blackduck.url='$BLACK_DUCK_URL' \
     --blackduck.api.token='$BLACK_DUCK_TOKEN' \

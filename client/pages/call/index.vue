@@ -94,7 +94,9 @@ import { useModal, useModalSlot, VueFinalModal, useVfm } from "vue-final-modal";
 import LoadingModal from "@/components/modal/LoadingModal.vue";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 import MeetingAlertModal from "@/components/modal/meeting/MeetingAlertModal.vue";
+import { useAuth } from "@/composables/useAuth";
 const { signallingSocket, transferSocket } = useSignallingSocket();
+const { requestNewToken } = useAuth();
 
 const {
     requestMultiCalling,
@@ -211,8 +213,9 @@ definePageMeta({
 });
 
 // 마운트될 때 실행할 작업
-onMounted(() => {
+onMounted(async () => {
     console.log("컴포넌트가 마운트되었습니다.");
+    await requestNewToken();
     nextTick(() => {
         // const { token } = await $fetch("/api/config");
         // const decoded = jwtDecode(token);

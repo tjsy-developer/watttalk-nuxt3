@@ -60,6 +60,9 @@ import { storeToRefs } from "pinia";
 import { emit } from "process";
 import { ref, onMounted, onUpdated, onBeforeUnmount, computed, onUnmounted } from "vue";
 import { useTokenStore } from "@/stores/token";
+import { useAuth } from "../../composables/useAuth";
+
+const { requestNewToken } = useAuth();
 const router = useRouter();
 
 const count = ref(0);
@@ -691,6 +694,7 @@ function logout() {
 
 // 마운트될 때 실행할 작업
 onMounted(async () => {
+    await requestNewToken();
     await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
     sessionStorage.setItem("m_callWaiting", false);

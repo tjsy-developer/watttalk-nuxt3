@@ -98,6 +98,7 @@ import { useUserPreferenceStore } from "@/stores/common";
 import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 import { userDataGetInfo } from "@/composables/common";
 import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
+const { requestNewToken } = useAuth();
 const count = ref(0);
 
 const meetingStore = useMeetingStore();
@@ -147,6 +148,7 @@ definePageMeta({
 });
 // 마운트될 때 실행할 작업
 onMounted(async () => {
+    await requestNewToken();
     await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     requestLastCallTime();
     requestUserListAll();

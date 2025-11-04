@@ -70,7 +70,10 @@ export function useAuth() {
 
     async function requestNewToken(currRefereshToken, t) {
         const loginStore = useLoginStore();
-        const decRToken = decryptData(currRefereshToken);
+        const tokenStore = useTokenStore();
+        const decRToken = decryptData(currRefereshToken || tokenStore.enRToken);
+        const route = useRoute();
+
         if (!decRToken) {
             loginStore.setTokenResult(2);
             return Promise.reject(new Error("Invalid refresh token"));
@@ -80,7 +83,7 @@ export function useAuth() {
                 "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
                 {
                     refreshToken: decRToken,
-                    deviceType: "",
+                    deviceType: route.name.includes("call") ? 'talk': '',
                 },
             );
             const newAccessToken = res.data[0];

@@ -31,7 +31,7 @@ button {
     display: flex; /* Flexbox 컨테이너로 설정 */
     justify-content: center; /* 가로축 (수평) 중앙 정렬 */
     align-items: center; /* 세로축 (수직) 중앙 정렬 */
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.65);
     margin: auto;
     > .vfm__overlay {
         width: 100vw;

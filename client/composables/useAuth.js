@@ -68,10 +68,10 @@ export function useAuth() {
         }
     };
 
-    async function requestNewToken(currRefereshToken, t) {
+    async function requestNewToken(type = '') {
         const loginStore = useLoginStore();
         const tokenStore = useTokenStore();
-        const decRToken = decryptData(currRefereshToken || tokenStore.enRToken);
+        const decRToken = decryptData(tokenStore.enRToken);
         const route = useRoute();
 
         if (!decRToken) {
@@ -83,7 +83,7 @@ export function useAuth() {
                 "https://hdcardev.watttalk.kr/wattmanager-server/accountRest/token_refresh",
                 {
                     refreshToken: decRToken,
-                    deviceType: route.name.includes("call") ? 'talk': '',
+                    deviceType: type,
                 },
             );
             const newAccessToken = res.data[0];

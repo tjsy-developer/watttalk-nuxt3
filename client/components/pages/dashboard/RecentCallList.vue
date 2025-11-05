@@ -102,12 +102,11 @@ const meettingStore = useMeetingStore();
 const vfm = useVfm();
 const props = defineProps(["data", "search"]);
 const feeds = toRef(callStore, 'feeds') // ✅ ref 형태로 다시 감싸줌
+const route = useRoute();
 
 const isInRoom = (deviceId) => {
   return feeds.value.some(feed => feed.rfdeviceid === deviceId)
 }
-
-const { contentsViewType } = storeToRefs(commonStore);
 
 function handleMouseCallOver(event) {
     const target = event.target;
@@ -133,7 +132,7 @@ function requestCall(remoteDeviceId) {
     if (!remoteDeviceId) return;
 
     function calling() {
-        if (contentsViewType.value == 2) {
+        if (route.name == 'call') {
             //@ts-ignore
             callStore.setInCallingFunctionParams(remoteDeviceId);
             //@ts-ignore
@@ -144,22 +143,17 @@ function requestCall(remoteDeviceId) {
         }
     }
 
-    if (contentsViewType.value == 0) {
-        try {
-            modalStore.openModal("device", {
-                type: "request",
-                deviceId: remoteDeviceId,
-                requestCall: () => {
-                    commonStore.setDeviceModifyState(false);
-                    console.log("Call Request Success", contentsViewType.value);
-                    calling();
-                },
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    } else {
-        calling();
+    try {
+        modalStore.openModal("device", {
+            type: "request",
+            deviceId: remoteDeviceId,
+            requestCall: () => {
+                commonStore.setDeviceModifyState(false);
+                calling();
+            },
+        });
+    } catch (error) {
+        console.log(error);
     }
 }
 

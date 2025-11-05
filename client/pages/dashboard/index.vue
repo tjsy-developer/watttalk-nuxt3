@@ -410,7 +410,6 @@ const handleCalling = (response) => {
                 */
                 if (
                     sessionStorage.getItem("inRoomFlag") !== "true" &&
-                    commonStore.contentsViewType == 0 &&
                     sessionStorage.getItem("m_callWaiting") == "true"
                 ) {
                     console.log("*** socket: calling >> Start AutoCallAccept");
@@ -454,14 +453,6 @@ const handleCanMakeCall = (response) => {
             sessionStorage.setItem("m_inviting", true);
 
             commonStore.setAlert(6);
-
-            // 통화 중 상대 초대할 경우 room ID 설정
-            if (
-                contentsViewType.value == 2 &&
-                sessionStorage.getItem("m_roomid") != null
-            ) {
-                m_roomid.value = sessionStorage.getItem("m_roomid");
-            }
 
             requestCalling({
                 remoteDeviceId: remoteInfo.deviceId,
@@ -694,7 +685,6 @@ function logout() {
 
 // 마운트될 때 실행할 작업
 onMounted(async () => {
-    await requestNewToken();
     await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
     sessionStorage.setItem("m_callWaiting", false);
@@ -719,7 +709,7 @@ onMounted(async () => {
 });
 
 // 언마운트되기 전 실행할 작업
-onBeforeUnmount(() => {
+onUnmounted(() => {
     signallingSocket.off("createRoomID", handleCreateRoomID);
     signallingSocket.off("calling", handleCalling);
     signallingSocket.off("canMakeCall", handleCanMakeCall);

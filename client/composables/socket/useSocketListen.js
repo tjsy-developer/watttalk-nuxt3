@@ -27,9 +27,10 @@ import ChatModal from "@/components/modal/ChatModal.vue";
 export function bindSocketEvents() {
     const { signallingSocket } = useSignallingSocket();
     const router = useRouter();
+    const route = useRoute();
     const vfm = useVfm();
     const loginStore = useLoginStore();
-    const preperenceStore = useUserPreferenceStore();
+    const preferenceStore = useUserPreferenceStore();
     const modalStore = useModalStore();
     const callStore = useCallStore();
     const userListStore = useUserListStore();
@@ -132,17 +133,15 @@ export function bindSocketEvents() {
                 commonStore.setAlert(5);
                 sessionStorage.setItem("m_callWaiting", "true");
             } else {
-                if (json.status == 1) {
-                    if (preperenceStore.roomNumber) {
-                        sessionStorage.setItem("m_roomid", preperenceStore.roomNumber);
-                        sessionStorage.setItem("inRoomFlag", "true");
-                        sessionStorage.setItem("createRoomFlag", "true");
-                        commonStore.setChangeViewType(2);
-                        router.push("/call");
-                        reeuqestCreateFixRoomID();
-                    } else {
-                        requestCreateRoomID();
-                    }
+                if (preferenceStore.roomNumber) {
+                    sessionStorage.setItem("m_roomid", preferenceStore.roomNumber);
+                    sessionStorage.setItem("inRoomFlag", "true");
+                    sessionStorage.setItem("createRoomFlag", "true");
+                    commonStore.setChangeViewType(2);
+                    router.push("/call");
+                    reeuqestCreateFixRoomID();
+                } else {
+                    requestCreateRoomID();
                 }
             }
         }
@@ -154,7 +153,7 @@ export function bindSocketEvents() {
         console.log(json);
 
         if (json.status == 1) {
-            loginRequest(loginStore.m_local_deviceid);
+            loginRequest(loginStore.sessionID);
         } else {
             setTimeout(() => {
                 commonStore.setNoneOverlayAlertStatus(22);
@@ -169,7 +168,7 @@ export function bindSocketEvents() {
         const json = JSON.parse(response);
         loginStore.setForceLogoutUserId(json.requestSocketid);
 
-        if (commonStore.contentsViewType === 2) {
+        if (route.name === "call") {
             requestForceLogoutResult(json.requestSocketid, 0);
         } else {
             commonStore.setNoneOverlayAlertStatus(21);
@@ -243,7 +242,7 @@ export function bindSocketEvents() {
         const messageList = json.message;
         if (messageList.length == 0) {
             directMessageStore.setIsLastMessage();
-            return
+            return;
         }
         for (let i = 0; i < messageList.length; i++) {
             console.log(messageList[i].sender);
@@ -269,6 +268,43 @@ export function bindSocketEvents() {
         }
     }
 
+    const handleEnvironment = (response) => {
+        const json = JSON.parse(response);
+        if (json.status == 0) {
+            alert("환경설정 정보가 등록되지않았습니다");
+            loginStore.setLoginType(3);
+            return;
+        }
+
+        let appJson = {};
+        for (const key in json) {
+            appJson = JSON.parse(json[key]);
+            break;
+        }
+
+        function convertStringBooleansExtended(obj) {
+            const result = {};
+            for (const key in obj) {
+                const val = obj[key];
+                if (val === "True" || val === "1") result[key] = true;
+                else if (val === "False" || val === "0") result[key] = false;
+                else result[key] = val;
+            }
+            return result;
+        }
+
+        const transAppInfo = convertStringBooleansExtended(appJson);
+        console.log("*** enviroment", transAppInfo);
+        preferenceStore.setEnviroment({
+            useAutoPictureAccept: transAppInfo.autoPictureAccept,
+            useAutoDiscalling: transAppInfo.autoDiscalling,
+            useDirectCall: transAppInfo.directCall,
+            autoCallAcceptTime: transAppInfo.autoCallAcceptTime,
+            onlyVoiceCallId: transAppInfo.onlyVoiceCallID.split(",") || [],
+            videoRecording: transAppInfo.useVideoRecording,
+            roomNumber: transAppInfo.roomNumber,
+        });
+    };
     // ---------- Binding ----------
     signallingSocket.on("userListAll", handleUserListAll);
     signallingSocket.on("lastCallTime", handleLastCallTime);
@@ -280,7 +316,7 @@ export function bindSocketEvents() {
     signallingSocket.on("directMessageReadProcess", handleDirectMessageReadProcess);
     signallingSocket.on("getPreviousMessage", handlePreviousMessage);
     signallingSocket.on("sendEntryNotification", handleSendEntryNotification);
-
+    signallingSocket.on("environment", handleEnvironment);
     // ---------- Unbinder ----------
     return () => {
         signallingSocket.off("userListAll", handleUserListAll);
@@ -293,5 +329,6 @@ export function bindSocketEvents() {
         signallingSocket.off("directMessageReadProcess", handleDirectMessageReadProcess);
         signallingSocket.off("getPreviousMessage", handlePreviousMessage);
         signallingSocket.off("sendEntryNotification", handleSendEntryNotification);
+        signallingSocket.off("environment", handleEnvironment);
     };
 }

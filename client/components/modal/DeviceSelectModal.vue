@@ -107,6 +107,7 @@ let selectedMicIdExist = ref(true);
 const commonStore = useRoomStore();
 const callStore = useCallStore();
 const modalStore = useModalStore();
+const prefrenceStore = useUserPreferenceStore();
 
 onMounted(() => {
     getMediaList();
@@ -159,9 +160,9 @@ async function getMediaList() {
         micList.value = removeDuplicated(filterMic, 2) || [];
         camList.value = removeDuplicated(filterCam, 3) || [];
 
-        selectedAudio.value = commonStore.selectedAudioID;
-        selectedMic.value = commonStore.selectedMicID;
-        selectedCam.value = commonStore.selectedCamID;
+        selectedAudio.value = prefrenceStore.selectedAudioID;
+        selectedMic.value = prefrenceStore.selectedMicID;
+        selectedCam.value = prefrenceStore.selectedCamID;
 
         // ✅ 3. 반응형 데이터 반영 후 실행
         await nextTick();
@@ -253,15 +254,9 @@ function checkDevices() {
     loaded.value = true;
 }
 function apply() {
-    const modified = compare();
-    console.log(`*** modified: ${modified}`);
+    console.log(selectedCam.value);
     console.log(selectedAudio.value);
     console.log(selectedMic.value);
-    if (!modified) {
-        commonStore.setDeviceModifyState(false);
-        checkParameter();
-        return;
-    }
     if (selectedCam.value == -1) {
         console.log("*** no cam selected set no cam !");
         callStore.setCameraNotAllowed(true);
@@ -290,31 +285,14 @@ function apply() {
         id: selectedCam.value,
         index: camIndex,
     };
-    commonStore.setMediaDevices(audioPrams);
-    commonStore.setMediaDevices(micParams);
-    commonStore.setMediaDevices(camParams);
+    prefrenceStore.setMediaDevices(audioPrams);
+    prefrenceStore.setMediaDevices(micParams);
+    prefrenceStore.setMediaDevices(camParams);
     callStore.setCameraDeviceIndex(camIndex);
     commonStore.setDeviceModifyState(true);
     checkParameter();
 }
-function compare() {
-    console.log("*** method: compareing devices");
-    let camIndex = -1;
-    if (camList.value && camList.value.length > 0) {
-        camIndex = camList.value.findIndex((item) => {
-            return item.deviceId === selectedCam.value;
-        });
-    }
-    if (
-        selectedAudio.value === commonStore.selectedAudioID &&
-        selectedMic.value === commonStore.selectedMicID &&
-        camIndex === commonStore.selectedCamIndex
-    ) {
-        return false;
-    } else {
-        return true;
-    }
-}
+
 function checkParameter() {
     if (props.type == "request") {
         // 1:1 통화를 걸 경우

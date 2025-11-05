@@ -61,11 +61,12 @@ onMounted(async () => {
     loginStore.setLoginType(loginType);
     sessionStorage.setItem("isInvited", reservId ? "true" : "false");
     loginRequest(decodedUserInfo.id);
+    listenLoginEvent();
 });
 
 function LoginAttempt() {
     const obj = {
-        localDeviceid: loginStore.m_local_deviceid,
+        localDeviceid: loginStore.sessionID,
     };
     const json = JSON.stringify(obj);
     signallingSocket.emit("forceLogoutRequest", json);
@@ -73,6 +74,7 @@ function LoginAttempt() {
 const forcedLogout = computed(() => loginStore.forcedLogout);
 
 watch(forcedLogout, (result) => {
+    alert("여기오긴했어?")
     if (result) {
         // 모달 변경
         commonStore.setNoneOverlayAlertStatus(23);

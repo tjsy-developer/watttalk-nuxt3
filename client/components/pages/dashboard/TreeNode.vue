@@ -119,7 +119,7 @@ const callStore = useCallStore();
 const directMessageStore = useDirectMessageStore();
 const meettingStore = useMeetingStore();
 
-const { contentsViewType } = storeToRefs(commonStore);
+const route = useRoute();
 
 const hasChildren = computed(() => !!props.node.children?.length);
 const currentPath = [...props.parentPath, props.node.name];
@@ -188,7 +188,7 @@ function requestCall(remoteDeviceId) {
     if (!remoteDeviceId) return;
 
     function calling() {
-        if (contentsViewType.value == 2) {
+        if (route.name == 'call') {
             //@ts-ignore
             callStore.setInCallingFunctionParams(remoteDeviceId);
             //@ts-ignore
@@ -199,19 +199,14 @@ function requestCall(remoteDeviceId) {
         }
     }
 
-    if (contentsViewType.value == 0) {
-        modalStore.openModal("device", {
-            type: "request",
-            deviceId: remoteDeviceId,
-            requestCall: () => {
-                commonStore.setDeviceModifyState(false);
-                console.log("Call Request Success", contentsViewType.value);
-                calling();
-            },
-        });
-    } else {
-        calling();
-    }
+    modalStore.openModal("device", {
+        type: "request",
+        deviceId: remoteDeviceId,
+        requestCall: () => {
+            commonStore.setDeviceModifyState(false);
+            calling();
+        },
+    });
 }
 
 function requestChat(remoteUser) {

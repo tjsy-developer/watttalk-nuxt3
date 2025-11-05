@@ -45,6 +45,7 @@ export function useLoginEvents() {
             return;
         }
 
+        loginStore.m_local_deviceid = loginStore.sessionID;
         loginStore.setLoginInfo({
             institution: data.institution,
             headquarters: data.headquarters,
@@ -89,44 +90,6 @@ export function useLoginEvents() {
         }
     };
 
-    const handleEnvironment = (response) => {
-        const json = JSON.parse(response);
-        if (json.status == 0) {
-            alert("환경설정 정보가 등록되지않았습니다");
-            loginStore.setLoginType(3);
-            return;
-        }
-
-        let appJson = {};
-        for (const key in json) {
-            appJson = JSON.parse(json[key]);
-            break;
-        }
-
-        function convertStringBooleansExtended(obj) {
-            const result = {};
-            for (const key in obj) {
-                const val = obj[key];
-                if (val === "True" || val === "1") result[key] = true;
-                else if (val === "False" || val === "0") result[key] = false;
-                else result[key] = val;
-            }
-            return result;
-        }
-
-        const transAppInfo = convertStringBooleansExtended(appJson);
-        console.log("*** enviroment", transAppInfo);
-        preferenceStore.setEnviroment({
-            useAutoPictureAccept: transAppInfo.autoPictureAccept,
-            useAutoDiscalling: transAppInfo.autoDiscalling,
-            useDirectCall: transAppInfo.directCall,
-            autoCallAcceptTime: transAppInfo.autoCallAcceptTime,
-            onlyVoiceCallId: transAppInfo.onlyVoiceCallID.split(",") || [],
-            videoRecording: transAppInfo.useVideoRecording,
-            roomNumber: transAppInfo.roomNumber,
-        });
-    };
-
     const handleForceLogoutResult = (response) => {
         const json = JSON.parse(response);
         if (json.status == 1) {
@@ -143,15 +106,10 @@ export function useLoginEvents() {
     const listenLoginEvent = () => {
         signallingSocket.on("login", handleLoginResponse);
         signallingSocket.on("loginUserInfo", handleLoginUserInfo);
-        signallingSocket.on("environment", handleEnvironment);
-        signallingSocket.on("forceLogoutResult", handleForceLogoutResult);
 
-        // onUnmounted 시 이벤트 해제
         tryOnScopeDispose(() => {
             signallingSocket.off("login", handleLoginResponse);
             signallingSocket.off("loginUserInfo", handleLoginUserInfo);
-            signallingSocket.off("environment", handleEnvironment);
-            signallingSocket.off("forceLogoutResult", handleForceLogoutResult);
         });
     };
 

@@ -64,7 +64,6 @@ export const useLoginStore = defineStore("login", {
                 this.sessionHqSeq = payload.hq_seq;
                 this.sessionBrSeq = payload.br_seq;
                 this.sessionEmail = payload.email;
-                this.m_local_deviceid = payload.id;
                 this.userSeq = payload.user_seq;
                 this.tokenDecodeResult = 0;
             } catch (e) {

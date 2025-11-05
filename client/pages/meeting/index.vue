@@ -148,7 +148,6 @@ definePageMeta({
 });
 // 마운트될 때 실행할 작업
 onMounted(async () => {
-    await requestNewToken();
     await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     requestLastCallTime();
     requestUserListAll();
@@ -735,7 +734,6 @@ onMounted(async () => {
                 funcAutoCallAceept.value = setTimeout(() => {
                     if (
                         sessionStorage.getItem("inRoomFlag") !== "true" &&
-                        commonStore.contentsViewType == 1 && // Direct access to store state
                         sessionStorage.getItem("m_callWaiting") == "true"
                     ) {
                         console.log("*** socket: calling >> Start AutoCallAccept");
@@ -862,7 +860,7 @@ onMounted(async () => {
 });
 
 // 언마운트되기 전 실행할 작업
-onBeforeUnmount(() => {
+onUnmounted(() => {
     if (autoCallAcceptTime.value > 0) {
         // Access ref's value
         if (funcAutoCallAceept.value !== null) {
@@ -890,7 +888,6 @@ onBeforeUnmount(() => {
     signallingSocket.off("leaveMeeting");
     signallingSocket.off("changedMeeting");
     signallingSocket.off("sendMeetingRoomID");
-    signallingSocket.off("userListAll");
     signallingSocket.off("calling");
     signallingSocket.off("cancelCalling");
     signallingSocket.off("directMessageReadProcess");

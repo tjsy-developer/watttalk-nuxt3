@@ -98,10 +98,6 @@ export const useRoomStore = defineStore("room", {
         videoState: false,
         mainVideoIndex: "",
         mainVideoInfo: "",
-        selectedAudioID: false,
-        selectedMicID: false,
-        selectedCamID: false,
-        selectedCamIndex: -1,
         mediaDeviceModified: false,
         devicedSelection: false,
         powerManagerOpen: null,
@@ -154,12 +150,6 @@ export const useRoomStore = defineStore("room", {
             if (payload) {
                 this.isVideo = payload;
             } else  this.isVideo = !this.isVideo;
-        },
-        setIsVideoTrue() {
-            this.isVideo = true;
-        },
-        setIsVideoFalse() {
-            this.isVideo = false;
         },
         alert(payload) {
             this.alertNum = payload;
@@ -510,28 +500,6 @@ export const useRoomStore = defineStore("room", {
         },
         setMainVideoInfo(payload) {
             this.mainVideoInfo = payload;
-        },
-        setMediaDevices(payload) {
-            if (payload.type === 0) {
-                console.log(
-                    `*** media device mutated type: ${payload.type}, id: ${payload.id}`,
-                );
-                this.selectedAudioID = payload.id;
-                window.localStorage.setItem("selectedAudioID", payload.id);
-            } else if (payload.type === 1) {
-                console.log(
-                    `*** media device mutated type: ${payload.type}, id: ${payload.id}`,
-                );
-                this.selectedMicID = payload.id;
-                window.localStorage.setItem("selectedMicID", payload.id);
-            } else if (payload.type === 2) {
-                console.log(
-                    `*** media device mutated type: ${payload.type}, id: ${payload.index}`,
-                );
-                this.selectedCamID = payload.id;
-                this.selectedCamIndex = payload.index;
-                window.localStorage.setItem("selectedCamIndex", payload.index);
-            }
         },
         setDeviceModifyState(payload) {
             this.mediaDeviceModified = payload;

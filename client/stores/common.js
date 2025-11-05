@@ -13,6 +13,10 @@ export const useUserPreferenceStore = defineStore("userPreference", {
         onlyVoiceCallId: null,
         videoRecording: null,
         roomNumber: null,
+        selectedAudioID: false,
+        selectedMicID: false,
+        selectedCamID: false,
+        selectedCamIndex: -1,
     }),
     actions: {
         setLang(payload) {
@@ -42,6 +46,28 @@ export const useUserPreferenceStore = defineStore("userPreference", {
             const theme = localStorage.getItem("theme");
             if (lang) this.lang = lang;
             if (theme) this.theme = theme;
+        },
+        setMediaDevices(payload) {
+            if (payload.type === 0) {
+                console.log(
+                    `*** media device mutated type: ${payload.type}, id: ${payload.id}`,
+                );
+                this.selectedAudioID = payload.id;
+                window.localStorage.setItem("selectedAudioID", payload.id);
+            } else if (payload.type === 1) {
+                console.log(
+                    `*** media device mutated type: ${payload.type}, id: ${payload.id}`,
+                );
+                this.selectedMicID = payload.id;
+                window.localStorage.setItem("selectedMicID", payload.id);
+            } else if (payload.type === 2) {
+                console.log(
+                    `*** media device mutated type: ${payload.type}, id: ${payload.index}`,
+                );
+                this.selectedCamID = payload.id;
+                this.selectedCamIndex = payload.index;
+                window.localStorage.setItem("selectedCamIndex", payload.index);
+            }
         },
     },
     persist: {

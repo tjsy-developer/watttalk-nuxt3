@@ -19,7 +19,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     if (!process.client) return;
 
     const { signallingSocket, transferSocket } = useSignallingSocket();
-    const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
+    const { loginRequest, listenLoginEvent, forceLogout } = useLoginEvents();
     console.log("초기 상태:", signallingSocket.connected, transferSocket.connected);
 
     signallingSocket.connect();
@@ -31,11 +31,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
         if (["requestVideoRecording"].includes(route.name)) {
             return;
+        } else {
+            if (loginStore.m_local_deviceid) loginRequest(loginStore.m_local_deviceid);
         }
         // 이벤트 등록
         bindSocketEvents();
         useSocketEmitEvents();
-        listenLoginEvent();
     });
 
     signallingSocket.on("reconnect", async () => {
@@ -47,7 +48,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         // 이벤트 등록
         bindSocketEvents();
         useSocketEmitEvents();
-        listenLoginEvent();
     });
 
     signallingSocket.on("disconnect", () => {
@@ -88,66 +88,85 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         window.addEventListener(evt, updateActivity);
     });
 
-    function isTokenExpiring(jwt) {
-        try {
-            const decoded = jwtDecode(jwt);
-            const expireTime = decoded.exp * 1000;
+    let tokenCheckInterval = null;
+
+    function startTokenCheckInterval() {
+        if (tokenCheckInterval !== null) return; // 이미 실행 중이면 스킵
+
+        tokenCheckInterval = window.setInterval(async () => {
             const now = Date.now();
-            return expireTime - now < 2 * 60 * 1000; // 2분 전 만료
-        } catch {
-            return false;
+            const { accessToken, enRToken } = tokenStore;
+
+            // 1️⃣ 마지막 활동 시간
+            const lastActivityStr = new Date(lastActivity).toLocaleString();
+
+            // 2️⃣ 액세스토큰 만료 시간
+            let accessExp = 0;
+            let accessTokenExpireStr = "N/A";
+            if (accessToken) {
+                try {
+                    const decoded = jwtDecode(accessToken);
+                    accessExp = decoded.exp * 1000;
+                    accessTokenExpireStr = new Date(accessExp).toLocaleString();
+                } catch {
+                    accessTokenExpireStr = "Invalid token";
+                }
+            }
+
+            // 3️⃣ 리프레시토큰 만료 시간 & 발급 시간
+            let refreshExp = 0;
+            let refreshIssuedAt = 0;
+            let refreshTokenExpireStr = "N/A";
+            if (enRToken) {
+                try {
+                    const decodedRefresh = decryptData(enRToken);
+                    const decoded = jwtDecode(decodedRefresh);
+                    refreshExp = decoded.exp * 1000;
+                    refreshIssuedAt = decoded.iat * 1000;
+                    refreshTokenExpireStr = new Date(refreshExp).toLocaleString();
+                } catch (err) {
+                    console.log(err);
+                    refreshTokenExpireStr = "Invalid token";
+                }
+            }
+            // console.log(`토큰 체크:
+            // - 현재 시간: ${new Date(now).toLocaleString()}
+            // - 마지막 활동: ${lastActivityStr}
+            // - 액세스토큰 만료: ${accessTokenExpireStr}
+            // - 리프레시토큰 발급시점: ${new Date(refreshIssuedAt).toLocaleString()}
+            // `);
+            // 4️⃣ 비활동 체크
+            const inactive = lastActivity < refreshIssuedAt;
+            if (inactive && loginStore.m_local_deviceid) {
+                console.log("30분 이상 비활동, 로그아웃 처리");
+                stopTokenCheckInterval(); // 인터벌 종료
+                return;
+            }
+
+            // 5️⃣ 액세스토큰 만료 체크
+            if (lastActivity > accessExp) {
+                console.log("액세스토큰 만료, 갱신 시도");
+                try {
+                    await requestNewToken();
+                } catch (err) {
+                    stopTokenCheckInterval();
+                    sessionStorage.clear();
+                    location.href = getManagerDomain();
+                }
+            } else {
+                console.log("액세스토큰 아직 유효");
+            }
+        }, 5000);
+    }
+
+    function stopTokenCheckInterval() {
+        if (tokenCheckInterval !== null) {
+            clearInterval(tokenCheckInterval);
+            tokenCheckInterval = null;
         }
     }
-    setInterval(async () => {
 
-        const { accessToken, enRToken } = tokenStore;
-
-        // 1️⃣ 마지막 활동 시간
-        const lastActivityStr = new Date(lastActivity).toLocaleString();
-
-        // 2️⃣ 액세스토큰 만료 시간
-        let accessExp = 0;
-        let accessTokenExpireStr = "N/A";
-        if (accessToken) {
-            try {
-                const decoded = jwtDecode(accessToken);
-                accessExp = decoded.exp * 1000; // exp는 초 단위
-                accessTokenExpireStr = new Date(accessExp).toLocaleString();
-            } catch {
-                accessTokenExpireStr = "Invalid token";
-            }
-        }
-
-        // 3️⃣ 리프레시토큰 만료 시간 (만약 exp가 있다면)
-        let refreshExp = 0;
-        let refreshTokenExpireStr = "N/A";
-        if (enRToken) {
-            try {
-                const decodedRefresh = decryptData(enRToken);
-                refreshExp = jwtDecode(decodedRefresh);
-                refreshTokenExpireStr = new Date(refreshExp.exp * 1000).toLocaleString();
-            } catch (err) {
-                console.log(err)
-                refreshTokenExpireStr = "Invalid token";
-            }
-        }
-        console.log(
-            "🕒 마지막 활동시간:",
-            lastActivityStr,
-            "🔑 액세스토큰 만료시간:",
-            accessTokenExpireStr,
-            "🔄 리프레시토큰 만료시간:",
-            refreshTokenExpireStr,
-        );
-        const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30분
-        const inactive = Date.now() - lastActivity > INACTIVITY_LIMIT;
-        console.log(lastActivity > accessExp);
-
-        if (lastActivity > accessExp) {
-            // 사용자는 활동 중인데 액세스토큰이 만료된 상태 → 갱신 필요
-            await requestNewToken(enRToken);
-        } else console.log('아직 만료되지않은 상태')
-    }, 5000);
+    startTokenCheckInterval();
 
     // 전역 제공
     return {

@@ -214,8 +214,8 @@ definePageMeta({
 
 // 마운트될 때 실행할 작업
 onMounted(async () => {
+    await requestNewToken("talk");
     console.log("컴포넌트가 마운트되었습니다.");
-    await requestNewToken();
     nextTick(() => {
         // const { token } = await $fetch("/api/config");
         // const decoded = jwtDecode(token);
@@ -317,18 +317,7 @@ onMounted(async () => {
 
         // 1:1 일 경우 3초 뒤 모달 제거 및 야누스 소멸
         if (commonStore.feedsLength == 0) {
-            setTimeout(function () {
-                // janus destroy
-                commonStore.janus.destroy();
-
-                // contactList.vue 로 이동
-                commonStore.setChangeViewType(0);
-                router.back();
-                modalStore.closeModal("call");
-                setTimeout(function () {
-                    window.location.reload();
-                }, 500);
-            }, 3000);
+            commonStore.janus.destroy();
         }
 
         // 발신 중 callingWindow 삭제
@@ -1925,14 +1914,14 @@ onMounted(async () => {
                 // receiveFileType.value = getFileExtension(json.filetype);
 
                 const obj = {
-					localdeviceid: loginStore.m_local_deviceid,
-					remotedeviceid: json.deviceid, //-ksy
-					status: 1,
-					handleId: feeds.value[rfidIndex].rfid
-				}
-				const sendJson = JSON.stringify(obj)
-				signallingSocket.emit("fileReceiver", sendJson)
-				console.log("*** socket: emit fileReceiver. json: " + sendJson);
+                    localdeviceid: loginStore.m_local_deviceid,
+                    remotedeviceid: json.deviceid, //-ksy
+                    status: 1,
+                    handleId: feeds.value[rfidIndex].rfid,
+                };
+                const sendJson = JSON.stringify(obj);
+                signallingSocket.emit("fileReceiver", sendJson);
+                console.log("*** socket: emit fileReceiver. json: " + sendJson);
                 callStore.setHQCaptureFiles({ deviceid: json.deviceid });
             } else {
                 // 내 화면을 파일 수락/거절 질의로 callingWindow 변경
@@ -2369,7 +2358,7 @@ onMounted(async () => {
                     );
 
                     /***** 파일 수신 초기화 *****/
-                    callStore.setReceiveHQCaptureFile({ deviceid: json.deviceid })
+                    callStore.setReceiveHQCaptureFile({ deviceid: json.deviceid });
                 }
                 // 파일 수신인 경우
                 else {
@@ -3384,8 +3373,8 @@ function streamMediaChange() {
             replaceVideo: true,
             data: true,
             keepVideo: false,
-            selectedMicID: commonStore.selectedMicID,
-            selectedCamIndex: commonStore.selectedCamIndex,
+            selectedMicID: preferenceStore.selectedMicID,
+            selectedCamIndex: preferenceStore.selectedCamIndex,
         },
         simulcast: doSimulcast.value,
         simulcast2: doSimulcast2.value,
@@ -3397,8 +3386,8 @@ function streamMediaChange() {
                     muteVideoCustom();
                 }
                 if (
-                    commonStore.selectedMicID == "false" ||
-                    commonStore.selectedMicID == false
+                    preferenceStore.selectedMicID == "false" ||
+                    preferenceStore.selectedMicID == false
                 ) {
                     callStore.setMicOnOffClick(true);
                     commonStore.setIsSoundedTrue();
@@ -3418,8 +3407,8 @@ function streamMediaChange() {
 }
 async function setAudioOutput() {
     console.log("*** audio output device change");
-    console.log(`*** audio output device id = ${commonStore.selectedAudioID}`);
-    const audioOutID = commonStore.selectedAudioID;
+    console.log(`*** audio output device id = ${preferenceStore.selectedAudioID}`);
+    const audioOutID = preferenceStore.selectedAudioID;
     //
     for (let iLoop = 0; iLoop < 15; ++iLoop) {
         const permanantAuido = document.getElementById(`audioControl${iLoop}`);
@@ -3709,7 +3698,7 @@ function publishOwnFeed(useAudio) {
     /// ///////////////////////////////////////////////////////////////////
     let video = true;
     let audio =
-        commonStore.selectedMicID == false || commonStore.selectedMicID == "false"
+        preferenceStore.selectedMicID == false || preferenceStore.selectedMicID == "false"
             ? false
             : true;
     // video on     audio on
@@ -3887,8 +3876,8 @@ function publishOwnFeedCustom(videoSend, audioSend) {
             video: videoType,
             // =>kyj
             data: true,
-            selectedMicID: commonStore.selectedMicID,
-            selectedCamIndex: commonStore.selectedCamIndex, // <=kyj
+            selectedMicID: preferenceStore.selectedMicID,
+            selectedCamIndex: preferenceStore.selectedCamIndex, // <=kyj
         }, // Publishers are sendonly
         // If you want to test simulcasting (Chrome and Firefox only), then
         // pass a ?simulcast=true when opening demo page: it will turn
@@ -4655,8 +4644,8 @@ function screenShare(type) {
             video: videoOrScreen, // screen 공유 시 "screen"
             // =>kyj
             data: true,
-            selectedMicID: commonStore.selectedMicID,
-            selectedCamIndex: commonStore.selectedCamIndex,
+            selectedMicID: preferenceStore.selectedMicID,
+            selectedCamIndex: preferenceStore.selectedCamIndex,
             // <=kyj
         },
         success(jsep) {
@@ -5984,7 +5973,7 @@ function callingLayoutChange(status, text, col) {
         col,
         status,
         nickname,
-        deviceid: feeds.value[col]?.rfdeviceid
+        deviceid: feeds.value[col]?.rfdeviceid,
     });
     videoResize();
 }
@@ -6368,7 +6357,7 @@ function videoLayoutChange() {
                         // console.log(mainType)
                         // console.log(mainText)
                         if (mainType == "unpublished") {
-                            conosole.log("여기")
+                            conosole.log("여기");
                             // Main Video 태그를 jauns에서 만들어주기 때문에, 생성 전 일 수도 있으므로 1초뒤 실행
                             mainVideoChangeFunc(0, mainText);
                         } else {
@@ -6858,18 +6847,7 @@ function addReceiveMessageList(
     callStore.setUnderStatus(3);
 }
 // ========= 통화 중 연락처 화면 관련 function =======
-// getRecentList
-function recentListAllRequest(localdeviceid) {
-    const currentTime = getWorldTime();
-    const obj = {
-        deviceid: localdeviceid,
-        current_time: currentTime,
-        language: preferenceStore.lang,
-    };
-    const json = JSON.stringify(obj);
-    signallingSocket.emit("lastCallTime", json);
-    console.log("*** socket: emit lastCallTime. json:" + json);
-}
+
 // getUserList
 function userListAllRequest(localDeviceid, enSeq) {
     const obj = {
@@ -6881,16 +6859,7 @@ function userListAllRequest(localDeviceid, enSeq) {
     signallingSocket.emit("userListAll", json);
     console.log("*** socket: emit userListAll. json:" + json);
 }
-// getUserStatus
-function userStatusRequest(remotedeviceid) {
-    const obj = {
-        deviceid: remotedeviceid,
-    };
 
-    const json = JSON.stringify(obj);
-    signallingSocket.emit("userStatus", json);
-    // console.log("*** socket: emit userStatus. json: " + json)
-}
 // getCanMakeCallRequest
 function canMakeCallRequest(remotedeviceid) {
     const obj = {
@@ -7978,22 +7947,7 @@ function janusAndCallingDestroy() {
     }
 
     // reload
-    setTimeout(function () {
-        // 세션 삭제 - 위치 이동 : sessionStorage roomid를 미리 삭제해버려서 회의 종료 시 room id가 null이 되기 때문에 위치 이동.
-        sessionStorage.removeItem("m_roomid");
-        sessionStorage.removeItem("createRoomFlag");
-        sessionStorage.removeItem("otherPartyAccess");
-
-        // guest가 입장 시 윈도우 창 닫기
-        if (callingType.value == "joinGuestCall") {
-            // 비회원 참가 시 window close
-            window.location.href = "https://wattsolution.co.kr/";
-        }
-        router.back();
-        setTimeout(function () {
-            window.location.reload();
-        }, 500);
-    }, 3000);
+    initStore();
 }
 function setCallingTimer(type) {
     // console.log("*** methods: setCallingTimer Function")
@@ -8681,8 +8635,8 @@ function canvasCreateOffer(type) {
             replaceAudio: replaceAudioResult,
             replaceVideo: true,
             video: videoOrCanvas, // canvas 공유의 핵심 코드
-            selectedMicID: commonStore.selectedMicID,
-            selectedCamIndex: commonStore.selectedCamIndex,
+            selectedMicID: preferenceStore.selectedMicID,
+            selectedCamIndex: preferenceStore.selectedCamIndex,
         },
 
         simulcast: doSimulcast.value,
@@ -9440,7 +9394,7 @@ function sayHello() {
     setIntervalStream.value = "";
     Janus.init({
         debug: false,
-        currentMicId: commonStore.selectedMicID,
+        currentMicId: preferenceStore.selectedMicID,
         callback() {
             $(this).attr("disabled", true).unbind("click");
 
@@ -9765,7 +9719,7 @@ function sayHello() {
                                     // The room has been destroyed
                                     Janus.warn("The room has been destroyed!");
                                     alert("The room has been destroyed", function () {
-                                        window.location.reload();
+                                        initStore();
                                     });
                                     // ???
                                 } else if (event === "event") {
@@ -9884,7 +9838,7 @@ function sayHello() {
                                                 .hide();
 
                                             // $("#videoremote" + remoteFeed.rfindex).empty()
-                                            console.log("videooff 1")
+                                            console.log("videooff 1");
                                             callingLayoutChange(
                                                 "none",
                                                 "",
@@ -9903,7 +9857,7 @@ function sayHello() {
 
                                             remoteFeed.detach();
                                         } else {
-                                            console.log("videooff 2")
+                                            console.log("videooff 2");
                                             callingLayoutChange("none", "", 1);
 
                                             // 참여자 계산
@@ -10528,24 +10482,8 @@ function sayHello() {
                         clearInterval(videoNoneCanvasInterval.value);
                     }
 
-                    // reload
-                    setTimeout(function () {
-                        // 세션 삭제 - 위치 이동 : sessionStorage roomid를 미리 삭제해버려서 회의 종료 시 room id가 null이 되기 때문에 위치 이동.
-                        sessionStorage.removeItem("m_roomid");
-                        sessionStorage.removeItem("createRoomFlag");
-                        sessionStorage.removeItem("otherPartyAccess");
-
-                        // guest가 입장 시 윈도우 창 닫기
-                        if (callingType.value == "joinGuestCall") {
-                            // 비회원 참가 시 window close
-                            window.location.href = "https://wattsolution.co.kr/";
-                        }
-                        router.back()
-
-                        setTimeout(function () {
-                            window.location.reload();
-                        }, 500);
-                    }, 3000);
+                    initStore();
+                    
                 },
             });
         },
@@ -10587,6 +10525,29 @@ function sayHello() {
             uniqueRoomid.value, // 2021-07-21 추가
         );
     }
+}
+
+function initStore() {
+    // 세션 삭제 - 위치 이동 : sessionStorage roomid를 미리 삭제해버려서 회의 종료 시 room id가 null이 되기 때문에 위치 이동.
+    sessionStorage.removeItem("m_roomid");
+    sessionStorage.removeItem("createRoomFlag");
+    sessionStorage.removeItem("otherPartyAccess");
+
+    // guest가 입장 시 윈도우 창 닫기
+    if (callingType.value == "joinGuestCall") {
+        // 비회원 참가 시 window close
+        window.location.href = "https://wattsolution.co.kr/";
+    }
+    callStore.$reset();
+    meetingStore.$reset();
+    chattingStore.$reset();
+    directMessageStore.$reset();
+    setTimeout(function () {
+        router.back();
+        commonStore.$reset();
+        modalStore.$reset();
+        vfm.closeAll();
+    }, 3000);
 }
 
 // --- 1. mapState 역할을 하는 computed 속성들 (단순히 스토어 상태를 읽어오는 용도) ---
@@ -10676,13 +10637,13 @@ const getHangupCallingConfirmFlag = computed(() => callStore.hangupCallingConfir
 // 위에 정의된 computed 값들이 변경될 때 실행될 함수들입니다.
 
 watch(
-  feeds, // ref 자체를 감시
+    feeds, // ref 자체를 감시
     (newFeeds, oldFeeds) => {
-        console.log("🪶 feeds changed:", newFeeds)
-        callStore.setFeeds(newFeeds)
+        console.log("🪶 feeds changed:", newFeeds);
+        callStore.setFeeds(newFeeds);
     },
-    { deep: true }
-)
+    { deep: true },
+);
 
 watch(getMultiCallingPopupResult, (newValue, oldValue) => {
     console.log("MultiCallingPopupResult 변경됨:", newValue, oldValue);
@@ -10789,7 +10750,7 @@ watch(getCacncelCallingResult, (newValue, oldValue) => {
         // for (let i = 1; i < 15; i++) {
         for (let i = 1; i < callStore.currentRoomNumberCount; i++) {
             if (!feeds.value[i]) {
-                console.log("videooff 3")
+                console.log("videooff 3");
                 callingLayoutChange("none", "", i);
                 sessionStorage.setItem("m_callWaiting", "false");
                 break;
@@ -10867,7 +10828,7 @@ watch(getErrorCloseResult, (newValue, oldValue) => {
         // for (let i = 1; i < 15; i++) {
         for (let i = 1; i < currentRoomNumberCount.value; i++) {
             if (!feeds.value[i]) {
-                console.log("videooff 1")
+                console.log("videooff 1");
                 callingLayoutChange("none", "", i);
                 break;
             }
@@ -10886,7 +10847,7 @@ watch(getMainVideoImage, (newValue, oldValue) => {
         // Main Name 변경
         console.log("*** watch: getMainVideoImage - videoOFF 사용자 클릭");
         // $("#videoMainCaption").html(callStore.mainVideoText)
-        console.log("여기")
+        console.log("여기");
         mainVideoChangeFunc(0, callStore.mainVideoText);
         console.log(callStore.videoMainIndex);
         // host가 바라보는 화면으로 만들기
@@ -11478,7 +11439,7 @@ watch(getMeetingLeaveFlag, (newValue, oldValue) => {
 watch(changePersonnelInRoom, (newValue, oldValue) => {
     console.log("changePersonnelInRoom 변경됨:", newValue, oldValue);
 
-    console.log("*** watch: changePersonnelInRoom", newValue, resultMaxNum.value );
+    console.log("*** watch: changePersonnelInRoom", newValue, resultMaxNum.value);
     resultMaxNum.value = Math.max(newValue, resultMaxNum.value);
 
     if (resultMaxNum.value > 1) {
@@ -11967,25 +11928,64 @@ watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
     }
 });
 
-onUnmounted(() => {
-    // signallingSocket.off("login");
-    // signallingSocket.off("connect");
-    // signallingSocket.off("environment");
-    // signallingSocket.off("callReadyStatus");
-    // signallingSocket.off("userListAll");
-    // signallingSocket.off("lastCallTime");
-    // signallingSocket.off("userStatus");
-    // signallingSocket.off("canMakeCall");
-    // signallingSocket.off("groupRoom");
-    // signallingSocket.off("createRoomID");
-    // signallingSocket.off("calling");
-    // signallingSocket.off("loginUserInfo");
-    // signallingSocket.off("cancelCalling");
-    // signallingSocket.off("multiRefuseCalling");
-    // // signallingSocket.off("refuseCalling");
-    // signallingSocket.off("inviteCancelCalling");
-    // signallingSocket.off("forceLogoutRequest");
-    // signallingSocket.off("getOverhaul");
+onUnmounted(async () => {
+    await requestNewToken();
+    const events = [
+        "refuseCalling",
+        "fileReceiver",
+        "createRoom",
+        "canReceiveCall",
+        "joinRoom",
+        "calling",
+        "discalling",
+        "cancelCalling",
+        "fileTransfer",
+        "videoOnOff",
+        "multiRefuseCalling",
+        "multiCalling",
+        "notification",
+        "canMakeCall",
+        "inviteCancelCalling",
+        "videoCallHostCheck",
+        "videoCallHostRequest",
+        "videoCallHostChange",
+        "videoCallHostCancel",
+        "allMicOnOff",
+        "requestSettingInRoom",
+        "resultSettingInRoom",
+        "setZoomLevel",
+        "hostSelectedMainVideo",
+        "micOnOff",
+        "forceMicOnOff",
+        "changeDuration",
+        "leaveMeeting",
+        "sendFileServerUploadInfo",
+        "directMessage",
+        "fileSendRate",
+        "directMessageReadProcess",
+        "inviteNoneMember",
+        "drawing",
+        "destroyRoomID",
+        "callStopTime",
+        "changeAntenna",
+        "getMeetingInfo",
+        "sendFileServerUploadInfo", // 중복 포함 시 무시됨
+        "moveThumbnail",
+        "roomFull",
+        "laserPointer",
+        "requestHQCapture",
+        "missedCall",
+        "getPreviousMessage",
+        "forceLogoutResult",
+        "insertNewAudioDuration",
+        "prepareStreamMode",
+        "callStartTime",
+        "sendFileImageUrl"
+    ];
+
+    events.forEach((event) => {
+        signallingSocket.off(event);
+    });
 });
 </script>
 

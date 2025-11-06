@@ -74,7 +74,6 @@ function LoginAttempt() {
 const forcedLogout = computed(() => loginStore.forcedLogout);
 
 watch(forcedLogout, (result) => {
-    alert("여기오긴했어?")
     if (result) {
         // 모달 변경
         commonStore.setNoneOverlayAlertStatus(23);

@@ -1,18 +1,18 @@
 // stores/drawingCanvas.ts
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 // deepClone 유틸리티 함수 (스토어 내부 또는 별도 유틸리티 파일에 정의)
-const deepClone = obj => {
-  if (obj === null || typeof obj !== "object") {
-    return obj;
-  }
+const deepClone = (obj) => {
+    if (obj === null || typeof obj !== "object") {
+        return obj;
+    }
 
-  const result = Array.isArray(obj) ? [] : {};
+    const result = Array.isArray(obj) ? [] : {};
 
-  for (const key of Object.keys(obj)) {
-    result[key] = deepClone(obj[key]);
-  }
-  return result;
+    for (const key of Object.keys(obj)) {
+        result[key] = deepClone(obj[key]);
+    }
+    return result;
 };
 
 export const useDrawingCanvasStore = defineStore("drawingCanvas", {
@@ -86,7 +86,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.firstFiles.unshift({
                 img: payload.src,
                 type: payload.type,
-                index: this.index,
+                index: this.files.length,
                 history: deepClone(this.firstHistory),
             });
         },
@@ -98,7 +98,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
                 this.files.push({
                     img: payload.src,
                     type: payload.type,
-                    index: this.index,
+                    index: this.files.length,
                     history: deepClone(this.firstHistory),
                 });
                 this.canvasNumber++;
@@ -141,7 +141,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
                 this.files.push({
                     img: payload.src,
                     type: payload.type,
-                    index: this.index,
+                    index: this.files.length,
                     history: deepClone(this.firstHistory),
                 });
                 this.canvasNumber++;
@@ -154,7 +154,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             for (let i = 0; i < this.files.length; i++) {
                 if (num === this.files[i].index) {
                     this.files[i].history = deepClone(history);
-                    // console.log("not pdf", num, history, this.files[i].index, i)
+                    console.log("not pdf", num, history, this.files[i].index, i);
                     return;
                 }
                 if (this.files[i].pdf) {
@@ -255,7 +255,6 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.isUpdate = payload;
         },
         setPdfGroup() {
-            // payload 제거, 내부에서 직접 증가
             this.pdfGroup++;
         },
         setThumbnailWidth(payload) {
@@ -269,85 +268,54 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         },
         // saveThumbnailImg
         setSaveThumbnailImg(payload) {
-            if (payload.status === "on") {
-                this.saveThumbnailImg = payload;
-            } else if (payload.status === "off") {
-                // state.saveThumbnailImg 배열 초기화
-                // `saveThumbnailImg`가 `null`일 경우 배열로 초기화 후 push
-                if (this.saveThumbnailImg === null) {
-                    this.saveThumbnailImg = [];
-                }
-                // `saveThumbnailImg`가 이미 배열인 경우 `push`
-                // `saveThumbnailImg`가 배열이 아닌 경우 (예: "on" 상태로 객체였을 경우)
-                // push 전에 배열로 변환하는 로직이 필요할 수 있으나, 원본 로직을 따름
-                this.saveThumbnailImg.push(payload);
+            if (this.saveThumbnailImg === null) {
+                this.saveThumbnailImg = [];
             }
+            this.saveThumbnailImg.push(payload);
         },
-        // state.saveThumbnailImg.src 에 있는 이미지를 캔버스에 삽입
-        setSaveThumbnailImgInCanvas(payload) {
+        async setSaveThumbnailImgInCanvas(payload) {
             if (!this.canvas) {
                 console.warn("Canvas is not initialized. Cannot load thumbnail image.");
                 return;
             }
 
-            const imgObj = new Image();
-            // 드로잉 썸네일 문제로 인해 meet 소스와 동일하게 수정 ->
-            if (payload === "on") {
-                imgObj.src = this.saveThumbnailImg.src;
-            } else {
-                // saveThumbnailImg가 배열임을 전제
-                if (Array.isArray(this.saveThumbnailImg) && typeof payload === "number") {
-                    imgObj.src = this.saveThumbnailImg[payload].src;
-                } else {
-                    console.error(
-                        "Invalid payload or saveThumbnailImg structure for 'off' status.",
+            if (!payload) return;
+            else {
+                try {
+                    const fabricModule = await import("fabric");
+
+                    fabricModule.fabric.Image.fromURL(
+                        payload,
+                        (img) => {
+                            // 스케일링
+                            const canvasWidth = this.canvas.getWidth();
+                            const canvasHeight = this.canvas.getHeight();
+
+                            const scaleX = canvasWidth / img.width;
+                            const scaleY = canvasHeight / img.height;
+                            const scale = Math.min(scaleX, scaleY, 1); // 캔버스보다 작으면 원본 크기 유지
+
+                            img.set({
+                                left: 0,
+                                top: 0,
+                                originX: "left",
+                                originY: "top",
+                                angle: 0,
+                                scaleX: scale,
+                                scaleY: scale,
+                                flipX: false,
+                            });
+
+                            this.canvas.add(img);
+                            this.canvas.renderAll();
+                            console.log("Image successfully added to canvas:", payload);
+                        },
+                        { crossOrigin: "anonymous" }, // 외부 이미지일 경우
                     );
-                    return;
+                } catch (err) {
+                    console.error("Failed to load image for canvas:", err);
                 }
             }
-
-            imgObj.crossOrigin = "anonymous";
-            imgObj.onload = async () => {
-                const fabricModule = await import("fabric");
-                const image = new fabricModule.fabric.Image(
-                    imgObj,
-                    {
-                        left: 0,
-                        top: 0,
-                        originX: "left",
-                        originY: "top",
-                        angle: 0,
-                    },
-                    {
-                        crossOrigin: "anonymous",
-                    },
-                );
-
-                if (
-                    image.width > this.canvas.getWidth() ||
-                    image.height > this.canvas.getHeight()
-                ) {
-                    if (image.width > image.height) {
-                        image.scale(1.0).set({
-                            scaleX: this.canvas.getWidth() / image.width,
-                            scaleY: this.canvas.getHeight() / image.height,
-                        });
-                    } else {
-                        image.scale(1.0).set({
-                            scaleX: this.canvas.getWidth() / (image.width * 2.5),
-                            scaleY: this.canvas.getHeight() / image.height,
-                        });
-                    }
-                } else {
-                    image.scale(1.0).set("flipX", false);
-                }
-                console.log("state.canvas.add(image)");
-                this.canvas.add(image);
-                this.canvas.renderAll();
-            };
-            imgObj.onerror = (e) => {
-                console.error("Failed to load image for canvas:", e);
-            };
         },
         // state.src 에 드로잉 관련된 객체 타입, 객체 경로, 파일 이름을 입력
         setSrc({ type, src, name, status }) {

@@ -370,46 +370,73 @@ onMounted(async () => {
         fabric.Object.NUM_FRACTION_DIGITS = 10;
         drawingStore.setCanvas(canvas.value);
 
+        let isUpdatingHistory = false;
+        // Fabric 이벤트 등록
+        function safeUpdateHistory(type) {
+            if (isUpdatingHistory) return;
+
+            isUpdatingHistory = true;
+            updateHistory(type);
+
+            requestAnimationFrame(() => {
+                isUpdatingHistory = false;
+            });
+        }
+
         // Fabric 이벤트 등록
         canvas.value.on("mouse:down", beginDrawing);
         canvas.value.on("mouse:move", keepDrawing);
         canvas.value.on("mouse:up", stopDrawing);
         canvas.value.on("mouse:wheel", canvasZoomWheel);
+
         canvas.value.on("object:moving", disable);
         canvas.value.on("object:scaling", disable);
         canvas.value.on("object:rotating", disable);
+
+        // ➤ object:added — 드로잉 도구일 때는 updateHistory 실행 금지
         canvas.value.on("object:added", (e) => {
-            if (
-                (beforeTool.value !== "line" &&
-                    beforeTool.value !== "square" &&
-                    beforeTool.value !== "arrow" &&
-                    beforeTool.value !== "circle" &&
-                    beforeTool.value !== "text") ||
-                nowTool.value == "photo" ||
-                nowTool.value == "pdf" ||
-                thumbnailFileReceive.value
-            ) {
-                console.log("여기를 왜탸?");
-                // updateHistory();
+            const drawTools = ["line", "square", "arrow", "circle", "text"];
+            const isDrawTool = drawTools.includes(beforeTool.value);
+            const isMediaInsert =
+                nowTool.value === "photo" ||
+                nowTool.value === "pdf" ||
+                thumbnailFileReceive.value;
+
+            // 선, 사각형, 화살표, 텍스트 등 드로잉이면 히스토리 생성 금지
+            if (!isDrawTool || isMediaInsert) {
+                safeUpdateHistory();
+
+                // 썸네일 작업 후 플래그 초기화
                 drawingStore.setThumbnailFileReceive(false);
             }
         });
+
+        // ➤ object:selected
         canvas.value.on("object:selected", () => {
+            // 선택 중에는 드로잉이 아님 → 기록 가능
             disable();
-            updateHistory(4);
+            safeUpdateHistory(4);
         });
+
+        // ➤ object:modified (크기/회전 수정)
         canvas.value.on("object:modified", () => {
             disable();
-            updateHistory(5);
+            safeUpdateHistory(5);
         });
+
+        // ➤ selection:created
         canvas.value.on("selection:created", (e) => {
             if (e.target) {
                 objects.value = e.target;
             }
+
+            // 텍스트 모드일 때는 히스토리 추가 금지 (기존 로직 유지)
             if (nowTool.value !== "text") {
-                updateHistory(6);
+                safeUpdateHistory(6);
             }
         });
+
+        // ➤ selection:updated (선택 유지)
         canvas.value.on("selection:updated", (e) => {
             if (e.target) {
                 objects.value = e.target;
@@ -431,61 +458,6 @@ onMounted(async () => {
 
         canvasWidthHeightChange();
         allHeight.value = window.innerHeight;
-
-        // // 히스토리 복원
-        // if (lastCanvasJson.value != null) {
-        //   if (lastCanvasJson.value === vxCanvasHistory.value.state[0]) {
-        //     const lastHistory =
-        //       vxCanvasHistory.value.state[vxCanvasHistory.value.currentStateIndex];
-        //     drawingStore.setCanvasJson(lastHistory);
-        //   }
-
-        //   const saveLastJson = lastCanvasJson.value;
-        //   if (
-        //     !(
-        //       vxCanvasHistory.value.state.length === 0 &&
-        //       vxCanvasHistory.value.state[0] === saveLastJson
-        //     )
-        //   ) {
-        //     updateHistory(7);
-        //     vxCanvasHistory.value.state.push(saveLastJson);
-        //   }
-
-        //   let lastCanvasIndex = vxCanvasHistory.value.state.length - 1;
-        //   for (let iLoop = 0; iLoop < vxCanvasHistory.value.state.length; ++iLoop) {
-        //     const ele = vxCanvasHistory.value.state[iLoop];
-        //     if (ele === saveLastJson) {
-        //       lastCanvasIndex = iLoop;
-        //       break;
-        //     }
-        //   }
-
-        //   drawingStore.setCanvasHistoryFin(true);
-        // } else if (vxCanvasHistory.value.state.length === 0) {
-        //   if (!isGivenThumbnailTransfer.value) {
-        //     updateHistory(8);
-        //     drawingStore.setFirstHistory(vxCanvasHistory.value);
-        //   }
-        // }
-
-        // if (vxCanvasHistory.value.state.length === 0) {
-        //   canvas.value.add(rect);
-        // } else {
-        //   drawingStore.setLoadImageOnCanvasFinished(false);
-        //   const currentIndex = vxCanvasHistory.value.currentStateIndex;
-        //   const currentState = vxCanvasHistory.value.state[currentIndex];
-        //   if (typeof currentState !== "undefined" && currentState !== null) {
-        //     vxCanvasHistory.value.state[currentIndex] =
-        //       setRemoveDuplicates(currentState);
-        //   }
-
-        //   // loadFromJSON 은 비동기 → 언마운트되면 실행 안 되게 가드
-        //   canvas.value.loadFromJSON(currentState, () => {
-        //     if (!isMounted || !canvas.value) return;
-        //     canvas.value.renderAll();
-        //     drawingStore.setLoadImageOnCanvasFinished(true);
-        //   });
-        // }
 
         console.log("canvas?", drawingStore.canvas);
         console.log("canvas ready?", !!drawingStore.canvas?.loadFromJSON);
@@ -530,8 +502,17 @@ onMounted(async () => {
     }
 });
 
+onUnmounted(() => {
+    console.log("여기탔다?");
+    drawingStore.setFilesHistory({
+        num: drawingStore.selectedFileIndex,
+        history: drawingStore.canvasHistory,
+    });
+    drawingStore.setIsOpenSaveThumbnail(true);
+});
+
 const initCanvasAdd = () => {
-    if (vxCanvasHistory.value.state.length === 0) {
+     if (vxCanvasHistory.value.state.length === 0) {
         // 초기 흰 점
         const rect = new fabric.Rect({
             left: 1,
@@ -542,9 +523,14 @@ const initCanvasAdd = () => {
         });
         canvas.value.add(rect);
         canvas.value.requestRenderAll();
-        const canvasJSON = canvas.value.toJSON();
-        canvasHistory.value.state.push(canvasJSON);
-        drawingStore.setCanvasHistory(canvasHistory.value);
+
+        // JSON 문자열로 변환
+        const canvasJSON = JSON.stringify(canvas.value.toJSON());
+
+        // 🔥 무조건 문자열만 push
+        vxCanvasHistory.value.state.push(canvasJSON);
+
+        drawingStore.setCanvasHistory(vxCanvasHistory.value);
         drawingStore.setFirstHistory(vxCanvasHistory.value);
     }
 };
@@ -1263,8 +1249,16 @@ const clearCanvas = () => {
         canvas.value.renderAll.bind(canvas.value),
     );
     canvasHistory.value.currentStateIndex = 0;
+    vxCanvasHistory.value.currentStateIndex = 0;
+    drawingStore.files[drawingStore.selectedFileIndex].type = "canvas";
+    drawingStore.files[drawingStore.selectedFileIndex].history.state = drawingStore.files[drawingStore.selectedFileIndex].history.state.slice(0, 1)
+    drawingStore.setCanvasHistory(drawingStore.files[drawingStore.selectedFileIndex].history);
+    drawingStore.setFilesImgChange({
+        num: drawingStore.selectedFileIndex,
+        image: drawingStore.canvas.toDataURL("png"),
+    });
     nowTool.value = beforeTool.value;
-    drawingMode(); // Ensure drawing mode is set correctly
+    drawingMode();
 };
 
 const groupActiveObjects = () => {
@@ -1414,74 +1408,59 @@ const updateHistory = (type) => {
     console.log("history", type);
     if (!canvas.value) return;
 
-    if (
-        canvasHistory.value.undoStatus === true ||
-        canvasHistory.value.redoStatus === true
-    ) {
-        // console.log("updateHistory quarter canvasHistory.undoStatus: ".concat(this.canvasHistory.undoStatus, "canvasHistory.redoStatus: ", this.canvasHistory.redoStatus))
-        // None
-    } else {
-        const jsonData = canvas.value.toJSON();
-        const canvasAsJson = JSON.stringify(jsonData);
-
-        if (
-            canvasHistory.value.currentStateIndex <
-                canvasHistory.value.state.length - 1 &&
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex] !=
-                canvasAsJson &&
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex - 1] !=
-                canvasAsJson
-        ) {
-            console.log("updateHistory quarter fit");
-            const indexToBeInserted = canvasHistory.value.currentStateIndex + 1;
-            canvasHistory.value.state[indexToBeInserted] = canvasAsJson;
-            const elementsToKeep = indexToBeInserted + 1;
-            canvasHistory.value.state = canvasHistory.value.state.splice(
-                0,
-                elementsToKeep,
-            );
-        } else if (
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex] !==
-            canvasAsJson
-        ) {
-            console.log("updateHistory quarter another fit");
-            canvasHistory.value.state.push(canvasAsJson);
-        }
-
-        canvasHistory.value.currentStateIndex = canvasHistory.value.state.length - 1;
-        drawingStore.setCanvasJson(
-            canvasHistory.value.state[canvasHistory.value.currentStateIndex],
-        );
+    // undo/redo 중이면 저장 안함
+    if (vxCanvasHistory.value.undoStatus || vxCanvasHistory.value.redoStatus) {
+        return;
     }
+
+    const jsonData = canvas.value.toJSON();
+    const canvasAsJson = JSON.stringify(jsonData);
+
+    // ⭐ 마지막 저장 상태와 비교해서 완전히 동일하면 push 안 함
+    const history = vxCanvasHistory.value.state;
+    const lastSavedJson = history[history.length - 1];
+
+    if (lastSavedJson === canvasAsJson) {
+        console.log("⚠️ 중복 상태 감지 → 저장 스킵됨");
+        return;
+    }
+
+    // 중복이 아니면 기록
+    history.push(canvasAsJson);
+    vxCanvasHistory.value.currentStateIndex = history.length - 1;
+
+    drawingStore.setCanvasJson(history[vxCanvasHistory.value.currentStateIndex]);
+
+    console.log("💾 히스토리 저장됨", type);
 };
 
 const undo = () => {
     if (!canvas.value) return;
-    console.log("undo", canvasHistory.value.currentStateIndex, canvasHistory.value.state);
+    console.log("undo", vxCanvasHistory.value.currentStateIndex, vxCanvasHistory.value.state);
 
-    if (canvasHistory.value.currentStateIndex - 1 < 0) {
+    if (vxCanvasHistory.value.currentStateIndex - 1 < 0) {
         return;
     }
 
-    if (canvasHistory.value.undoFinishedStatus) {
-        canvasHistory.value.undoFinishedStatus = false;
-        canvasHistory.value.undoStatus = true;
-        let targetStateIndex = canvasHistory.value.currentStateIndex - 1;
+    if (vxCanvasHistory.value.undoFinishedStatus) {
+        vxCanvasHistory.value.undoFinishedStatus = false;
+        vxCanvasHistory.value.undoStatus = true;
+        let targetStateIndex = vxCanvasHistory.value.currentStateIndex - 1;
         // Ensure the target state is not undefined or null before processing
         if (
-            typeof canvasHistory.value.state[targetStateIndex] !== "undefined" &&
-            canvasHistory.value.state[targetStateIndex] !== null
+            typeof vxCanvasHistory.value.state[targetStateIndex] !== "undefined" &&
+            vxCanvasHistory.value.state[targetStateIndex] !== null
         ) {
-            canvasHistory.value.state[targetStateIndex] = setRemoveDuplicates(
-                canvasHistory.value.state[targetStateIndex],
+            vxCanvasHistory.value.state[targetStateIndex] = setRemoveDuplicates(
+                vxCanvasHistory.value.state[targetStateIndex],
             );
         }
 
-        canvas.value.loadFromJSON(canvasHistory.value.state[targetStateIndex], () => {
+        canvas.value.loadFromJSON(vxCanvasHistory.value.state[targetStateIndex], () => {
             canvas.value.renderAll();
-            canvasHistory.value.undoStatus = false;
-            canvasHistory.value.currentStateIndex--;
-            canvasHistory.value.undoFinishedStatus = true;
+            vxCanvasHistory.value.undoStatus = false;
+            vxCanvasHistory.value.currentStateIndex--;
+            vxCanvasHistory.value.undoFinishedStatus = true;
         });
     }
     // Logic to re-enable drawing mode if a tool was active
@@ -1514,36 +1493,34 @@ const undo = () => {
 
 const redo = () => {
     if (!canvas.value) return;
-    console.log("redo", canvasHistory.value.currentStateIndex, canvasHistory.value.state);
+    console.log("redo", vxCanvasHistory.value.currentStateIndex, vxCanvasHistory.value.state);
 
-    if (canvasHistory.value.currentStateIndex + 1 >= canvasHistory.value.state.length) {
+    if (vxCanvasHistory.value.currentStateIndex + 1 >= vxCanvasHistory.value.state.length) {
         console.log("redo #1 - No more states to redo.");
         return;
     }
 
-    if (canvasHistory.value.redoFinishedStatus) {
+    if (vxCanvasHistory.value.redoFinishedStatus) {
         console.log("redo() #2 start");
-        canvasHistory.value.redoFinishedStatus = false;
-        // this.$store.commit("drawing/setLoadImageOnCanvasFinished", false); // Assuming Vuex action
-        canvasHistory.value.redoStatus = true;
-        let targetStateIndex = canvasHistory.value.currentStateIndex + 1;
+        vxCanvasHistory.value.redoFinishedStatus = false;
+        vxCanvasHistory.value.redoStatus = true;
+        let targetStateIndex = vxCanvasHistory.value.currentStateIndex + 1;
 
         if (
-            typeof canvasHistory.value.state[targetStateIndex] !== "undefined" &&
-            canvasHistory.value.state[targetStateIndex] !== null
+            typeof vxCanvasHistory.value.state[targetStateIndex] !== "undefined" &&
+            vxCanvasHistory.value.state[targetStateIndex] !== null
         ) {
-            canvasHistory.value.state[targetStateIndex] = setRemoveDuplicates(
-                canvasHistory.value.state[targetStateIndex],
+            vxCanvasHistory.value.state[targetStateIndex] = setRemoveDuplicates(
+                vxCanvasHistory.value.state[targetStateIndex],
             );
         }
         console.log(targetStateIndex, "targetStateIndex");
 
-        canvas.value.loadFromJSON(canvasHistory.value.state[targetStateIndex], () => {
+        canvas.value.loadFromJSON(vxCanvasHistory.value.state[targetStateIndex], () => {
             canvas.value.renderAll();
-            canvasHistory.value.redoStatus = false;
-            canvasHistory.value.currentStateIndex++;
-            canvasHistory.value.redoFinishedStatus = true;
-            // this.$store.commit("drawing/setLoadImageOnCanvasFinished", true); // Assuming Vuex action
+            vxCanvasHistory.value.redoStatus = false;
+            vxCanvasHistory.value.currentStateIndex++;
+            vxCanvasHistory.value.redoFinishedStatus = true;
             console.log("redo() finished");
         });
     }

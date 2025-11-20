@@ -162,7 +162,8 @@ onBeforeUnmount(() => {});
 
 .contact-container {
     overflow-y: auto;
-    max-height: calc(100% - 82px);
-    height: 59vh;
+    max-height: calc(100% - 86px);
+    height: calc(100% - 107px);
+    width: inherit;
 }
 </style>

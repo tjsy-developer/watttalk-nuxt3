@@ -58,19 +58,19 @@ fi
 echo "🔑 실행 권한 확인 및 부여: $JAVA_BIN"
 docker exec -u root "$VERSION" sh -c "if [ ! -x \"$JAVA_BIN\" ]; then chmod +x \"$JAVA_BIN\"; fi"
 
-
 echo "🔍 Black Duck 스캔 시작..."
 docker exec $VERSION sh -c "\
-    \"$JAVA_BIN\" -jar \"$BLACK_DUCK_JAR\" \
-    --blackduck.url='$BLACK_DUCK_URL' \
-    --blackduck.api.token='$BLACK_DUCK_TOKEN' \
-    --blackduck.trust.cert=true \
-    --blackduck.offline.mode=false \
-    --detect.cleanup=true \
-    --detect.project.name='$BLACK_DUCK_PROJECT_NAME' \
-    --detect.project.version.name='$VERSION' \
-    --detect.source.path='$BLACK_DUCK_SOURCE_PATH' \
-    --detect.accuracy.required=NONE"
+'$JAVA_BIN' -jar '$BLACK_DUCK_JAR' \
+--blackduck.url='$BLACK_DUCK_URL' \
+--blackduck.api.token='$BLACK_DUCK_TOKEN' \
+--blackduck.trust.cert=true \
+--blackduck.offline.mode=false \
+--detect.cleanup=true \
+--detect.project.name='$BLACK_DUCK_PROJECT_NAME' \
+--detect.project.version.name='$VERSION' \
+--detect.source.path='$BLACK_DUCK_SOURCE_PATH' \
+--detect.accuracy.required=NONE"
+
 
 if [ $? -ne 0 ]; then
     echo "❌ Black Duck 실행 실패"

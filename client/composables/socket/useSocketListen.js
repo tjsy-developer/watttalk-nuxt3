@@ -13,7 +13,6 @@ import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import useSocketEmitEvents from "./useSocketEmit";
 import { useRoomStore } from "@/stores/room";
-import { emitter } from "@/utils/eventBus";
 import { useRouter } from "nuxt/app";
 import { useMeetingStore } from "@/stores/meeting";
 import { useDirectCallStore } from "@/stores/directCall";

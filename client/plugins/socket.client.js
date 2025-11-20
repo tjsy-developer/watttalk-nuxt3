@@ -136,7 +136,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             // - 리프레시토큰 발급시점: ${new Date(refreshIssuedAt).toLocaleString()}
             // `);
             // 4️⃣ 비활동 체크
-            const inactive = lastActivity < refreshIssuedAt;
+            const inactive = lastActivity + 5000 < refreshIssuedAt;
             if (inactive && loginStore.m_local_deviceid) {
                 console.log("30분 이상 비활동, 로그아웃 처리");
                 stopTokenCheckInterval(); // 인터벌 종료

@@ -52,7 +52,7 @@ import useSocketEmitEvents from "@/composables/socket/useSocketEmit";
 import { useUserPreferenceStore } from "@/stores/common";
 import { useLoginStore } from "@/stores/login";
 import { useMeetingStore } from "@/stores/meeting";
-import { callingBell, getDirectMessageTimeZone, getManagerDomain } from "@/utils/common";
+import { callingBell, getDirectMessageTimeZone, getManagerDomain, getMedia } from "@/utils/common";
 import { useModal, useModalSlot, useVfm } from "vue-final-modal";
 import { userListGetNickname } from "@/utils/userList";
 import { useNuxtApp, useRoute, useRouter } from "nuxt/app";
@@ -684,8 +684,8 @@ function logout() {
 }
 
 // 마운트될 때 실행할 작업
-onMounted(async () => {
-    await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+onMounted(async() => {
+    await getMedia({ audio: true, video: true });
 
     sessionStorage.setItem("m_callWaiting", false);
     sessionStorage.setItem("inRoomFlag", false);
@@ -781,6 +781,10 @@ onUnmounted(() => {
     box-sizing: border-box;
     align-self: end;
     @include tc(background-color, "component-bg-color");
+    > div {
+        position: relative;
+        height: 100%;
+    }
 }
 
 .button-group {

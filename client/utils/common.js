@@ -4,12 +4,13 @@ import { useChattingStore } from "@/stores/chatting";
 import { useTokenStore } from "@/stores/token";
 import { useNuxtApp } from "nuxt/app";
 import _ from "lodash";
+import { useSignallingSocket } from "@/composables/socket/useSignallingSocket";
 // 세계표준시간 UTC 값 계산
 export function getWorldTime() {
-      const now = new Date();
-      const standard = now.getTime() / 1000;
-      const returnDate = new String(Math.round(standard));
-      return returnDate;
+    const now = new Date();
+    const standard = now.getTime() / 1000;
+    const returnDate = new String(Math.round(standard));
+    return returnDate;
 }
 
 export function buildTree(users) {
@@ -398,36 +399,54 @@ export const getFormattedDate = (timestamp, format = "yyyy-mm-dd") => {
 };
 
 export const getManagerDomain = () => {
-    const wattmanagerAccessDomain = useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_DOMAIN || window.location.origin
+    const { signallingSocket, transferSocket } = useSignallingSocket();
+
+    signallingSocket.disconnect();
+    transferSocket.disconnect();
+
+    const wattmanagerAccessDomain =
+        useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_DOMAIN || window.location.origin;
     return (
         wattmanagerAccessDomain + useRuntimeConfig()?.public.NUXT_PUBLIC_MANAGER_BASE_URL
     );
-}
+};
 
 export const getImage = (name) => {
     const { $colorMode } = useNuxtApp();
-    const theme = $colorMode.value === 'dark' ? 'dark' : 'light'
-    const images = import.meta.glob('~/assets/images/*.{png,jpg,jpeg,svg,webp}', {
-      eager: true,
-      import: 'default',
-    })
+    const theme = $colorMode.value === "dark" ? "dark" : "light";
+    const images = import.meta.glob("~/assets/images/*.{png,jpg,jpeg,svg,webp}", {
+        eager: true,
+        import: "default",
+    });
 
     // 가능한 확장자 목록
-    const exts = ['png', 'jpg', 'jpeg', 'svg', 'webp']
+    const exts = ["png", "jpg", "jpeg", "svg", "webp"];
 
-    console.log('여기', images)
+    console.log("여기", images);
     // 존재하는 확장자를 찾아서 반환
     for (const ext of exts) {
-      const path = `/assets/images/${name}_${theme}.${ext}`
-      console.log('path', path)
-      if (images[path]) {
-        return images[path]
-      }
+        const path = `/assets/images/${name}_${theme}.${ext}`;
+        console.log("path", path);
+        if (images[path]) {
+            return images[path];
+        }
     }
 
-    console.warn(`[useImage] Image not found for ${name}_${theme}`)
-    return ''
-  }
+    console.warn(`[useImage] Image not found for ${name}_${theme}`);
+    return "";
+};
+
+export const getMedia = async (params) => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(params);
+        console.log("Media stream obtained", stream);
+    } catch (error) {
+        console.error("Error getting media:", error);
+    } finally {
+        console.log("후속 로직 실행");
+    }
+};
+
 export default {
     getWorldTime,
     buildTree,
@@ -444,5 +463,5 @@ export default {
     emergencyAlarmBell,
     getFormattedDate,
     getManagerDomain,
-    getImage
+    getImage,
 };

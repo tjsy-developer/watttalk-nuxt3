@@ -164,20 +164,6 @@ export function commonToastMessage(string) {
         }
     }, 1000);
 }
-
-export function emergencyAlarmBell(type) {
-    const audio = document.getElementById("emergency_alarm_bell");
-
-    audio.currentTime = 0;
-    if (type == "play") {
-        audio.play();
-        // console.log("*** script: " + audio.id + " messageBell - Play !!")
-    } else {
-        audio.pause();
-        // console.log("*** script: " + audio.id + "  messageBell - Stop !!")
-    }
-}
-
 export function getNickname(res) {
     const commonStore = useRoomStore();
     const userList = commonStore.userListStatus;

@@ -30,11 +30,8 @@ const route = useRoute();
 const { encryptData } = useAuth();
 const { loginRequest, listenLoginEvent, requestEnvironment } = useLoginEvents();
 
-// definePageMeta({
-//   layout: false
-// })
-
 onMounted(async () => {
+    loginStore.$reset()
     const accessToken = route.query.jwt_token;
     const loginType = route.query.login_type;
     const rToken = route.query.rToken;

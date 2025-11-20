@@ -1,46 +1,11 @@
 <template>
     <div
-        :style="{
-            height:
-                commonStore.callingLayoutType == 5
-                    ? `calc(100vh - ${headerHeight}px)`
-                    : '',
-        }"
         class="calling"
     >
         <CallLayout />
-        <!-- <PreviewModal
-            v-for="i in previewModalInfo.previewModalcnt"
-            :key="i"
-            :name="'previewModal' + i"
-            :open-modal-index="i"
-        /> -->
         <div id="you"></div>
         <div id="register"></div>
         <div id="username"></div>
-
-        <!-- <div class="loaderWrap column items-center justify-center">
-            <div id="loader"></div>
-            <div
-                v-if="maskLoading"
-                class="maskLoading column items-center justify-center"
-            >
-                <p
-                    v-if="maskLoading && maskLoadingType == 'prepairVideoCall'"
-                    class="column items-center justify-center"
-                >
-                    <span>{{ t("prepareVideoCall1") }}</span>
-                    <span>{{ t("prepareVideoCall2") }}</span>
-                </p>
-                <p
-                    v-else-if="maskLoading && maskLoadingType == 'ThumnailTransfer'"
-                    class="column items-center justify-center"
-                >
-                    <span>{{ t("호스트를 변경 중입니다") }}</span>
-                    <span>{{ t("잠시만 기다려주세요") }}</span>
-                </p>
-            </div>
-        </div> -->
         <canvas id="captureCanvas" style="display: none"></canvas>
     </div>
 </template>
@@ -81,6 +46,8 @@ import {
     getPersonnelInRoom,
     getWorldTime,
     handleFileDownload,
+    getMedia,
+    emergencyAlarmBell
 } from "@/utils/common";
 // import { jwtDecode } from "jwt-decode";
 const { t } = useI18n();
@@ -211,27 +178,33 @@ let keepAliveList = reactive([]);
 definePageMeta({
     layout: "video",
 });
+const beforeUnloadHandler = (event) => {
+    sessionStorage.setItem('isReloading', 'true');
+};
 
 // 마운트될 때 실행할 작업
 onMounted(async () => {
     await requestNewToken("talk");
+
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+
+    if (sessionStorage.getItem('isReloading')) {
+        sessionStorage.removeItem('isReloading')
+        noneOverlayModal(2);
+        await initStore();
+        return;
+    }
+
     console.log("컴포넌트가 마운트되었습니다.");
     nextTick(() => {
-        // const { token } = await $fetch("/api/config");
-        // const decoded = jwtDecode(token);
-        // const iceServers = [decoded.ice];
         const { $Janus } = useNuxtApp();
         Janus = $Janus;
         createLoadingMask("prepairVideoCall");
-        sayHello();
+        initJanusConnection();
     });
 
     // 처음으로 연결된 상대방의 영상을 큰 비디오에 자동으로 담기 위해 calling.vue 입장 Flag 값 기록
     sessionStorage.setItem("otherPartyAccess", "false");
-    // console.log(
-    //  "sessionStorage.setItem(otherPartyAccess): " +
-    //      sessionStorage.getItem("otherPartyAccess")
-    // )
 
     signallingSocket.on("created", (response) => {
         const json = JSON.parse(response);
@@ -2270,22 +2243,15 @@ onMounted(async () => {
                         drawingStore.setSaveThumbnailImg({
                             type: "img",
                             src: url,
-                            status: "on",
+                            status: "off",
                         });
-                        drawingStore.setSaveThumbnailImgInCanvas("on");
-                        drawingStore.setSrc(saveThumbnailImg.value);
-                        drawingStore.setIsOpenSaveThumbnail(true);
-                        drawingStore.setThumbnailFileReceive(true);
-                        drawingStore.setSelectedFileIndex(drawingStore.files.length - 1);
+                        drawingStore.setSaveThumbnailImgInCanvas(url);
+                        drawingStore.setSrc({
+                            type: "img",
+                            src: url,
+                        });
                     } else {
-                        // const previewManageIndex = commonStore.previewModalInfo.previewModalcnt
-                        // 미리보기
-                        // autoPictureModal = true 일 경우 Modal을 지우고 Show -> 맨 마지막으로 받은 사진을 보여주기 위함
-                        if (autoPictureModal) {
-                            // modal.hide("previewModal")
-                            // previewModal(url, "show")
-                            // modal.show("previewModal" + previewManageIndex)
-
+                        if (autoPictureModal.value) {
                             // 바로 보일 경우 간혈적으로 미리보기가 안뜨는 현상이 있어서 예외처리
                             setTimeout(() => {
                                 // 수신파일 이미지 미리보기
@@ -2303,13 +2269,6 @@ onMounted(async () => {
                             src: url,
                             status: "off",
                         });
-
-                        // setSrc
-                        // drawingStore.setSrc", {
-                        //  type: "img",
-                        //  src: url,
-                        //  status: "off"
-                        // })
                     }
                 }
                 // 호스트가 아닌 경우 수신 사진 미리보기 표시
@@ -3348,11 +3307,6 @@ onMounted(async () => {
 // 데이터가 업데이트될 때 실행할 작업
 onUpdated(() => {
     // console.log('컴포넌트가 업데이트되었습니다. 현재 count는:', count.value)
-});
-
-// 언마운트되기 전 실행할 작업
-onBeforeUnmount(() => {
-    console.log("컴포넌트가 언마운트됩니다.");
 });
 
 function streamMediaChange() {
@@ -7762,7 +7716,8 @@ function sendFileServerUpload(type, file, fname, fsize, fileJoinMembers) {
         const slice = file.slice(offset, end);
         const reader = new FileReader();
         reader.onload = (e) => {
-            const chunk = e.target.result; // ArrayBuffer
+            const arrayBuffer = e.target.result; // ArrayBuffer
+            const chunk = new Uint8Array(arrayBuffer);
             transferSocket.emit("sendFileServerUploadChunk", {
                 fname: sendFileName,
                 chunk,
@@ -8350,45 +8305,25 @@ function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
     const dateName = createDateName();
     const fileExtension = fname.split(".").pop();
     const fileType = "picture";
-
     const sendFileName = `${dateName}_${loginStore.m_local_deviceid}.${fileExtension}`;
 
     // base64 string을 Blob으로 변환
     const blob = base64ToBlob(sendImageSrc);
-
     const chunkSize = 64 * 1024; // 64KB
-    const totalChunks = Math.ceil(blob.size / chunkSize);
-    let chunkIndex = 0;
-    let sizeSent = 0;
+    let offset = 0;
 
-    const reader = new FileReader();
-
-    function readAndSendChunk() {
-        const start = chunkIndex * chunkSize;
-        const end = Math.min(start + chunkSize, blob.size);
-        const chunkBlob = blob.slice(start, end);
-        reader.readAsArrayBuffer(chunkBlob);
-    }
-
-    reader.onload = (e) => {
-        const buffer = e.target.result;
-        sizeSent += buffer.byteLength;
-
-        // 기존 이벤트명 유지, 청크별 바이너리 데이터 전송
-        transferSocket.emit("sendFileServerUpload", {
-            chunkIndex,
-            totalChunks,
-            data: new Uint8Array(buffer),
+    // 업로드 시작 알림
+    transferSocket.emit(
+        "sendFileServerUploadStart",
+        JSON.stringify({
             fname: sendFileName,
-            type: fileType,
-        });
+            fsize,
+        })
+    );
 
-        chunkIndex++;
-
-        if (chunkIndex < totalChunks) {
-            readAndSendChunk();
-        } else {
-            // 모든 청크 전송 완료 후 DB 저장 요청 등 처리
+    function sendNextChunk() {
+        if (offset >= blob.size) {
+            // 전송 완료 후 서버에 메타데이터 전송
             let obj2;
 
             if (type === "drawingImage") {
@@ -8412,7 +8347,6 @@ function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
                 callStore.setDrawingGetFileChangeFlag(false);
             } else if (type === "captureImage") {
                 const videoMainIndex = callStore.videoMainIndex;
-
                 let joinMembers = "";
                 let localdeviceid = "";
 
@@ -8442,16 +8376,44 @@ function commonFileServerUpload(fname, fsize, sendImageSrc, type) {
                 };
             }
 
+            // 전송 완료 이벤트
+            transferSocket.emit(
+                "sendFileServerUploadEnd",
+                JSON.stringify({ fname: sendFileName })
+            );
+
             signallingSocket.emit("sendFileServerUploadInfo", JSON.stringify(obj2));
             console.log("*** socket: sendFileServerUploadInfo request:", obj2);
+            return;
         }
-    };
 
-    // 전송 시작
-    readAndSendChunk();
+        const end = Math.min(offset + chunkSize, blob.size);
+        const slice = blob.slice(offset, end);
+        const reader = new FileReader();
 
-    console.log("*** socket: sendFileServerUpload request: " + sendFileName);
+        reader.onload = (e) => {
+            const arrayBuffer = e.target.result; // ArrayBuffer
+            const chunk = new Uint8Array(arrayBuffer);
+
+            // 청크 전송
+            transferSocket.emit("sendFileServerUploadChunk", {
+                fname: sendFileName,
+                chunk,
+                isLast: end >= blob.size,
+            });
+
+            offset += chunkSize;
+            sendNextChunk();
+        };
+
+        reader.readAsArrayBuffer(slice);
+    }
+
+    sendNextChunk();
+    console.log("*** socket: sendFileServerUpload request:", sendFileName);
 }
+
+
 // drawingPDFServerUpload
 function drawingPDFServerUpload(fname, fsize, pdfSrc) {
     const dateName = createDateName();
@@ -9367,7 +9329,7 @@ function cleanUpDummyFeed(id, index) {
     remoteFeed.detach();
 }
 
-function sayHello() {
+function initJanusConnection() {
     opaqueId.value = "videoroomtest-" + Janus.randomString(12);
     // console.log("****** videoroomtest.js - opaqueId = " + opaqueId)
 
@@ -10527,27 +10489,31 @@ function sayHello() {
     }
 }
 
-function initStore() {
+function initStore(time) {
     // 세션 삭제 - 위치 이동 : sessionStorage roomid를 미리 삭제해버려서 회의 종료 시 room id가 null이 되기 때문에 위치 이동.
-    sessionStorage.removeItem("m_roomid");
-    sessionStorage.removeItem("createRoomFlag");
-    sessionStorage.removeItem("otherPartyAccess");
-
-    // guest가 입장 시 윈도우 창 닫기
-    if (callingType.value == "joinGuestCall") {
-        // 비회원 참가 시 window close
-        window.location.href = "https://wattsolution.co.kr/";
-    }
     callStore.$reset();
-    meetingStore.$reset();
     chattingStore.$reset();
     directMessageStore.$reset();
+    drawingStore.$reset();
+
+    const callStopTime = time || 3000;
     setTimeout(function () {
-        router.back();
+        // guest가 입장 시 윈도우 창 닫기
+        if (callingType.value == "joinGuestCall") {
+            // 비회원 참가 시 window close
+            window.location.href = "https://wattsolution.co.kr/";
+        } else {
+            router.push(window.history.state.back);
+        }
+        sessionStorage.removeItem("m_roomid");
+        sessionStorage.removeItem("createRoomFlag");
+        sessionStorage.removeItem("otherPartyAccess");
+
+        meetingStore.$reset();
         commonStore.$reset();
         modalStore.$reset();
         vfm.closeAll();
-    }, 3000);
+    }, callStopTime);
 }
 
 // --- 1. mapState 역할을 하는 computed 속성들 (단순히 스토어 상태를 읽어오는 용도) ---
@@ -10905,7 +10871,7 @@ watch(getisShareResult, (newValue, oldValue) => {
                 loginStore.m_local_deviceid || callStore.cameraNotAllowed,
             )
         ) {
-            navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+            getMedia({ video: false, audio: true });
             commonStore.setOnlyVoiceIdInterval(true);
             interval.value = setInterval(() => {
                 muteVideoCustom();
@@ -11337,7 +11303,7 @@ watch(getIsDrawing, (newValue, oldValue) => {
                 loginStore.m_local_deviceid || callStore.cameraNotAllowed,
             )
         ) {
-            navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+            getMedia({ video: false, audio: true });
             commonStore.setOnlyVoiceIdInterval(true);
             if (interval.value) {
                 clearInterval(interval.value);
@@ -11926,6 +11892,10 @@ watch(getHangupCallingConfirmFlag, (newValue, oldValue) => {
         commonStore.setNoneOverlayAlertStatus(2);
         meetingStore.setMeetingLeaveFlag(true);
     }
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
 });
 
 onUnmounted(async () => {

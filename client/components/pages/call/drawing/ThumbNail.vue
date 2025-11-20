@@ -182,16 +182,9 @@ const isEscape = ref(false);
 const displayMode = ref("darkmode");
 
 const fileClick = (e, type) => {
-    // 원본 console.log("fileClick type", this.files[this.selectedFileIndex].type)
-    // 시도 console.log("fileClick Enter => type: ".concat(this.files[e].type, ", files index: ", e, ", lastCanvasJson: ", this.$store.state.drawing.lastCanvasJson))
-    // 최종 console.log("fileClick Enter => type: ".concat(files.value[selectedFileIndex.value].type, ", files index: ", e, ", lastCanvasJson: ", store.state.drawing.lastCanvasJson))
-    // console.log(files.value[selectedFileIndex.value].type)
-    // console.log("fileClick e:", e)
-    // console.log("*****##****** fileClick lastJSON", store.state.drawing.lastCanvasJson)
-
-    // 새로운 캔버스
-    if (files.value[e].type == "canvas") {
+    if (files.value[e].type !== "pdf") {
         //동일한 index일 경우 watch에서 감지 불가이므로 여기서 처리
+        console.log("fileClick", drawingStore.selectedFileIndex, e)
         if (drawingStore.selectedFileIndex == e) {
             drawingStore.setFilesHistory({
                 num: e,
@@ -202,6 +195,8 @@ const fileClick = (e, type) => {
                 num: e,
                 image: drawingStore.canvas.toDataURL("png"),
             });
+
+            console.log(drawingStore.canvas.toDataURL("png"))
             return;
         }
         drawingStore.setSelectedFileIndex(e);
@@ -470,7 +465,7 @@ const eachCanvasDelete = (e, pdfKey, group) => {
             }
             drawingStore.setFilesDelete(e);
             console.log("4번");
-            drawingStore.setSelectedFileIndex(e - 1);
+            drawingStore.setSelectedFileIndex(e);
             drawingStore.setUpdate(true);
             drawingStore.setThumbnailWidth(thumbnailWidth.value - deleteWidth);
         } else {
@@ -543,9 +538,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // inputPreviewImageWork 함수
 const inputPreviewImageWork = (index, thumb) => {
     return new Promise((resolve, reject) => {
-        console.log(index, ". drawingStore.setSrc");
+        console.log(thumb, ". drawingStore.setSrc");
         drawingStore.setSrc(thumb);
-
         const imgObj = new Image();
         // saveThumbnailImg는 drawingStore에 있다고 가정
         imgObj.src = drawingStore.saveThumbnailImg[index].src;
@@ -553,7 +547,7 @@ const inputPreviewImageWork = (index, thumb) => {
         imgObj.crossOrigin = "anonymous";
         imgObj.onload = () => {
             console.log(index, ". imgObj.onload");
-
+            
             const image = new fabric.Image(
                 imgObj,
                 {
@@ -586,10 +580,10 @@ const inputPreviewImageWork = (index, thumb) => {
             } else {
                 image.scale(1.0).set("flipX", false);
             }
-            console.log(index, ". canvas.value.add(image)");
+            console.log(image, ". canvas.value.add(image)");
             canvas.value.add(image);
             canvas.value.renderAll();
-
+            
             console.log(index, ". resolve()");
             resolve();
         };
@@ -608,9 +602,7 @@ const inputPreviewImage = async (time) => {
         }
         await sleep(200);
     }
-    // Nuxt 3에서는 `useNuxtApp().$nextTick` 또는 Vue의 `nextTick`을 직접 임포트하여 사용합니다.
-    // Vue 3의 Composition API에서는 일반적으로 DOM 업데이트를 기다릴 필요가 없는 경우가 많지만,
-    // 기존 로직과 동일하게 유지하려면 `nextTick`을 사용할 수 있습니다.
+
     await nextTick(() => {
         // `import { nextTick } from 'vue'` 필요
         setTimeout(async () => {
@@ -722,7 +714,7 @@ const getLastCanvasInfo = computed(() => {
 // });
 
 watch(beforeSelectedFileIndex, (newVal, prevVal) => {
-    console.log("추가됨 바ㄱ뀜", newVal);
+    console.log("beforeSelectedFileIndex", newVal);
     if (newVal == -1) return;
     // 이전 선택된 파일을 저장한다
     drawingStore.setFilesHistory({
@@ -737,7 +729,7 @@ watch(beforeSelectedFileIndex, (newVal, prevVal) => {
 });
 
 watch(selectedFileIndex, (newVal, prevVal) => {
-    console.log("추가됨 바ㄱ뀜", files.value.length);
+    console.log("selectedFileIndex", files.value.length);
     // 현재 캔버스의 history를 가져온다
     drawingStore.setCanvasHistory(files.value[newVal].history);
     drawingStore.canvas.loadFromJSON(
@@ -759,8 +751,6 @@ watch(
         if (newLength == 1) {
             drawingStore.setThumbnailWidth(148);
         }
-
-        drawingStore.setSelectedFileIndex(newLength - 1);
 
         if (canvas.value != null) {
             let fileType = "canvas";
@@ -789,6 +779,16 @@ watch(
         }
     },
 );
+
+// files 감시 (배열 전체 변경 감지)
+// watch(
+//     () => saveThumbnailImg.value.length, // ✅ 배열의 길이만 감시
+//     (newLength, oldLength) => {
+//         if (isDrawing.value) {
+//             inputPreviewImage(500)
+//         }
+//     },
+// );
 
 // src 감시
 watch(src, (newVal) => {
@@ -834,16 +834,6 @@ watch(isDrawing, (newVal) => {
     console.log("*** methods: isDrawing. newVal:", newVal);
 
     if (newVal == false) {
-        if (selectCount.value == 0) {
-            // ref 접근 시 .value
-            console.log("7번");
-            drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
-        }
-        if (files.value[selectedFileIndex.value].type != "pdf") {
-            // ref 접근 시 .value
-            console.log("fileClick 8");
-            fileClick(selectedFileIndex.value); // ref 접근 시 .value
-        }
         drawingStore.setSelectCount(false);
     }
 
@@ -1087,24 +1077,7 @@ watch(lastCanvasSeted, async (res) => {
 });
 
 onMounted(() => {
-    // 1. 스타일 동적 로드 (Node.js 환경에서는 require 대신 import()를 비동기적으로 사용해야 할 수 있습니다.)
-    // Nuxt는 빌드 시 CSS를 처리하므로, 직접 require를 사용하는 대신
-    // `<style lang="sass" :src="dynamicStylePath"></style>`와 같이 동적 바인딩을 고려하거나,
-    // CSS 변수를 통해 테마를 변경하는 것이 일반적입니다.
-    // 이 `require` 구문은 Nuxt의 빌드 시스템에서 동작하지 않을 수 있습니다.
-    // 실제 Nuxt 앱에서는 테마 전환을 위한 더 적합한 방법이 필요합니다.
-    // 예시를 위해 주석 처리합니다.
-    // require(`@/assets/styles/${sessionStorage.getItem("displayMode")}/components/call/drawings/thumbnail.sass`)
-
-    // 2. displayMode 설정
     displayMode.value = sessionStorage.getItem("displayMode") || "default"; // 기본값 설정
-
-    // 3. thumbBody 너비 설정
-    // const thumbBody = document.getElementById("thumbBody");
-    // if (thumbBody) {
-    //     // null 체크
-    //     thumbBody.style.width = canvasWidth.value - 32 + "px"; // .value로 접근
-    // }
 
     // 4. PDF 관련 초기화 로직
     let pdfN = 0;
@@ -1126,19 +1099,12 @@ onMounted(() => {
             }
         }
     }
-
-    // 5. 썸네일 너비 설정
     drawingStore.setThumbnailWidth(pdfN * 32 + length * 148);
 
-    // 6. inputPreviewImage 호출
     inputPreviewImage(500);
 
-    // 7. 휠 이벤트 리스너 등록
-    // 이벤트 리스너는 onUnmounted에서 제거하는 것이 중요합니다!
     document.addEventListener("wheel", horizontalScroll, { passive: false }); // passive: false로 설정하여 preventDefault()가 동작하도록 함
 
-    // 8. changedHost 조건부 로직
-    // changedHost는 drawingStore의 상태이므로 .value로 접근
     if (drawingStore.changedHost === true) {
         getPreviousUserCanvas();
     }

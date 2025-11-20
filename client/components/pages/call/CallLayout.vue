@@ -11,6 +11,7 @@
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
+                    userList[windowKey] &&
                     userList[windowKey]?.status !== 'none' &&
                     userList[windowKey]?.status !== 'main'
                 "
@@ -61,12 +62,6 @@ const commonStore = useRoomStore();
 const callStore = useCallStore();
 const chattingStore = useChattingStore();
 
-// Assuming callingWindow and thumbnail are components that Nuxt auto-imports
-// from your components/ directory. If not, you might need to import them:
-
-// import Thumbnail from '@/components/Thumbnail.vue';
-
-// --- State (data equivalent) ---
 const formWidhCallingLayout4 = ref("");
 const isShow = ref(true);
 const allWidth = ref(0); // Initialized in onMounted
@@ -459,6 +454,8 @@ onUnmounted(() => {
     place-items: center;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
     > .windowContainer {
         min-width: 315px;
         max-height: -webkit-fill-available;

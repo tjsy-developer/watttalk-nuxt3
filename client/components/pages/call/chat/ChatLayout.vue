@@ -132,7 +132,6 @@ import ChatSendBox from "@/components/pages/call/chat/ChatSendBox.vue";
 import { useChattingStore } from "@/stores/chatting";
 import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
-import { useNuxtApp } from "nuxt/app";
 const { t } = useI18n();
 
 const chattingStore = useChattingStore();

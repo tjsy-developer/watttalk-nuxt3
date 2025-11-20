@@ -123,11 +123,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useChattingStore } from "@/stores/chatting";
 import { useRoomStore } from "@/stores/room";
 import { useCallStore } from "@/stores/call";
-import { useNuxtApp } from "nuxt/app";
 const { locale } = useI18n();
 const { t } = useI18n();
 

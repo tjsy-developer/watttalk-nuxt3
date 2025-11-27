@@ -1,21 +1,19 @@
 <template>
-    <VueFinalModal :v-model="true" :clickToClose="false" class="modal-container">
-        <div class="loading-container">
-            <div id="loader"></div>
-            <div v-if="props.maskLoadingType == 'prepairVideoCall'">
-                <p>{{ t("prepareVideoCall1") }}</p>
-                <p>{{ t("prepareVideoCall2") }}</p>
-            </div>
-            <div v-else-if="props.maskLoadingType == 'ThumnailTransfer'">
-                <p>{{ t("prepareThumbnailTransfer1") }}</p>
-                <p>{{ t("prepareThumbnailTransfer2") }}</p>
-            </div>
-            <div v-else-if="props.maskLoadingType == 'noneMemberSignup'">
-                <p>{{ t("비회원 가입을 진행하고 있습니다") }}</p>
-                <p>{{ t("잠시만 기다려주세요") }}</p>
-            </div>
+    <div class="loading-container">
+        <div id="loader"></div>
+        <div v-if="props.type == 'prepairVideoCall'">
+            <p>{{ t("prepareVideoCall1") }}</p>
+            <p>{{ t("prepareVideoCall2") }}</p>
         </div>
-    </VueFinalModal>
+        <div v-else-if="props.type == 'ThumnailTransfer'">
+            <p>{{ t("prepareThumbnailTransfer1") }}</p>
+            <p>{{ t("prepareThumbnailTransfer2") }}</p>
+        </div>
+        <div v-else-if="props.type == 'noneMemberSignup'">
+            <p>{{ t("비회원 가입을 진행하고 있습니다") }}</p>
+            <p>{{ t("잠시만 기다려주세요") }}</p>
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -23,10 +21,10 @@ import { useNuxtApp } from "nuxt/app";
 import { onMounted } from "vue";
 import { VueFinalModal } from "vue-final-modal";
 const { t } = useI18n();
-const props = defineProps(["maskLoadingType"]);
+const props = defineProps(["type"]);
 
 onMounted(() => {
-    console.log(props);
+    console.log("마스크", props);
 });
 </script>
 

@@ -461,8 +461,8 @@ onMounted(async () => {
 
         console.log("canvas?", drawingStore.canvas);
         console.log("canvas ready?", !!drawingStore.canvas?.loadFromJSON);
-        if (vxCanvasHistory.value.state.length === 0) {
-            initCanvasAdd();
+        if (files.value.length == 0) {
+            drawingStore.initCanvasAdd();
         } else {
             await nextTick(); // Vue DOM, store 반영 완료 후 실행
 
@@ -492,11 +492,6 @@ onMounted(async () => {
             }
         }
         drawingStore.setIsGivenThumbnailTransfer(false);
-
-        // 마지막으로 안전한 render 요청
-        // if (canvas.value && !canvas.value.disposed) {
-        //   canvas.value.requestRenderAll();
-        // }
     } else {
         console.error("Canvas element or Fabric.js not found!");
     }
@@ -510,30 +505,6 @@ onUnmounted(() => {
     });
     drawingStore.setIsOpenSaveThumbnail(true);
 });
-
-const initCanvasAdd = () => {
-     if (vxCanvasHistory.value.state.length === 0) {
-        // 초기 흰 점
-        const rect = new fabric.Rect({
-            left: 1,
-            top: 1,
-            fill: "white",
-            width: 1,
-            height: 1,
-        });
-        canvas.value.add(rect);
-        canvas.value.requestRenderAll();
-
-        // JSON 문자열로 변환
-        const canvasJSON = JSON.stringify(canvas.value.toJSON());
-
-        // 🔥 무조건 문자열만 push
-        vxCanvasHistory.value.state.push(canvasJSON);
-
-        drawingStore.setCanvasHistory(vxCanvasHistory.value);
-        drawingStore.setFirstHistory(vxCanvasHistory.value);
-    }
-};
 
 const commonToastMessage = (message) => {
     console.log("Toast:", message);
@@ -2037,13 +2008,6 @@ watch(allWidth, (newVal) => {
 watch(allHeight, (newVal) => {
     console.log(newVal, "watch newval canvas height");
     canvasWidthHeightChange(); // Call helper function
-});
-
-// Watch for 'vxCanvasHistory' changes (from Vuex)
-watch(vxCanvasHistory, (newVal) => {
-    canvasHistory.value = newVal; // Update local ref
-    console.log(newVal, "vxCanvasHistory");
-    initCanvasAdd();
 });
 
 // Watch for 'update' changes (from Vuex)

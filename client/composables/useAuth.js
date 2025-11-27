@@ -100,6 +100,7 @@ export function useAuth() {
                 } else if (error.response.data == "expired") {
                     alert(("유효한 로그인 토큰이 아닙니다\n로그인을 다시 진행해주시기 바랍니다"));
                 }
+                sessionStorage.clear();
                 location.href = getManagerDomain();
             }
         }

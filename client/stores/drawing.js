@@ -1,5 +1,6 @@
 // stores/drawingCanvas.ts
 import { defineStore } from "pinia";
+import { fabric } from "fabric";
 
 // deepClone 유틸리티 함수 (스토어 내부 또는 별도 유틸리티 파일에 정의)
 const deepClone = (obj) => {
@@ -148,9 +149,10 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             }
             this.src = null;
             this.index++;
+            this.setSelectedFileIndex(this.files.length - 1);
         },
         setFilesHistory({ num, history }) {
-            // console.log(num, this.files, history)
+            console.log(num, history)
             for (let i = 0; i < this.files.length; i++) {
                 if (num === this.files[i].index) {
                     this.files[i].history = deepClone(history);
@@ -173,21 +175,42 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.files[num].history.state = deepClone(historyState);
         },
         clearFiles() {
-            this.files = deepClone(this.firstFiles);
-            // firstFiles[0]이 존재할 때만 history 할당
-            if (this.firstFiles.length > 0) {
-                this.canvasHistory = deepClone(this.firstFiles[0].history);
-            } else {
-                // firstFiles가 비어있다면 canvasHistory를 기본값으로 재설정
-                this.canvasHistory = {
-                    state: [],
-                    currentStateIndex: 0,
-                    undoStatus: false,
-                    redoStatus: false,
-                    undoFinishedStatus: true,
-                    redoFinishedStatus: true,
-                };
-            }
+            this.canvasHistory = {
+                state: [],
+                currentStateIndex: 0,
+                undoStatus: false,
+                redoStatus: false,
+                undoFinishedStatus: true,
+                redoFinishedStatus: true,
+            };
+        },
+        initCanvasAdd() {
+            // 1) 배경만 있는 비어있는 JSON 생성
+            const emptyBackgroundJSON = {
+                version: fabric.version,
+                objects: [],
+                background: "white",
+            };
+
+            // 2) 그 JSON으로 캔버스 초기화
+            this.canvas.loadFromJSON(emptyBackgroundJSON, () => {
+                this.canvas.renderAll();
+
+                // 3) JSON 문자열로 저장
+                const canvasJSON = JSON.stringify(emptyBackgroundJSON);
+
+                this.canvasHistory.state = [canvasJSON];
+                this.canvasHistory.currentStateIndex = 0;
+
+                this.setCanvasHistory(this.canvasHistory);
+                this.setFirstHistory(this.canvasHistory);
+
+                // 4) 이미지 형태도 저장
+                this.setSrc({
+                    type: "canvas",
+                    src: this.canvas.toDataURL("png"),
+                });
+            });
         },
         setFilesImgChange({ num, pdfNum, image }) {
             // console.log("setFilesImgChange")
@@ -319,32 +342,21 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         },
         // state.src 에 드로잉 관련된 객체 타입, 객체 경로, 파일 이름을 입력
         setSrc({ type, src, name, status }) {
-            // console.log("setSrc params, type:", type.concat(", src: ", src, ", name: ", name, ", status: ", status))
-            // console.log("setSrc params, type:", type, ", name:", name, ", status:", status)
-            if (typeof name !== "undefined" && name !== null) {
-                console.log("setSrc condition: name exists, name:", name);
-                this.src = {
-                    type,
-                    src,
-                    name,
-                };
+            console.log("setSrc input:", { type, src, name, status });
+
+            const result = { type, src };
+
+            if (name != null) {
+                console.log("setSrc: using name:", name);
+                result.name = name;
+            } else if (status != null) {
+                console.log("setSrc: using status:", status);
+                result.status = status;
             } else {
-                console.log("setSrc condition: name no exists");
-                if (typeof status !== "undefined" && status !== null) {
-                    console.log("setSrc condition: status exists, status:", status);
-                    this.src = {
-                        type,
-                        src,
-                        status,
-                    };
-                } else {
-                    console.log("setSrc condition: status no exists");
-                    this.src = {
-                        type,
-                        src,
-                    };
-                }
+                console.log("setSrc: neither name nor status provided");
             }
+
+            this.src = result;
         },
         // state.isOpenSaveThumbnail 에 true 또는 false 를 입력하고, true 면 state.saveThumbnailImg 를 null 처리
         setIsOpenSaveThumbnail(payload) {
@@ -430,7 +442,6 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.changedHost = payload;
         },
         initDrawing() {
-            this.canvas = null;
             this.canvasWidth = null;
             this.src = null;
             this.lastCanvasJson = null;
@@ -438,6 +449,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.files = [];
             this.pdfNum = 0;
             this.pdfGroup = -1;
+            this.beforeSelectedFileIndex = -1;
             this.selectedFileIndex = 0;
             this.selectCount = 0;
             this.index = 0;
@@ -445,7 +457,7 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
             this.firstHistory = null;
             this.canvasHistory = {
                 state: [],
-                currentStateIndex: -1,
+                currentStateIndex: 0,
                 undoStatus: false,
                 redoStatus: false,
                 undoFinishedStatus: true,
@@ -496,6 +508,22 @@ export const useDrawingCanvasStore = defineStore("drawingCanvas", {
         },
         init() {
             this.$reset();
+        },
+        updateThumbnail(idx) {
+            console.log(idx);
+            if (!this.files[idx]) return;
+            if (this.files[idx].type !== "pdf") {
+                console.log("fileClick", this.selectedFileIndex, idx);
+                this.setFilesHistory({
+                    num: this.selectedFileIndex,
+                    history: this.canvasHistory,
+                });
+                this.setFilesImgChange({
+                    num: this.selectedFileIndex,
+                    image: this.canvas.toDataURL("png"),
+                });
+            }
+            this.setBeforeIndexInitialized(false);
         },
     },
 });

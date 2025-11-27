@@ -199,7 +199,8 @@ onMounted(async () => {
     nextTick(() => {
         const { $Janus } = useNuxtApp();
         Janus = $Janus;
-        createLoadingMask("prepairVideoCall");
+        console.log("여기를 몇번타는가 볼까")
+        showLoadingMask("prepairVideoCall");
         initJanusConnection();
     });
 
@@ -1084,15 +1085,9 @@ onMounted(async () => {
                 if (json.host_deviceid == loginStore.m_local_deviceid) {
                     console.log(
                         "*****현재 드로잉 활성화 상태: ".concat(
-                            commonStore.isDrawingEnable,
+                            commonStore.isDrawing,
                         ),
                     );
-
-                    // 썸네일을 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
-                    if (commonStore.isDrawingEnable) {
-                        console.log("썸네일 이관 모달을 생성했다.");
-                        createLoadingMask("ThumnailTransfer");
-                    }
                     setHostIcon(0, true);
 
                     // 호스트 버튼 변경
@@ -1680,11 +1675,6 @@ onMounted(async () => {
         /* 영상 녹화 저장 여부 저장 */
         callStore.setSendDurationEnable(json.sendDurationEnable);
         sendDurationEnableFlag.value = json.sendDurationEnable;
-        // 메인 비디오 스크린 크기 조정
-        // videoResize()
-        // } catch (e) {
-        //  console.error(`${e}`)
-        // }
     });
 
     // 마이크 상태 update // 0 : micOFF, 1: micON
@@ -1825,10 +1815,7 @@ onMounted(async () => {
     signallingSocket.on("forceLeave", function (response) {
         try {
             console.log("*** socket: forceLeave. json: " + response);
-
-            // eslint-disable-next-line no-unused-vars
             const json = JSON.parse(response);
-
             // 강제퇴장 팝업창 표시
             noneOverlayModal(3);
 
@@ -1874,21 +1861,10 @@ onMounted(async () => {
                     flag: true,
                     selectedUserName: nickname,
                 });
-                // commonStore.setFileSendStatus(3);
-                // commonStore.setFileSendFlag(true);
-
-                // $("#remotevideo" + rfidIndex).hide();
-                // $("#panel-inner" + rfidIndex).hide();
-
-                // $("#myvideo").hide()
-
-                // 수신 파일 정보를 저장
-                // fileReceiveTotalSize.value = json.filelength;
-                // receiveFileType.value = getFileExtension(json.filetype);
 
                 const obj = {
                     localdeviceid: loginStore.m_local_deviceid,
-                    remotedeviceid: json.deviceid, //-ksy
+                    remotedeviceid: json.deviceid,
                     status: 1,
                     handleId: feeds.value[rfidIndex].rfid,
                 };
@@ -1897,9 +1873,6 @@ onMounted(async () => {
                 console.log("*** socket: emit fileReceiver. json: " + sendJson);
                 callStore.setHQCaptureFiles({ deviceid: json.deviceid });
             } else {
-                // 내 화면을 파일 수락/거절 질의로 callingWindow 변경
-                // callingLayoutChange(2, sessionStorage.getItem("m_nickname"), 0)
-                // $("#myvideo").hide()
 
                 // 파일 수신측 파일 수신 수락/거절 팝업 처리
                 // 상대방 id : json.local_deviceid
@@ -1967,8 +1940,6 @@ onMounted(async () => {
 
                 /* 파일 송수신 자동 수락 체크 */
                 if (autoPictureAccept.value) {
-                    // console.log("*** socket: filetransfer > start AutoPictureAccept")
-
                     // 파일 수신 자동 수락 처리
                     setTimeout(() => {
                         const nickname = findFeedsNicknameByDeviceid(json.deviceid);
@@ -2006,7 +1977,7 @@ onMounted(async () => {
                 // 거절 팝업창으로 변경
                 commonStore.setFileSendStatus(4);
 
-                // 사진 전송 중 메세지 -> 사진 수신 거절 메세지로 변경 ksy
+                // 사진 전송 중 메세지 -> 사진 수신 거절 메세지로 변경
                 const fileChatIndex =
                     commonStore.userListStatus[rfIndex].fileSendInfo.fileChatIndex;
                 addChatFileSendMessage(nickname, 6, rfIndex, fileChatIndex);
@@ -2123,79 +2094,51 @@ onMounted(async () => {
 
     // 썸네일 이관
     signallingSocket.on("moveThumbnail", function (response) {
-        drawingStore.setChangedHost(true);
-        console.log("*** socket: moveThumbnail response");
-        // console.log(response)
+        const json = JSON.parse(response);
+        console.log("*** socket: moveThumbnail response", json);
+
         drawingStore.initDrawing();
         drawingStore.setChangedHost(true);
-        const json = JSON.parse(response);
-        drawingStore.setBeforeHostIndex(json.selectedFileIndex);
         drawingStore.setIsGivenThumbnailTransfer(true);
         drawingStore.setIndexes({
             group: json.lastGroup,
             index: json.lastIndex,
         });
-        drawingStore.setFirstHistory(json.firstHistory);
-        drawingStore.setNewFirstFiles(json.firstFiles);
-        // drawingStore.setCanvasJson", json.lastCanvasJson)
-        // console.log("*******##** Changed lastCanvasJson  #1")
-        // drawingStore.setCanvasHistory", json.canvasHistory)
-        // console.log("drawing/setCanvasHistory: ", json.canvasHistory)
 
-        // ksy:: 기존 호스트가 선택한 썸네일로 설정해준다.  ▽(img, canvas) 관련 index
-        drawingStore.setSelectedFileIndex(0);
         // 썸네일에 추가한다.
         if (json.thumbnailList != null) {
             drawingStore.setAllFiles(json.thumbnailList);
-            // console.log("******##** received files", drawingStore.files)
         }
         if (json.pdfUrlSaveArrays.length > 0) {
             drawingStore.setThumbnailPdfUrlSaveArrays(json.pdfUrlSaveArrays);
         }
-        // ksy:: 기존 호스트가 드로잉 사용 중이였는지 체크
+
+        if (json.thumbnailList[json.selectedFileIndex].type !== "pdf") {
+            drawingStore.setCanvasHistory(
+                json.thumbnailList[json.selectedFileIndex].history,
+            );
+        } else {
+            drawingStore.setCanvasHistory(
+                json.thumbnailList[json.selectedFileIndex].pdf[json.selectedPdfIndex]
+                    .history,
+            );
+        }
+
+        drawingStore.setPdfIndex(json.selectedPdfIndex);
+        drawingStore.setBeforeIndexInitialized(true);
+
         let drawingState = json.isDrawingEnable;
-        // 호스트 이관 후 드로잉 활성화 상태라면 드로잉 화면으로 변경한다
+        if (drawingState) {
+            showLoadingMask("ThumnailTransfer");
+        }
+
         setTimeout(() => {
-            // ksy:: 렌더링 해줄 canvas 정보를 셋팅한다(type == img, canvas)
-            if (drawingStore.files[json.selectedFileIndex].type !== "pdf") {
-                console.log("여기7");
-                drawingStore.setCanvasHistory(
-                    drawingStore.files[json.selectedFileIndex].history,
-                );
-            } else {
-                // ksy:: 렌더링 해줄 canvas 정보를 셋팅한다(type == pdf)
-                console.log(
-                    "moveThumbnail",
-                    drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
-                        .history,
-                );
-                console.log("여기8");
-                drawingStore.setCanvasHistory(
-                    drawingStore.files[json.selectedFileIndex].pdf[json.selectedPdfIndex]
-                        .history,
-                );
-            }
-
-            // ksy:: 기존 호스트가 선택한 썸네일로 설정해준다. ▽(pdf) 관련 index
-            drawingStore.setPdfIndex(json.selectedPdfIndex);
-            // thumbnail.vue fileClick() 안에 설명
-            drawingStore.setBeforeIndexInitialized(true);
-            if (drawingState) {
-                // 썸네일 이관하는 시간이 소요되기 때문에 로딩바를 생성한다
-                createLoadingMask("ThumnailTransfer");
-
-                // 드로잉을 활성화 시켜준다.
-                commonStore.setIsDrawing(true);
-
-                // 비디오는 비활성화 시킨다.
-                drawingStore.setDrawingVideo(false);
-            }
-            // ksy:: 썸네일 이관이 끝나면 로딩바 제거
-            loadingMaskDelete();
-            nextTick(() => {
-                drawingStore.setCanvasHistoryFin(true);
-            });
-        }, 500);
+            commonStore.setIsDrawing(true);
+            drawingStore.setDrawingVideo(false);
+            drawingStore.setSelectedFileIndex(json.selectedFileIndex);
+            drawingStore.updateThumbnail(json.selectedFileIndex);
+            hideLoadingMask();
+        }, 1000);
     });
 
     // 파일 업로드된 이미지 url 수신
@@ -2206,9 +2149,10 @@ onMounted(async () => {
         const json = JSON.parse(response);
 
         let url = "";
-        if (json.url != null && json.name != null) {
-            url = `${json.url}/${json.name}`;
-            url = await convertImageToBlob(url);
+        let blobURL = ""
+        if (json.url && json.name) {
+            url = `${json.url}/${json.name}?token=${loginStore.m_access_token}`;
+            blobURL = await convertImageToBlob(url);
             // 캡쳐 일 경우
             if (callStore.isCapture) {
                 drawingStore.setIsOpenSaveThumbnail(false);
@@ -2229,7 +2173,6 @@ onMounted(async () => {
                 });
 
                 /* 캡쳐 저장 완료 - 초기화 시작 */
-                // captureSaveFlag false 변경 = 초기화
                 callStore.setCaptureSaveFlag(false);
                 callStore.setIsCapture(false);
             } else {
@@ -2248,19 +2191,15 @@ onMounted(async () => {
                         drawingStore.setSaveThumbnailImgInCanvas(url);
                         drawingStore.setSrc({
                             type: "img",
-                            src: url,
+                            src: url
                         });
                     } else {
                         if (autoPictureModal.value) {
-                            // 바로 보일 경우 간혈적으로 미리보기가 안뜨는 현상이 있어서 예외처리
                             setTimeout(() => {
-                                // 수신파일 이미지 미리보기
-                                previewModal(url);
+                                previewModal(blobURL);
                             }, 500);
                         } else {
-                            // 수신파일 이미지 미리보기
-                            // previewModal(url)
-                            previewModal(url);
+                            previewModal(blobURL);
                         }
 
                         // 드로잉 썸네일 추가
@@ -2285,31 +2224,14 @@ onMounted(async () => {
                     }
                 }
 
-                // 로컬 개발이 아닌 경우에만 PC 에 저장
-                // if (window.location.hostname != "localhost") {
-                handleFileDownload(url, json.name);
-                // const a = document.createElement("a")
-                // a.style.display = "none"
-                // a.href = url
-                // a.download = json.name
-                // document.body.appendChild(a)
-                // a.click()
-                // setTimeout(() => {
-                // document.body.removeChild(a)
-                // window.URL.revokeObjectURL(url)
-                // }, 100)
-                // }
-                const rfIndex = findFeedsIndexDeviceid(json.deviceid);
+                if (window.location.hostname !== 'localhost') handleFileDownload(url, json.name);
 
                 /***** 파일 수신 완료 처리 *****/
+                const rfIndex = findFeedsIndexDeviceid(json.deviceid);
 
                 // 고화질 캡쳐인 경우
                 if (json.HQCapture) {
-                    // 고화질 캡쳐 버튼 초기화
-                    // callStore.setHQCaptrueFlag", false)
-
                     // 내 화면을 비디오로 변환
-                    const rfIndex = findFeedsIndexDeviceid(json.deviceid);
                     callingLayoutChange(
                         "attach",
                         commonStore.userListStatus[rfIndex].text,
@@ -2321,9 +2243,6 @@ onMounted(async () => {
                 }
                 // 파일 수신인 경우
                 else {
-                    // 내 화면을 파일 수신 완료로 변경
-                    // callingLayoutChange(5, sessionStorage.getItem("m_nickname"), 0)
-                    const rfIndex = findFeedsIndexDeviceid(json.deviceid);
                     const fileChatIndex =
                         commonStore.userListStatus[rfIndex].fileReceiveInfo.fileChatIndex;
 
@@ -8146,10 +8065,18 @@ function antennaCheck(rfid) {
 }
 async function moveThumbnail(localDeviceid, remoteDeviceid) {
     drawingStore.setReadyStatus(true);
-    drawingStore.addFirstInFiles();
     drawingStore.setBeforeCloseCanvas(false);
 
     // 현재 썸네일 리스트를 가져온다.
+    const lastGroup = drawingStore.pdfGroup;
+    const lastIndex = drawingStore.index;
+    const firstHistory = { ...drawingStore.firstHistory };
+    const firstFiles = [...drawingStore.firstFiles];
+    const lastCanvasJson = drawingStore.lastCanvasJson;
+    const pdfUrlSaveArrays = [...drawingStore.pdfUrlSaveArrays];
+    const selectedFileIndex = drawingStore.selectedFileIndex;
+    const selectedPdfIndex = drawingStore.pdfIndex;
+    const isDrawingEnable = commonStore.isDrawing; // 드로잉 중이였는지 상태 확인
     const myThumbnailList = drawingStore.files.map((b) => Object.assign(b));
     console.log(myThumbnailList, "My thumbnail");
     const thumbnailList = [];
@@ -8158,23 +8085,18 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
 
     for (let i = 0; i < myThumbnailList.length; i++) {
         if (myThumbnailList[i].type == "canvas" || myThumbnailList[i].type == "img") {
-            // 기존 코드
-            // myThumbnailList[i].history.currentStateIndex = 0
-            // myThumbnailList[i].history.state =
-            // myThumbnailList[i].history.state.splice(myThumbnailList[i].history.state.length - 1, 1)
-            // 신규 코드
             myThumbnailList[i].history = drawingStore.files[i].history;
             thumbnailList.push(myThumbnailList[i]);
         } else if (myThumbnailList[i].type == "pdf") {
             console.log("pdf in");
-            for (let j = 0; j < pdfUrlSaveArrays.value.length; j++) {
-                if (pdfUrlSaveArrays.value[j].groupIndex == myThumbnailList[i].group) {
+            for (let j = 0; j < pdfUrlSaveArrays.length; j++) {
+                if (pdfUrlSaveArrays[j].groupIndex == myThumbnailList[i].group) {
                     console.log("same group");
-                    for (let k = 0; k < pdfUrlSaveArrays.value[j].pages.length; k++) {
+                    for (let k = 0; k < pdfUrlSaveArrays[j].pages.length; k++) {
                         if (myThumbnailList[i].pdf[k].history.state.length == 0) {
                             console.log("no length");
                             myThumbnailList[i].pdf[k].img =
-                                pdfUrlSaveArrays.value[j].pages[k].url;
+                                pdfUrlSaveArrays[j].pages[k].url;
                         } else {
                             console.log("yes length");
                             for (
@@ -8186,23 +8108,16 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
                                     myThumbnailList[i].pdf[k].history.state[l],
                                 );
                                 if (
-                                    changeURL.objects[0].src != pdfUrlSaveArrays.value[j]
+                                    changeURL.objects[0].src != pdfUrlSaveArrays[j]
                                 ) {
                                     changeURL.objects[0].src =
-                                        pdfUrlSaveArrays.value[j].pages[k].url;
+                                        pdfUrlSaveArrays[j].pages[k].url;
                                     changeURL.objects[0].crossOrigin = "anonymous";
                                     myThumbnailList[i].pdf[k].history.state[l] =
                                         JSON.stringify(changeURL);
                                 }
                             }
                             console.log("PDFPDFPDFPDF", myThumbnailList[i]);
-                            // myThumbnailList[i].pdf[k].history.currentStateIndex = 0
-                            // myThumbnailList[i].pdf[k].history.state = myThumbnailList[
-                            //  i
-                            // ].pdf[k].history.state.splice(
-                            //  myThumbnailList[i].pdf[k].history.state.length - 1,
-                            //  1
-                            // )
                         }
                     }
                     thumbnailList.push(myThumbnailList[i]);
@@ -8211,27 +8126,6 @@ async function moveThumbnail(localDeviceid, remoteDeviceid) {
         }
     }
     console.log(thumbnailList, "new thumbnail");
-
-    const lastGroup = drawingStore.pdfGroup;
-    const lastIndex = drawingStore.index;
-    const firstHistory = { ...drawingStore.firstHistory };
-    const firstFiles = [...drawingStore.firstFiles];
-
-    // 신규 코드
-    const lastCanvasJson = drawingStore.lastCanvasJson;
-    // 기존 코드 (호스트 이관 시 이어서 드로잉을 위해 주석 처리)
-    // const canvasJson = thumbnailList.length < 1 ? null : thumbnailList[0].history
-    // const lastCanvasJson = canvasJson == null ? null : canvasJson.state[canvasJson.currentStateIndex]
-
-    const pdfUrlSaveArrays = [...pdfUrlSaveArrays.value];
-    // console.log("lastJson", lastCanvasJson)
-    // console.log("pdfUrlSaveArrays", pdfUrlSaveArrays)
-
-    // const canvasHistory = drawingStore.canvasHistory
-    const selectedFileIndex = drawingStore.selectedFileIndex;
-    const selectedPdfIndex = drawingStore.pdfIndex;
-    const isDrawingEnable = commonStore.isDrawing; // 드로잉 중이였는지 상태 확인
-    // console.log("selectedFileIndex: ".concat(selectedFileIndex))
 
     // 썸네일 리스트가 없을 경우는 보내지 않는다.
     if (thumbnailList.length != 0) {
@@ -8939,35 +8833,17 @@ function forceLogOutResult(reqSocketId, status) {
     console.log("*** socket: emit forceLogoutResult");
     console.log(json);
 }
-let loadingModal = null;
 
-function initLoadingModal(type) {
-    if (!loadingModal) {
-        loadingModal = useModal({
-            component: LoadingModal,
-            key: `loading-modal`,
-            attrs: {
-                maskLoadingType: type,
-            },
-        });
-    }
-    return loadingModal;
+function showLoadingMask(type) {
+    modalStore.openModal("loading", {
+        type: type
+    });
 }
 
-function createLoadingMask(type, status = "open") {
-    const { open: loadingOpen, close: loadingClose } = initLoadingModal(type);
+function hideLoadingMask() {
+    modalStore.closeModal("loading")
+}
 
-    if (status === "open") {
-        loadingOpen();
-    } else if (status === "close") {
-        loadingClose();
-    }
-}
-/* resultSettingInRoomResult & onlocalStreamSuccess 일 경우 로딩 마스크 제거 */
-function loadingMaskDelete() {
-    createLoadingMask("", "close");
-    callStore.setOnlocalStreamSuccess(false);
-}
 function prepareStreamMode(type) {
     // mainIndex 조회
     const mainIndex = callStore.videoMainIndex;
@@ -10266,18 +10142,9 @@ function initJanusConnection() {
                                 main_stream_check();
                             }, 1000);
 
-                            console.log("setOnlocalStreamSuccess");
-                            /* onlocalStream 진행 후 onlocalStreamSuccess True 변경 */
-                            callStore.setOnlocalStreamSuccess(true);
-
                             /* 마스크 제거 요청 > onlocalStream & resultSettingInRoom 정상 수신 시 마스크 제거한다. */
-                            loadingMaskDelete();
+                            hideLoadingMask();
 
-                            // 파일 수신 중 내 비디오 숨김 해제 ksy
-                            // if (sessionStorage.getItem("fileSendingFlag") === "true") {
-                            //  console.log("********* 파일 송수신 중")
-                            //  $("#myvideo").hide()
-                            // }
                             nextTick(() => {
                                 setAudioOutput();
                             });
@@ -11004,8 +10871,6 @@ watch(getHostRequestResult, (newValue, oldValue) => {
         // 새로운 호스트의 index 검색 -> 왕관표시 추가
         const hostindex = findFeedsIndexDeviceid(callStore.hostRequestInfo);
 
-        // console.log("@@" + callStore.hostRequestInfo)
-        // console.log("##" + hostindex)
         commonStore.setHostIcon(hostindex, true);
 
         // 현재 방이 전체 음소거인지 체크한다.
@@ -11037,23 +10902,18 @@ watch(getHostRequestResult, (newValue, oldValue) => {
         // 썸네일 이관 전 알림
         drawingStore.setBeforeThumbnailTransfer(true);
 
-        // 썸네일 이관 socket 실행
+
         setTimeout(() => {
             moveThumbnail(loginStore.m_local_deviceid, callStore.hostRequestInfo);
-            // 자신이 드로잉 상태라면 드로잉을 종료한다.
             if (commonStore.isDrawing) {
                 commonStore.setIsDrawing();
             }
 
-            /* 21-07-26 드로잉 분리 작업 */
-            // 자신이 화면 공유 중 일 경우 화면 공유를 종료한다.
             if (commonStore.isShare) {
                 commonStore.setIsShare();
             }
         }, 100);
     } else if (newValue == "reject") {
-        // 거절
-        // console.log("거절")
         hostChange(
             2,
             sessionStorage.getItem("m_roomid"),

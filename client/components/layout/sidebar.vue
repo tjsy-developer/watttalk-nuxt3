@@ -40,7 +40,6 @@ onMounted(async () => {
 });
 
 const handleClickNotice = () => {
-    // open();
     vfm.toggle("notice-modal");
     console.log(vfm);
 };

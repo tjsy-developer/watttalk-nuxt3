@@ -30,7 +30,7 @@
                         v-if="file.type !== 'pdf'"
                         :class="{ selectedThumbnail: fileKey === selectedFileIndex }"
                         class="filesList row items-center"
-                        @click.stop="fileClick(fileKey)"
+                        @click.stop="thumnbnailClick(fileKey)"
                     >
                         <img :src="file.img" alt="Thumbnail image" class="thumbnailImg" />
                         <img
@@ -165,8 +165,6 @@ import { useDrawingCanvasStore } from "@/stores/drawing";
 import { ref } from "vue";
 const { t } = useI18n();
 import { fabric } from "fabric";
-import lodash from "lodash";
-import { useNuxtApp } from "nuxt/app";
 
 const drawingStore = useDrawingCanvasStore();
 const callStore = useCallStore();
@@ -181,30 +179,16 @@ const pdfNum = ref(0);
 const isEscape = ref(false);
 const displayMode = ref("darkmode");
 
-const fileClick = (e, type) => {
-    if (files.value[e].type !== "pdf") {
-        //동일한 index일 경우 watch에서 감지 불가이므로 여기서 처리
-        console.log("fileClick", drawingStore.selectedFileIndex, e)
-        if (drawingStore.selectedFileIndex == e) {
-            drawingStore.setFilesHistory({
-                num: e,
-                history: drawingStore.canvasHistory,
-            });
 
-            drawingStore.setFilesImgChange({
-                num: e,
-                image: drawingStore.canvas.toDataURL("png"),
-            });
-
-            console.log(drawingStore.canvas.toDataURL("png"))
-            return;
-        }
-        drawingStore.setSelectedFileIndex(e);
+const thumnbnailClick = (fileKey) => {
+    if (drawingStore.selectedFileIndex == fileKey) {
+        drawingStore.updateThumbnail(fileKey)
+        drawingStore.setSelectedFileIndex(fileKey)
+    } else {
+        drawingStore.updateThumbnail(drawingStore.selectedFileIndex)
+        drawingStore.setSelectedFileIndex(fileKey)
     }
-    drawingStore.setBeforeIndexInitialized(false);
 };
-
-// --- Other Methods Conversion ---
 
 const openPdf = (e, group) => {
     // console.log(e, group)
@@ -372,38 +356,9 @@ const pdfClick = (fileKey, pdfKey) => {
 };
 
 const newCanvasAdd = () => {
-    fileClick(drawingStore.selectedFileIndex);
-
-    if (!isPdfUploading.value) {
-        drawingStore.setSrc({
-            type: "canvas",
-            src: firstFiles.value[0].img,
-        });
-        // const rect = new fabric.Rect({
-        //     left: 1,
-        //     top: 1,
-        //     fill: "white",
-        //     width: 1,
-        //     height: 1,
-        // });
-        // drawingStore.canvas.add(rect);
-        // drawingStore.canvas.requestRenderAll();
-        // const canvasJSON = drawingStore.canvas.toJSON()
-        // const canHistory = {
-        //     state: [],
-        //     currentStateIndex: 0,
-        //     undoStatus: false,
-        //     redoStatus: false,
-        //     undoFinishedStatus: true,
-        //     redoFinishedStatus: true,
-        // }
-        // canHistory.state.push(canvasJSON)
-        // drawingStore.setCanvasHistory(canHistory);
-        console.log("3번");
-        drawingStore.setSelectedFileIndex(drawingStore.selectedFileIndex + 1);
-    } else {
-        commonToastMessage("uploading PDF");
-    }
+    drawingStore.updateThumbnail(drawingStore.selectedFileIndex);
+    drawingStore.initCanvasAdd();
+    console.log("여기탄거야?");
 };
 
 const canvasImgChange = (num, beforeSuperIndex, type) => {
@@ -503,14 +458,8 @@ const eachCanvasDelete = (e, pdfKey, group) => {
 
 const clearThumbnail = () => {
     if (!isPdfUploading.value) {
-        drawingStore.clearFiles();
-        console.log("5번");
-        drawingStore.setSelectedFileIndex(0);
-        drawingStore.setBeforeSelectedFileIndex(-1);
-        drawingStore.setFilesImgChange({
-            num: 0,
-            image: canvas.value.toDataURL("png"),
-        });
+        drawingStore.initDrawing();
+        drawingStore.initCanvasAdd();
 
         for (let i = 1; i < pdfUploadQueArray.value.length; i++) {
             if (pdfUploading.value == true) {
@@ -547,7 +496,7 @@ const inputPreviewImageWork = (index, thumb) => {
         imgObj.crossOrigin = "anonymous";
         imgObj.onload = () => {
             console.log(index, ". imgObj.onload");
-            
+
             const image = new fabric.Image(
                 imgObj,
                 {
@@ -583,7 +532,7 @@ const inputPreviewImageWork = (index, thumb) => {
             console.log(image, ". canvas.value.add(image)");
             canvas.value.add(image);
             canvas.value.renderAll();
-            
+
             console.log(index, ". resolve()");
             resolve();
         };
@@ -646,25 +595,25 @@ const horizontalScroll = (e) => {
 };
 
 // getPreviousUserCanvas 함수
-const getPreviousUserCanvas = () => {
-    // newCanvasAdd() 함수는 별도로 정의해야 합니다.
-    // 여기서는 스토어 액션으로 가정하고 호출합니다.
-    // drawingStore.newCanvasAdd()
+// const getPreviousUserCanvas = () => {
+//     // newCanvasAdd() 함수는 별도로 정의해야 합니다.
+//     // 여기서는 스토어 액션으로 가정하고 호출합니다.
+//     // drawingStore.newCanvasAdd()
 
-    setTimeout(() => {
-        const num = drawingStore.files.length - 1;
-        drawingStore.setFilesImgChange({
-            num,
-            image: canvas.value.toDataURL("png"),
-        });
-        // eachCanvasDelete() 함수도 별도로 정의해야 합니다.
-        // drawingStore.eachCanvasDelete(drawingStore.files.length - 1)
+//     setTimeout(() => {
+//         const num = drawingStore.files.length - 1;
+//         drawingStore.setFilesImgChange({
+//             num,
+//             image: canvas.value.toDataURL("png"),
+//         });
+//         // eachCanvasDelete() 함수도 별도로 정의해야 합니다.
+//         // drawingStore.eachCanvasDelete(drawingStore.files.length - 1)
 
-        drawingStore.setChangedHost(false);
-        drawingStore.setBeforeHostIndex(0);
-        drawingStore.deleteFirstInFiles();
-    }, 200);
-};
+//         drawingStore.setChangedHost(false);
+//         // drawingStore.setBeforeHostIndex(0);
+//         drawingStore.deleteFirstInFiles();
+//     }, 200);
+// };
 
 const {
     canvas,
@@ -683,7 +632,7 @@ const {
     pdfIndex,
     saveThumbnailImg,
     isOpenSaveThumbnail,
-    isDrawing, // Assuming this is also in drawingStore, or adjust if it's in a different store
+    isDrawing,
     isPdfUploading,
     pdfPushIndex,
     isThumbnailTransfer,
@@ -695,56 +644,39 @@ const {
     selectCount,
     beforeSelectedState,
     loadImageOnCanvasFinished,
-    lastCanvasSeted, // getLastCanvasInfo에서 사용되는 속성
 } = storeToRefs(drawingStore);
 
-// callStore의 state 속성들을 반응형으로 추출
 const { pdfUploadQueArray, pdfUploading } = storeToRefs(callStore);
-
-const getLastCanvasInfo = computed(() => {
-    return lastCanvasSeted.value; // storeToRefs로 추출된 ref이므로 .value로 접근
-});
-
-// canvasWidth 감시
-// watch(canvasWidth, (newVal) => {
-//     const thumbBody = document.getElementById("thumbBody");
-//     if (thumbBody) {
-//         thumbBody.style.width = newVal - 30 + "px";
-//     }
-// });
 
 watch(beforeSelectedFileIndex, (newVal, prevVal) => {
     console.log("beforeSelectedFileIndex", newVal);
-    if (newVal == -1) return;
-    // 이전 선택된 파일을 저장한다
-    drawingStore.setFilesHistory({
-        num: newVal,
-        history: drawingStore.canvasHistory,
-    });
-
-    drawingStore.setFilesImgChange({
-        num: newVal,
-        image: drawingStore.canvas.toDataURL("png"),
-    });
 });
 
 watch(selectedFileIndex, (newVal, prevVal) => {
-    console.log("selectedFileIndex", files.value.length);
+    console.log("selectedFileIndex", newVal, files.value[newVal].history.state[files.value[newVal].history.currentStateIndex], files.value.length);
+
+    if (!files.value[newVal]) return;
     // 현재 캔버스의 history를 가져온다
     drawingStore.setCanvasHistory(files.value[newVal].history);
     drawingStore.canvas.loadFromJSON(
         files.value[newVal].history.state[files.value[newVal].history.currentStateIndex],
         () => {
-            drawingStore.canvas.renderAll.bind(drawingStore.canvas);
+            drawingStore.canvas.renderAll();
             console.log("fileClick finished, file.type == canvas");
         },
     );
+
+    // if (files.value[idx].type == "pdf") {
+    //     openPdf(idx, files.value[idx].group);
+    // }
 });
 
-// files 감시 (배열 전체 변경 감지)
 watch(
     () => files.value.length, // ✅ 배열의 길이만 감시
     (newLength, oldLength) => {
+        console.log("files length changed:", newLength, oldLength);
+
+        if (newLength == 0) return;
         const beforeCount = filesNumCount.value;
         filesNumCount.value = newLength;
 
@@ -755,18 +687,11 @@ watch(
         if (canvas.value != null) {
             let fileType = "canvas";
 
-            if (beforeSelectedState.value) {
-                fileType = files.value[selectedFileIndex.value].type;
-            } else {
-                fileType = files.value[newLength - 1].type;
-            }
+            console.log(files.value);
+            fileType = files.value[newLength - 1].type;
 
             if (fileType != "pdf") {
                 drawingStore.setThumbnailWidth(thumbnailWidth.value + 148);
-                if (!isGivenThumbnailTransfer.value && !beforeCloseCanvas.value) {
-                    console.log("fileClick 2");
-                    fileClick(newLength - 1);
-                }
                 const scrollElement = document.getElementById("thumbBody");
                 if (scrollElement) {
                     setTimeout(() => {
@@ -780,34 +705,17 @@ watch(
     },
 );
 
-// files 감시 (배열 전체 변경 감지)
-// watch(
-//     () => saveThumbnailImg.value.length, // ✅ 배열의 길이만 감시
-//     (newLength, oldLength) => {
-//         if (isDrawing.value) {
-//             inputPreviewImage(500)
-//         }
-//     },
-// );
-
-// src 감시
 watch(src, (newVal) => {
-    console.log(newVal);
+    console.log(newVal, " . src watch");
     if (newVal != null) {
-        if (files.value.length == 0) {
-            // ref 접근 시 .value
-            console.log("drawingStore.setFirstFiles");
-            drawingStore.setFirstFiles(newVal);
-        }
         console.log("drawingStore.setFiles", newVal);
         drawingStore.setFiles(newVal);
     }
 });
 
-// canvas 감시
 watch(canvas, (newVal) => {
+    console.log("canvas watch", newVal);
     if (files.value.length == 0) {
-        // ref 접근 시 .value
         drawingStore.setSrc({
             type: "canvas",
             src: newVal.toDataURL("png"),
@@ -815,21 +723,6 @@ watch(canvas, (newVal) => {
     }
 });
 
-// selectedFileIndex 감시
-watch(selectedFileIndex, (newVal) => {
-    let idx = newVal;
-    if (idx > files.value.length - 1) {
-        // ref 접근 시 .value
-        idx = files.value.length - 1;
-    }
-    drawingStore.setSelectCount(true);
-    if (files.value[idx].type == "pdf") {
-        // ref 접근 시 .value
-        openPdf(idx, files.value[idx].group); // ref 접근 시 .value
-    }
-});
-
-// isDrawing 감시
 watch(isDrawing, (newVal) => {
     console.log("*** methods: isDrawing. newVal:", newVal);
 
@@ -837,18 +730,15 @@ watch(isDrawing, (newVal) => {
         drawingStore.setSelectCount(false);
     }
 
-    //#region PDF logic
     let pdfN = 0;
-    const length = files.value.length - pdfN; // ref 접근 시 .value
+    const length = files.value.length - pdfN;
     for (let i = 0; i < files.value.length; i++) {
-        // ref 접근 시 .value
         if (
             files.value[i].type == "pdf" &&
             i !== selectedFileIndex.value &&
             beforeSelectedState.value
         ) {
-            // ref 접근 시 .value
-            const group = files.value[i].group; // ref 접근 시 .value
+            const group = files.value[i].group;
             const pdfWidth = 32;
             const openCloseImg = document.getElementById("openCloseImg" + group);
             if (openCloseImg) openCloseImg.style.transform = "";
@@ -859,43 +749,38 @@ watch(isDrawing, (newVal) => {
     }
     // PDF 로컬 업로드 중 드로잉 껐을 시 PDF 중단 및 삭제
     if (escapeDrawingPage.value) {
-        // ref 접근 시 .value
         drawingStore.setIsPdfUploading(false);
         if (isEscape.value) {
-            // ref 접근 시 .value
-            isEscape.value = false; // ref 접근 시 .value
+            isEscape.value = false;
             return;
         }
-        isEscape.value = true; // ref 접근 시 .value
+        isEscape.value = true;
         if (files.value[files.value.length - 1].type == "pdf") {
-            // ref 접근 시 .value
             eachCanvasDelete(
-                files.value.length - 1, // ref 접근 시 .value
-                pdfIndex.value, // ref 접근 시 .value
-                files.value[files.value.length - 1].group, // ref 접근 시 .value
+                files.value.length - 1,
+                pdfIndex.value,
+                files.value[files.value.length - 1].group,
             );
         }
         drawingStore.setEscapeDrawingPage(false);
     }
     // PDF 서버 업로드 중 드로잉 껐을 시 PDF 중단 및 삭제
     // filesList는 deep copy가 필요할 수 있으므로 map을 사용합니다.
-    const filesList = files.value.map((b) => Object.assign({}, b)); // ref 접근 시 .value, 깊은 복사
+    const filesList = files.value.map((b) => Object.assign({}, b));
     if (pdfUrlSaveArrays.value.length > 0 && newVal) {
-        // ref 접근 시 .value
         for (let i = 0; i < pdfUrlSaveArrays.value.length; i++) {
-            // ref 접근 시 .value
             for (let j = 0; j < filesList.length; j++) {
                 if (filesList[j].type == "pdf") {
                     if (
-                        filesList[j].group == pdfUrlSaveArrays.value[i].groupIndex && // ref 접근 시 .value
-                        pdfUrlSaveArrays.value[i].pages != null // ref 접근 시 .value
+                        filesList[j].group == pdfUrlSaveArrays.value[i].groupIndex &&
+                        pdfUrlSaveArrays.value[i].pages != null
                     ) {
                         filesList.splice(j, 1);
                         j--;
                     }
                 } else if (
-                    filesList[j].group == pdfUrlSaveArrays.value[i].groupIndex && // ref 접근 시 .value
-                    pdfUrlSaveArrays.value[i].pages == null // ref 접근 시 .value
+                    filesList[j].group == pdfUrlSaveArrays.value[i].groupIndex &&
+                    pdfUrlSaveArrays.value[i].pages == null
                 ) {
                     // No action
                 } else {
@@ -907,44 +792,32 @@ watch(isDrawing, (newVal) => {
         if (filesList.length > 0) {
             let e = null;
             for (let i = 0; i < files.value.length; i++) {
-                // ref 접근 시 .value
                 if (files.value[i].type == "pdf") {
-                    // ref 접근 시 .value
                     if (files.value[i].group == filesList[0].group) {
-                        // ref 접근 시 .value
                         e = i;
                     }
                 }
             }
-            eachCanvasDelete(e, pdfIndex.value, filesList[0].group); // ref 접근 시 .value
+            eachCanvasDelete(e, pdfIndex.value, filesList[0].group);
         }
     } else if (pdfUrlSaveArrays.value.length == 0 && newVal) {
-        // ref 접근 시 .value
         for (let i = 0; i < filesList.length; i++) {
             if (filesList[i].type == "pdf") {
-                eachCanvasDelete(i, pdfIndex.value, filesList[i].group); // ref 접근 시 .value
+                eachCanvasDelete(i, pdfIndex.value, filesList[i].group);
             }
         }
     }
-    //#endregion
 
     drawingStore.setThumbnailWidth(pdfN * 32 + length * 148);
 
-    console.log(
-        "drawing in 파일타입 확인",
-        beforeSelectedState.value,
-        files.value[selectedFileIndex.value].type,
-    ); // ref 접근 시 .value
     let scrollPosition = 0;
     if (files.value[selectedFileIndex.value].type == "pdf") {
-        // ref 접근 시 .value
-        const selectedPdfFile = files.value[selectedFileIndex.value].pdf[pdfIndex.value]; // ref 접근 시 .value
+        const selectedPdfFile = files.value[selectedFileIndex.value].pdf[pdfIndex.value];
         const selectedFileIdx = selectedPdfFile ? selectedPdfFile.index : 0; // null 체크
         const fileListLength = document.getElementsByClassName("filesList").length;
         const changedScrollIndex = selectedFileIdx - fileListLength;
 
         for (let i = 0; i < selectedFileIndex.value; i++) {
-            // ref 접근 시 .value
             const canvasPageBtn = document.getElementsByClassName("canvasPageBtn")[i];
             const filesWidth = canvasPageBtn ? canvasPageBtn.clientWidth : 0; // null 체크
             scrollPosition += filesWidth;
@@ -952,8 +825,7 @@ watch(isDrawing, (newVal) => {
 
         setTimeout(() => {
             if (beforeSelectedState.value) {
-                // ref 접근 시 .value
-                pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
+                pdfClick(selectedFileIndex.value, pdfIndex.value);
             }
             const pdfCanvasWraps = document.getElementsByClassName("pdfCanvasWrap");
             const selectedThumbnailPosition = pdfCanvasWraps[changedScrollIndex]
@@ -966,20 +838,18 @@ watch(isDrawing, (newVal) => {
         }, 300);
     } else {
         for (let i = 0; i < selectedFileIndex.value; i++) {
-            // ref 접근 시 .value
             const canvasPageBtn = document.getElementsByClassName("canvasPageBtn")[i];
             const filesWidth = canvasPageBtn ? canvasPageBtn.clientWidth : 0; // null 체크
             scrollPosition += filesWidth;
         }
 
         setTimeout(() => {
-            console.log("beforeSelectedState:", beforeSelectedState.value); // ref 접근 시 .value
+            console.log("beforeSelectedState:", beforeSelectedState.value);
             if (beforeSelectedState.value) {
-                // ref 접근 시 .value
                 console.log("fileClick 3");
-                fileClick(selectedFileIndex.value); // ref 접근 시 .value
+                drawingStore.updateThumbnail(selectedFileIndex.value);
                 console.log(
-                    "this.fileClick(this.selectedFileIndex) - isDrawing type image",
+                    "this.drawingStore.updateThumbnail(this.selectedFileIndex) - isDrawing type image",
                 );
             }
             const thumbBody = document.getElementById("thumbBody");
@@ -992,49 +862,36 @@ watch(isDrawing, (newVal) => {
     inputPreviewImage(500);
 });
 
-// isThumbnailTransfer 감시
 watch(isThumbnailTransfer, (newVal) => {
     if (newVal) {
         if (canvas.value != null) {
-            // ref 접근 시 .value
             clearThumbnail();
             drawingStore.setIsThumbnailTransfer(false);
         }
     }
 });
 
-// beforeThumbnailTransfer 감시
 watch(beforeThumbnailTransfer, async (newVal) => {
     if (newVal) {
         if (canvas.value != null) {
-            // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
-                // ref 접근 시 .value
-                console.log("fileClick 4");
-                await fileClick(selectedFileIndex.value); // ref 접근 시 .value
+                await drawingStore.updateThumbnail(selectedFileIndex.value);
                 drawingStore.setBeforeThumbnailTransfer(false);
             } else {
-                await pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
+                await pdfClick(selectedFileIndex.value, pdfIndex.value);
                 drawingStore.setBeforeThumbnailTransfer(false);
             }
         }
     }
 });
 
-// beforeCloseCanvas 감시
 watch(beforeCloseCanvas, (newVal) => {
-    // alert(selectedFileIndex.value) // alert 사용 시 주의 (브라우저 동작을 멈춤)
     if (newVal) {
         if (canvas.value != null) {
-            // ref 접근 시 .value
-            console.log("8번");
-            drawingStore.setSelectedFileIndex(files.value.length - 1); // ref 접근 시 .value
             if (files.value[selectedFileIndex.value].type != "pdf") {
-                // ref 접근 시 .value
-                console.log("fileClick 5");
-                fileClick(selectedFileIndex.value); // ref 접근 시 .value
+                drawingStore.updateThumbnail(selectedFileIndex.value);
             } else {
-                pdfClick(selectedFileIndex.value, pdfIndex.value); // ref 접근 시 .value
+                pdfClick(selectedFileIndex.value, pdfIndex.value);
             }
             drawingStore.setBeforeCloseCanvas(false);
         }
@@ -1049,30 +906,18 @@ watch(escapeDrawingPage, (newVal) => {
     if (newVal) {
         drawingStore.setIsPdfUploading(false);
         if (isEscape.value) {
-            // ref 접근 시 .value
-            isEscape.value = false; // ref 접근 시 .value
+            isEscape.value = false;
             return;
         }
-        isEscape.value = true; // ref 접근 시 .value
+        isEscape.value = true;
         if (files.value[files.value.length - 1].type == "pdf") {
-            // ref 접근 시 .value
             eachCanvasDelete(
-                files.value.length - 1, // ref 접근 시 .value
-                pdfIndex.value, // ref 접근 시 .value
-                files.value[files.value.length - 1].group, // ref 접근 시 .value
+                files.value.length - 1,
+                pdfIndex.value,
+                files.value[files.value.length - 1].group,
             );
         }
         drawingStore.setEscapeDrawingPage(false);
-    }
-});
-
-// getLastCanvasInfo 감시 (이전 computed에서 watch로 변경된 것으로 보임)
-watch(lastCanvasSeted, async (res) => {
-    // computed의 getLastCanvasInfo가 아닌, state의 lastCanvasSeted를 직접 감시하는 것으로 가정
-    if (res) {
-        drawingStore.setCanvasHistoryFin(false);
-        console.log("fileClick 6");
-        await fileClick(selectedFileIndex.value); // ref 접근 시 .value
     }
 });
 
@@ -1081,7 +926,6 @@ onMounted(() => {
 
     // 4. PDF 관련 초기화 로직
     let pdfN = 0;
-    // files는 ref이므로 .value로 접근해야 합니다.
     const initialFilesLength = files.value ? files.value.length : 0;
     const length = initialFilesLength - pdfN;
 
@@ -1089,7 +933,6 @@ onMounted(() => {
         // files가 null이 아닌지 확인
         for (let i = 0; i < files.value.length; i++) {
             if (files.value[i].type == "pdf" && beforeSelectedState.value) {
-                // .value로 접근
                 const group = files.value[i].group;
                 const openCloseImg = document.getElementById("openCloseImg" + group);
                 if (openCloseImg) openCloseImg.style.transform = "";
@@ -1105,14 +948,13 @@ onMounted(() => {
 
     document.addEventListener("wheel", horizontalScroll, { passive: false }); // passive: false로 설정하여 preventDefault()가 동작하도록 함
 
-    if (drawingStore.changedHost === true) {
-        getPreviousUserCanvas();
-    }
+    // if (drawingStore.changedHost === true) {
+    //     getPreviousUserCanvas();
+    // }
 });
 
 onUnmounted(() => {
     if (drawingStore.readyStatus) {
-        // ref 접근 시 .value
         // 호스트 이관 시
         drawingStore.setReadyStatus(false); // Pinia 스토어 뮤테이션/액션 호출
         console.log("onUnmounted: Host transfer detected, readyStatus set to false.");
@@ -1133,7 +975,7 @@ onUnmounted(() => {
                         `onUnmounted: Saving non-PDF canvas state for index ${superIndex.value}.`,
                     );
                 } else {
-                    pdfClick(currentSelectedFileIndex, pdfIndex.value); // ref 접근 시 .value
+                    pdfClick(currentSelectedFileIndex, pdfIndex.value);
                     console.log(
                         `onUnmounted: Saving PDF canvas state for file index ${currentSelectedFileIndex}, pdf index ${pdfIndex.value}.`,
                     );

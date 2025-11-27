@@ -44,6 +44,14 @@
     >
         <HostMessageModal></HostMessageModal>
     </VueFinalModal>
+    <VueFinalModal
+        modal-id="loading"
+        v-model="isLoadingModal"
+        :clickToClose="false"
+        class="modal-container"
+    >
+        <LoadingModal v-bind="modalStore.getModalData('loading')"></LoadingModal>
+    </VueFinalModal>
     <CallHeader></CallHeader>
     <div class="content">
         <slot></slot>
@@ -76,6 +84,7 @@ import { onMounted } from "vue";
 import FileSendModal from "@/components/modal/FileSendModal.vue";
 import AlertModal from "@/components/modal/AlertModal.vue";
 import HostMessageModal from "@/components/modal/HostMessageModal.vue";
+import LoadingModal from "@/components/modal/LoadingModal.vue";
 
 const modalStore = useModalStore();
 const commonStore = useRoomStore();
@@ -134,6 +143,13 @@ const isPreviewModal = computed({
     get: () => modalStore.isModalOpen("preview"),
     set: (val) => {
         if (!val) modalStore.closeModal("preview", false); // ESC 키나 외부 클릭으로 닫힐 때
+    },
+});
+
+const isLoadingModal = computed({
+    get: () => modalStore.isModalOpen("loading"),
+    set: (val) => {
+        if (!val) modalStore.closeModal("loading", false); // ESC 키나 외부 클릭으로 닫힐 때
     },
 });
 onMounted(() => {

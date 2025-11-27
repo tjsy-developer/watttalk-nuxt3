@@ -145,7 +145,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
             // 5️⃣ 액세스토큰 만료 체크
             if (lastActivity > accessExp) {
-                console.log("액세스토큰 만료, 갱신 시도");
                 try {
                     await requestNewToken();
                 } catch (err) {
@@ -154,7 +153,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
                     location.href = getManagerDomain();
                 }
             } else {
-                console.log("액세스토큰 아직 유효");
+                // console.log("액세스토큰 아직 유효");
             }
         }, 5000);
     }

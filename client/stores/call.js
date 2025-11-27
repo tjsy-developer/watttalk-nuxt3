@@ -133,31 +133,20 @@ export const useCallStore = defineStore("call", {
         HQCaptureCount: 0,
         HQCaptureFiles: [],
     }),
-
-    // Getters (게터) - computed 속성과 유사하게 상태를 계산합니다.
     getters: {
-        // 예시: 특정 상태 값 반환 (state.message와 동일하지만 getter로 정의할 수도 있음)
         getPreviousWorkingStatus: (state) => state.previousWorkingStatus,
         getCallingPopupInstitution: (state) => state.callingPopupInstitution,
         getCallingPopupHeadquarters: (state) => state.callingPopupHeadquarters,
-        // ... 모든 state 속성에 대한 getter를 필요에 따라 추가할 수 있습니다.
-        // 하지만 Pinia에서는 state에 직접 접근하는 것이 일반적이므로 모든 state에 대한 getter가 필수는 아닙니다.
-        // 복잡한 계산이 필요한 경우에 getter를 사용합니다.
         getDrawingGetFileObject: (state) => state.drawingGetFileObject,
         getCaptureImageInfo: (state) => state.captureImageInfo,
     },
-
-    // Actions (액션) - 상태를 변경하는 모든 로직을 여기에 정의합니다.
     actions: {
-        // Vuex의 mutations가 모두 이곳으로 이동합니다.
-        // `this`를 사용하여 스토어의 state 및 다른 actions에 접근할 수 있습니다.
         setFeeds(payload) {
             this.feeds = Array.isArray(payload)
                 ? payload.filter((item) => item != null)
                 : [];
         },
         setPreviousWorking(payload) {
-            console.log("payload값 들어왔다");
             this.previousWorkingStatus = payload;
         },
         callingPopupInfo(payload) {
@@ -342,7 +331,7 @@ export const useCallStore = defineStore("call", {
             this.canvas = payload;
         },
         setReceiverImagePath(payload) {
-            this.receiverImagePath = payload; // 초기화 로직은 Pinia에서 필요 없음 (덮어쓰기)
+            this.receiverImagePath = payload;
         },
         setReceiverImageDrawingMoveFlag(payload) {
             this.receiverImageDrawingMoveFlag = payload;
@@ -396,7 +385,6 @@ export const useCallStore = defineStore("call", {
         },
         pushPdfUploadQueArray(payload) {
             const queArray = {
-                // new Object() 대신 객체 리터럴 사용
                 name: payload.drawingPDFName,
                 size: payload.drawingPDFSize,
                 src: payload.drawingPDFSrc,
@@ -406,16 +394,14 @@ export const useCallStore = defineStore("call", {
             console.log("pdfUploadQueArray", this.pdfUploadQueArray);
         },
         removePdfUploadQueArray() {
-            // payload 제거
             this.pdfUploadQueArray.shift();
         },
         setPDFcancelUploadFlag(payload) {
             this.PDFcancelUploadFlag = payload;
         },
         setLaserPointerLaction(payload) {
-            this.laserPointerLaction = []; // 초기화
+            this.laserPointerLaction = [];
             const locationArray = {
-                // new Object() 대신 객체 리터럴 사용
                 x: payload.x,
                 y: payload.y,
             };
@@ -438,7 +424,6 @@ export const useCallStore = defineStore("call", {
         },
         setCaptureImageInfo(payload) {
             this.captureImageInfo = {
-                // new Object() 대신 객체 리터럴 사용
                 fileSrc: payload.fileSrc,
                 fileName: payload.fileName,
                 fileSize: payload.fileSize,
@@ -499,7 +484,6 @@ export const useCallStore = defineStore("call", {
         },
         addMotionFallInfo(payload) {
             const motionArray = {
-                // new Object() 대신 객체 리터럴 사용
                 deviceid: payload.deviceid,
                 datetime: payload.datetime,
                 datetimeUTC: payload.datetimeUTC,
@@ -514,7 +498,6 @@ export const useCallStore = defineStore("call", {
             this.motionFallInfo[payload.index].status = payload.status;
         },
         clearMotionFallInfo() {
-            // payload 제거
             this.motionFallInfo = [];
         },
         setMotionFallFlag(payload) {
@@ -528,12 +511,11 @@ export const useCallStore = defineStore("call", {
         },
         addMotionNoMoveInfo(payload) {
             const motionArray = {
-                // new Object() 대신 객체 리터럴 사용
                 deviceid: payload.deviceid,
                 datetime: payload.datetime,
                 datetimeUTC: payload.datetimeUTC,
                 status: payload.status,
-                nickname: payload.userNickname, // userNickname 사용
+                nickname: payload.userNickname,
                 rfid: payload.rfid,
                 rfIndex: payload.rfIndex,
             };
@@ -551,10 +533,6 @@ export const useCallStore = defineStore("call", {
         setMotionNoMoveClickIndex(payload) {
             this.motionNoMoveClickIndex = payload;
         },
-        setOnlocalStreamSuccess(payload) {
-            console.log("setOnlocalStreamSuccess", payload);
-            this.onlocalStreamSuccess = payload;
-        },
         setGpsClickInfo(payload) {
             this.gpsClickInfo = payload;
         },
@@ -566,10 +544,8 @@ export const useCallStore = defineStore("call", {
         },
         setMyGpsListPush(payload) {
             if (this.myGpsList) {
-                // myGpsList가 null이 아닌 경우에만 push
                 this.myGpsList.push(payload);
             } else {
-                // myGpsList가 null일 경우, 새 배열로 초기화 후 push
                 this.myGpsList = [payload];
             }
         },
@@ -610,20 +586,13 @@ export const useCallStore = defineStore("call", {
             this.autoVideoSaveChange = payload;
         },
         setCameraDeviceIndex(payload) {
-            console.log("cameraDeviceIndex actions", payload); // actions로 변경되었으므로 콘솔 메시지 수정
             this.cameraDeviceIndex = payload;
         },
         toggleFlag() {
-            // payload 제거, 토글 로직
-            console.log(this.flag);
             this.flag = !this.flag;
-            console.log(this.flag);
         },
         setChangeZoomLevel(payload) {
-            // 이름 변경: changeZoomLevel -> setChangeZoomLevel (mutation 이름과 통일)
-            console.log(payload);
             this.changeZoomLevel = payload;
-            console.log(payload);
         },
         setEnterenceCheck(payload) {
             this.enterenceCheck = payload;
@@ -632,7 +601,6 @@ export const useCallStore = defineStore("call", {
             this.onlyVoiceID = payload;
         },
         setDeclineStatus() {
-            // payload 제거, 토글 로직
             this.declineStatus = !this.declineStatus;
         },
         setOnlyVoiceIDFileSent(payload) {

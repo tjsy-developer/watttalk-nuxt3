@@ -90,7 +90,7 @@ COPY i18n ./i18n
 COPY nuxt_configs ./nuxt_configs
 COPY ./configs/hdcardev .env
 
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 RUN npm run generate   # 결과물은 .output/public
 
 # --- 배포 단계 ---

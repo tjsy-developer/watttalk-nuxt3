@@ -82,6 +82,7 @@
                                 :min-date="new Date()"
                                 :max-date="endDate"
                                 auto-apply
+                                teleport="body"
                             ></VueDatePicker>
                         </div>
                     </div>
@@ -97,10 +98,10 @@
                                 :is-24="false"
                                 :cancel-text="t('취소')"
                                 :select-text="t('확인')"
-                                :placeholder="t('시작 시간')"
+                                :placeholder="t('시작시간')"
                                 :disabled="defaultPeriodType == 0"
                                 :hide-input-icon="true"
-                                minutes-increment="30"
+                                teleport="body"
                             >
                                 <template #am-pm-button="{ toggle, value }">
                                     <button @click="toggle">{{ value }}</button>
@@ -118,7 +119,7 @@
                                 :placeholder="t('종료 시간')"
                                 :disabled="defaultPeriodType == 0"
                                 :hide-input-icon="true"
-                                minutes-increment="30"
+                                teleport="body"
                             >
                                 <template #am-pm-button="{ toggle, value }">
                                     <button @click="toggle">{{ value }}</button>
@@ -137,26 +138,25 @@
                                 v-model="startDate"
                                 format="yyyy-MM-dd"
                                 class="customDate"
-                                teleport
                                 :cancel-text="t('취소')"
                                 :select-text="t('확인')"
                                 :placeholder="t('날짜 선택')"
                                 :min-date="new Date()"
                                 :max-date="endDate"
                                 auto-apply
+                                teleport="body"
                             ></VueDatePicker>
                             <VueDatePicker
                                 locale="ko"
                                 :dark="datePickerMode"
                                 v-model="startTime"
                                 time-picker
-                                teleport
                                 :is-24="false"
                                 :cancel-text="t('취소')"
                                 :select-text="t('확인')"
                                 :placeholder="t('시작 시간')"
                                 :hide-input-icon="true"
-                                minutes-increment="30"
+                                teleport="body"
                                 class="customTime col"
                             >
                                 <template #am-pm-button="{ toggle, value }">
@@ -174,18 +174,17 @@
                                 v-model="endDate"
                                 format="yyyy-MM-dd"
                                 class="customDate"
-                                teleport
                                 :cancel-text="t('취소')"
                                 :select-text="t('확인')"
                                 :placeholder="t('날짜 선택')"
                                 :min-date="startDate"
                                 auto-apply
+                                teleport="body"
                             ></VueDatePicker>
                             <VueDatePicker
                                 locale="ko"
                                 :dark="datePickerMode"
                                 v-model="endTime"
-                                teleport
                                 class="customTime col"
                                 time-picker
                                 :is-24="false"
@@ -193,7 +192,7 @@
                                 :select-text="t('확인')"
                                 :placeholder="t('종료 시간')"
                                 :hide-input-icon="true"
-                                minutes-increment="30"
+                                teleport="body"
                             >
                                 <template #am-pm-button="{ toggle, value }">
                                     <button @click="toggle">{{ value }}</button>
@@ -231,7 +230,6 @@
                                 :select-text="t('확인')"
                                 :placeholder="t('시작 시간')"
                                 :hide-input-icon="true"
-                                minutes-increment="30"
                                 class="customTime col"
                             >
                                 <template #am-pm-button="{ toggle, value }">
@@ -367,14 +365,6 @@
                             @keyup.enter="guestEmailAdd"
                             class="emailInput first"
                         />
-                        <!-- <input
-                            type="text"
-                            id="emailAddress"
-                            v-model="emailAddress"
-                            placeholder="wattsolution.co.kr"
-                            @keyup.enter="guestEmailAdd"
-                            class="emailInput second"
-                        /> -->
                         <button @click="guestEmailAdd" class="addBtn">
                             {{ t("guestAdd") }}
                         </button>
@@ -465,7 +455,7 @@
 <script setup>
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { string, object, number, date, boolean, array, mixed } from "yup";
+import { string, object } from "yup";
 import { commonToastMessage } from "@/composables/common";
 import { useMeetingStore } from "@/stores/meeting";
 import { useCallStore } from "@/stores/call";
@@ -507,10 +497,7 @@ const endDate = ref(null);
 const edit = ref(false);
 const meetingMember = ref([]);
 const member_deviceid = ref([]);
-const emailID = ref("");
-const emailAddress = ref("");
 const email = ref("");
-const modify = ref("");
 const openMember = ref(false);
 const dropdown = ref(false);
 const typeChangeState = ref(false);
@@ -717,7 +704,6 @@ onMounted(() => {
             });
         }
     }
-        defaultPeriodType.value = 0;
         let memberList = [];
         memberList[0] = {
             name: loginStore.institution,

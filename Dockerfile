@@ -94,7 +94,7 @@ RUN npm ci --legacy-peer-deps
 RUN npm run generate   # 결과물은 .output/public
 
 # --- 배포 단계 ---
-FROM nginx
+FROM nginx:alpine
 
 # 필요한 디렉토리 생성 및 소유권 변경
 RUN mkdir -p /usr/share/nginx/html /run /var/cache/nginx /var/log/nginx \

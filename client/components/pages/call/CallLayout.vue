@@ -7,7 +7,51 @@
             autoplay
         ></audio>
 
-        <div :class="`callingLayout${callingLayoutType}`">
+        <button class="slide-btn" @click="handleClickToggleUserBar">
+            <img
+                v-if="callStore.underStatus == 0 || callStore.underStatus == 3"
+                src="@/assets/images/calling/right_bt_default.png"
+            />
+            <img
+                v-if="callStore.underStatus == 1"
+                src="@/assets/images/calling/right_bt_call.png"
+            />
+            <img
+                v-if="callStore.underStatus == 2"
+                src="@/assets/images/calling/right_bt_file.png"
+            />
+
+            <img
+                v-if="callStore.underStatus == 0"
+                src="@/assets/images/calling/ic_right_20.png"
+                class="chat-status arrow"
+                :class="{ hidden: !isShowCallingUser }"
+            />
+            <img
+                v-if="callStore.underStatus == 1"
+                src="@/assets/images/calling/ic_call_20.png"
+                class="chat-status"
+                :class="{ hidden: !isShowCallingUser }"
+            />
+            <img
+                v-if="callStore.underStatus == 2"
+                src="@/assets/images/calling/ic_file_20.png"
+                class="chat-status"
+                :class="{ hidden: !isShowCallingUser }"
+            />
+            <img
+                v-if="callStore.underStatus == 3"
+                src="@/assets/images/calling/ic_text.png"
+                class="chat-status"
+                :class="{ hidden: !isShowCallingUser }"
+            />
+        </button>
+        <div
+            :class="{
+                ['callingLayout' + callingLayoutType]: true,
+                hidden: !isShowCallingUser,
+            }"
+        >
             <div
                 v-for="(window, windowKey) in roomNumberCount - 1"
                 v-show="
@@ -63,7 +107,7 @@ const callStore = useCallStore();
 const chattingStore = useChattingStore();
 
 const formWidhCallingLayout4 = ref("");
-const isShow = ref(true);
+const isShowCallingUser = ref(true);
 const allWidth = ref(0); // Initialized in onMounted
 const callingLayoutWrap4Width = ref(null);
 const showBtnWidth = ref(null);
@@ -245,55 +289,7 @@ const callingLayout1Resize = () => {
     }
 };
 
-onMounted(() => {
-    try {
-        const displayModeSetting = sessionStorage.getItem("displayMode") || "darkmode";
-        displayMode.value = displayModeSetting;
-    } catch (e) {
-        console.error("Failed to load stylesheet:", e);
-    }
-
-    // Initial width setup for layout 4
-    if (callingLayoutType.value === 4) {
-        formWidhCallingLayout4.value = roomNumberCount.value * 263.5 - 35;
-        isShow.value = true;
-        const fixBtn = document.getElementById("fixBtn");
-        const wrapDiv = document.getElementById("fixBg");
-
-        if (fixBtn) fixBtn.style.transition = "1s";
-
-        if (wrapDiv) {
-            callingLayoutWrap4Width.value = wrapDiv.clientWidth;
-            showBtnWidth.value = callingLayoutWrap4Width.value / 2 - 52;
-        } else {
-            console.warn("Element with id 'fixBg' not found during mount for layout 4.");
-        }
-    }
-
-    if (callingLayoutType.value === 1) {
-        window.addEventListener("resize", callingLayout1Resize);
-    }
-
-    const { signallingSocket } = useSignallingSocket();
-
-    signallingSocket.on("multiCalling", (response) => {
-        if (response) {
-            calcWidth(personnelInRoom.value + 1);
-        }
-    });
-    signallingSocket.on("cancelCalling", (res) => {
-        if (res) {
-            calcWidth(personnelInRoom.value);
-        }
-    });
-
-    const headerElement = document.getElementsByClassName("header")[0];
-    if (headerElement) {
-        headerHeight.value = headerElement.clientHeight + 10;
-    } else {
-        console.warn("Header element not found.");
-    }
-});
+onMounted(() => {});
 
 // Helper for the wheel event listener, to avoid inline function in removeEventListener
 const handleWheelScroll = (e) => {
@@ -319,53 +315,17 @@ const handleWheelScroll = (e) => {
     }
 };
 
+const handleClickToggleUserBar = () => {
+    isShowCallingUser.value = !isShowCallingUser.value;
+    callStore.setUnderStatus(0);
+};
+
 // --- Watchers ---
 watch(roomNumberCount, () => {
     formWidhCallingLayout4.value = roomNumberCount.value * 263.5 - 35;
 });
 
-watch(callingLayoutType, (result) => {
-    if (result === 4 && !isLayout4.value) {
-        isLayout4.value = true;
-        setTimeout(() => {
-            formWidhCallingLayout4.value = roomNumberCount.value * 263.5 - 35;
-            isShow.value = true;
-            const fixBtn = document.getElementById("fixBtn");
-            const wrapDiv = document.getElementById("fixBg");
-
-            if (fixBtn) fixBtn.style.transition = "1s";
-
-            if (wrapDiv) {
-                callingLayoutWrap4Width.value = wrapDiv.clientWidth;
-                showBtnWidth.value = callingLayoutWrap4Width.value / 2 - 53;
-            } else {
-                console.warn(
-                    "Element with id 'fixBg' not found during callingLayoutType watch.",
-                );
-            }
-
-            nextTick(() => {
-                window.addEventListener("resize", onResize);
-                document.addEventListener("wheel", handleWheelScroll);
-            });
-        }, 1000);
-    } else if (result !== 4) {
-        // Only run this block if changing *away* from layout 4
-        // If you need specific cleanup when leaving layout 4 (e.g., removing listeners)
-        // you should do it here if they were only added for layout 4.
-        // Note: The previous logic had listeners removed in `beforeDestroy`,
-        // which is covered by `onUnmounted` in Composition API.
-        // If `isLayout4` only prevents re-initialization *within* layout 4,
-        // then this branch resetting `timeKeeperBtn` and `isShow` is correct.
-
-        timeKeeperBtn.value = false;
-        isShow.value = true;
-        nextTick(() => {
-            calcWidth(personnelInRoom.value);
-        });
-        videoWidth.value = "263.5px";
-    }
-});
+watch(callingLayoutType, (result) => {});
 
 watch(personnelInRoom, (res) => {
     callingLayout1Resize();
@@ -390,7 +350,7 @@ onUnmounted(() => {
     document.removeEventListener("wheel", handleWheelScroll); // Remove the named function
 });
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .aaa {
     &::-webkit-scrollbar {
         width: 7px;
@@ -498,7 +458,6 @@ onUnmounted(() => {
 .callingLayout4 {
     display: flex;
     align-items: center;
-    /* padding-bottom: 52px; */
     height: 176px;
     background: rgba(60, 60, 60, 0.9);
     padding: 0 18px;
@@ -517,6 +476,18 @@ onUnmounted(() => {
         width: 227px !important;
         height: 150px !important;
         flex-shrink: 0;
+    }
+}
+
+.hidden {
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
+    transform: translateY(176);
+    opacity: 1;
+    flex: 0;
+    > div {
+        display: none;
     }
 }
 
@@ -685,5 +656,60 @@ onUnmounted(() => {
 
 .mainVideoBorder {
     border: 3px solid #f9f9f9;
+}
+
+.slide-btn {
+    width: 100%;
+    position: absolute;
+    cursor: pointer;
+    z-index: 1;
+    bottom: 123px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    > img {
+        transform: rotate(90deg);
+    }
+}
+
+.chat-status {
+    position: absolute;
+}
+
+.chat-status.arrow.hidden {
+    transform: rotate(270deg);
+}
+
+.blink {
+    -webkit-animation: blink 0.5s ease-in-out infinite alternate;
+    -moz-animation: blink 0.5s ease-in-out infinite alternate;
+    animation: blink 0.5s ease-in-out infinite alternate;
+}
+
+@-webkit-keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 </style>

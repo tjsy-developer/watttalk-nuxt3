@@ -528,6 +528,7 @@ const setCctvList = () => {
 };
 
 onMounted(() => {
+    console.log(props.compData)
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
     window.addEventListener("resize", onResize);

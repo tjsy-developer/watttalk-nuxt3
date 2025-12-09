@@ -51,6 +51,7 @@
                     @click="switchMessageType(2)"
                     v-if="videoCallHost"
                     class="emergency"
+                    :class="{ clicked: messageType == 2}"
                 >
                     {{ t("emergency") }}
                 </button>

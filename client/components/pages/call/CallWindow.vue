@@ -1487,6 +1487,8 @@ $windowInfoBarHeight: 30px;
     width: inherit;
     height: inherit;
     aspect-ratio: 16 / 9;
+    max-height: 100%;
+    max-width: 100%;
     .nickname {
         bottom: 3px;
         padding-left: 4px;
@@ -1519,14 +1521,11 @@ $windowInfoBarHeight: 30px;
 }
 
 #videoMain {
-    position: absolute;
-    top: 0px;
-    left: 0px;
     scale: 1;
     width: 100%;
     height: 100%;
     aspect-ratio: 16 / 9;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .videoNameSpan {

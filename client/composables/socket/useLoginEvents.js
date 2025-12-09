@@ -88,7 +88,7 @@ export function useLoginEvents() {
                 `/meetingRoom/memberMeetingOnOff?reservId=${loginStore.reservId}`,
             );
         }
-    };
+    };   
 
     const handleForceLogoutResult = (response) => {
         const json = JSON.parse(response);

@@ -29,7 +29,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     signallingSocket.on("connect", async () => {
         console.log("✅ Signalling Socket Connected:", signallingSocket.id);
 
-        if (["requestVideoRecording"].includes(route.name)) {
+        if (["requestVideoRecording", "appCheck"].includes(route.name)) {
+            alert("여기 아니야?")
             return;
         } else {
             if (loginStore.m_local_deviceid) loginRequest(loginStore.m_local_deviceid);
@@ -57,7 +58,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         console.error("Signalling Socket Connect Error:", err.message);
     });
 
-    // transfer socket
     transferSocket.on("connect", () => {
         console.log("✅ Transfer Socket Connected:", transferSocket.id);
     });
@@ -83,7 +83,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         lastActivity = Date.now();
     };
 
-    // DOM 이벤트 기반 활동 감지
     ["keydown", "scroll", "click", "touchstart"].forEach((evt) => {
         window.addEventListener(evt, updateActivity);
     });
@@ -91,7 +90,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     let tokenCheckInterval = null;
 
     function startTokenCheckInterval() {
-        if (tokenCheckInterval !== null) return; // 이미 실행 중이면 스킵
+        if (tokenCheckInterval !== null) return;
 
         tokenCheckInterval = window.setInterval(async () => {
             const now = Date.now();
@@ -175,25 +174,3 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         },
     };
 });
-
-function decodeToken(jwt) {
-    let result = false;
-    try {
-        const decodeJwt = jwtDecode(jwt);
-        const expireTime = decodeJwt.exp;
-
-        const date = new Date();
-        const unixTime = Math.floor(date.getTime() / 1000);
-
-        if (expireTime > unixTime) {
-            result = true;
-        } else {
-            result = "expired";
-        }
-    } catch {
-        console.log("decode fail");
-        result = "mutated";
-    }
-
-    return result;
-}
